@@ -1,0 +1,4 @@
+{
+  "serviceuserkv": "/serviceuser/data/dev/srveessi-pensjon-pdl-produsent",
+  "appsecrets": "/kv/preprod/fss/eessi-pensjon-pdl-produsent-q1/eessipensjon"
+}
