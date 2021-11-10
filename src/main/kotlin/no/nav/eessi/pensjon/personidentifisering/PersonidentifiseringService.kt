@@ -8,11 +8,9 @@ import no.nav.eessi.pensjon.models.BucType
 import no.nav.eessi.pensjon.models.HendelseType
 import no.nav.eessi.pensjon.models.Saktype
 import no.nav.eessi.pensjon.personidentifisering.helpers.FodselsdatoHelper
-import no.nav.eessi.pensjon.personidentifisering.helpers.SedFnrSok
 import no.nav.eessi.pensjon.personidentifisering.relasjoner.RelasjonsHandler
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
-import no.nav.eessi.pensjon.personoppslag.pdl.model.AdressebeskyttelseGradering
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
@@ -155,17 +153,6 @@ class PersonidentifiseringService(
             geografiskTilknytning,
             newPersonRelasjon
         )
-    }
-
-    fun finnesPersonMedAdressebeskyttelseIBuc(alleSediBuc: List<Pair<String, SED>>): Boolean {
-        val alleSedTyper = alleSediBuc.map { it.second.type}.toJson()
-        logger.info("Leter etter personer med adressebeskyttelse i : $alleSedTyper")
-        val fnr = alleSediBuc.flatMap { SedFnrSok.finnAlleFnrDnrISed(it.second) }
-        val gradering =
-            listOf(AdressebeskyttelseGradering.STRENGT_FORTROLIG_UTLAND, AdressebeskyttelseGradering.STRENGT_FORTROLIG)
-
-        return personService.harAdressebeskyttelse(fnr, gradering)
-            .also { logger.debug("Finnes adressebeskyttet person: $it") }
     }
 
     private fun hentLandkode(person: Person): String {
