@@ -3,6 +3,7 @@ on:
   repository_dispatch:
     types: [prodsett-command]
 
+
 jobs:
   deploy_manuelt:
     name: 'Deploy manuelt'
