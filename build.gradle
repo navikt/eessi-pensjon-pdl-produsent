@@ -56,7 +56,6 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web:${springBootVersion}")
 	implementation("org.apache.httpcomponents:httpclient:4.5.13")
 
-
 	implementation("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
 	implementation("org.springframework.boot:spring-boot-actuator:${springBootVersion}")
 
@@ -71,13 +70,6 @@ dependencies {
 		exclude module: "junit-vintage-engine"
 	}
 	testImplementation 'org.springframework.kafka:spring-kafka-test'
-
-	// Apache CXF
-	implementation("org.apache.cxf:cxf-spring-boot-starter-jaxws:${cxfVersion}") {
-		exclude module: 'spring-boot-starter-web'
-	}
-
-	implementation("org.apache.cxf:cxf-rt-ws-security:${cxfVersion}")
 
 	//mock - test
 	testImplementation("org.jetbrains.kotlin:kotlin-test:${kotlinVersion}") {
@@ -103,11 +95,6 @@ dependencies {
 	implementation("no.nav.eessi.pensjon:ep-security-sts:${epSecurityStsVersion}")
 	implementation("no.nav.eessi.pensjon:ep-personoppslag:${epPersonoppslagVersion}")
 	implementation("no.nav.eessi.pensjon:ep-eux:${epEuxVersion}")
-
-	// PDF box
-	implementation("org.apache.pdfbox:pdfbox-tools:2.0.22")
-	implementation("com.twelvemonkeys.imageio:imageio-jpeg:3.6.2")
-	implementation("com.twelvemonkeys.imageio:imageio-tiff:3.6.2")
 
 	// Logging
 	implementation("net.logstash.logback:logstash-logback-encoder:${logstashLogbackVersion}")
