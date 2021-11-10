@@ -1,6 +1,5 @@
 package no.nav.eessi.pensjon.personidentifisering
 
-//import no.nav.eessi.pensjon.personidentifisering.helpers.FnrHelper
 import io.micrometer.core.instrument.Metrics
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.eux.model.sed.SedType
@@ -9,7 +8,6 @@ import no.nav.eessi.pensjon.models.BucType
 import no.nav.eessi.pensjon.models.HendelseType
 import no.nav.eessi.pensjon.models.Saktype
 import no.nav.eessi.pensjon.personidentifisering.helpers.FodselsdatoHelper
-import no.nav.eessi.pensjon.personidentifisering.helpers.PersonSok
 import no.nav.eessi.pensjon.personidentifisering.helpers.SedFnrSok
 import no.nav.eessi.pensjon.personidentifisering.relasjoner.RelasjonsHandler
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
@@ -19,13 +17,11 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.time.LocalDate
 
 @Component
 class PersonidentifiseringService(
-    @Autowired private val personSok: PersonSok,
     @Suppress("SpringJavaInjectionPointsAutowiringInspection") private val personService: PersonService,
 ) {
     private val logger = LoggerFactory.getLogger(PersonidentifiseringService::class.java)
@@ -81,10 +77,6 @@ class PersonidentifiseringService(
         if (identifisertPerson != null) {
             return validateIdentifisertPerson(identifisertPerson, hendelsesType, erNavCaseOwner)
         }
-
-        logger.warn("Klarte ikke å finne identifisertPerson, prøver søkPerson")
-        personSok.sokPersonEtterFnr(potensiellePersonRelasjoner, rinaDocumentId, bucType, sedType, hendelsesType)
-        ?.let { personRelasjon -> return hentIdentifisertPerson(personRelasjon, hendelsesType) }
 
         return null
     }

@@ -27,7 +27,6 @@ import no.nav.eessi.pensjon.json.typeRefs
 import no.nav.eessi.pensjon.models.BucType
 import no.nav.eessi.pensjon.models.HendelseType
 import no.nav.eessi.pensjon.models.Saktype
-import no.nav.eessi.pensjon.personidentifisering.helpers.PersonSok
 import no.nav.eessi.pensjon.personidentifisering.helpers.Rolle
 import no.nav.eessi.pensjon.personidentifisering.relasjoner.RelasjonsHandler
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
@@ -56,9 +55,8 @@ class PersonidentifiseringServiceTest {
     }
 
     private val personService = mockk<PersonService>(relaxed = true)
-    private val personSok = mockk<PersonSok>(relaxed = true)
 
-    private val personidentifiseringService = PersonidentifiseringService(personSok, personService)
+    private val personidentifiseringService = PersonidentifiseringService(personService)
 
 //    private val fnrHelper = FnrHelper()
 
@@ -216,7 +214,7 @@ class PersonidentifiseringServiceTest {
 
     @Test
     fun `Gitt manglende fnr og en liste med sed som inneholder fdato som gir en gyldig fdato`(){
-        val personidentifiseringService2 = PersonidentifiseringService(personSok, personService)
+        val personidentifiseringService2 = PersonidentifiseringService(personService)
 
         val sed = sedFromJsonFile("/buc/P10000-superenkel.json")
         val actual = personidentifiseringService2.hentFodselsDato(null, listOf(sed), emptyList())
