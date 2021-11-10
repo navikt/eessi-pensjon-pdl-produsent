@@ -29,20 +29,11 @@ class RestTemplateConfig(private val securityTokenExchangeService: STSService, p
     @Value("\${oppgave.oppgaver.url}")
     lateinit var oppgaveUrl: String
 
-    @Value("\${JOURNALPOST_V1_URL}")
-    lateinit var joarkUrl: String
-
     @Value("\${EUX_RINA_API_V1_URL}")
     lateinit var euxUrl: String
 
-    @Value("\${EESSI_PENSJON_FAGMODUL_URL}")
-    lateinit var fagmodulUrl: String
-
     @Value("\${NORG2_URL}")
     lateinit var norg2Url: String
-
-    @Value("\${BestemSak_URL}")
-    lateinit var bestemSakUrl: String
 
     @Value("\${srvusername}")
     lateinit var username: String
@@ -50,89 +41,10 @@ class RestTemplateConfig(private val securityTokenExchangeService: STSService, p
     @Value("\${srvpassword}")
     lateinit var password: String
 
-
-    @Bean
-    fun journalpostOidcRestTemplate(templateBuilder: RestTemplateBuilder): RestTemplate {
-        return templateBuilder
-                .rootUri(joarkUrl)
-                .errorHandler(DefaultResponseErrorHandler())
-                .additionalInterceptors(
-                    FullRequestResponseLoggerInterceptor(),
-                        RequestIdHeaderInterceptor(),
-                        RequestCountInterceptor(meterRegistry),
-                        UsernameToOidcInterceptor(securityTokenExchangeService))
-                .build().apply {
-                    requestFactory = BufferingClientHttpRequestFactory(HttpComponentsClientHttpRequestFactory()) // Trengs for å kjøre http-method: PATCH
-                }
-    }
-
-
-    @Bean
-    fun aktoerregisterRestTemplate(templateBuilder: RestTemplateBuilder): RestTemplate {
-        return templateBuilder
-                .rootUri(aktoerregisterUrl)
-                .additionalInterceptors(
-                        RequestIdHeaderInterceptor(),
-                        RequestInterceptor(),
-                        RequestCountInterceptor(meterRegistry),
-                        RequestResponseLoggerInterceptor(),
-                        BasicAuthenticationInterceptor(username, password)
-                )
-                .build().apply {
-                    requestFactory = BufferingClientHttpRequestFactory(SimpleClientHttpRequestFactory())
-                }
-    }
-
-    @Bean
-    fun oppgaveOidcRestTemplate(templateBuilder: RestTemplateBuilder): RestTemplate {
-        return templateBuilder
-                .rootUri(oppgaveUrl)
-                .additionalInterceptors(
-                        RequestIdHeaderInterceptor(),
-                        RequestInterceptor(),
-                        RequestResponseLoggerInterceptor(),
-                        RequestCountInterceptor(meterRegistry),
-                        BasicAuthenticationInterceptor(username, password)
-                )
-                .build().apply {
-                    requestFactory = BufferingClientHttpRequestFactory(SimpleClientHttpRequestFactory())
-                }
-    }
-
-    @Bean
-    fun fagmodulOidcRestTemplate(templateBuilder: RestTemplateBuilder): RestTemplate {
-        return templateBuilder
-                .rootUri(fagmodulUrl)
-                .errorHandler(DefaultResponseErrorHandler())
-                .additionalInterceptors(
-                        RequestIdHeaderInterceptor(),
-                        RequestResponseLoggerInterceptor(),
-                        RequestCountInterceptor(meterRegistry),
-                        UsernameToOidcInterceptor(securityTokenExchangeService))
-                .build().apply {
-                    requestFactory = BufferingClientHttpRequestFactory(SimpleClientHttpRequestFactory())
-                }
-    }
-
     @Bean
     fun norg2OidcRestTemplate(templateBuilder: RestTemplateBuilder): RestTemplate {
         return templateBuilder
                 .rootUri(norg2Url)
-                .errorHandler(DefaultResponseErrorHandler())
-                .additionalInterceptors(
-                        RequestIdHeaderInterceptor(),
-                        RequestResponseLoggerInterceptor(),
-                        RequestCountInterceptor(meterRegistry),
-                        UsernameToOidcInterceptor(securityTokenExchangeService))
-                .build().apply {
-                    requestFactory = BufferingClientHttpRequestFactory(SimpleClientHttpRequestFactory())
-                }
-    }
-
-    @Bean
-    fun bestemSakOidcRestTemplate(templateBuilder: RestTemplateBuilder): RestTemplate {
-        return templateBuilder
-                .rootUri(bestemSakUrl)
                 .errorHandler(DefaultResponseErrorHandler())
                 .additionalInterceptors(
                         RequestIdHeaderInterceptor(),

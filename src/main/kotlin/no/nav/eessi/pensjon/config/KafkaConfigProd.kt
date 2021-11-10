@@ -45,7 +45,7 @@ class KafkaConfigProd(
     fun aivenProducerFactory(): ProducerFactory<String, String> {
         val configMap: MutableMap<String, Any> = HashMap()
         populerAivenCommonConfig(configMap)
-        configMap[ProducerConfig.CLIENT_ID_CONFIG] = "eessi-pensjon-journalforing"
+        configMap[ProducerConfig.CLIENT_ID_CONFIG] = "eessi-pensjon-pdl-produsent"
         configMap[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java
         configMap[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java
         configMap[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = aivenBootstrapServers
@@ -62,7 +62,7 @@ class KafkaConfigProd(
     fun aivenKafkaTemplate(): KafkaTemplate<String, String> {
         val configMap: MutableMap<String, Any> = HashMap()
         populerAivenCommonConfig(configMap)
-        configMap[ProducerConfig.CLIENT_ID_CONFIG] = "eessi-pensjon-journalforing"
+        configMap[ProducerConfig.CLIENT_ID_CONFIG] = "eessi-pensjon-pdl-produsent"
         configMap[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java
         configMap[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = JsonSerializer::class.java
         configMap[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = aivenBootstrapServers
@@ -86,7 +86,7 @@ class KafkaConfigProd(
 
         val configMap: MutableMap<String, Any> = HashMap()
         populerOnpremCommonConfig(configMap)
-        configMap[ConsumerConfig.CLIENT_ID_CONFIG] = "eessi-pensjon-journalforing"
+        configMap[ConsumerConfig.CLIENT_ID_CONFIG] = "eessi-pensjon-pdl-produsent"
         configMap[ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG] = onpremBootstrapServers
         configMap[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = false
         configMap[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"

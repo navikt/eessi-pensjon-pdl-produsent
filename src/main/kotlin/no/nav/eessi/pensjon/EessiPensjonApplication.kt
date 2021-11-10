@@ -6,9 +6,9 @@ import org.springframework.retry.annotation.EnableRetry
 
 @SpringBootApplication
 @EnableRetry
-class EessiPensjonJournalforingApplication
+class EessiPensjonApplication
 
 fun main(args: Array<String>) {
-	runApplication<EessiPensjonJournalforingApplication>(*args)
+	runApplication<EessiPensjonApplication>(*args)
 }
 
