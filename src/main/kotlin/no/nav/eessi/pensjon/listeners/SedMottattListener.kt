@@ -62,9 +62,10 @@ class SedMottattListener(
                     logger.info("*** Offset $offset  Partition ${cr.partition()} ***")
                     val sedHendelse = SedHendelseModel.fromJson(hendelse)
                     if (GyldigeHendelser.mottatt(sedHendelse)) {
+
                         val bucType = sedHendelse.bucType!!
 
-                        logger.info("*** Starter innkommende journalføring for SED: ${sedHendelse.sedType}, BucType: $bucType, RinaSakID: ${sedHendelse.rinaSakId} ***")
+                        logger.info("*** Starter innkommende journalføring for BucType: $bucType, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
                         val buc = dokumentHelper.hentBuc(sedHendelse.rinaSakId)
                         val erNavCaseOwner = dokumentHelper.isNavCaseOwner(buc)
                         val alleGyldigeDokumenter = dokumentHelper.hentAlleGyldigeDokumenter(buc)
