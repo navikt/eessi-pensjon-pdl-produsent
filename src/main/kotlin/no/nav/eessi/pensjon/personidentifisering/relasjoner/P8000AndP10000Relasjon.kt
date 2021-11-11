@@ -39,15 +39,32 @@ class P8000AndP10000Relasjon(private val sed: SED, private val bucType: BucType,
             annenPerson?.let { person ->
                 val sokAnnenPersonKriterie =  opprettSokKriterie(person)
                 val annenPersonPin = Fodselsnummer.fra(person.pin?.firstOrNull { it.land == "NO" }?.identifikator)
+                val pinItemUtlandList = person.pin?.filterNot { it.land == "NO" }
                 val annenPersonFdato = mapFdatoTilLocalDate(person.foedselsdato)
                 val rolle = person.rolle
+
                 val annenPersonRelasjon = when (rolle) {
                     //Rolle barn benyttes ikke i noe journalføring hendelse kun hente ut for...?
-                    BARN.kode -> SEDPersonRelasjon(annenPersonPin, Relasjon.BARN, sedType = sed.type, sokKriterier = sokAnnenPersonKriterie , fdato = annenPersonFdato, rinaDocumentId = rinaDocumentId)
+                    BARN.kode -> SEDPersonRelasjon(
+                        annenPersonPin,
+                        pinItemUtlandList,
+                        Relasjon.BARN,
+                        sedType = sed.type,
+                        )
                     //Rolle forsorger benyttes ikke i noe journalføring hendelse...
-                    FORSORGER.kode -> SEDPersonRelasjon(annenPersonPin, Relasjon.FORSORGER, sedType = sed.type, sokKriterier = sokAnnenPersonKriterie , fdato = annenPersonFdato, rinaDocumentId = rinaDocumentId)
+                    FORSORGER.kode -> SEDPersonRelasjon(
+                        annenPersonPin,
+                        pinItemUtlandList,
+                        Relasjon.FORSORGER,
+                        sedType = sed.type,
+                    )
                     //etterlatte benyttes i journalføring hendelse..
-                    ETTERLATTE.kode -> SEDPersonRelasjon(annenPersonPin, Relasjon.GJENLEVENDE, sedType = sed.type, sokKriterier = sokAnnenPersonKriterie , fdato = annenPersonFdato, rinaDocumentId = rinaDocumentId)
+                    ETTERLATTE.kode -> SEDPersonRelasjon(
+                        annenPersonPin,
+                        pinItemUtlandList,
+                        Relasjon.GJENLEVENDE,
+                        sedType = sed.type,
+                    )
                     else -> null
                 }
                 return annenPersonRelasjon

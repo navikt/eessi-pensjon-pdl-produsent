@@ -3,7 +3,6 @@ package no.nav.eessi.pensjon.listeners
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.eessi.pensjon.buc.EuxDokumentHelper
 import no.nav.eessi.pensjon.metrics.MetricsHelper
-import no.nav.eessi.pensjon.models.HendelseType
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
 import no.nav.eessi.pensjon.sed.SedHendelseModel
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -66,15 +65,12 @@ class SedMottattListener(
                         val bucType = sedHendelse.bucType!!
 
                         logger.info("*** Starter innkommende journalføring for BucType: $bucType, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
-                        val buc = dokumentHelper.hentBuc(sedHendelse.rinaSakId)
-                        val erNavCaseOwner = dokumentHelper.isNavCaseOwner(buc)
-                        val alleGyldigeDokumenter = dokumentHelper.hentAlleGyldigeDokumenter(buc)
 
-                        val alleSedIBucPair = dokumentHelper.hentAlleSedIBuc(sedHendelse.rinaSakId, alleGyldigeDokumenter)
+                        val currentSed = dokumentHelper.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId)
 
                         //identifisere Person hent Person fra PDL valider Person
                         val identifisertPerson = personidentifiseringService.hentIdentifisertPerson(
-                            alleSedIBucPair, bucType, sedHendelse.sedType, HendelseType.MOTTATT, sedHendelse.rinaDokumentId, erNavCaseOwner
+                            currentSed, bucType, sedHendelse.sedType, sedHendelse.rinaDokumentId
                         )
                     }
 
@@ -89,27 +85,6 @@ class SedMottattListener(
             }
         }
     }
-
-    /**
-     * Ikke slett funksjonene under før vi har et bedre opplegg for tilbakestilling av topic.
-     * Se jira-sak: EP-968
-     **/
-    /*
-   @KafkaListener(
-           containerFactory = "onpremKafkaListenerContainerFactory",
-           groupId = "\${kafka.sedMottatt.groupid}-recovery",
-           topicPartitions = [TopicPartition(topic = "\${kafka.sedMottatt.topic}",
-           partitionOffsets = [PartitionOffset(partition = "0", initialOffset = "104259")])])
-   fun recoverConsumeSedSendt(hendelse: String, cr: ConsumerRecord<String, String>, acknowledgment: Acknowledgment) {
-       if (cr.offset() == 104259L) {
-           logger.info("Behandler sedMottatt offset: ${cr.offset()}")
-           consumeSedMottatt(hendelse, cr, acknowledgment)
-       } else {
-           throw java.lang.RuntimeException()
-       }
-   }
-   */
-
 }
 
 internal class SedMottattRuntimeException(cause: Throwable) : RuntimeException(cause)

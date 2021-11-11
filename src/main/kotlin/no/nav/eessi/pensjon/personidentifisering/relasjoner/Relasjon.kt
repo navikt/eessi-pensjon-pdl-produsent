@@ -25,20 +25,16 @@ abstract class AbstractRelasjon(private val sed: SED, private val bucType: BucTy
         logger.info("Leter etter gyldig ident og relasjon(er) i SedType: ${sed.type}")
 
         forsikretPerson?.let { person ->
-            val sokPersonKriterie =  opprettSokKriterie(person)
             val fodselnummer = Fodselsnummer.fra(person.pin?.firstOrNull { it.land == "NO" }?.identifikator)
-            val fdato = mapFdatoTilLocalDate(person.foedselsdato)
+            val pinItemUtlandList = person.pin?.filterNot { it.land == "NO" }
 
             logger.debug("Legger til person ${Relasjon.FORSIKRET} og sedType: ${sed.type}")
             return listOf(
                 SEDPersonRelasjon(
                     fodselnummer,
+                    pinItemUtlandList,
                     Relasjon.FORSIKRET,
-                    saktype,
-                    sed.type,
-                    sokPersonKriterie,
-                    fdato,
-                    rinaDocumentId
+                    sedType = sed.type
                 )
             )
         }

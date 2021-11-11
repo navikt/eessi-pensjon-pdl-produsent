@@ -20,15 +20,20 @@ abstract class GjenlevendeHvisFinnes(private val sed: SED, private val bucType: 
 
         gjenlevendePerson?.let { gjenlevendePerson ->
             val gjenlevendePin = Fodselsnummer.fra(gjenlevendePerson.pin?.firstOrNull { it.land == "NO" }?.identifikator)
-            val gjenlevendeFdato = mapFdatoTilLocalDate(gjenlevendePerson.foedselsdato)
-            val sokPersonKriterie =  opprettSokKriterie(gjenlevendePerson)
+            val pinItemUtlandList = gjenlevendePerson.pin?.filterNot { it.land == "NO" }
 
             val gjenlevendeRelasjon = gjenlevendePerson.relasjontilavdod?.relasjon
             logger.info("Innhenting av relasjon: $gjenlevendeRelasjon")
 
             if (gjenlevendeRelasjon == null) {
                 logger.debug("Legger til person ${Relasjon.GJENLEVENDE} med ukjente relasjoner")
-                return listOf(SEDPersonRelasjon(gjenlevendePin, Relasjon.GJENLEVENDE, sedType = sedType, sokKriterier = sokPersonKriterie, fdato = gjenlevendeFdato, rinaDocumentId = rinaDocumentId))
+                return listOf(
+                    SEDPersonRelasjon(
+                        gjenlevendePin,
+                        pinItemUtlandList,
+                        Relasjon.GJENLEVENDE,
+                        sedType = sedType,
+                    ))
             }
 
             val sakType =  if (erGjenlevendeBarn(gjenlevendeRelasjon)) {
@@ -37,8 +42,15 @@ abstract class GjenlevendeHvisFinnes(private val sed: SED, private val bucType: 
                 Saktype.GJENLEV
             }
             logger.debug("Legger til person ${Relasjon.GJENLEVENDE} med sakType: $sakType")
-            return listOf(SEDPersonRelasjon(gjenlevendePin, Relasjon.GJENLEVENDE, sakType, sedType = sedType, sokKriterier = sokPersonKriterie, gjenlevendeFdato, rinaDocumentId= rinaDocumentId))
+            return listOf(
+                SEDPersonRelasjon(
+                    gjenlevendePin,
+                    pinItemUtlandList,
+                    Relasjon.GJENLEVENDE, sakType,
+                    sedType = sedType
+                ))
         }
+
         return emptyList()
     }
 

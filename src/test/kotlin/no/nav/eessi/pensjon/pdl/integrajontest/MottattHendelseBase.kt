@@ -7,19 +7,13 @@ import io.mockk.verify
 import no.nav.eessi.pensjon.buc.EuxDokumentHelper
 import no.nav.eessi.pensjon.buc.EuxKlient
 import no.nav.eessi.pensjon.eux.model.sed.Bruker
-import no.nav.eessi.pensjon.eux.model.sed.EessisakItem
-import no.nav.eessi.pensjon.eux.model.sed.Krav
-import no.nav.eessi.pensjon.eux.model.sed.KravType
 import no.nav.eessi.pensjon.eux.model.sed.Nav
-import no.nav.eessi.pensjon.eux.model.sed.Pensjon
 import no.nav.eessi.pensjon.eux.model.sed.Person
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.eux.model.sed.RelasjonAvdodItem
 import no.nav.eessi.pensjon.eux.model.sed.RelasjonTilAvdod
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.eux.model.sed.SedType
-import no.nav.eessi.pensjon.eux.model.sed.SivilstandItem
-import no.nav.eessi.pensjon.eux.model.sed.StatsborgerskapItem
 import no.nav.eessi.pensjon.json.toJson
 import no.nav.eessi.pensjon.klienter.norg2.Norg2Service
 import no.nav.eessi.pensjon.listeners.SedMottattListener
@@ -91,10 +85,9 @@ internal open class MottattHendelseBase {
 
     protected fun testRunner(
         fnr: String?,
-        uid: String?,
         hendelse: SedHendelseModel,
         sed: SED,
-        assertBlock: (IdentifisertPerson) -> Unit
+        assertBlock: (IdentifisertPerson?) -> Unit
     ) {
         initCommonMocks(sed)
 
@@ -111,6 +104,8 @@ internal open class MottattHendelseBase {
         mottattListener.consumeSedMottatt(hendelse.toJson(), mockk(relaxed = true), mockk(relaxed = true))
 
         verify(exactly = 1) { euxKlient.hentSedJson(any(), any()) }
+
+        assertBlock( personidentifiseringService.hentIdentifisertPerson(sed, hendelse.bucType!!, hendelse.sedType, hendelse.rinaDokumentId) )
 
         clearAllMocks()
     }
@@ -181,87 +176,27 @@ internal open class MottattHendelseBase {
 
     protected fun createSed(
         sedType: SedType,
-        fnr: String? = null,
         annenPerson: Person? = null,
-        eessiSaknr: String? = null,
-        fdato: String? = "1988-07-12",
-        pdlPerson: no.nav.eessi.pensjon.personoppslag.pdl.model.Person? = null
+        pin: List<PinItem> = emptyList(),
+        fdato: String = "1970-01-05"
     ): SED {
-        val validFnr = Fodselsnummer.fra(fnr)
-
-        val pdlForsikret = if (annenPerson == null) pdlPerson else null
-
         val forsikretBruker = Bruker(
             person = Person(
-                pin = validFnr?.let { listOf(PinItem(identifikator = it.value, land = "NO")) },
-                foedselsdato = validFnr?.getBirthDateAsIso() ?: fdato,
-                fornavn = "${pdlForsikret?.navn?.fornavn}",
-                etternavn = "${pdlForsikret?.navn?.etternavn}"
+                pin = pin,
+                foedselsdato = fdato,
+                fornavn = "Firstname",
+                etternavn = "Lastname"
             )
         )
 
         return SED(
             sedType,
             nav = Nav(
-                eessisak = eessiSaknr?.let { listOf(EessisakItem(saksnummer = eessiSaknr, land = "NO")) },
                 bruker = forsikretBruker,
                 annenperson = annenPerson?.let { Bruker(person = it) }
             )
         )
     }
-
-    protected fun createSedPensjon(
-        sedType: SedType,
-        fnr: String?,
-        eessiSaknr: String? = null,
-        gjenlevendeFnr: String? = null,
-        krav: KravType? = null,
-        relasjon: RelasjonTilAvdod? = null,
-        pdlPerson: no.nav.eessi.pensjon.personoppslag.pdl.model.Person? = null,
-        sivilstand: SivilstandItem? = null,
-        statsborgerskap: StatsborgerskapItem? = null,
-        fdato: String? = null
-    ): SED {
-        val validFnr = Fodselsnummer.fra(fnr)
-
-        val pdlPersonAnnen = if (relasjon != null) pdlPerson else null
-        val pdlForsikret = if (relasjon == null) pdlPerson else null
-
-        val foedselsdato = fdato ?: (validFnr?.getBirthDateAsIso() ?: "1988-07-12")
-
-        val forsikretBruker = Bruker(
-            person = Person(
-                pin = validFnr?.let { listOf(PinItem(identifikator = it.value, land = "NO")) },
-                foedselsdato = foedselsdato,
-                fornavn = pdlForsikret?.navn?.fornavn,
-                etternavn = pdlForsikret?.navn?.etternavn,
-                sivilstand = createSivilstand(sivilstand),
-                statsborgerskap = createStatsborger(statsborgerskap)
-            )
-        )
-
-
-        val annenPerson = Bruker(person = createAnnenPerson(gjenlevendeFnr, relasjon = relasjon, pdlPerson = pdlPersonAnnen))
-
-        val pensjon = if (gjenlevendeFnr != null || pdlPersonAnnen != null) {
-            Pensjon(gjenlevende = annenPerson)
-        }  else {
-            null
-        }
-
-        return SED(
-            sedType,
-            nav = Nav(
-                eessisak = eessiSaknr?.let { listOf(EessisakItem(saksnummer = eessiSaknr, land = "NO")) },
-                bruker = forsikretBruker,
-                krav = Krav("2019-02-01", krav?.kode)
-            ),
-            pensjon = pensjon
-        )
-    }
-    private fun createSivilstand(sivilstand: SivilstandItem?): List<SivilstandItem>? = if (sivilstand != null) listOf(sivilstand) else null
-
-    private fun createStatsborger(statsborgerskap: StatsborgerskapItem?): List<StatsborgerskapItem>? = if (statsborgerskap != null) listOf(statsborgerskap) else null
 
     protected fun createHendelseJson(
         sedType: SedType,
@@ -288,28 +223,20 @@ internal open class MottattHendelseBase {
             }
         """.trimIndent()
     }
+
     protected fun createAnnenPerson(
-        fnr: String? = null,
         rolle: Rolle? = Rolle.ETTERLATTE,
         relasjon: RelasjonTilAvdod? = null,
-        pdlPerson: no.nav.eessi.pensjon.personoppslag.pdl.model.Person? = null
+        pin: List<PinItem> = emptyList(),
+        fdato: String = "1970-04-11"
     ): Person {
-        if (fnr != null && fnr.isBlank()) {
-            return Person(
-                foedselsdato = "1962-07-18",
-                rolle = rolle?.kode,
-                relasjontilavdod = relasjon?.let { RelasjonAvdodItem(it.name) }
-            )
-        }
-        val validFnr = Fodselsnummer.fra(fnr)
-
         return Person(
-            validFnr?.let { listOf(PinItem(land = "NO", identifikator = it.value)) },
-            foedselsdato = validFnr?.getBirthDateAsIso() ?: "1962-07-18",
+            pin = pin,
+            foedselsdato = fdato,
             rolle = rolle?.kode,
             relasjontilavdod = relasjon?.let { RelasjonAvdodItem(it.name) },
-            fornavn = "${pdlPerson?.navn?.fornavn}",
-            etternavn = "${pdlPerson?.navn?.etternavn}"
+            fornavn = "Firstname Otherperson",
+            etternavn = "Lastname Otherperson"
         )
     }
 

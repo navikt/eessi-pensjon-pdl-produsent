@@ -1,6 +1,5 @@
 package no.nav.eessi.pensjon.personidentifisering
 
-import io.micrometer.core.instrument.Metrics
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.eux.model.sed.SedType
 import no.nav.eessi.pensjon.json.toJson
@@ -25,58 +24,29 @@ class PersonidentifiseringService(
     private val logger = LoggerFactory.getLogger(PersonidentifiseringService::class.java)
     private val brukForikretPersonISed = listOf(SedType.H121, SedType.H120, SedType.H070)
 
-    fun validateIdentifisertPerson(identifisertPerson: IdentifisertPerson, hendelsesType: HendelseType, erNavCaseOwner: Boolean): IdentifisertPerson? {
-        return if (hendelsesType == HendelseType.MOTTATT) {
-            val isFnrDnrFdatoLikSedFdato =  identifisertPerson.personRelasjon.isFnrDnrSinFdatoLikSedFdato()
-
-            if(isFnrDnrFdatoLikSedFdato) {
-                logger.info("valider: $isFnrDnrFdatoLikSedFdato, fnr-dato: ${identifisertPerson.personRelasjon.fnr?.getBirthDate()}, sed-fdato: ${identifisertPerson.personRelasjon.fdato}, $hendelsesType, Nav CaseOwner: $erNavCaseOwner")
-                validerCounter("successful")
-                identifisertPerson
-            } else {
-                logger.warn("valider: $isFnrDnrFdatoLikSedFdato, fnr-dato: ${identifisertPerson.personRelasjon.fnr?.getBirthDate()}, sed-fdato: ${identifisertPerson.personRelasjon.fdato}, $hendelsesType, Nav CaseOwner: $erNavCaseOwner")
-                validerCounter("failed")
-                null
-            }
-        } else {
-            identifisertPerson
-        }
-    }
-
-    private fun validerCounter(typeValue: String) {
-        try {
-            Metrics.counter("validerPerson", "hendelse", "MOTTATT", "type", typeValue).increment()
-        } catch (ex: Exception) {
-            logger.warn("Metrics feilet på validerPerson value: $typeValue")
-        }
-    }
-
     fun hentIdentifisertPerson(
-        sedListe: List<Pair<String, SED>>,
+        sed: SED,
         bucType: BucType,
         sedType: SedType?,
-        hendelsesType: HendelseType,
-        rinaDocumentId: String,
-        erNavCaseOwner: Boolean = false
+        rinaDocumentId: String
     ): IdentifisertPerson? {
 
-        val potensiellePersonRelasjoner = RelasjonsHandler.hentRelasjoner(sedListe, bucType)
+        val sedList = listOf(Pair(rinaDocumentId, sed))
 
-        val identifisertePersoner = hentIdentifisertePersoner(sedListe, bucType, potensiellePersonRelasjoner, hendelsesType, rinaDocumentId)
+        //fin norskident og utlandskeidenter
+        val potensiellePersonRelasjoner = RelasjonsHandler.hentRelasjoner(sedList, bucType)
 
-        val identifisertPerson = try {
+        //slå opp PDL
+        val identifisertePersoner = hentIdentifisertePersoner(sedList, bucType, potensiellePersonRelasjoner, HendelseType.MOTTATT, rinaDocumentId)
+
+        return try {
             identifisertPersonUtvelger(identifisertePersoner, bucType, sedType, potensiellePersonRelasjoner)
         } catch (fppbe: FlerePersonPaaBucException) {
             logger.warn("Flere personer funnet i $bucType, returnerer null")
             //flere personer på buc return null for id og fordeling
-            return null
+            null
         }
 
-        if (identifisertPerson != null) {
-            return validateIdentifisertPerson(identifisertPerson, hendelsesType, erNavCaseOwner)
-        }
-
-        return null
     }
 
     fun hentIdentifisertePersoner(
@@ -142,7 +112,6 @@ class PersonidentifiseringService(
         val personNavn = person.navn?.run { "$fornavn $etternavn" }
         val aktorId = person.identer.firstOrNull { it.gruppe == IdentGruppe.AKTORID }?.ident ?: ""
         val personFnr = person.identer.first { it.gruppe == IdentGruppe.FOLKEREGISTERIDENT }.ident
-        val geografiskTilknytning = person.geografiskTilknytning?.gtKommune ?: person.geografiskTilknytning?.gtBydel
         val landkode = hentLandkode(person)
         val newPersonRelasjon = sedPersonRelasjon.copy(fnr = Fodselsnummer.fra(personFnr))
 
@@ -150,7 +119,6 @@ class PersonidentifiseringService(
             aktorId,
             personNavn,
             landkode,
-            geografiskTilknytning,
             newPersonRelasjon
         )
     }
@@ -222,7 +190,7 @@ class PersonidentifiseringService(
 
         return when {
             identifisertePersoner.isEmpty() -> null
-            bucType == BucType.R_BUC_02 -> identifisertePersoner.first().apply { personListe = identifisertePersoner }
+            bucType == BucType.R_BUC_02 -> identifisertePersoner.first()
             bucType == BucType.P_BUC_02 -> identifisertePersoner.firstOrNull { it.personRelasjon.relasjon == Relasjon.GJENLEVENDE }
             bucType == BucType.P_BUC_05 -> {
                 val erGjenlevendeRelasjon = potensielleSEDPersonRelasjoner.any { it.relasjon == Relasjon.GJENLEVENDE }
@@ -260,11 +228,7 @@ class PersonidentifiseringService(
         return when {
             gjenlevendePerson != null -> gjenlevendePerson
             erGjenlevende -> null
-            else -> {
-                forsikretPerson?.apply {
-                    personListe = identifisertePersoner.filterNot { it.personRelasjon.relasjon == Relasjon.FORSIKRET }
-                }
-            }
+            else -> null
         }
     }
 

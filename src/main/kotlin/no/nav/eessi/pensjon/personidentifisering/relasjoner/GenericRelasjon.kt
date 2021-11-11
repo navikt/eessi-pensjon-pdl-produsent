@@ -35,10 +35,9 @@ class GenericRelasjon(private val sed: SED, private val bucType: BucType, privat
         val gjenlevendePerson = sed.nav?.annenperson?.takeIf { it.person?.rolle == Rolle.ETTERLATTE.name }?.person
 
         gjenlevendePerson?.let { person ->
-            val sokPersonKriterie = opprettSokKriterie(person)
             val fodselnummer = Fodselsnummer.fra(person.pin?.firstOrNull { it.land == "NO" }?.identifikator)
-            val fdato =  mapFdatoTilLocalDate(person.foedselsdato)
-            return SEDPersonRelasjon(fodselnummer, Relasjon.GJENLEVENDE, sedType = sed.type, sokKriterier = sokPersonKriterie, fdato = fdato, rinaDocumentId=rinaDocumentId)
+            val pinItemUtlandList = person.pin?.filterNot { it.land == "NO" }
+            return SEDPersonRelasjon(fodselnummer, pinItemUtlandList, Relasjon.GJENLEVENDE, sedType = sed.type)
         }
         return null
     }
