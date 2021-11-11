@@ -6,8 +6,6 @@ import io.mockk.mockk
 import io.mockk.verify
 import no.nav.eessi.pensjon.buc.EuxDokumentHelper
 import no.nav.eessi.pensjon.buc.EuxKlient
-import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
-import no.nav.eessi.pensjon.eux.model.document.SedDokumentfiler
 import no.nav.eessi.pensjon.eux.model.sed.Bruker
 import no.nav.eessi.pensjon.eux.model.sed.EessisakItem
 import no.nav.eessi.pensjon.eux.model.sed.Krav
@@ -47,6 +45,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.Navn
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Vegadresse
+import no.nav.eessi.pensjon.sed.SedHendelseModel
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import java.time.LocalDateTime
@@ -90,12 +89,10 @@ internal open class MottattHendelseBase {
         clearAllMocks()
     }
 
-    protected fun testRunnerFlerePersoner(
+    protected fun testRunner(
         fnr: String?,
-        fnrAnnenPerson: String?,
         uid: String?,
-        land: String = "SWE",
-        hendelse: String,
+        hendelse: SedHendelseModel,
         sed: SED,
         assertBlock: (IdentifisertPerson) -> Unit
     ) {
@@ -106,41 +103,20 @@ internal open class MottattHendelseBase {
                 fnr,
                 "Mamma forsørger",
                 "Etternavn",
-                land,
+                hendelse.avsenderLand,
                 aktorId = AKTOER_ID
             )
         }
 
-        if (fnrAnnenPerson != null) {
-            every { personService.hentPerson(NorskIdent(fnrAnnenPerson)) } returns createBrukerWith(
-                fnrAnnenPerson,
-                "Barn",
-                "Diskret",
-                land,
-                "1213",
-                aktorId = AKTOER_ID_2
-            )
-        }
-
-        val hendelse = createHendelseJson(SedType.P8000)
-
-//        val meldingSlot = slot<String>()
-//        every { oppgaveHandlerKafka.sendDefault(any(), capture(meldingSlot)).get() } returns mockk()
-
-            mottattListener.consumeSedMottatt(hendelse, mockk(relaxed = true), mockk(relaxed = true))
-
+        mottattListener.consumeSedMottatt(hendelse.toJson(), mockk(relaxed = true), mockk(relaxed = true))
 
         verify(exactly = 1) { euxKlient.hentSedJson(any(), any()) }
-        verify(exactly = 1) { euxKlient.hentBuc(any()) }
 
         clearAllMocks()
     }
 
-
-    fun initCommonMocks(sed: SED, alleDocs: List<ForenkletSED>, documentFiler: SedDokumentfiler, bucType: BucType = BucType.P_BUC_01, bucLand: String = "NO") {
-        every { euxKlient.hentBuc(any()) } returns bucFrom(bucType, forenkletSed = alleDocs, bucLand)
+    fun initCommonMocks(sed: SED) {
         every { euxKlient.hentSedJson(any(), any()) } returns sed.toJson()
-        every { euxKlient.hentAlleDokumentfiler(any(), any()) } returns documentFiler
     }
 
     protected fun createBrukerWith(
@@ -290,7 +266,7 @@ internal open class MottattHendelseBase {
     protected fun createHendelseJson(
         sedType: SedType,
         bucType: BucType = BucType.P_BUC_05,
-        forsikretFnr: String? = null
+        avsenderLand: String = "SE",
     ): String {
         return """
             {
@@ -301,14 +277,14 @@ internal open class MottattHendelseBase {
               "rinaSakId": "147729",
               "avsenderId": "NO:NAVT003",
               "avsenderNavn": "NAVT003",
-              "avsenderLand": "NO",
+              "avsenderLand": "$avsenderLand",
               "mottakerId": "NO:NAVT007",
               "mottakerNavn": "NAV Test 07",
               "mottakerLand": "NO",
               "rinaDokumentId": "b12e06dda2c7474b9998c7139c841646",
               "rinaDokumentVersjon": "2",
               "sedType": "${sedType.name}",
-              "navBruker": ${forsikretFnr?.let { "\"$it\"" }}
+              "navBruker": null
             }
         """.trimIndent()
     }
