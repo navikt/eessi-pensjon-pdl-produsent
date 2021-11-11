@@ -3,7 +3,6 @@ package no.nav.eessi.pensjon.pdl.integrajontest
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.slot
 import io.mockk.verify
 import no.nav.eessi.pensjon.buc.EuxDokumentHelper
 import no.nav.eessi.pensjon.buc.EuxKlient
@@ -14,7 +13,6 @@ import no.nav.eessi.pensjon.eux.model.sed.EessisakItem
 import no.nav.eessi.pensjon.eux.model.sed.Krav
 import no.nav.eessi.pensjon.eux.model.sed.KravType
 import no.nav.eessi.pensjon.eux.model.sed.Nav
-import no.nav.eessi.pensjon.eux.model.sed.P8000
 import no.nav.eessi.pensjon.eux.model.sed.Pensjon
 import no.nav.eessi.pensjon.eux.model.sed.Person
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
@@ -24,14 +22,10 @@ import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.eux.model.sed.SedType
 import no.nav.eessi.pensjon.eux.model.sed.SivilstandItem
 import no.nav.eessi.pensjon.eux.model.sed.StatsborgerskapItem
-import no.nav.eessi.pensjon.handler.OppgaveMelding
-import no.nav.eessi.pensjon.json.mapJsonToAny
-import no.nav.eessi.pensjon.json.typeRefs
+import no.nav.eessi.pensjon.json.toJson
 import no.nav.eessi.pensjon.klienter.norg2.Norg2Service
 import no.nav.eessi.pensjon.listeners.SedMottattListener
 import no.nav.eessi.pensjon.models.BucType
-import no.nav.eessi.pensjon.models.HendelseType
-import no.nav.eessi.pensjon.models.SakInformasjon
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
 import no.nav.eessi.pensjon.personidentifisering.helpers.Rolle
@@ -54,15 +48,12 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Vegadresse
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import java.time.LocalDateTime
 
 internal open class MottattHendelseBase {
 
-
-
-    protected val euxKlient: EuxKlient = mockk()
+    private val euxKlient: EuxKlient = mockk()
     private val dokumentHelper = EuxDokumentHelper(euxKlient)
     protected val norg2Service: Norg2Service = mockk(relaxed = true)
 
@@ -102,17 +93,13 @@ internal open class MottattHendelseBase {
     protected fun testRunnerFlerePersoner(
         fnr: String?,
         fnrAnnenPerson: String?,
-        saker: List<SakInformasjon> = emptyList(),
-        harAdressebeskyttelse: Boolean = false,
-        land: String = "NOR",
-        rolle: Rolle?,
-        hendelseType: HendelseType = HendelseType.SENDT,
+        uid: String?,
+        land: String = "SWE",
+        hendelse: String,
+        sed: SED,
         assertBlock: (IdentifisertPerson) -> Unit
     ) {
-        val sed = SED.generateSedToClass<P8000>(createSed(SedType.P8000, fnr, createAnnenPerson(fnr = fnrAnnenPerson, rolle = rolle), sakId))
         initCommonMocks(sed)
-
-        every { personService.harAdressebeskyttelse(any(), any()) } returns harAdressebeskyttelse
 
         if (fnr != null) {
             every { personService.hentPerson(NorskIdent(fnr)) } returns createBrukerWith(
@@ -135,55 +122,25 @@ internal open class MottattHendelseBase {
             )
         }
 
-        if (rolle == Rolle.ETTERLATTE)
-            every { fagmodulKlient.hentPensjonSaklist(AKTOER_ID_2) } returns saker
-        else
-            every { fagmodulKlient.hentPensjonSaklist(AKTOER_ID) } returns saker
-
-        val (journalpost, _) = initJournalPostRequestSlot()
-
         val hendelse = createHendelseJson(SedType.P8000)
 
-        val meldingSlot = slot<String>()
-        every { oppgaveHandlerKafka.sendDefault(any(), capture(meldingSlot)).get() } returns mockk()
+//        val meldingSlot = slot<String>()
+//        every { oppgaveHandlerKafka.sendDefault(any(), capture(meldingSlot)).get() } returns mockk()
 
-        if (hendelseType == HendelseType.SENDT)
-            sendtListener.consumeSedSendt(hendelse, mockk(relaxed = true), mockk(relaxed = true))
-        else
             mottattListener.consumeSedMottatt(hendelse, mockk(relaxed = true), mockk(relaxed = true))
 
-        // forvent tema == PEN og enhet 2103
-        val oppgaveMelding = mapJsonToAny(meldingSlot.captured, typeRefs<OppgaveMelding>())
-        Assertions.assertEquals(hendelseType, oppgaveMelding.hendelseType)
-
-        val request = journalpost.captured
-
-        assertBlock(request)
 
         verify(exactly = 1) { euxKlient.hentSedJson(any(), any()) }
         verify(exactly = 1) { euxKlient.hentBuc(any()) }
-
-        if (hendelseType == HendelseType.SENDT) {
-            assertEquals(JournalpostType.UTGAAENDE, request.journalpostType)
-
-            val antallPersoner = listOfNotNull(fnr, fnrAnnenPerson).size
-            val antallKallTilPensjonSaklist = if (antallPersoner > 0 && sakId != null) 1 else 0
-            verify(exactly = antallKallTilPensjonSaklist) { fagmodulKlient.hentPensjonSaklist(any()) }
-        } else {
-            assertEquals(JournalpostType.INNGAAENDE, request.journalpostType)
-
-            verify(exactly = 0) { fagmodulKlient.hentPensjonSaklist(any()) }
-        }
 
         clearAllMocks()
     }
 
 
-    fun initCommonMocks(sed: SED, documents: List<ForenkletSED>? = null) {
-        val docs = documents ?: mapJsonToAny(getResource("/fagmodul/alldocumentsids.json"), typeRefs<List<ForenkletSED>>())
-        val dokumentVedleggJson = getResource("/pdf/pdfResponseUtenVedlegg.json")
-        val dokumentFiler = mapJsonToAny(dokumentVedleggJson, typeRefs<SedDokumentfiler>())
-        initCommonMocks(sed, docs, dokumentFiler)
+    fun initCommonMocks(sed: SED, alleDocs: List<ForenkletSED>, documentFiler: SedDokumentfiler, bucType: BucType = BucType.P_BUC_01, bucLand: String = "NO") {
+        every { euxKlient.hentBuc(any()) } returns bucFrom(bucType, forenkletSed = alleDocs, bucLand)
+        every { euxKlient.hentSedJson(any(), any()) } returns sed.toJson()
+        every { euxKlient.hentAlleDokumentfiler(any(), any()) } returns documentFiler
     }
 
     protected fun createBrukerWith(
