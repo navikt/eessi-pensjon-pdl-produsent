@@ -3,12 +3,7 @@ package no.nav.eessi.pensjon.listeners
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.eessi.pensjon.buc.EuxDokumentHelper
 import no.nav.eessi.pensjon.metrics.MetricsHelper
-import no.nav.eessi.pensjon.models.BucType
 import no.nav.eessi.pensjon.models.HendelseType
-import no.nav.eessi.pensjon.models.SakInformasjon
-import no.nav.eessi.pensjon.models.SakStatus
-import no.nav.eessi.pensjon.models.Saktype
-import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
 import no.nav.eessi.pensjon.sed.SedHendelseModel
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -62,29 +57,24 @@ class SedMottattListener(
                 logger.debug(hendelse)
 
                 //Forsøker med denne en gang til 258088L
-                val offsetToSkip = listOf(38518L,166333L, 195180L, 195186L, 195187L, 195188L, 195449L, 197341L, 197342L, 197343L, 206688L, 118452L, 268237L, 268268L, 268280L, 268281L, 268282L, 291953L)
                 try {
                     val offset = cr.offset()
-                    if (offsetToSkip.contains(offset)) {
-                        logger.warn("Hopper over offset: $offset grunnet feil.")
-                    } else {
-                        logger.info("*** Offset $offset  Partition ${cr.partition()} ***")
-                        val sedHendelse = SedHendelseModel.fromJson(hendelse)
-                        if (GyldigeHendelser.mottatt(sedHendelse)) {
-                            val bucType = sedHendelse.bucType!!
+                    logger.info("*** Offset $offset  Partition ${cr.partition()} ***")
+                    val sedHendelse = SedHendelseModel.fromJson(hendelse)
+                    if (GyldigeHendelser.mottatt(sedHendelse)) {
+                        val bucType = sedHendelse.bucType!!
 
-                            logger.info("*** Starter innkommende journalføring for SED: ${sedHendelse.sedType}, BucType: $bucType, RinaSakID: ${sedHendelse.rinaSakId} ***")
-                            val buc = dokumentHelper.hentBuc(sedHendelse.rinaSakId)
-                            val erNavCaseOwner = dokumentHelper.isNavCaseOwner(buc)
-                            val alleGyldigeDokumenter = dokumentHelper.hentAlleGyldigeDokumenter(buc)
+                        logger.info("*** Starter innkommende journalføring for SED: ${sedHendelse.sedType}, BucType: $bucType, RinaSakID: ${sedHendelse.rinaSakId} ***")
+                        val buc = dokumentHelper.hentBuc(sedHendelse.rinaSakId)
+                        val erNavCaseOwner = dokumentHelper.isNavCaseOwner(buc)
+                        val alleGyldigeDokumenter = dokumentHelper.hentAlleGyldigeDokumenter(buc)
 
-                            val alleSedIBucPair = dokumentHelper.hentAlleSedIBuc(sedHendelse.rinaSakId, alleGyldigeDokumenter)
+                        val alleSedIBucPair = dokumentHelper.hentAlleSedIBuc(sedHendelse.rinaSakId, alleGyldigeDokumenter)
 
-                            //identifisere Person hent Person fra PDL valider Person
-                            val identifisertPerson = personidentifiseringService.hentIdentifisertPerson(
-                                alleSedIBucPair, bucType, sedHendelse.sedType, HendelseType.MOTTATT, sedHendelse.rinaDokumentId, erNavCaseOwner
-                            )
-                        }
+                        //identifisere Person hent Person fra PDL valider Person
+                        val identifisertPerson = personidentifiseringService.hentIdentifisertPerson(
+                            alleSedIBucPair, bucType, sedHendelse.sedType, HendelseType.MOTTATT, sedHendelse.rinaDokumentId, erNavCaseOwner
+                        )
                     }
 
                     acknowledgment.acknowledge()
