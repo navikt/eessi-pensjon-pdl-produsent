@@ -1,5 +1,6 @@
 package no.nav.eessi.pensjon.models
 
+import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.json.toJson
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -35,8 +36,7 @@ internal class SedHendelseModelSerdeTest {
             "mottakerLand" : null,
             "rinaDokumentId" : "1234",
             "rinaDokumentVersjon" : "1",
-            "sedType" : null,
-            "navBruker" : null
+            "sedType" : null
         }""".trimMargin()
 
         val model = SedHendelseModel.fromJson(json)
@@ -72,7 +72,7 @@ internal class SedHendelseModelSerdeTest {
     }
 
     @Test
-    fun `Deserialisering med gyldig fnr`() {
+    fun `Deserialisering med gyldig rinasakid`() {
         val json = """{
             "id" : 0,
             "sedId" : null,
@@ -93,31 +93,7 @@ internal class SedHendelseModelSerdeTest {
 
         val model = SedHendelseModel.fromJson(json)
 
-        assertEquals("22117320034", model.navBruker!!.value)
+        assertEquals("123456", model.rinaSakId)
     }
 
-    @Test
-    fun `Deserialisering med ugyldig fnr`() {
-        val json = """{
-            "id" : 0,
-            "sedId" : null,
-            "sektorKode" : "R",
-            "bucType" : "FB_BUC_01",
-            "rinaSakId" : "123456",
-            "avsenderId" : null,
-            "avsenderNavn" : null,
-            "avsenderLand" : null,
-            "mottakerId" : null,
-            "mottakerNavn" : null,
-            "mottakerLand" : null,
-            "rinaDokumentId" : "1234",
-            "rinaDokumentVersjon" : "1",
-            "sedType" : null,
-            "navBruker" : "1234"
-        }""".trimMargin()
-
-        val model = SedHendelseModel.fromJson(json)
-
-        assertNull(model.navBruker)
-    }
 }

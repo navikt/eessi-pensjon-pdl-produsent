@@ -1,10 +1,10 @@
 package no.nav.eessi.pensjon.personidentifisering.relasjoner
 
+import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.sed.P8000
 import no.nav.eessi.pensjon.eux.model.sed.RelasjonTilAvdod
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.eux.model.sed.SedType
-import no.nav.eessi.pensjon.models.BucType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -24,7 +24,7 @@ internal class RelasjonsHandlerTest : RelasjonTestBase() {
                         )
                     )
                     ,"213123"
-                    ,BucType.P_BUC_01
+                    , BucType.P_BUC_01
         )
 
         assertEquals(1, actual.size)

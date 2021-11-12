@@ -1,5 +1,6 @@
 package no.nav.eessi.pensjon.models
 
+import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.sed.SedType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -21,6 +22,5 @@ class SedHendelseTest {
         assertEquals(sedHendelse.rinaDokumentId, "b12e06dda2c7474b9998c7139c841646")
         assertEquals(sedHendelse.rinaDokumentVersjon, "2")
         assertEquals(sedHendelse.sedType, SedType.P2000)
-        assertEquals("09035225916", sedHendelse.navBruker!!.value)
     }
 }

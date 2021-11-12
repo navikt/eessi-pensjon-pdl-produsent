@@ -6,6 +6,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import no.nav.eessi.pensjon.eux.EuxDokumentHelper
 import no.nav.eessi.pensjon.eux.EuxKlient
+import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.sed.Bruker
 import no.nav.eessi.pensjon.eux.model.sed.Nav
 import no.nav.eessi.pensjon.eux.model.sed.Person
@@ -15,10 +16,8 @@ import no.nav.eessi.pensjon.eux.model.sed.RelasjonTilAvdod
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.eux.model.sed.SedType
 import no.nav.eessi.pensjon.json.toJson
-import no.nav.eessi.pensjon.klienter.norg2.Norg2Service
 import no.nav.eessi.pensjon.listeners.GyldigeHendelser
 import no.nav.eessi.pensjon.listeners.SedMottattListener
-import no.nav.eessi.pensjon.models.BucType
 import no.nav.eessi.pensjon.models.SedHendelseModel
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
@@ -49,7 +48,6 @@ internal open class MottattHendelseBase {
 
     private val euxKlient: EuxKlient = mockk()
     private val dokumentHelper = EuxDokumentHelper(euxKlient)
-    protected val norg2Service: Norg2Service = mockk(relaxed = true)
     protected val personService: PersonService = mockk(relaxed = true)
     private val personidentifiseringService = PersonidentifiseringService(personService)
 
@@ -111,6 +109,45 @@ internal open class MottattHendelseBase {
         }
         clearAllMocks()
     }
+
+
+    protected fun testRunnerMedAnnenPerson(
+        fnr: String?,
+        annenpersonFnr: String?,
+        hendelse: SedHendelseModel,
+        sed: SED,
+        assertBlock: (List<IdentifisertPerson>?) -> Unit
+    ) {
+        initCommonMocks(sed)
+
+        if (fnr != null) {
+            every { personService.hentPerson(NorskIdent(fnr)) } returns createBrukerWith(
+                fnr,
+                "Mamma forsørger",
+                "Etternavn",
+                hendelse.avsenderLand,
+            )
+        }
+
+        if (annenpersonFnr != null) {
+            every { personService.hentPerson(NorskIdent(annenpersonFnr)) } returns createBrukerWith(
+                fnr,
+                "Pappa annenperson",
+                "PappaEtternavn",
+                hendelse.avsenderLand,
+            )
+        }
+
+        mottattListener.consumeSedMottatt(hendelse.toJson(), mockk(relaxed = true), mockk(relaxed = true))
+        if(GyldigeHendelser.mottatt(hendelse)) {
+            verify(exactly = 1) { euxKlient.hentSedJson(any(), any()) }
+            assertBlock( personidentifiseringService.hentIdentifisertPersoner(sed, hendelse.bucType!!, hendelse.sedType, hendelse.rinaDokumentId) )
+        } else {
+            assertBlock(null)
+        }
+        clearAllMocks()
+    }
+
 
     fun initCommonMocks(sed: SED) {
         every { euxKlient.hentSedJson(any(), any()) } returns sed.toJson()

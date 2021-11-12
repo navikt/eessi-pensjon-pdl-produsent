@@ -1,6 +1,6 @@
 package no.nav.eessi.pensjon.listeners
 
-import no.nav.eessi.pensjon.models.BucType
+import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.models.SedHendelseModel
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
