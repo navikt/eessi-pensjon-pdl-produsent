@@ -4,9 +4,7 @@ import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.eux.model.sed.SedType
 import no.nav.eessi.pensjon.json.toJson
 import no.nav.eessi.pensjon.models.BucType
-import no.nav.eessi.pensjon.models.HendelseType
 import no.nav.eessi.pensjon.models.Saktype
-import no.nav.eessi.pensjon.personidentifisering.helpers.FodselsdatoHelper
 import no.nav.eessi.pensjon.personidentifisering.relasjoner.RelasjonsHandler
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
@@ -15,13 +13,12 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import java.time.LocalDate
 
 @Component
-class PersonidentifiseringService(
-    @Suppress("SpringJavaInjectionPointsAutowiringInspection") private val personService: PersonService,
-) {
+class PersonidentifiseringService(private val personService: PersonService) {
+
     private val logger = LoggerFactory.getLogger(PersonidentifiseringService::class.java)
+
     private val brukForikretPersonISed = listOf(SedType.H121, SedType.H120, SedType.H070)
 
     fun hentIdentifisertPerson(
@@ -31,14 +28,13 @@ class PersonidentifiseringService(
         rinaDocumentId: String
     ): IdentifisertPerson? {
 
-        val sedList = listOf(Pair(rinaDocumentId, sed))
-
         //fin norskident og utlandskeidenter
-        val potensiellePersonRelasjoner = RelasjonsHandler.hentRelasjoner(sedList, bucType)
+        val potensiellePersonRelasjoner = RelasjonsHandler.hentRelasjoner(sed, rinaDocumentId, bucType)
 
         //slå opp PDL
-        val identifisertePersoner = hentIdentifisertePersoner(sedList, bucType, potensiellePersonRelasjoner, HendelseType.MOTTATT, rinaDocumentId)
+        val identifisertePersoner = hentIdentifisertePersoner(bucType, potensiellePersonRelasjoner, rinaDocumentId)
 
+        //velg ut korrekt ident.. (går ut?)
         return try {
             identifisertPersonUtvelger(identifisertePersoner, bucType, sedType, potensiellePersonRelasjoner)
         } catch (fppbe: FlerePersonPaaBucException) {
@@ -50,26 +46,25 @@ class PersonidentifiseringService(
     }
 
     fun hentIdentifisertePersoner(
-        alleSediBuc: List<Pair<String, SED>>,
         bucType: BucType,
         potensielleSEDPersonRelasjoner: List<SEDPersonRelasjon>,
-        hendelsesType: HendelseType,
         rinaDocumentId: String
     ): List<IdentifisertPerson> {
 
         val distinctByPotensielleSEDPersonRelasjoner = potensielleSEDPersonRelasjoner.distinctBy { relasjon -> relasjon.fnr }
-        logger.info("Forsøker å identifisere personer ut fra følgende SED: ${distinctByPotensielleSEDPersonRelasjoner.map { "${it.relasjon}, ${it.sedType}" }}, BUC: $bucType")
+
+        logger.info("Forsøker å identifisere personer ut fra følgende SED: ${distinctByPotensielleSEDPersonRelasjoner.map { "${it.sedType}, ${it.relasjon}" }}, BUC: $bucType")
 
             return distinctByPotensielleSEDPersonRelasjoner
                 .mapNotNull { relasjon ->
-                    hentIdentifisertPerson(relasjon, hendelsesType)
+
+                    hentIdentifisertPerson(relasjon)
+
                 }
-                .distinctBy { it.aktoerId }
+                .distinctBy { it.personRelasjon.fnr }
     }
 
-    fun hentIdentifisertPerson(
-        personRelasjon: SEDPersonRelasjon, hendelsesType: HendelseType
-    ): IdentifisertPerson? {
+    fun hentIdentifisertPerson(personRelasjon: SEDPersonRelasjon): IdentifisertPerson? {
         logger.debug("Henter ut følgende personRelasjon: ${personRelasjon.toJson()}")
 
         return try {
@@ -87,13 +82,11 @@ class PersonidentifiseringService(
                     populerIdentifisertPerson(
                         person,
                         personRelasjon,
-                        hendelsesType
                     )
                 }
                 ?.also {
-                    logger.debug(
-                        """IdentifisertPerson hentet fra PDL (aktoerId: ${it.aktoerId}, landkode: ${it.landkode}, 
-                                    navn: ${it.personNavn}, sed: ${it.personRelasjon.sedType?.name})""".trimIndent()
+                    logger.debug(""" IdentifisertPerson hentet fra PDL
+                                     navn: ${it.personNavn}, sed: ${it.personRelasjon})""".trimIndent()
                     )
                 }
         } catch (ex: Exception) {
@@ -105,69 +98,17 @@ class PersonidentifiseringService(
     private fun populerIdentifisertPerson(
         person: Person,
         sedPersonRelasjon: SEDPersonRelasjon,
-        hendelsesType: HendelseType
     ): IdentifisertPerson {
-        logger.debug("Populerer IdentifisertPerson med data fra PDL hendelseType: $hendelsesType")
+        logger.debug("Populerer IdentifisertPerson med data fra PDL")
 
         val personNavn = person.navn?.run { "$fornavn $etternavn" }
-        val aktorId = person.identer.firstOrNull { it.gruppe == IdentGruppe.AKTORID }?.ident ?: ""
         val personFnr = person.identer.first { it.gruppe == IdentGruppe.FOLKEREGISTERIDENT }.ident
-        val landkode = hentLandkode(person)
         val newPersonRelasjon = sedPersonRelasjon.copy(fnr = Fodselsnummer.fra(personFnr))
 
         return IdentifisertPerson(
-            aktorId,
             personNavn,
-            landkode,
             newPersonRelasjon
         )
-    }
-
-    private fun hentLandkode(person: Person): String {
-        val landkodeOppholdKontakt = person.kontaktadresse?.utenlandskAdresseIFrittFormat?.landkode
-        val landkodeUtlandsAdresse = person.kontaktadresse?.utenlandskAdresse?.landkode
-        val landkodeOppholdsadresse = person.oppholdsadresse?.utenlandskAdresse?.landkode
-        val landkodeBostedsadresse = person.bostedsadresse?.utenlandskAdresse?.landkode
-        val geografiskLandkode = person.geografiskTilknytning?.gtLand
-        val landkodeBostedNorge = person.bostedsadresse?.vegadresse
-        val landkodeKontaktNorge = person.kontaktadresse?.postadresseIFrittFormat
-
-        logger.debug("Landkode og person: ${person.toJson()}")
-
-        return when {
-            landkodeOppholdKontakt != null -> {
-                logger.info("Velger landkode fra kontaktadresse.utenlandskAdresseIFrittFormat ")
-                landkodeOppholdKontakt
-            }
-            landkodeUtlandsAdresse != null -> {
-                logger.info("Velger landkode fra kontaktadresse.utenlandskAdresse")
-                landkodeUtlandsAdresse
-            }
-            landkodeOppholdsadresse != null -> {
-                logger.info("Velger landkode fra oppholdsadresse.utenlandskAdresse")
-                landkodeOppholdsadresse
-            }
-            landkodeBostedsadresse != null -> {
-                logger.info("Velger landkode fra bostedsadresse.utenlandskAdresse")
-                landkodeBostedsadresse
-            }
-            geografiskLandkode != null -> {
-                logger.info("Velger landkode fra geografiskTilknytning.gtLand")
-                geografiskLandkode
-            }
-            landkodeBostedNorge != null -> {
-                logger.info("Velger landkode NOR fordi  bostedsadresse.vegadresse ikke er tom")
-                "NOR"
-            }
-            landkodeKontaktNorge != null -> {
-                logger.info("Velger landkode NOR fordi  kontaktadresse.postadresseIFrittFormat ikke er tom")
-                "NOR"
-            }
-            else -> {
-                logger.info("Velger tom landkode siden ingen særregler for adresseutvelger inntraff")
-                ""
-            }
-        }
     }
 
     /**
@@ -223,7 +164,7 @@ class PersonidentifiseringService(
         }
         val forsikretPerson = identifisertePersoner.firstOrNull { it.personRelasjon.relasjon == Relasjon.FORSIKRET }
         val gjenlevendePerson = identifisertePersoner.firstOrNull { it.personRelasjon.relasjon == Relasjon.GJENLEVENDE }
-        logger.info("personAktoerid: ${forsikretPerson?.aktoerId}, gjenlevAktoerid: ${gjenlevendePerson?.aktoerId}, harGjenlvRelasjon: $erGjenlevende")
+        logger.debug("personident: ${forsikretPerson?.personRelasjon?.fnr}, gjenlevident: ${gjenlevendePerson?.personRelasjon?.fnr} , harGjenlvRelasjon: $erGjenlevende")
 
         return when {
             gjenlevendePerson != null -> gjenlevendePerson
@@ -249,21 +190,6 @@ class PersonidentifiseringService(
         return null
     }
 
-    /**
-     * Henter første treff på dato fra listen av SEDer
-     */
-    /**
-     * Henter første treff på dato fra listen av SEDer
-     */
-    fun hentFodselsDato(
-        identifisertPerson: IdentifisertPerson?,
-        seder: List<SED>,
-        kansellerteSeder: List<SED>
-    ): LocalDate? {
-        return identifisertPerson?.personRelasjon?.fnr?.getBirthDate()
-            ?: FodselsdatoHelper.fdatoFraSedListe(seder, kansellerteSeder)
-
-    }
 }
 
 class FlerePersonPaaBucException(): Exception()

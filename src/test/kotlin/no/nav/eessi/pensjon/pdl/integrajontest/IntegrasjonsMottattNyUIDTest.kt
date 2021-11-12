@@ -5,7 +5,7 @@ import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.eux.model.sed.SedType
 import no.nav.eessi.pensjon.models.BucType.P_BUC_01
-import no.nav.eessi.pensjon.sed.SedHendelseModel
+import no.nav.eessi.pensjon.models.SedHendelseModel
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -32,7 +32,6 @@ internal class IntegrasjonsMottattNyUIDTest : MottattHendelseBase() {
             println("*".repeat(100))
             println(it)
             println("*".repeat(100))
-            assertEquals("0123456789000", it.aktoerId)
             assertEquals("1236549875456544", it.personRelasjon.uid?.firstOrNull { it.land == "SE" }?.identifikator)
         }
     }

@@ -1,10 +1,10 @@
 package no.nav.eessi.pensjon.listeners
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
-import no.nav.eessi.pensjon.buc.EuxDokumentHelper
+import no.nav.eessi.pensjon.eux.EuxDokumentHelper
 import no.nav.eessi.pensjon.metrics.MetricsHelper
+import no.nav.eessi.pensjon.models.SedHendelseModel
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
-import no.nav.eessi.pensjon.sed.SedHendelseModel
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC

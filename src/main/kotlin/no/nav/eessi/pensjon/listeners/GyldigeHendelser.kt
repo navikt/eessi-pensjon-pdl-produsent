@@ -16,7 +16,7 @@ import no.nav.eessi.pensjon.eux.model.sed.SedType.P6000
 import no.nav.eessi.pensjon.eux.model.sed.SedType.P7000
 import no.nav.eessi.pensjon.eux.model.sed.SedType.P8000
 import no.nav.eessi.pensjon.eux.model.sed.SedType.R005
-import no.nav.eessi.pensjon.sed.SedHendelseModel
+import no.nav.eessi.pensjon.models.SedHendelseModel
 
 class GyldigeHendelser {
     companion object {

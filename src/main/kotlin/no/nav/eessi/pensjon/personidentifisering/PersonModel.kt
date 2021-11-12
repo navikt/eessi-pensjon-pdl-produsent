@@ -6,14 +6,12 @@ import no.nav.eessi.pensjon.models.Saktype
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 
 data class IdentifisertPerson(
-    val aktoerId: String,                               //fra PDL
-    val personNavn: String?,                            //fra PDL
-    val landkode: String?,                              //fra PDL
-    val personRelasjon: SEDPersonRelasjon,              //fra PDL
-    val fodselsdato: String? = null,                    //innhenting fra FnrHelper og SED
+    val personNavn: String?,                                        //fra PDL
+    val personRelasjon: SEDPersonRelasjon,                          //fra SED
+    val fdato: String? = personRelasjon?.fnr?.getBirthDateAsIso()   //fra sed/pdl
 ) {
     override fun toString(): String {
-        return "IdentifisertPerson(aktoerId='$aktoerId', personNavn=$personNavn, landkode=$landkode, personRelasjon=$personRelasjon, uid=${personRelasjon.uid})"
+        return "IdentifisertPerson(personNavn=$personNavn, personRelasjon=$personRelasjon, uid=${personRelasjon.uid})"
     }
 }
 

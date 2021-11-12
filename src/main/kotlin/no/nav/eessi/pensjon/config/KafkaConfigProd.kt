@@ -7,7 +7,6 @@ import org.apache.kafka.common.config.SaslConfigs
 import org.apache.kafka.common.config.SslConfigs
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -21,11 +20,10 @@ import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.core.ProducerFactory
 import org.springframework.kafka.listener.ContainerProperties
 import org.springframework.kafka.support.serializer.JsonDeserializer
-import org.springframework.kafka.support.serializer.JsonSerializer
 import java.time.Duration
 
 @EnableKafka
-@Profile("prod")
+@Profile("prod", "test")
 @Configuration
 class KafkaConfigProd(
     @param:Value("\${kafka.keystore.path}") private val keystorePath: String,
@@ -36,7 +34,6 @@ class KafkaConfigProd(
     @param:Value("\${ONPREM_KAFKA_BOOTSTRAP_SERVERS_URL}") private val onpremBootstrapServers: String,
     @param:Value("\${srvusername}") private val srvusername: String,
     @param:Value("\${srvpassword}") private val srvpassword: String,
-    @Autowired private val kafkaErrorHandler: KafkaErrorHandler?,
     @Value("\${KAFKA_AUTOMATISERING_TOPIC}") private val automatiseringTopic: String,
     @Value("\${KAFKA_OPPGAVE_TOPIC}") private val oppgaveTopic: String
 ) {
@@ -50,27 +47,6 @@ class KafkaConfigProd(
         configMap[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java
         configMap[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = aivenBootstrapServers
         return DefaultKafkaProducerFactory(configMap)
-    }
-
-    @Bean("aivenKravInitialiseringKafkaTemplate")
-    fun aivenKravInitialiseringKafkaTemplate(): KafkaTemplate<String, String> {
-        val template = KafkaTemplate(aivenProducerFactory())
-        return template
-    }
-
-    @Bean("aivenAutomatiseringKafkaTemplate")
-    fun aivenKafkaTemplate(): KafkaTemplate<String, String> {
-        val configMap: MutableMap<String, Any> = HashMap()
-        populerAivenCommonConfig(configMap)
-        configMap[ProducerConfig.CLIENT_ID_CONFIG] = "eessi-pensjon-pdl-produsent"
-        configMap[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java
-        configMap[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = JsonSerializer::class.java
-        configMap[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = aivenBootstrapServers
-        val automatiseringsTemplate: ProducerFactory<String, String> = DefaultKafkaProducerFactory(configMap)
-
-        val template = KafkaTemplate(automatiseringsTemplate)
-        template.defaultTopic = automatiseringTopic
-        return template
     }
 
     @Bean("aivenOppgaveKafkaTemplate")
@@ -101,9 +77,7 @@ class KafkaConfigProd(
         factory.consumerFactory = onpremKafkaConsumerFactory()
         factory.containerProperties.ackMode = ContainerProperties.AckMode.MANUAL
         factory.containerProperties.authorizationExceptionRetryInterval =  Duration.ofSeconds(4L)
-        if (kafkaErrorHandler != null) {
-            factory.setErrorHandler(kafkaErrorHandler)
-        }
+
         return factory
     }
 

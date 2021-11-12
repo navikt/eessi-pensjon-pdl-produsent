@@ -1,13 +1,11 @@
 package no.nav.eessi.pensjon.personidentifisering.relasjoner
 
-import no.nav.eessi.pensjon.eux.model.sed.Person
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.models.BucType
 import no.nav.eessi.pensjon.models.Saktype
 import no.nav.eessi.pensjon.personidentifisering.Relasjon
 import no.nav.eessi.pensjon.personidentifisering.SEDPersonRelasjon
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
-import no.nav.eessi.pensjon.personoppslag.pdl.model.SokKriterier
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
@@ -41,21 +39,6 @@ abstract class AbstractRelasjon(private val sed: SED, private val bucType: BucTy
 
         logger.warn("Ingen forsikret person funnet")
         throw RuntimeException("Ingen forsikret person funnet")
-    }
-
-    fun opprettSokKriterie(person: Person) : SokKriterier? {
-        val fdatotmp: String = person.foedselsdato ?: return null
-        val fornavn: String = person.fornavn ?: return null
-        val etternavn: String = person.etternavn ?: return null
-
-        val fodseldato: LocalDate = mapFdatoTilLocalDate(fdatotmp)!!
-        val sokKriterier = SokKriterier(
-            fornavn,
-            etternavn,
-            fodseldato
-        )
-        logger.debug("Oppretter sokKriterier: ${sokKriterier.fornavn}, ${sokKriterier.etternavn}, ${sokKriterier.foedselsdato}")
-        return sokKriterier
     }
 
     fun mapFdatoTilLocalDate(fdato: String?) : LocalDate? = fdato?.let { LocalDate.parse(it, DateTimeFormatter.ISO_DATE) }

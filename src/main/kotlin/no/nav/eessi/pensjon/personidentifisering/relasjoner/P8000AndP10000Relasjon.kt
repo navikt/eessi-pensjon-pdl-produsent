@@ -3,10 +3,10 @@ package no.nav.eessi.pensjon.personidentifisering.relasjoner
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.models.BucType
 import no.nav.eessi.pensjon.personidentifisering.Relasjon
+import no.nav.eessi.pensjon.personidentifisering.Rolle.BARN
+import no.nav.eessi.pensjon.personidentifisering.Rolle.ETTERLATTE
+import no.nav.eessi.pensjon.personidentifisering.Rolle.FORSORGER
 import no.nav.eessi.pensjon.personidentifisering.SEDPersonRelasjon
-import no.nav.eessi.pensjon.personidentifisering.helpers.Rolle.BARN
-import no.nav.eessi.pensjon.personidentifisering.helpers.Rolle.ETTERLATTE
-import no.nav.eessi.pensjon.personidentifisering.helpers.Rolle.FORSORGER
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 
 
@@ -37,10 +37,8 @@ class P8000AndP10000Relasjon(private val sed: SED, private val bucType: BucType,
 
             logger.debug("annenPerson: $annenPerson")
             annenPerson?.let { person ->
-                val sokAnnenPersonKriterie =  opprettSokKriterie(person)
                 val annenPersonPin = Fodselsnummer.fra(person.pin?.firstOrNull { it.land == "NO" }?.identifikator)
                 val pinItemUtlandList = person.pin?.filterNot { it.land == "NO" }
-                val annenPersonFdato = mapFdatoTilLocalDate(person.foedselsdato)
                 val rolle = person.rolle
 
                 val annenPersonRelasjon = when (rolle) {

@@ -16,12 +16,13 @@ class R005Relasjon(private val sed: SED, private val bucType: BucType, val rinaD
         return sed.recoveryNav?.brukere
             ?.mapNotNull { bruker ->
                 val relasjon = mapRBUC02Relasjon(bruker.tilbakekreving?.status?.type)
-                val fdato = mapFdatoTilLocalDate(bruker.person?.foedselsdato)
                 if (relasjon != Relasjon.ANNET) {
+
                     val fnr = Fodselsnummer.fra(bruker.person?.pin?.firstOrNull { it.land == "NO" }?.identifikator)
                     val pinItemUtlandList = bruker.person?.pin?.filterNot { it.land == "NO" }
 
                     SEDPersonRelasjon( fnr, pinItemUtlandList, relasjon, sedType = sed.type )
+
                 } else {
                     null
                 }

@@ -4,8 +4,8 @@ import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import no.nav.eessi.pensjon.buc.EuxDokumentHelper
-import no.nav.eessi.pensjon.buc.EuxKlient
+import no.nav.eessi.pensjon.eux.EuxDokumentHelper
+import no.nav.eessi.pensjon.eux.EuxKlient
 import no.nav.eessi.pensjon.eux.model.sed.Bruker
 import no.nav.eessi.pensjon.eux.model.sed.Nav
 import no.nav.eessi.pensjon.eux.model.sed.Person
@@ -18,9 +18,10 @@ import no.nav.eessi.pensjon.json.toJson
 import no.nav.eessi.pensjon.klienter.norg2.Norg2Service
 import no.nav.eessi.pensjon.listeners.SedMottattListener
 import no.nav.eessi.pensjon.models.BucType
+import no.nav.eessi.pensjon.models.SedHendelseModel
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
-import no.nav.eessi.pensjon.personidentifisering.helpers.Rolle
+import no.nav.eessi.pensjon.personidentifisering.Rolle
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.AdressebeskyttelseGradering
@@ -39,7 +40,6 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.Navn
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Vegadresse
-import no.nav.eessi.pensjon.sed.SedHendelseModel
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import java.time.LocalDateTime

@@ -1,4 +1,4 @@
-package no.nav.eessi.pensjon.buc
+package no.nav.eessi.pensjon.eux
 
 import no.nav.eessi.pensjon.eux.model.buc.Buc
 import no.nav.eessi.pensjon.eux.model.document.SedDokumentfiler

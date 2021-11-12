@@ -1,4 +1,4 @@
-package no.nav.eessi.pensjon.buc
+package no.nav.eessi.pensjon.eux
 
 import io.micrometer.core.instrument.MeterRegistry
 import no.nav.eessi.pensjon.logging.RequestIdHeaderInterceptor
