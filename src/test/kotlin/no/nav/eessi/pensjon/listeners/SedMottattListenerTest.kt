@@ -1,6 +1,5 @@
 package no.nav.eessi.pensjon.listeners
 
-import io.mockk.Called
 import io.mockk.mockk
 import io.mockk.verify
 import no.nav.eessi.pensjon.eux.EuxDokumentHelper
@@ -8,7 +7,6 @@ import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.springframework.kafka.support.Acknowledgment
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -40,11 +38,10 @@ internal class SedMottattListenerTest {
     }
 
     @Test
-    fun `gitt en exception ved sedMottatt så kastes RunTimeException og meldig blir IKKE ack'et`() {
-        assertThrows<RuntimeException> {
-            sedListener.consumeSedMottatt("Explode!", cr, acknowledgment)
-        }
-        verify { acknowledgment wasNot Called }
+    fun `gitt en exception ved sedMottatt så ack melding`() {
+        sedListener.consumeSedMottatt("Explode!", cr, acknowledgment)
+
+        verify(exactly = 1) { acknowledgment.acknowledge() }
     }
 
 

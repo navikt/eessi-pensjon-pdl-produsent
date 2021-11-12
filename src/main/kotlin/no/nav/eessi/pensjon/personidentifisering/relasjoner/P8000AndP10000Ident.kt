@@ -1,7 +1,6 @@
 package no.nav.eessi.pensjon.personidentifisering.relasjoner
 
 import no.nav.eessi.pensjon.eux.model.sed.SED
-import no.nav.eessi.pensjon.models.BucType
 import no.nav.eessi.pensjon.personidentifisering.PersonIdentier
 import no.nav.eessi.pensjon.personidentifisering.Rolle.BARN
 import no.nav.eessi.pensjon.personidentifisering.Rolle.ETTERLATTE
@@ -9,30 +8,25 @@ import no.nav.eessi.pensjon.personidentifisering.Rolle.FORSORGER
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 
 
-class P8000AndP10000Relasjon(private val sed: SED, private val bucType: BucType, private val rinaDocumentId: String): AbstractRelasjon(sed, bucType, rinaDocumentId) {
+class P8000AndP10000Ident(): AbstractIdent() {
 
-    override fun hentRelasjoner(): List<PersonIdentier> {
+    override fun hentRelasjoner(sed: SED): List<PersonIdentier> {
         val fnrListe = mutableListOf<PersonIdentier>()
         logger.info("Leter etter gyldig ident og relasjon(er) i SedType: ${sed.type}")
 
 
-        val forsikret = hentForsikretPerson()
+        val forsikret = hentForsikretPerson(sed)
 
-        hentAnnenpersonRelasjon()?.let { fnrListe.add(it) }
+        fnrListe.addAll(forsikret)
+        hentAnnenpersonRelasjon(sed)?.let { fnrListe.add(it) }
 
         logger.debug("fnrListe: $fnrListe")
-
-//        if (fnrListe.firstOrNull { it.relasjon == Relasjon.BARN || it.relasjon == Relasjon.FORSORGER } != null ) {
-//            return fnrListe + forsikret
-//        }
-//        return fnrListe.ifEmpty { forsikret }
 
         return fnrListe
     }
 
     //Annenperson søker/barn o.l
-    fun hentAnnenpersonRelasjon(): PersonIdentier? {
-        if (bucType == BucType.P_BUC_05 || bucType == BucType.P_BUC_10 || bucType == BucType.P_BUC_02) {
+    fun hentAnnenpersonRelasjon(sed: SED): PersonIdentier? {
             val annenPerson = sed.nav?.annenperson?.person
 
             logger.debug("annenPerson: $annenPerson")
@@ -64,7 +58,6 @@ class P8000AndP10000Relasjon(private val sed: SED, private val bucType: BucType,
                 }
                 return annenPersonRelasjon
             }
-        }
         return null
     }
 

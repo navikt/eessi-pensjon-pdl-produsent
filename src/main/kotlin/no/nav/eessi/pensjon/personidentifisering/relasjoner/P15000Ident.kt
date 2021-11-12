@@ -2,13 +2,12 @@ package no.nav.eessi.pensjon.personidentifisering.relasjoner
 
 import no.nav.eessi.pensjon.eux.model.sed.P15000
 import no.nav.eessi.pensjon.eux.model.sed.SED
-import no.nav.eessi.pensjon.models.BucType
 import no.nav.eessi.pensjon.models.Saktype
 import no.nav.eessi.pensjon.personidentifisering.PersonIdentier
 
-class P15000Relasjon(private val sed: SED, private val bucType: BucType, private val rinaDocumentId: String) : GjenlevendeHvisFinnes( sed, bucType,rinaDocumentId) {
+class P15000Ident() : GjenlevendeHvisFinnes() {
 
-    override fun hentRelasjoner(): List<PersonIdentier> {
+    override fun hentRelasjoner(sed: SED): List<PersonIdentier> {
         val sedKravString = sed.nav?.krav?.type
         val saktype = if (sedKravString == null) null else mapKravtypeTilSaktype(sedKravString)
 
@@ -16,10 +15,10 @@ class P15000Relasjon(private val sed: SED, private val bucType: BucType, private
 
         return if (saktype == Saktype.GJENLEV) {
             logger.debug("legger til gjenlevende: ($saktype)")
-            hentRelasjonGjenlevendeFnrHvisFinnes((sed as P15000).p15000Pensjon?.gjenlevende, saktype)
+            hentRelasjonGjenlevendeFnrHvisFinnes((sed as P15000).p15000Pensjon?.gjenlevende, sed.type)
         } else {
             logger.debug("legger til forsikret: ($saktype)")
-            hentForsikretPerson()
+            hentForsikretPerson(sed)
         }
 
     }

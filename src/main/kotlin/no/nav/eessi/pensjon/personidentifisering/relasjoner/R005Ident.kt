@@ -2,12 +2,12 @@ package no.nav.eessi.pensjon.personidentifisering.relasjoner
 
 import no.nav.eessi.pensjon.eux.model.sed.R005
 import no.nav.eessi.pensjon.eux.model.sed.SED
-import no.nav.eessi.pensjon.models.BucType
 import no.nav.eessi.pensjon.personidentifisering.PersonIdentier
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 
-class R005Relasjon(private val sed: SED, private val bucType: BucType, val rinaDocumentId: String) : AbstractRelasjon(sed, bucType,rinaDocumentId) {
-    override fun hentRelasjoner(): List<PersonIdentier> {
+class R005Ident() : AbstractIdent() {
+
+    override fun hentRelasjoner(sed: SED): List<PersonIdentier> {
         return filterPinPersonR005(sed as R005)
     }
 

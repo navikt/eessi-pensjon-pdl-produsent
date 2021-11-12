@@ -10,15 +10,16 @@ import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-val logger: Logger = LoggerFactory.getLogger(AbstractRelasjon::class.java)
+val logger: Logger = LoggerFactory.getLogger(AbstractIdent::class.java)
 
-abstract class AbstractRelasjon(private val sed: SED, private val bucType: BucType, private val rinaDocumentId: String) {
+abstract class AbstractIdent() {
+//    private val sed: SED, private val bucType: BucType, private val rinaDocumentId: String
+//    val forsikretPerson = sed.nav?.bruker?.person
 
-    val forsikretPerson = sed.nav?.bruker?.person
+    abstract fun hentRelasjoner(sed: SED): List<PersonIdentier>
 
-    abstract fun hentRelasjoner(): List<PersonIdentier>
-
-    fun hentForsikretPerson(): List<PersonIdentier> {
+    fun hentForsikretPerson(sed: SED): List<PersonIdentier> {
+        val forsikretPerson = sed.nav?.bruker?.person
         logger.info("Leter etter gyldig ident og relasjon(er) i SedType: ${sed.type}")
 
         forsikretPerson?.let { person ->
@@ -34,7 +35,7 @@ abstract class AbstractRelasjon(private val sed: SED, private val bucType: BucTy
         }
 
         logger.warn("Ingen forsikret person funnet")
-        throw RuntimeException("Ingen forsikret person funnet")
+        return emptyList()
     }
 
     fun mapFdatoTilLocalDate(fdato: String?) : LocalDate? = fdato?.let { LocalDate.parse(it, DateTimeFormatter.ISO_DATE) }

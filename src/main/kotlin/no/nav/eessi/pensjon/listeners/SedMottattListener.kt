@@ -79,12 +79,10 @@ class SedMottattListener(
 
                 } catch (ex: Exception) {
                     logger.error("Noe gikk galt under behandling av mottatt SED-hendelse:\n $hendelse \n", ex)
-                    throw SedMottattRuntimeException(ex)
+                    acknowledgment.acknowledge();
                 }
                 latch.countDown()
             }
         }
     }
 }
-
-internal class SedMottattRuntimeException(cause: Throwable) : RuntimeException(cause)
