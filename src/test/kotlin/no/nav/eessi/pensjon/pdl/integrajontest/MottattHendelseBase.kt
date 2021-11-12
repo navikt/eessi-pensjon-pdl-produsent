@@ -16,6 +16,7 @@ import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.eux.model.sed.SedType
 import no.nav.eessi.pensjon.json.toJson
 import no.nav.eessi.pensjon.klienter.norg2.Norg2Service
+import no.nav.eessi.pensjon.listeners.GyldigeHendelser
 import no.nav.eessi.pensjon.listeners.SedMottattListener
 import no.nav.eessi.pensjon.models.BucType
 import no.nav.eessi.pensjon.models.SedHendelseModel
@@ -49,7 +50,6 @@ internal open class MottattHendelseBase {
     private val euxKlient: EuxKlient = mockk()
     private val dokumentHelper = EuxDokumentHelper(euxKlient)
     protected val norg2Service: Norg2Service = mockk(relaxed = true)
-
     protected val personService: PersonService = mockk(relaxed = true)
     private val personidentifiseringService = PersonidentifiseringService(personService)
 
@@ -102,11 +102,13 @@ internal open class MottattHendelseBase {
         }
 
         mottattListener.consumeSedMottatt(hendelse.toJson(), mockk(relaxed = true), mockk(relaxed = true))
-
-        verify(exactly = 1) { euxKlient.hentSedJson(any(), any()) }
-
-        assertBlock( personidentifiseringService.hentIdentifisertPersoner(sed, hendelse.bucType!!, hendelse.sedType, hendelse.rinaDokumentId) )
-
+        if(GyldigeHendelser.mottatt(hendelse)) {
+            verify(exactly = 1) { euxKlient.hentSedJson(any(), any()) }
+            assertBlock( personidentifiseringService.hentIdentifisertPersoner(sed, hendelse.bucType!!, hendelse.sedType, hendelse.rinaDokumentId) )
+        }
+        else{
+            assertBlock(null)
+        }
         clearAllMocks()
     }
 
