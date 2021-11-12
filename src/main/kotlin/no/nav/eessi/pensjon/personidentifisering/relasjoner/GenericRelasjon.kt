@@ -2,9 +2,8 @@ package no.nav.eessi.pensjon.personidentifisering.relasjoner
 
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.models.BucType
-import no.nav.eessi.pensjon.personidentifisering.Relasjon
+import no.nav.eessi.pensjon.personidentifisering.PersonIdentier
 import no.nav.eessi.pensjon.personidentifisering.Rolle
-import no.nav.eessi.pensjon.personidentifisering.SEDPersonRelasjon
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 
 /**
@@ -13,8 +12,8 @@ import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
  */
 class GenericRelasjon(private val sed: SED, private val bucType: BucType, private val rinaDocumentId: String) : AbstractRelasjon(sed,bucType,rinaDocumentId) {
 
-    override fun hentRelasjoner(): List<SEDPersonRelasjon> {
-        val fnrListe = mutableListOf<SEDPersonRelasjon>()
+    override fun hentRelasjoner(): List<PersonIdentier> {
+        val fnrListe = mutableListOf<PersonIdentier>()
 
         leggTilAnnenGjenlevendeFnrHvisFinnes()?.let { annenRelasjon ->
             fnrListe.add(annenRelasjon)
@@ -31,13 +30,13 @@ class GenericRelasjon(private val sed: SED, private val bucType: BucType, privat
      * P8000-P10000 - [02] Forsørget/familiemedlem
      * P8000-P10000 - [03] Barn
      */
-    private fun leggTilAnnenGjenlevendeFnrHvisFinnes(): SEDPersonRelasjon? {
+    private fun leggTilAnnenGjenlevendeFnrHvisFinnes(): PersonIdentier? {
         val gjenlevendePerson = sed.nav?.annenperson?.takeIf { it.person?.rolle == Rolle.ETTERLATTE.name }?.person
 
         gjenlevendePerson?.let { person ->
             val fodselnummer = Fodselsnummer.fra(person.pin?.firstOrNull { it.land == "NO" }?.identifikator)
             val pinItemUtlandList = person.pin?.filterNot { it.land == "NO" }
-            return SEDPersonRelasjon(fodselnummer, pinItemUtlandList, Relasjon.GJENLEVENDE, sedType = sed.type)
+            return PersonIdentier(fodselnummer, pinItemUtlandList, sedType = sed.type)
         }
         return null
     }

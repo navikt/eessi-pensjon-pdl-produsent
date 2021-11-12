@@ -69,7 +69,7 @@ class SedMottattListener(
                         val currentSed = dokumentHelper.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId)
 
                         //identifisere Person hent Person fra PDL valider Person
-                        val identifisertPerson = personidentifiseringService.hentIdentifisertPerson(
+                        val identifisertPersoner = personidentifiseringService.hentIdentifisertPersoner(
                             currentSed, bucType, sedHendelse.sedType, sedHendelse.rinaDokumentId
                         )
                     }

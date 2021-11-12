@@ -18,7 +18,7 @@ internal class RelasjonsHandlerTest : RelasjonTestBase() {
                     SED.generateSedToClass<P8000>(
                         generateSED(
                             SedType.P2000,
-                            forsikretFnr = "2123123123123",
+                            forsikretFnr = forventetFnr,
                             gjenlevFnr = null,
                             gjenlevRelasjon = RelasjonTilAvdod.EKTEFELLE
                         )
@@ -29,6 +29,7 @@ internal class RelasjonsHandlerTest : RelasjonTestBase() {
 
         assertEquals(1, actual.size)
         assertEquals(SedType.P2000, actual.firstOrNull { it.sedType == SedType.P2000 }?.sedType)
+        assertEquals(forventetFnr, actual.firstOrNull{ it.sedType == SedType.P2000}?.fnr?.value)
     }
 
 }

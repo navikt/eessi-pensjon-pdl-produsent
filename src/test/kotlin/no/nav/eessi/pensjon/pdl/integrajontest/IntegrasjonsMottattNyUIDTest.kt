@@ -32,7 +32,8 @@ internal class IntegrasjonsMottattNyUIDTest : MottattHendelseBase() {
             println("*".repeat(100))
             println(it)
             println("*".repeat(100))
-            assertEquals("1236549875456544", it.personRelasjon.uid?.firstOrNull { it.land == "SE" }?.identifikator)
+            val identSe = it.first()
+            assertEquals("1236549875456544", identSe.personRelasjon.uid?.firstOrNull { it.land == "SE" }?.identifikator)
         }
     }
 }

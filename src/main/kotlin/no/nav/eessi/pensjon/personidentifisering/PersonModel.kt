@@ -2,12 +2,11 @@ package no.nav.eessi.pensjon.personidentifisering
 
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.eux.model.sed.SedType
-import no.nav.eessi.pensjon.models.Saktype
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 
 data class IdentifisertPerson(
     val personNavn: String?,                                        //fra PDL
-    val personRelasjon: SEDPersonRelasjon,                          //fra SED
+    val personRelasjon: PersonIdentier,                          //fra SED
     val fdato: String? = personRelasjon?.fnr?.getBirthDateAsIso()   //fra sed/pdl
 ) {
     override fun toString(): String {
@@ -15,19 +14,8 @@ data class IdentifisertPerson(
     }
 }
 
-data class SEDPersonRelasjon(
+data class PersonIdentier(
     val fnr: Fodselsnummer?,
     val uid: List<PinItem>? = null,
-    val relasjon: Relasjon,
-    val saktype: Saktype? = null,
     val sedType: SedType? = null,
 )
-
-enum class Relasjon {
-    FORSIKRET,
-    GJENLEVENDE,
-    AVDOD,
-    ANNET,
-    BARN,
-    FORSORGER
-}

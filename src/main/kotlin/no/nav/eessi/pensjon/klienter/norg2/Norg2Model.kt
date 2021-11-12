@@ -1,14 +1,14 @@
 package no.nav.eessi.pensjon.klienter.norg2
 
 import no.nav.eessi.pensjon.models.Saktype
-import no.nav.eessi.pensjon.personidentifisering.SEDPersonRelasjon
+import no.nav.eessi.pensjon.personidentifisering.PersonIdentier
 
 
 data class NorgKlientRequest(val harAdressebeskyttelse: Boolean = false,
                              val landkode: String? = null,
                              val geografiskTilknytning: String? = null,
                              val saktype: Saktype? = null,
-                             val SEDPersonRelasjon: SEDPersonRelasjon? = null)
+                             val PersonIdentier: PersonIdentier? = null)
 
 data class Norg2ArbeidsfordelingRequest(
     val tema: String = "PEN",

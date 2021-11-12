@@ -1,15 +1,8 @@
 package no.nav.eessi.pensjon.eux
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
-import no.nav.eessi.pensjon.eux.model.buc.Buc
-import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
-import no.nav.eessi.pensjon.eux.model.sed.R005
 import no.nav.eessi.pensjon.eux.model.sed.SED
-import no.nav.eessi.pensjon.eux.model.sed.SedType
 import no.nav.eessi.pensjon.metrics.MetricsHelper
-import no.nav.eessi.pensjon.models.BucType
-import no.nav.eessi.pensjon.models.Saktype
-import no.nav.eessi.pensjon.models.SedHendelseModel
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -24,22 +17,10 @@ class EuxDokumentHelper(
     private val logger = LoggerFactory.getLogger(EuxDokumentHelper::class.java)
 
     private lateinit var hentSed: MetricsHelper.Metric
-    private lateinit var sendSed: MetricsHelper.Metric
-    private lateinit var hentBuc: MetricsHelper.Metric
-    private lateinit var hentPdf: MetricsHelper.Metric
-    private lateinit var settSensitiv: MetricsHelper.Metric
-    private lateinit var hentBucDeltakere: MetricsHelper.Metric
-    private lateinit var hentInstitusjoner: MetricsHelper.Metric
 
     @PostConstruct
     fun initMetrics() {
         hentSed = metricsHelper.init("hentSed", alert = MetricsHelper.Toggle.OFF)
-        sendSed = metricsHelper.init("hentSed", alert = MetricsHelper.Toggle.OFF)
-        hentBuc = metricsHelper.init("hentBuc", alert = MetricsHelper.Toggle.OFF)
-        hentPdf = metricsHelper.init("hentpdf", alert = MetricsHelper.Toggle.OFF)
-        settSensitiv = metricsHelper.init("settSensitiv", alert = MetricsHelper.Toggle.OFF)
-        hentBucDeltakere = metricsHelper.init("hentBucDeltakere", alert = MetricsHelper.Toggle.OFF)
-        hentInstitusjoner = metricsHelper.init("hentInstitusjoner", alert = MetricsHelper.Toggle.OFF)
     }
 
     /**
@@ -57,72 +38,4 @@ class EuxDokumentHelper(
         }
     }
 
-
-    fun hentAlleSedIBuc(rinaSakId: String, documents: List<ForenkletSED>): List<Pair<String, SED>> {
-        return documents
-            .filter(ForenkletSED::harGyldigStatus)
-            .map { sed -> Pair(sed.id, hentSed(rinaSakId, sed.id)) }
-            .also { logger.info("Fant ${it.size} SED i BUCid: $rinaSakId") }
-    }
-
-    fun isNavCaseOwner(buc: Buc): Boolean {
-        val caseOwner = buc.participants?.filter {
-            part -> part.role == "CaseOwner"
-        }?.filter {
-            part -> part.organisation?.countryCode == "NO"
-        }?.mapNotNull { it.organisation?.countryCode }?.singleOrNull()
-
-        return (caseOwner == "NO").also {
-            if (it) { logger.info("NAV er CaseOwner i BUCid: ${buc.id} BUCtype: ${buc.processDefinitionName}")
-            } else { logger.info("NAV er IKKE CaseOwner i BUCid: ${buc.id} BUCtype: ${buc.processDefinitionName}") }
-        }
-    }
-
-    fun hentAlleKansellerteSedIBuc(rinaSakId: String, documents: List<ForenkletSED>): List<SED> {
-        return documents
-            .filter(ForenkletSED::erKansellert)
-            .map { sed -> hentSed(rinaSakId, sed.id) }
-            .also { logger.info("Fant ${it.size} kansellerte SED ") }
-    }
-
-    fun hentSaktypeType(sedHendelse: SedHendelseModel, alleSedIBuc: List<SED>): Saktype? {
-        //hent saktype fra R_BUC_02 - R005 sed
-        if (sedHendelse.bucType == BucType.R_BUC_02) {
-            return alleSedIBuc
-                    .firstOrNull { it.type == SedType.R005 }
-                    ?.let { filterSaktypeR005(it as R005) }
-
-        //hent saktype fra P15000 overgang fra papir til rina. (saktype)
-        } else if (sedHendelse.bucType == BucType.P_BUC_10) {
-            val sed = alleSedIBuc.firstOrNull { it.type == SedType.P15000 }
-            if (sed != null) {
-                return when (sed.nav?.krav?.type) {
-                    "02" -> Saktype.GJENLEV
-                    "03" -> Saktype.UFOREP
-                    else -> Saktype.ALDER
-                }
-            }
-        }
-        return null
-    }
-
-    /**
-     * eux-acl - /codes/mapping/tilbakekrevingfeilutbetalingytelsetypekoder.properties
-     * uførepensjon=01
-     * alderspensjon=02
-     * etterlattepensjon_enke=03
-     * etterlattepensjon_enkemann=04
-     * barnepensjon=05
-     * andre_former_for_etterlattepensjon=99
-     *
-     * */
-    private fun filterSaktypeR005(sed: R005): Saktype {
-        return when (sed.tilbakekreving?.feilutbetaling?.ytelse?.type) {
-            "alderspensjon" -> Saktype.ALDER
-            "uførepensjon" -> Saktype.UFOREP
-            "etterlattepensjon_enke", "etterlattepensjon_enkemann", "andre_former_for_etterlattepensjon" -> Saktype.GJENLEV
-            "barnepensjon" -> Saktype.BARNEP
-            else -> throw RuntimeException("Klarte ikke å finne saktype for R_BUC_02")
-        }
-    }
 }

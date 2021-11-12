@@ -4,13 +4,12 @@ import no.nav.eessi.pensjon.eux.model.sed.Bruker
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.models.BucType
 import no.nav.eessi.pensjon.models.Saktype
-import no.nav.eessi.pensjon.personidentifisering.Relasjon
-import no.nav.eessi.pensjon.personidentifisering.SEDPersonRelasjon
+import no.nav.eessi.pensjon.personidentifisering.PersonIdentier
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 
 abstract class GjenlevendeHvisFinnes(private val sed: SED, private val bucType: BucType, private val rinaDocumentId: String) : AbstractRelasjon(sed, bucType, rinaDocumentId) {
 
-    fun hentRelasjonGjenlevendeFnrHvisFinnes(gjenlevendeBruker: Bruker? = null, saktype: Saktype? = null) : List<SEDPersonRelasjon> {
+    fun hentRelasjonGjenlevendeFnrHvisFinnes(gjenlevendeBruker: Bruker? = null, saktype: Saktype? = null) : List<PersonIdentier> {
         logger.info("Leter etter gyldig ident og relasjon(er) i SedType: ${sed.type}")
 
         val sedType = sed.type
@@ -26,12 +25,11 @@ abstract class GjenlevendeHvisFinnes(private val sed: SED, private val bucType: 
             logger.info("Innhenting av relasjon: $gjenlevendeRelasjon")
 
             if (gjenlevendeRelasjon == null) {
-                logger.debug("Legger til person ${Relasjon.GJENLEVENDE} med ukjente relasjoner")
+                logger.debug("Legger til gjenlevendeperson med ukjente relasjoner")
                 return listOf(
-                    SEDPersonRelasjon(
+                    PersonIdentier(
                         gjenlevendePin,
                         pinItemUtlandList,
-                        Relasjon.GJENLEVENDE,
                         sedType = sedType,
                     ))
             }
@@ -41,14 +39,8 @@ abstract class GjenlevendeHvisFinnes(private val sed: SED, private val bucType: 
             } else {
                 Saktype.GJENLEV
             }
-            logger.debug("Legger til person ${Relasjon.GJENLEVENDE} med sakType: $sakType")
-            return listOf(
-                SEDPersonRelasjon(
-                    gjenlevendePin,
-                    pinItemUtlandList,
-                    Relasjon.GJENLEVENDE, sakType,
-                    sedType = sedType
-                ))
+            logger.debug("Legger til person gjenlevendeperson med sakType: $sakType")
+            return listOf(PersonIdentier(gjenlevendePin, pinItemUtlandList, sedType = sedType))
         }
 
         return emptyList()

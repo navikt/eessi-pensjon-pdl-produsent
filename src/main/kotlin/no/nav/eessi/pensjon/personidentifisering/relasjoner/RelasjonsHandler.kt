@@ -3,7 +3,7 @@ package no.nav.eessi.pensjon.personidentifisering.relasjoner
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.eux.model.sed.SedType
 import no.nav.eessi.pensjon.models.BucType
-import no.nav.eessi.pensjon.personidentifisering.SEDPersonRelasjon
+import no.nav.eessi.pensjon.personidentifisering.PersonIdentier
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -11,23 +11,18 @@ object RelasjonsHandler {
 
     private val logger: Logger = LoggerFactory.getLogger(RelasjonsHandler::class.java)
 
-    fun hentRelasjoner(sed: SED, rinaDocumentId: String, bucType: BucType): List<SEDPersonRelasjon> {
-        val fnrListe = mutableSetOf<SEDPersonRelasjon>()
-
+    fun hentRelasjoner(sed: SED, rinaDocumentId: String, bucType: BucType): List<PersonIdentier> {
             try {
                 getRelasjonHandler(sed, bucType, rinaDocumentId)?.let { handler ->
-                    fnrListe.addAll(handler.hentRelasjoner())
+                    return filterRleasjoner(handler.hentRelasjoner())
                 }
-
             } catch (ex: Exception) {
                 logger.warn("Noe gikk galt under innlesing av fnr fra sed", ex)
             }
-
-        return filterRleasjoner(fnrListe.toList())
-
+            return emptyList()
     }
 
-    private fun filterRleasjoner(relasjonList: List<SEDPersonRelasjon>): List<SEDPersonRelasjon> {
+    private fun filterRleasjoner(relasjonList: List<PersonIdentier>): List<PersonIdentier> {
          logger.debug("*** Filterer relasjonListe, samme oppføringer, ufyldige verdier o.l")
 
         relasjonList.onEach { logger.debug("$it") }
@@ -35,7 +30,7 @@ object RelasjonsHandler {
         //filterering av relasjoner med kjent fnr
         val relasjonerMedFnr = relasjonList.filter { it.fnr != null }.distinctBy { it.fnr }
         //filtering av relasjoner uten kjent fnr
-        val relasjonerUtenFnr = relasjonList.filter { it.fnr == null }//.distinctBy { it.sokKriterier }
+        val relasjonerUtenFnr = relasjonList.filter { it.fnr == null }
 
         return (relasjonerMedFnr + relasjonerUtenFnr).also { logger.debug("$it") }
 

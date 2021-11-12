@@ -4,11 +4,11 @@ import no.nav.eessi.pensjon.eux.model.sed.P15000
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.models.BucType
 import no.nav.eessi.pensjon.models.Saktype
-import no.nav.eessi.pensjon.personidentifisering.SEDPersonRelasjon
+import no.nav.eessi.pensjon.personidentifisering.PersonIdentier
 
 class P15000Relasjon(private val sed: SED, private val bucType: BucType, private val rinaDocumentId: String) : GjenlevendeHvisFinnes( sed, bucType,rinaDocumentId) {
 
-    override fun hentRelasjoner(): List<SEDPersonRelasjon> {
+    override fun hentRelasjoner(): List<PersonIdentier> {
         val sedKravString = sed.nav?.krav?.type
         val saktype = if (sedKravString == null) null else mapKravtypeTilSaktype(sedKravString)
 

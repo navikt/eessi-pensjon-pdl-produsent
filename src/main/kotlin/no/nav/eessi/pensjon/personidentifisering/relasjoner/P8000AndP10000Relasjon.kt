@@ -2,18 +2,17 @@ package no.nav.eessi.pensjon.personidentifisering.relasjoner
 
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.models.BucType
-import no.nav.eessi.pensjon.personidentifisering.Relasjon
+import no.nav.eessi.pensjon.personidentifisering.PersonIdentier
 import no.nav.eessi.pensjon.personidentifisering.Rolle.BARN
 import no.nav.eessi.pensjon.personidentifisering.Rolle.ETTERLATTE
 import no.nav.eessi.pensjon.personidentifisering.Rolle.FORSORGER
-import no.nav.eessi.pensjon.personidentifisering.SEDPersonRelasjon
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 
 
 class P8000AndP10000Relasjon(private val sed: SED, private val bucType: BucType, private val rinaDocumentId: String): AbstractRelasjon(sed, bucType, rinaDocumentId) {
 
-    override fun hentRelasjoner(): List<SEDPersonRelasjon> {
-        val fnrListe = mutableListOf<SEDPersonRelasjon>()
+    override fun hentRelasjoner(): List<PersonIdentier> {
+        val fnrListe = mutableListOf<PersonIdentier>()
         logger.info("Leter etter gyldig ident og relasjon(er) i SedType: ${sed.type}")
 
 
@@ -21,17 +20,18 @@ class P8000AndP10000Relasjon(private val sed: SED, private val bucType: BucType,
 
         hentAnnenpersonRelasjon()?.let { fnrListe.add(it) }
 
-        logger.debug("forsikret $forsikret")
-        logger.debug("gjenlevlist: $fnrListe")
+        logger.debug("fnrListe: $fnrListe")
 
-        if (fnrListe.firstOrNull { it.relasjon == Relasjon.BARN || it.relasjon == Relasjon.FORSORGER } != null ) {
-            return fnrListe + forsikret
-        }
-        return fnrListe.ifEmpty { forsikret }
+//        if (fnrListe.firstOrNull { it.relasjon == Relasjon.BARN || it.relasjon == Relasjon.FORSORGER } != null ) {
+//            return fnrListe + forsikret
+//        }
+//        return fnrListe.ifEmpty { forsikret }
+
+        return fnrListe
     }
 
     //Annenperson søker/barn o.l
-    fun hentAnnenpersonRelasjon(): SEDPersonRelasjon? {
+    fun hentAnnenpersonRelasjon(): PersonIdentier? {
         if (bucType == BucType.P_BUC_05 || bucType == BucType.P_BUC_10 || bucType == BucType.P_BUC_02) {
             val annenPerson = sed.nav?.annenperson?.person
 
@@ -43,24 +43,21 @@ class P8000AndP10000Relasjon(private val sed: SED, private val bucType: BucType,
 
                 val annenPersonRelasjon = when (rolle) {
                     //Rolle barn benyttes ikke i noe journalføring hendelse kun hente ut for...?
-                    BARN.kode -> SEDPersonRelasjon(
+                    BARN.kode -> PersonIdentier(
                         annenPersonPin,
                         pinItemUtlandList,
-                        Relasjon.BARN,
                         sedType = sed.type,
                         )
                     //Rolle forsorger benyttes ikke i noe journalføring hendelse...
-                    FORSORGER.kode -> SEDPersonRelasjon(
+                    FORSORGER.kode -> PersonIdentier(
                         annenPersonPin,
                         pinItemUtlandList,
-                        Relasjon.FORSORGER,
                         sedType = sed.type,
                     )
                     //etterlatte benyttes i journalføring hendelse..
-                    ETTERLATTE.kode -> SEDPersonRelasjon(
+                    ETTERLATTE.kode -> PersonIdentier(
                         annenPersonPin,
                         pinItemUtlandList,
-                        Relasjon.GJENLEVENDE,
                         sedType = sed.type,
                     )
                     else -> null

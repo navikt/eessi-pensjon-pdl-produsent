@@ -87,7 +87,7 @@ internal open class MottattHendelseBase {
         fnr: String?,
         hendelse: SedHendelseModel,
         sed: SED,
-        assertBlock: (IdentifisertPerson?) -> Unit
+        assertBlock: (List<IdentifisertPerson>?) -> Unit
     ) {
         initCommonMocks(sed)
 
@@ -105,7 +105,7 @@ internal open class MottattHendelseBase {
 
         verify(exactly = 1) { euxKlient.hentSedJson(any(), any()) }
 
-        assertBlock( personidentifiseringService.hentIdentifisertPerson(sed, hendelse.bucType!!, hendelse.sedType, hendelse.rinaDokumentId) )
+        assertBlock( personidentifiseringService.hentIdentifisertPersoner(sed, hendelse.bucType!!, hendelse.sedType, hendelse.rinaDokumentId) )
 
         clearAllMocks()
     }

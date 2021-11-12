@@ -5,7 +5,7 @@ import no.nav.eessi.pensjon.klienter.norg2.BehandlingType.BOSATT_UTLAND
 import no.nav.eessi.pensjon.models.Enhet
 import no.nav.eessi.pensjon.models.Saktype
 import no.nav.eessi.pensjon.models.Tema
-import no.nav.eessi.pensjon.personidentifisering.SEDPersonRelasjon
+import no.nav.eessi.pensjon.personidentifisering.PersonIdentier
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
@@ -33,7 +33,7 @@ class Norg2Service(private val klient: Norg2Klient) {
 
         return Norg2ArbeidsfordelingRequest(
             tema = velgTema(req.saktype).also { logger.debug("HentTema: $it") },
-            behandlingstema = velgBehandlingTema(req.SEDPersonRelasjon).also { logger.debug("hentBehandlingtema: $it") },
+            behandlingstema = velgBehandlingTema(req.PersonIdentier).also { logger.debug("hentBehandlingtema: $it") },
             geografiskOmraade = req.geografiskTilknytning ?: "ANY",
             behandlingstype = velgBehandligstype(req.landkode)
         )
@@ -43,12 +43,14 @@ class Norg2Service(private val klient: Norg2Klient) {
 
     fun velgTema(sakType: Saktype?) = if (sakType == Saktype.UFOREP) Tema.UFORETRYGD.kode else Tema.PENSJON.kode
 
-    fun velgBehandlingTema(SEDPersonRelasjon: SEDPersonRelasjon?) : String {
-        return when (SEDPersonRelasjon?.saktype) {
-            Saktype.BARNEP -> Norg2BehandlingsTema.BARNEP.kode
-            Saktype.GJENLEV -> Norg2BehandlingsTema.GJENLEV.kode
-            else -> Norg2BehandlingsTema.ANY.kode
-        }
+    fun velgBehandlingTema(PersonIdentier: PersonIdentier?) : String {
+//        return when (PersonIdentier?.saktype) {
+//            Saktype.BARNEP -> Norg2BehandlingsTema.BARNEP.kode
+//            Saktype.GJENLEV -> Norg2BehandlingsTema.GJENLEV.kode
+//            else -> Norg2BehandlingsTema.ANY.kode
+//        }
+          return Norg2BehandlingsTema.ANY.kode
+
     }
 
     internal fun finnArbeidsfordelingEnheter(request: Norg2ArbeidsfordelingRequest, list: List<Norg2ArbeidsfordelingItem>): String? {
