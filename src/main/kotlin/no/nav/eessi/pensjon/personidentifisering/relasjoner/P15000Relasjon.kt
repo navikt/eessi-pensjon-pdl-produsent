@@ -19,7 +19,7 @@ class P15000Relasjon(private val sed: SED, private val bucType: BucType, private
             hentRelasjonGjenlevendeFnrHvisFinnes((sed as P15000).p15000Pensjon?.gjenlevende, saktype)
         } else {
             logger.debug("legger til forsikret: ($saktype)")
-            hentForsikretPerson(saktype)
+            hentForsikretPerson()
         }
 
     }

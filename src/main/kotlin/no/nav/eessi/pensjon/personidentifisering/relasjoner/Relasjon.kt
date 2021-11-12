@@ -19,7 +19,9 @@ abstract class AbstractRelasjon(private val sed: SED, private val bucType: BucTy
 
     abstract fun hentRelasjoner(): List<SEDPersonRelasjon>
 
-    fun hentForsikretPerson(saktype: Saktype?): List<SEDPersonRelasjon> {
+//    abstract fun hentIdenter(sed: SED): List<SEDPersonRelasjon>
+
+    fun hentForsikretPerson(): List<SEDPersonRelasjon> {
         logger.info("Leter etter gyldig ident og relasjon(er) i SedType: ${sed.type}")
 
         forsikretPerson?.let { person ->

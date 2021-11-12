@@ -6,6 +6,6 @@ import no.nav.eessi.pensjon.personidentifisering.SEDPersonRelasjon
 
 class P2200Relasjon(private val sed: SED, private val bucType: BucType, val rinaDocumentId: String) : AbstractRelasjon(sed, bucType, rinaDocumentId) {
 
-    override fun hentRelasjoner(): List<SEDPersonRelasjon> = hentForsikretPerson(bestemSaktype(bucType))
+    override fun hentRelasjoner(): List<SEDPersonRelasjon> = hentForsikretPerson()
 
 }

@@ -10,7 +10,7 @@ class P6000Relasjon(private val sed: SED,
                     val rinaDocumentId: String) : GjenlevendeHvisFinnes(sed,bucType,rinaDocumentId) {
 
         override fun hentRelasjoner(): List<SEDPersonRelasjon> {
-            val forsikret = hentForsikretPerson(bestemSaktype(bucType))
+            val forsikret = hentForsikretPerson()
             val gjenlevende =  hentRelasjonGjenlevendeFnrHvisFinnes((sed as P6000).p6000Pensjon?.gjenlevende, bestemSaktype(bucType))
 
             return gjenlevende.ifEmpty { forsikret }
