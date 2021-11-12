@@ -45,7 +45,7 @@ internal class IntegrasjonsMottattNyUIDTest : MottattHendelseBase() {
         val uid = "1236549875456544"
 
         val pinForsikretperson = listOf(PinItem(identifikator = FNR_VOKSEN, land = "NO"), PinItem(identifikator = uid,land = hendelse.avsenderLand ))
-        val pinannenperson = listOf(PinItem(identifikator = FNR_VOKSEN_2, land = "NO"), PinItem(identifikator = uid,land = hendelse.avsenderLand ))
+        val pinannenperson = listOf(PinItem(identifikator = FNR_VOKSEN_2, land = "NO"), PinItem(identifikator = uid+1,land = hendelse.avsenderLand ))
 
         val sed = SED.generateSedToClass<P8000>(createSed(SedType.P8000, pin = pinForsikretperson, annenPerson = createAnnenPerson(pin = pinannenperson)))
 

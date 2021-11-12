@@ -1,5 +1,8 @@
 package no.nav.eessi.pensjon.pdl.integrajontest
 
+import ch.qos.logback.classic.Logger
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.read.ListAppender
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -42,7 +45,9 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Vegadresse
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
+import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
+import kotlin.test.assertTrue
 
 internal open class MottattHendelseBase {
 
@@ -50,6 +55,9 @@ internal open class MottattHendelseBase {
     private val dokumentHelper = EuxDokumentHelper(euxKlient)
     protected val personService: PersonService = mockk(relaxed = true)
     private val personidentifiseringService = PersonidentifiseringService(personService)
+
+    private val deugLogger: Logger = LoggerFactory.getLogger("no.nav.eessi.pensjon") as Logger
+    private val listAppender = ListAppender<ILoggingEvent>()
 
     companion object {
         const val SAK_ID = "12345"
@@ -74,10 +82,13 @@ internal open class MottattHendelseBase {
     fun setup() {
         mottattListener.initMetrics()
         dokumentHelper.initMetrics()
+        listAppender.start()
+        deugLogger.addAppender(listAppender)
     }
 
     @AfterEach
     fun after() {
+        listAppender.stop()
         clearAllMocks()
     }
 
@@ -102,11 +113,11 @@ internal open class MottattHendelseBase {
         mottattListener.consumeSedMottatt(hendelse.toJson(), mockk(relaxed = true), mockk(relaxed = true))
         if(GyldigeHendelser.mottatt(hendelse)) {
             verify(exactly = 1) { euxKlient.hentSedJson(any(), any()) }
-            assertBlock( personidentifiseringService.hentIdentifisertPersoner(sed, hendelse.bucType!!, hendelse.sedType, hendelse.rinaDokumentId) )
-        }
-        else{
+            assertBlock( mottattListener.result as List<IdentifisertPerson> )
+        } else{
             assertBlock(null)
         }
+        assertTrue(sedMottattListemerAckerMelding(), "Mangler acking av melding")
         clearAllMocks()
     }
 
@@ -131,7 +142,7 @@ internal open class MottattHendelseBase {
 
         if (annenpersonFnr != null) {
             every { personService.hentPerson(NorskIdent(annenpersonFnr)) } returns createBrukerWith(
-                fnr,
+                annenpersonFnr,
                 "Pappa annenperson",
                 "PappaEtternavn",
                 hendelse.avsenderLand,
@@ -141,7 +152,7 @@ internal open class MottattHendelseBase {
         mottattListener.consumeSedMottatt(hendelse.toJson(), mockk(relaxed = true), mockk(relaxed = true))
         if(GyldigeHendelser.mottatt(hendelse)) {
             verify(exactly = 1) { euxKlient.hentSedJson(any(), any()) }
-            assertBlock( personidentifiseringService.hentIdentifisertPersoner(sed, hendelse.bucType!!, hendelse.sedType, hendelse.rinaDokumentId) )
+            assertBlock( mottattListener.result as List<IdentifisertPerson>)
         } else {
             assertBlock(null)
         }
@@ -279,4 +290,10 @@ internal open class MottattHendelseBase {
         )
     }
 
+    fun sedMottattListemerAckerMelding() : Boolean {
+        val logsList: List<ILoggingEvent> = listAppender.list
+        return logsList.find { asdsa ->
+            asdsa.message.contains("Acket sedMottatt melding")
+        }?.message?.isNotEmpty() ?: false
+    }
 }

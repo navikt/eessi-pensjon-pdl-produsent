@@ -31,6 +31,7 @@ class SedMottattListener(
     private lateinit var consumeIncomingSed: MetricsHelper.Metric
 
     fun getLatch() = latch
+    var result : Any? = null
 
     @PostConstruct
     fun initMetrics() {
@@ -72,6 +73,7 @@ class SedMottattListener(
                         val identifisertPersoner = personidentifiseringService.hentIdentifisertPersoner(
                             currentSed, bucType, sedHendelse.sedType, sedHendelse.rinaDokumentId
                         )
+                        result = identifisertPersoner
                     }
 
                     acknowledgment.acknowledge()
