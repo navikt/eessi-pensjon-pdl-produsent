@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 internal class RelasjonsHandlerTest : RelasjonTestBase() {
 
     @Test
-    fun `leter igjennom beste Sed på P_BUC_01 etter norsk personnr`() {
+    fun `leter igjennom Sed paa P_BUC_01 etter norsk personnr`() {
         val forventetFnr = SLAPP_SKILPADDE
 
         val actual = RelasjonsHandler.hentRelasjoner(
