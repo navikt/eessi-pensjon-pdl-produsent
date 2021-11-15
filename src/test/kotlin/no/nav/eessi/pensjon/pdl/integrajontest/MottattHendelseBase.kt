@@ -42,6 +42,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.Metadata
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Navn
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
+import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Vegadresse
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -54,7 +55,7 @@ internal open class MottattHendelseBase {
     private val euxKlient: EuxKlient = mockk()
     private val dokumentHelper = EuxDokumentHelper(euxKlient)
     protected val personService: PersonService = mockk(relaxed = true)
-    private val personidentifiseringService = PersonidentifiseringService(personService)
+    private val personidentifiseringService = PersonidentifiseringService(personService,)
 
     private val deugLogger: Logger = LoggerFactory.getLogger("no.nav.eessi.pensjon") as Logger
     private val listAppender = ListAppender<ILoggingEvent>()
@@ -96,17 +97,18 @@ internal open class MottattHendelseBase {
         fnr: String?,
         hendelse: SedHendelseModel,
         sed: SED,
+        uid: List<UtenlandskIdentifikasjonsnummer> = emptyList(),
         assertBlock: (List<IdentifisertPerson>?) -> Unit
     ) {
         initCommonMocks(sed)
 
         if (fnr != null) {
-            every { personService.hentPerson(NorskIdent(fnr)) } returns createBrukerWith(
+            every { personService.hentPersonUtenlandskIdent(NorskIdent(fnr)) } returns createBrukerWithUid(
                 fnr,
                 "Mamma forsørger",
                 "Etternavn",
                 hendelse.avsenderLand,
-                aktorId = AKTOER_ID
+                uid
             )
         }
 
@@ -132,20 +134,20 @@ internal open class MottattHendelseBase {
         initCommonMocks(sed)
 
         if (fnr != null) {
-            every { personService.hentPerson(NorskIdent(fnr)) } returns createBrukerWith(
+            every { personService.hentPersonUtenlandskIdent(NorskIdent(fnr)) } returns createBrukerWithUid(
                 fnr,
                 "Mamma forsørger",
                 "Etternavn",
-                hendelse.avsenderLand,
+                hendelse.avsenderLand
             )
         }
 
         if (annenpersonFnr != null) {
-            every { personService.hentPerson(NorskIdent(annenpersonFnr)) } returns createBrukerWith(
+            every { personService.hentPersonUtenlandskIdent(NorskIdent(annenpersonFnr)) } returns createBrukerWithUid(
                 annenpersonFnr,
                 "Pappa annenperson",
                 "PappaEtternavn",
-                hendelse.avsenderLand,
+                hendelse.avsenderLand
             )
         }
 
@@ -221,6 +223,48 @@ internal open class MottattHendelseBase {
             doedsfall = null,
             forelderBarnRelasjon = emptyList(),
             sivilstand = emptyList()
+        )
+    }
+
+    protected fun createMetadata() : Metadata {
+        return Metadata(
+            listOf(
+                Endring(
+                    "kilde",
+                    LocalDateTime.now(),
+                    "ole",
+                    "system1",
+                    Endringstype.OPPRETT
+                )
+            ),
+            false,
+            "nav",
+            "1234"
+        )
+    }
+
+    protected fun createBrukerWithUid(
+        fnr: String?,
+        fornavn: String = "Fornavn",
+        etternavn: String = "Etternavn",
+        land: String? = "SWE",
+        uid: List<UtenlandskIdentifikasjonsnummer> = emptyList(),
+    ): no.nav.eessi.pensjon.personoppslag.pdl.model.PersonUtenlandskIdent {
+
+        val identer = listOfNotNull(
+            fnr?.let { IdentInformasjon(ident = it, gruppe = IdentGruppe.FOLKEREGISTERIDENT) }
+        )
+
+        val metadata = createMetadata()
+
+        return no.nav.eessi.pensjon.personoppslag.pdl.model.PersonUtenlandskIdent(
+            identer = identer,
+            navn = Navn(
+                fornavn = fornavn, etternavn = etternavn, metadata = metadata
+            ),
+            kjoenn = Kjoenn(KjoennType.KVINNE, metadata = metadata),
+            utenlandskIdentifikasjonsnummer = uid
+
         )
     }
 

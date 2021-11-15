@@ -2,12 +2,12 @@ package no.nav.eessi.pensjon.personidentifisering.relasjoner
 
 import no.nav.eessi.pensjon.eux.model.sed.Bruker
 import no.nav.eessi.pensjon.eux.model.sed.SedType
-import no.nav.eessi.pensjon.personidentifisering.PersonIdentier
+import no.nav.eessi.pensjon.personidentifisering.PersonIdenter
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 
 abstract class GjenlevendeHvisFinnes() : AbstractIdent() {
 
-    fun hentRelasjonGjenlevendeFnrHvisFinnes(gjenlevendeBruker: Bruker? = null, sedType: SedType) : List<PersonIdentier> {
+    fun hentRelasjonGjenlevendeFnrHvisFinnes(gjenlevendeBruker: Bruker? = null, sedType: SedType) : List<PersonIdenter> {
         logger.info("Leter etter gyldig identer i SedType: $sedType")
 
         val gjenlevendePerson = gjenlevendeBruker?.person
@@ -21,7 +21,7 @@ abstract class GjenlevendeHvisFinnes() : AbstractIdent() {
             logger.info("Innhenting av relasjon: $gjenlevendeRelasjon, sedType: $sedType")
 
             return listOf(
-                PersonIdentier(
+                PersonIdenter(
                     gjenlevendePin,
                     pinItemUtlandList,
                     sedType = sedType,

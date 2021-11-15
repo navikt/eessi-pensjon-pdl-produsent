@@ -3,7 +3,7 @@ package no.nav.eessi.pensjon.personidentifisering.relasjoner
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.eux.model.sed.SedType
-import no.nav.eessi.pensjon.personidentifisering.PersonIdentier
+import no.nav.eessi.pensjon.personidentifisering.PersonIdenter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -11,7 +11,7 @@ object RelasjonsHandler {
 
     private val logger: Logger = LoggerFactory.getLogger(RelasjonsHandler::class.java)
 
-    fun hentRelasjoner(sed: SED, rinaDocumentId: String, bucType: BucType): List<PersonIdentier> {
+    fun hentRelasjoner(sed: SED, rinaDocumentId: String, bucType: BucType): List<PersonIdenter> {
             try {
                 getRelasjonHandler(sed, bucType, rinaDocumentId).let { handler ->
                     logger.debug("Benytter følgende handler: ${handler.javaClass.simpleName}")
@@ -23,7 +23,7 @@ object RelasjonsHandler {
             return emptyList()
     }
 
-    private fun filterRleasjoner(relasjonList: List<PersonIdentier>): List<PersonIdentier> {
+    private fun filterRleasjoner(relasjonList: List<PersonIdenter>): List<PersonIdenter> {
          logger.debug("*** Filterer relasjonListe, samme oppføringer, ufyldige verdier o.l")
 
         relasjonList.onEach { logger.debug("$it") }

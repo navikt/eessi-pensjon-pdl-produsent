@@ -1,7 +1,7 @@
 package no.nav.eessi.pensjon.personidentifisering.relasjoner
 
 import no.nav.eessi.pensjon.eux.model.sed.SED
-import no.nav.eessi.pensjon.personidentifisering.PersonIdentier
+import no.nav.eessi.pensjon.personidentifisering.PersonIdenter
 import no.nav.eessi.pensjon.personidentifisering.Rolle.BARN
 import no.nav.eessi.pensjon.personidentifisering.Rolle.ETTERLATTE
 import no.nav.eessi.pensjon.personidentifisering.Rolle.FORSORGER
@@ -10,8 +10,8 @@ import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 
 class P8000AndP10000Ident(): AbstractIdent() {
 
-    override fun hentRelasjoner(sed: SED): List<PersonIdentier> {
-        val fnrListe = mutableListOf<PersonIdentier>()
+    override fun hentRelasjoner(sed: SED): List<PersonIdenter> {
+        val fnrListe = mutableListOf<PersonIdenter>()
         logger.info("Leter etter gyldig ident og relasjon(er) i SedType: ${sed.type}")
 
 
@@ -26,7 +26,7 @@ class P8000AndP10000Ident(): AbstractIdent() {
     }
 
     //Annenperson søker/barn o.l
-    fun hentAnnenpersonRelasjon(sed: SED): PersonIdentier? {
+    fun hentAnnenpersonRelasjon(sed: SED): PersonIdenter? {
             val annenPerson = sed.nav?.annenperson?.person
 
             logger.debug("annenPerson: $annenPerson")
@@ -37,19 +37,19 @@ class P8000AndP10000Ident(): AbstractIdent() {
 
                 val annenPersonRelasjon = when (rolle) {
                     //Rolle barn benyttes ikke i noe journalføring hendelse kun hente ut for...?
-                    BARN.kode -> PersonIdentier(
+                    BARN.kode -> PersonIdenter(
                         annenPersonPin,
                         pinItemUtlandList,
                         sedType = sed.type,
                         )
                     //Rolle forsorger benyttes ikke i noe journalføring hendelse...
-                    FORSORGER.kode -> PersonIdentier(
+                    FORSORGER.kode -> PersonIdenter(
                         annenPersonPin,
                         pinItemUtlandList,
                         sedType = sed.type,
                     )
                     //etterlatte benyttes i journalføring hendelse..
-                    ETTERLATTE.kode -> PersonIdentier(
+                    ETTERLATTE.kode -> PersonIdenter(
                         annenPersonPin,
                         pinItemUtlandList,
                         sedType = sed.type,

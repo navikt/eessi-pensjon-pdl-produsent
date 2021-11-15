@@ -14,7 +14,7 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.concurrent.CountDownLatch
+import java.util.concurrent.*
 import javax.annotation.PostConstruct
 
 @Service
@@ -74,6 +74,7 @@ class SedMottattListener(
                             currentSed, bucType, sedHendelse.sedType, sedHendelse.rinaDokumentId
                         )
                         result = identifisertPersoner
+                        //validerSedDataMotPDL()  --> PersonIdentValidering
                     }
 
                     acknowledgment.acknowledge()

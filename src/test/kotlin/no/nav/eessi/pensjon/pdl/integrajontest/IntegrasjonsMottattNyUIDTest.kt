@@ -7,6 +7,7 @@ import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.eux.model.sed.SedType
 import no.nav.eessi.pensjon.models.SedHendelseModel
+import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -35,7 +36,36 @@ internal class IntegrasjonsMottattNyUIDTest : MottattHendelseBase() {
             println(it)
             println("*".repeat(100))
             val identSe = it.first()
-            assertEquals("1236549875456544", identSe.personRelasjon.uid?.firstOrNull { it.land == "SE" }?.identifikator)
+            assertEquals("1236549875456544", identSe.personIdenter.uid?.firstOrNull { it.land == "SE" }?.identifikator)
+        }
+    }
+
+    @Test
+    fun `mottatt hendelse med Uid i sed og som svar fra pdl`() {
+        val hendelse = SedHendelseModel.fromJson(createHendelseJson(SedType.P2000, BucType.P_BUC_01, avsenderLand = "SE"))
+        val uid = "1236549875456544"
+
+        val pin = listOf(PinItem(identifikator = FNR_VOKSEN, land = "NO"), PinItem(identifikator = uid,land = hendelse.avsenderLand ))
+
+        val sed = SED.generateSedToClass<P2000>(createSed(SedType.P2000, pin = pin))
+
+        val utenlandskIdentifikasjonsnummer = listOf(UtenlandskIdentifikasjonsnummer(uid, "SWE", false, null, createMetadata()))
+
+        testRunner(
+            fnr = FNR_VOKSEN,
+            sed = sed,
+            hendelse = hendelse,
+            uid = utenlandskIdentifikasjonsnummer
+        ) {
+            assertNotNull(it)
+            println("*".repeat(100))
+            println(it)
+            println("*".repeat(100))
+            val identSe = it.first()
+            assertEquals(uid, identSe.personIdenter.uid?.firstOrNull { it.land == "SE" }?.identifikator)
+            assertEquals(uid, identSe.uid.first().identifikasjonsnummer)
+            assertEquals("SWE", identSe.uid.first().utstederland)
+            assertNotNull(identSe.uid.firstOrNull { it.identifikasjonsnummer == uid &&  it.utstederland == "SWE" && !it.opphoert })
         }
     }
 

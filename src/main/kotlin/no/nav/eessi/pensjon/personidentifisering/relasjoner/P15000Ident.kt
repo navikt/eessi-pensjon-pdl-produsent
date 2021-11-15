@@ -3,11 +3,11 @@ package no.nav.eessi.pensjon.personidentifisering.relasjoner
 import no.nav.eessi.pensjon.eux.model.sed.P15000
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.models.Saktype
-import no.nav.eessi.pensjon.personidentifisering.PersonIdentier
+import no.nav.eessi.pensjon.personidentifisering.PersonIdenter
 
 class P15000Ident() : GjenlevendeHvisFinnes() {
 
-    override fun hentRelasjoner(sed: SED): List<PersonIdentier> {
+    override fun hentRelasjoner(sed: SED): List<PersonIdenter> {
         val sedKravString = sed.nav?.krav?.type
         val saktype = if (sedKravString == null) null else mapKravtypeTilSaktype(sedKravString)
 

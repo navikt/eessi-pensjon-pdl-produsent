@@ -2,16 +2,16 @@ package no.nav.eessi.pensjon.personidentifisering.relasjoner
 
 import no.nav.eessi.pensjon.eux.model.sed.R005
 import no.nav.eessi.pensjon.eux.model.sed.SED
-import no.nav.eessi.pensjon.personidentifisering.PersonIdentier
+import no.nav.eessi.pensjon.personidentifisering.PersonIdenter
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 
 class R005Ident() : AbstractIdent() {
 
-    override fun hentRelasjoner(sed: SED): List<PersonIdentier> {
+    override fun hentRelasjoner(sed: SED): List<PersonIdenter> {
         return filterPinPersonR005(sed as R005)
     }
 
-    private fun filterPinPersonR005(sed: R005): List<PersonIdentier> {
+    private fun filterPinPersonR005(sed: R005): List<PersonIdenter> {
         return sed.recoveryNav?.brukere
             ?.mapNotNull { bruker ->
                 if (mapRBUC02Relasjon(bruker.tilbakekreving?.status?.type)) {
@@ -19,7 +19,7 @@ class R005Ident() : AbstractIdent() {
                     val fnr = Fodselsnummer.fra(bruker.person?.pin?.firstOrNull { it.land == "NO" }?.identifikator)
                     val pinItemUtlandList = bruker.person?.pin?.filterNot { it.land == "NO" }
 
-                    PersonIdentier(fnr, pinItemUtlandList, sedType = sed.type)
+                    PersonIdenter(fnr, pinItemUtlandList, sedType = sed.type)
 
                 } else {
                     null
