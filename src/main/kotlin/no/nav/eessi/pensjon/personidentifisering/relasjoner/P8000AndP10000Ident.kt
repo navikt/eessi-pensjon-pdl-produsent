@@ -5,6 +5,7 @@ import no.nav.eessi.pensjon.personidentifisering.PersonIdenter
 import no.nav.eessi.pensjon.personidentifisering.Rolle.BARN
 import no.nav.eessi.pensjon.personidentifisering.Rolle.ETTERLATTE
 import no.nav.eessi.pensjon.personidentifisering.Rolle.FORSORGER
+import no.nav.eessi.pensjon.personidentifisering.UtenlandskPin
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 
 class P8000AndP10000Ident(): AbstractIdent() {
@@ -33,6 +34,8 @@ class P8000AndP10000Ident(): AbstractIdent() {
             annenPerson?.let { person ->
                 val annenPersonPin = Fodselsnummer.fra(person.pin?.firstOrNull { it.land == "NO" }?.identifikator)
                 val pinItemUtlandList = person.pin?.filterNot { it.land == "NO" }
+                    ?.filter { it.land != null && it.identifikator != null && it.institusjonsnavn != null }
+                    ?.map { UtenlandskPin(it.institusjonsnavn!!, it.identifikator!!, it.land!!) }
                 val rolle = person.rolle
 
                 val annenPersonRelasjon = when (rolle) {

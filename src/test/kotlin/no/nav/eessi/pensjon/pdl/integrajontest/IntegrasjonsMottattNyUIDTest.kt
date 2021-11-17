@@ -22,7 +22,7 @@ internal class IntegrasjonsMottattNyUIDTest : MottattHendelseBase() {
         val hendelse = SedHendelseModel.fromJson(createHendelseJson(SedType.P2000, BucType.P_BUC_01, avsenderLand = "SE"))
         val uid = "1236549875456544"
 
-        val pin = listOf(PinItem(identifikator = FNR_VOKSEN, land = "NO"), PinItem(identifikator = uid,land = hendelse.avsenderLand ))
+        val pin = listOf(PinItem(identifikator = FNR_VOKSEN, land = "NO"), PinItem(identifikator = uid,land = hendelse.avsenderLand, institusjonsnavn = "important institution" ))
 
         val sed = SED.generateSedToClass<P2000>(createSed(SedType.P2000, pin = pin))
 
@@ -36,7 +36,7 @@ internal class IntegrasjonsMottattNyUIDTest : MottattHendelseBase() {
             println(it)
             println("*".repeat(100))
             val identSe = it.first()
-            assertEquals("1236549875456544", identSe.personIdenter.uid?.firstOrNull { it.land == "SE" }?.identifikator)
+            assertEquals("1236549875456544", identSe.personIdenter.uid?.firstOrNull { it.utstederland == "SE" }?.identifikasjonsnummer)
         }
     }
 
@@ -45,7 +45,7 @@ internal class IntegrasjonsMottattNyUIDTest : MottattHendelseBase() {
         val hendelse = SedHendelseModel.fromJson(createHendelseJson(SedType.P2000, BucType.P_BUC_01, avsenderLand = "SE"))
         val uid = "1236549875456544"
 
-        val pin = listOf(PinItem(identifikator = FNR_VOKSEN, land = "NO"), PinItem(identifikator = uid,land = hendelse.avsenderLand ))
+        val pin = listOf(PinItem(identifikator = FNR_VOKSEN, land = "NO"), PinItem(identifikator = uid,land = hendelse.avsenderLand , institusjonsnavn = "important institution"))
 
         val sed = SED.generateSedToClass<P2000>(createSed(SedType.P2000, pin = pin))
 
@@ -62,7 +62,7 @@ internal class IntegrasjonsMottattNyUIDTest : MottattHendelseBase() {
             println(it)
             println("*".repeat(100))
             val identSe = it.first()
-            assertEquals(uid, identSe.personIdenter.uid?.firstOrNull { it.land == "SE" }?.identifikator)
+            assertEquals(uid, identSe.personIdenter.uid?.firstOrNull { it.utstederland == "SE" }?.identifikasjonsnummer)
             assertEquals(uid, identSe.uid.first().identifikasjonsnummer)
             assertEquals("SWE", identSe.uid.first().utstederland)
             assertNotNull(identSe.uid.firstOrNull { it.identifikasjonsnummer == uid &&  it.utstederland == "SWE" && !it.opphoert })

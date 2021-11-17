@@ -3,6 +3,7 @@ package no.nav.eessi.pensjon.personidentifisering.relasjoner
 import no.nav.eessi.pensjon.eux.model.sed.R005
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.personidentifisering.PersonIdenter
+import no.nav.eessi.pensjon.personidentifisering.UtenlandskPin
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 
 class R005Ident() : AbstractIdent() {
@@ -18,7 +19,8 @@ class R005Ident() : AbstractIdent() {
 
                     val fnr = Fodselsnummer.fra(bruker.person?.pin?.firstOrNull { it.land == "NO" }?.identifikator)
                     val pinItemUtlandList = bruker.person?.pin?.filterNot { it.land == "NO" }
-
+                        ?.filter { it.land != null && it.identifikator != null && it.institusjonsnavn != null }
+                        ?.map { UtenlandskPin(it.institusjonsnavn!!, it.identifikator!!, it.land!!) }
                     PersonIdenter(fnr, pinItemUtlandList, sedType = sed.type)
 
                 } else {

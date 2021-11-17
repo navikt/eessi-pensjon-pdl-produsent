@@ -1,6 +1,5 @@
 package no.nav.eessi.pensjon.personidentifisering
 
-import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.eux.model.sed.SedType
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 import no.nav.eessi.pensjon.personoppslag.pdl.model.KjoennType
@@ -20,12 +19,13 @@ data class IdentifisertPerson(
 
 data class PersonIdenter(
     val fnr: Fodselsnummer?,
-    val uid: List<PinItem>? = null,
+    val uid: List<UtenlandskPin>? = null,
     val sedType: SedType? = null,
 )
 
-data class PersonIdentValidering(
-    val identifikasjonsnummer: String,    //verdi fra SED
-    val landkode3: String? = null,        //verdi fra Kodeverket
+data class UtenlandskPin(
+    val kilde: String,
+    val identifikasjonsnummer: String,
+    val utstederland: String
 )
 

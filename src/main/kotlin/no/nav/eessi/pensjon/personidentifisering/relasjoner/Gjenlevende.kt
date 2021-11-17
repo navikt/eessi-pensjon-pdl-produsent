@@ -3,6 +3,7 @@ package no.nav.eessi.pensjon.personidentifisering.relasjoner
 import no.nav.eessi.pensjon.eux.model.sed.Bruker
 import no.nav.eessi.pensjon.eux.model.sed.SedType
 import no.nav.eessi.pensjon.personidentifisering.PersonIdenter
+import no.nav.eessi.pensjon.personidentifisering.UtenlandskPin
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 
 class Gjenlevende() {
@@ -17,6 +18,8 @@ class Gjenlevende() {
             val gjenlevendePin =
                 Fodselsnummer.fra(gjenlevendePerson.pin?.firstOrNull { it.land == "NO" }?.identifikator)
             val pinItemUtlandList = gjenlevendePerson.pin?.filterNot { it.land == "NO" }
+                ?.filter { it.land != null && it.identifikator != null && it.institusjonsnavn != null }
+                ?.map { UtenlandskPin(it.institusjonsnavn!!, it.identifikator!!, it.land!!) }
 
             val gjenlevendeRelasjon = gjenlevendePerson.relasjontilavdod?.relasjon
             logger.info("Innhenting av relasjon: $gjenlevendeRelasjon, sedType: $sedType")

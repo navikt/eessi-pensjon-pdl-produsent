@@ -2,6 +2,7 @@ package no.nav.eessi.pensjon.personidentifisering.relasjoner
 
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.personidentifisering.PersonIdenter
+import no.nav.eessi.pensjon.personidentifisering.UtenlandskPin
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 
 class Forsikret() {
@@ -12,7 +13,10 @@ class Forsikret() {
 
         forsikretPerson?.let { person ->
             val fodselnummer = Fodselsnummer.fra(person.pin?.firstOrNull { it.land == "NO" }?.identifikator)
+
             val pinItemUtlandList = person.pin?.filterNot { it.land == "NO" }
+                ?.filter { it.land != null && it.identifikator != null && it.institusjonsnavn != null }
+                ?.map { UtenlandskPin(it.institusjonsnavn!!, it.identifikator!!, it.land!!) }
 
             logger.debug("Legger til person forsikret og sedType: ${sed.type}, fnr: $fodselnummer, uid: $pinItemUtlandList")
             return listOf(

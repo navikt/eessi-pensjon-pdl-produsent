@@ -3,6 +3,7 @@ package no.nav.eessi.pensjon.personidentifisering.relasjoner
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.personidentifisering.PersonIdenter
 import no.nav.eessi.pensjon.personidentifisering.Rolle
+import no.nav.eessi.pensjon.personidentifisering.UtenlandskPin
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 
 /**
@@ -37,6 +38,9 @@ class GenericIdent() : AbstractIdent() {
         gjenlevendePerson?.let { person ->
             val fodselnummer = Fodselsnummer.fra(person.pin?.firstOrNull { it.land == "NO" }?.identifikator)
             val pinItemUtlandList = person.pin?.filterNot { it.land == "NO" }
+                ?.filter { it.land != null && it.identifikator != null && it.institusjonsnavn != null }
+                ?.map { UtenlandskPin(it.institusjonsnavn!!, it.identifikator!!, it.land!!) }
+
             return PersonIdenter(fodselnummer, pinItemUtlandList, sedType = sed.type)
         }
         return null
