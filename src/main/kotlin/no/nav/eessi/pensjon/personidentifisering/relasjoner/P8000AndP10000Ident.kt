@@ -1,5 +1,6 @@
 package no.nav.eessi.pensjon.personidentifisering.relasjoner
 
+import no.nav.eessi.pensjon.eux.model.sed.Person
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.personidentifisering.PersonIdenter
 import no.nav.eessi.pensjon.personidentifisering.Rolle.BARN
@@ -33,12 +34,10 @@ class P8000AndP10000Ident(): AbstractIdent() {
             logger.debug("annenPerson: $annenPerson")
             annenPerson?.let { person ->
                 val annenPersonPin = Fodselsnummer.fra(person.pin?.firstOrNull { it.land == "NO" }?.identifikator)
-                val pinItemUtlandList = person.pin?.filterNot { it.land == "NO" }
-                    ?.filter { it.land != null && it.identifikator != null && it.institusjonsnavn != null }
-                    ?.map { UtenlandskPin(it.institusjonsnavn!!, it.identifikator!!, it.land!!) }
-                val rolle = person.rolle
 
-                val annenPersonRelasjon = when (rolle) {
+                val pinItemUtlandList = UtlandMapping().mapUtenlandsPin(person)
+
+                val annenPersonRelasjon = when (person.rolle) {
                     //Rolle BARN, FORSØRGER, ETTERLATTE,  benyttes ikke i noe journalføring hendelse kun hente ut for...?
                     BARN.kode, FORSORGER.kode, ETTERLATTE.kode -> PersonIdenter(
                         annenPersonPin,

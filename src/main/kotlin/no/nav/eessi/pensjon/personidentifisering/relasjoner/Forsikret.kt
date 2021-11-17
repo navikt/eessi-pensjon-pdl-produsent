@@ -14,9 +14,7 @@ class Forsikret() {
         forsikretPerson?.let { person ->
             val fodselnummer = Fodselsnummer.fra(person.pin?.firstOrNull { it.land == "NO" }?.identifikator)
 
-            val pinItemUtlandList = person.pin?.filterNot { it.land == "NO" }
-                ?.filter { it.land != null && it.identifikator != null && it.institusjonsnavn != null }
-                ?.map { UtenlandskPin(it.institusjonsnavn!!, it.identifikator!!, it.land!!) }
+            val pinItemUtlandList = UtlandMapping().mapUtenlandsPin(person)
 
             logger.debug("Legger til person forsikret og sedType: ${sed.type}, fnr: $fodselnummer, uid: $pinItemUtlandList")
             return listOf(

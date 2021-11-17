@@ -25,8 +25,6 @@ class GenericIdent() : AbstractIdent() {
         return fnrListe
     }
 
-
-
     /**
      * P8000-P10000 - [01] Søker til etterlattepensjon
      * P8000-P10000 - [02] Forsørget/familiemedlem
@@ -37,14 +35,10 @@ class GenericIdent() : AbstractIdent() {
 
         gjenlevendePerson?.let { person ->
             val fodselnummer = Fodselsnummer.fra(person.pin?.firstOrNull { it.land == "NO" }?.identifikator)
-            val pinItemUtlandList = person.pin?.filterNot { it.land == "NO" }
-                ?.filter { it.land != null && it.identifikator != null && it.institusjonsnavn != null }
-                ?.map { UtenlandskPin(it.institusjonsnavn!!, it.identifikator!!, it.land!!) }
 
+            val pinItemUtlandList = UtlandMapping().mapUtenlandsPin(person)
             return PersonIdenter(fodselnummer, pinItemUtlandList, sedType = sed.type)
         }
         return null
     }
-
-
 }
