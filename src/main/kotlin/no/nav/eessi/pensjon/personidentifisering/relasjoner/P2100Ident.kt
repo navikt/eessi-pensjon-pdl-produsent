@@ -3,8 +3,10 @@ package no.nav.eessi.pensjon.personidentifisering.relasjoner
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.personidentifisering.PersonIdenter
 
-class P2100Ident() : GjenlevendeHvisFinnes() {
+class P2100Ident() : AbstractIdent() {
 
-    override fun hentRelasjoner(sed: SED): List<PersonIdenter> = hentRelasjonGjenlevendeFnrHvisFinnes(sed.pensjon?.gjenlevende, sed.type)
+    private  val gjenlevende: Gjenlevende = Gjenlevende()
+
+    override fun hentRelasjoner(sed: SED): List<PersonIdenter> = gjenlevende.hentRelasjonGjenlevendeFnrHvisFinnes(sed.pensjon?.gjenlevende, sed.type)
 
 }

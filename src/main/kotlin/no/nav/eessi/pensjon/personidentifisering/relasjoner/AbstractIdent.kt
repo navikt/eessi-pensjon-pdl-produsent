@@ -1,20 +1,18 @@
 package no.nav.eessi.pensjon.personidentifisering.relasjoner
 
-import no.nav.eessi.pensjon.eux.model.buc.BucType
+import no.nav.eessi.pensjon.eux.model.sed.Bruker
 import no.nav.eessi.pensjon.eux.model.sed.SED
-import no.nav.eessi.pensjon.models.Saktype
+import no.nav.eessi.pensjon.eux.model.sed.SedType
 import no.nav.eessi.pensjon.personidentifisering.PersonIdenter
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 val logger: Logger = LoggerFactory.getLogger(AbstractIdent::class.java)
 
+
+
 abstract class AbstractIdent() {
-//    private val sed: SED, private val bucType: BucType, private val rinaDocumentId: String
-//    val forsikretPerson = sed.nav?.bruker?.person
 
     abstract fun hentRelasjoner(sed: SED): List<PersonIdenter>
 
@@ -37,16 +35,4 @@ abstract class AbstractIdent() {
         logger.warn("Ingen forsikret person funnet")
         return emptyList()
     }
-
-    fun mapFdatoTilLocalDate(fdato: String?) : LocalDate? = fdato?.let { LocalDate.parse(it, DateTimeFormatter.ISO_DATE) }
-
-    fun bestemSaktype(bucType: BucType): Saktype? {
-        return when(bucType) {
-            BucType.P_BUC_01 -> Saktype.ALDER
-            BucType.P_BUC_02 -> Saktype.GJENLEV
-            BucType.P_BUC_03 -> Saktype.UFOREP
-            else -> null
-        }
-    }
-
 }

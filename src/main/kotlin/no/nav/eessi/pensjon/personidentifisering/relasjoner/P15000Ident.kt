@@ -5,7 +5,9 @@ import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.models.Saktype
 import no.nav.eessi.pensjon.personidentifisering.PersonIdenter
 
-class P15000Ident() : GjenlevendeHvisFinnes() {
+class P15000Ident() : AbstractIdent() {
+
+    private  val gjenlevende: Gjenlevende = Gjenlevende()
 
     override fun hentRelasjoner(sed: SED): List<PersonIdenter> {
         val sedKravString = sed.nav?.krav?.type
@@ -15,12 +17,11 @@ class P15000Ident() : GjenlevendeHvisFinnes() {
 
         return if (saktype == Saktype.GJENLEV) {
             logger.debug("legger til gjenlevende: ($saktype)")
-            hentRelasjonGjenlevendeFnrHvisFinnes((sed as P15000).p15000Pensjon?.gjenlevende, sed.type)
+            gjenlevende.hentRelasjonGjenlevendeFnrHvisFinnes((sed as P15000).p15000Pensjon?.gjenlevende, sed.type)
         } else {
             logger.debug("legger til forsikret: ($saktype)")
             hentForsikretPerson(sed)
         }
-
     }
 
     private fun mapKravtypeTilSaktype(krav: String?): Saktype {
@@ -30,6 +31,4 @@ class P15000Ident() : GjenlevendeHvisFinnes() {
             else -> Saktype.ALDER
         }
     }
-
-
 }
