@@ -12,19 +12,19 @@ object RelasjonsHandler {
     private val logger: Logger = LoggerFactory.getLogger(RelasjonsHandler::class.java)
 
     fun hentRelasjoner(sed: SED, rinaDocumentId: String, bucType: BucType): List<PersonIdenter> {
-            try {
-                getRelasjonHandler(sed, bucType, rinaDocumentId).let { handler ->
-                    logger.debug("Benytter følgende handler: ${handler.javaClass.simpleName}")
-                    return filterRleasjoner(handler.hentRelasjoner(sed))
-                }
-            } catch (ex: Exception) {
-                logger.warn("Noe gikk galt under innlesing av fnr fra sed", ex)
+        try {
+            getRelasjonHandler(sed, bucType, rinaDocumentId).let { handler ->
+                logger.debug("Benytter følgende handler: ${handler.javaClass.simpleName}")
+                return filterRleasjoner(handler.hentRelasjoner(sed))
             }
-            return emptyList()
+        } catch (ex: Exception) {
+            logger.warn("Noe gikk galt under innlesing av fnr fra sed", ex)
+        }
+        return emptyList()
     }
 
     private fun filterRleasjoner(relasjonList: List<PersonIdenter>): List<PersonIdenter> {
-         logger.debug("*** Filterer relasjonListe, samme oppføringer, ufyldige verdier o.l")
+        logger.debug("*** Filterer relasjonListe, samme oppføringer, ufyldige verdier o.l")
 
         relasjonList.onEach { logger.debug("$it") }
 
@@ -34,7 +34,6 @@ object RelasjonsHandler {
         val relasjonerUtenFnr = relasjonList.filter { it.fnr == null }
 
         return (relasjonerMedFnr + relasjonerUtenFnr).also { logger.debug("$it") }
-
     }
 
     private fun getRelasjonHandler(sed: SED, bucType: BucType, rinaDocumentId: String): AbstractIdent {
@@ -60,7 +59,5 @@ object RelasjonsHandler {
             //resternede gyldige sed med fnr kommer hit.. (P9000, P3000, P4000.. osv.)
             else -> GenericIdent()
         }
-
     }
-
 }

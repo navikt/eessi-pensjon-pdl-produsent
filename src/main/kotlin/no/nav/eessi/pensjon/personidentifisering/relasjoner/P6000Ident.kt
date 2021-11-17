@@ -6,14 +6,14 @@ import no.nav.eessi.pensjon.personidentifisering.PersonIdenter
 
 class P6000Ident() : AbstractIdent() {
 
-    private  val gjenlevende: Gjenlevende = Gjenlevende()
+    private val gjenlevende: Gjenlevende = Gjenlevende()
+    private val forsikret: Forsikret = Forsikret()
 
     override fun hentRelasjoner(sed: SED): List<PersonIdenter> {
-            val forsikret = hentForsikretPerson(sed)
-            val gjenlevende =  gjenlevende.hentRelasjonGjenlevendeFnrHvisFinnes((sed as P6000).p6000Pensjon?.gjenlevende, sed.type)
+        val forsikret = forsikret.hentForsikretPerson(sed)
+        val gjenlevende =
+            gjenlevende.hentRelasjonGjenlevendeFnrHvisFinnes((sed as P6000).p6000Pensjon?.gjenlevende, sed.type)
 
-            return gjenlevende.ifEmpty { forsikret }
-
-        }
-
+        return gjenlevende.ifEmpty { forsikret }
     }
+}

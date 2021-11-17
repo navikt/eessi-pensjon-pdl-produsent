@@ -5,6 +5,8 @@ import no.nav.eessi.pensjon.personidentifisering.PersonIdenter
 
 class P2200Ident() : AbstractIdent() {
 
-    override fun hentRelasjoner(sed: SED): List<PersonIdenter> = hentForsikretPerson(sed)
+    private val forsikret : Forsikret = Forsikret()
+
+    override fun hentRelasjoner(sed: SED): List<PersonIdenter> = forsikret.hentForsikretPerson(sed)
 
 }

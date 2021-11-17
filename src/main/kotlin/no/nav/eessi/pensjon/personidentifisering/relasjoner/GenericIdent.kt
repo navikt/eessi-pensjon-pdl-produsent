@@ -11,13 +11,15 @@ import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
  */
 class GenericIdent() : AbstractIdent() {
 
+    val forsikret : Forsikret = Forsikret()
+
     override fun hentRelasjoner(sed: SED): List<PersonIdenter> {
         val fnrListe = mutableListOf<PersonIdenter>()
 
         leggTilAnnenGjenlevendeFnrHvisFinnes(sed)?.let { annenRelasjon ->
             fnrListe.add(annenRelasjon)
         }
-        fnrListe.addAll(hentForsikretPerson(sed))
+        fnrListe.addAll(forsikret.hentForsikretPerson(sed))
 
         return fnrListe
     }

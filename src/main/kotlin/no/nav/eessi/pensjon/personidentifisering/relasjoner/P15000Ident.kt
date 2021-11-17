@@ -8,6 +8,7 @@ import no.nav.eessi.pensjon.personidentifisering.PersonIdenter
 class P15000Ident() : AbstractIdent() {
 
     private  val gjenlevende: Gjenlevende = Gjenlevende()
+    private val forsikret : Forsikret = Forsikret()
 
     override fun hentRelasjoner(sed: SED): List<PersonIdenter> {
         val sedKravString = sed.nav?.krav?.type
@@ -20,7 +21,7 @@ class P15000Ident() : AbstractIdent() {
             gjenlevende.hentRelasjonGjenlevendeFnrHvisFinnes((sed as P15000).p15000Pensjon?.gjenlevende, sed.type)
         } else {
             logger.debug("legger til forsikret: ($saktype)")
-            hentForsikretPerson(sed)
+            forsikret.hentForsikretPerson(sed)
         }
     }
 

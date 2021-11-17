@@ -28,9 +28,7 @@ class Gjenlevende() {
                     sedType = sedType,
                 )
             )
-
         }
-
         return emptyList()
     }
 }
