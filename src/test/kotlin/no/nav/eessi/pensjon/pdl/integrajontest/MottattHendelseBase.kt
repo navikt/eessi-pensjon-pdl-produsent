@@ -44,6 +44,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Vegadresse
+import no.nav.eessi.pensjon.services.kodeverk.KodeverkClient
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.slf4j.LoggerFactory
@@ -54,8 +55,9 @@ internal open class MottattHendelseBase {
 
     private val euxKlient: EuxKlient = mockk()
     private val dokumentHelper = EuxDokumentHelper(euxKlient)
-    protected val personService: PersonService = mockk(relaxed = true)
-    private val personidentifiseringService = PersonidentifiseringService(personService,)
+    private val kodeverkClient : KodeverkClient = mockk()
+    private val personService: PersonService = mockk(relaxed = true)
+    private val personidentifiseringService = PersonidentifiseringService(personService, kodeverkClient)
 
     private val deugLogger: Logger = LoggerFactory.getLogger("no.nav.eessi.pensjon") as Logger
     private val listAppender = ListAppender<ILoggingEvent>()
