@@ -5,6 +5,7 @@ import no.nav.eessi.pensjon.eux.EuxDokumentHelper
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.SedHendelseModel
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
+import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
@@ -32,6 +33,7 @@ class SedMottattListener(
 
     fun getLatch() = latch
     var result : Any? = null
+    var resultat : Any? = null
 
     @PostConstruct
     fun initMetrics() {
@@ -83,7 +85,12 @@ class SedMottattListener(
                             return@measure
                         }
 
-                        val personerUtenUtenlandskPinIPDL = identifisertPersoner.map { identifisertPerson ->  if(identifisertPerson.uid.filter { it.identifikasjonsnummer in identifisertPerson.personIdenter.uid} else null }
+                        val personerUtenUtenlandskPinIPDL = identifisertPersoner.forEach { identifisertPerson ->
+                            if(identifisertPerson.uid.isNullOrEmpty()) {
+                                identifisertPerson.uid.flatMap { pdluid -> identifisertPerson.personIdenter.uid!!.filter { pdluid.identifikasjonsnummer == it.identifikasjonsnummer } }
+                            }
+                        }
+                        resultat = personerUtenUtenlandskPinIPDL
 
                         //logikk for veldigering av pdl-uid -> sed-uid
 
