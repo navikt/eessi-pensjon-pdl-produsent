@@ -83,6 +83,8 @@ class SedMottattListener(
                             return@measure
                         }
 
+                        val personerUtenUtenlandskPinIPDL = identifisertPersoner.map { identifisertPerson ->  if(identifisertPerson.uid.filter { it.identifikasjonsnummer in identifisertPerson.personIdenter.uid} else null }
+
                         //logikk for veldigering av pdl-uid -> sed-uid
 
                         //logikk for validering av korrekt sed-uid
