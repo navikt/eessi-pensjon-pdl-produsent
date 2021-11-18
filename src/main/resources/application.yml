@@ -8,6 +8,7 @@ kafka:
   sedMottatt:
     topic: ${KAFKA_SEDMOTTATT_TOPIC}
     groupid: eessi-pensjon-group
+  security.protocol: ssl
 
 #Metrics
 management:
