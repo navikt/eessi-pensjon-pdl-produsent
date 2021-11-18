@@ -1,5 +1,5 @@
 {
   "cluster": "prod",
-  "serviceuserkv": "/serviceuser/data/prod/srveessi-pensjon-pdl-produsent",
+  "serviceuserkv": "/serviceuser/data/prod/srveessipensjonpdlp",
   "appsecrets": "/kv/preprod/fss/eessi-pensjon-pdl-produsent/eessipensjon"
 }

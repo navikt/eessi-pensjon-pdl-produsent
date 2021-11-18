@@ -61,6 +61,6 @@ spec:
     enabled: true
     paths:
       - kvPath: {{serviceuserkv}}
-        mountPath: /var/run/secrets/nais.io/srveessi-pensjon-pdl-produsent-q1
+        mountPath: /var/run/secrets/nais.io/srveessipensjonpdlp
       - kvPath: /apikey/appdynamics/dev
         mountPath: /var/run/secrets/nais.io/vault
