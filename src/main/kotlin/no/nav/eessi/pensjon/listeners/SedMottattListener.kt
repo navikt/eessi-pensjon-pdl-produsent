@@ -14,7 +14,7 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.concurrent.*
+import java.util.concurrent.CountDownLatch
 import javax.annotation.PostConstruct
 
 @Service
@@ -73,8 +73,24 @@ class SedMottattListener(
                         val identifisertPersoner = personidentifiseringService.hentIdentifisertPersoner(
                             currentSed, bucType, sedHendelse.sedType, sedHendelse.rinaDokumentId
                         )
+
+                        //kun for test
                         result = identifisertPersoner
-                        //validerSedDataMotPDL()  --> PersonIdentValidering
+
+                        if (identifisertPersoner.isEmpty()) {
+                            logger.info("Ingen identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
+                            acknowledgment.acknowledge()
+                            return@measure
+                        }
+
+                        //logikk for veldigering av pdl-uid -> sed-uid
+
+                        //logikk for validering av korrekt sed-uid
+
+                        //logikk for muligens oppgave
+
+                        //logikk for opprette pdl-endringsmelding
+
                     }
 
                     acknowledgment.acknowledge()

@@ -26,7 +26,7 @@ class PersonidentifiseringService(private val personService: PersonService, priv
         bucType: BucType,
         sedType: SedType?,
         rinaDocumentId: String
-    ): List<IdentifisertPerson>? {
+    ): List<IdentifisertPerson> {
 
         //fin norskident og utlandskeidenter
         val potensiellePersonRelasjoner = RelasjonsHandler.hentRelasjoner(sed, rinaDocumentId, bucType)
@@ -94,20 +94,15 @@ class PersonidentifiseringService(private val personService: PersonService, priv
 
         val personNavn = person.navn?.run { "$fornavn $etternavn" }
         val personFnr = person.identer.first { it.gruppe == IdentGruppe.FOLKEREGISTERIDENT }.ident
-        val newPersonRelasjon = personIdentier.copy(fnr = Fodselsnummer.fra(personFnr))
+        val newPersonIdenter = personIdentier.copy(fnr = Fodselsnummer.fra(personFnr))
 
         return IdentifisertPerson(
             personNavn,
-            newPersonRelasjon,
+            newPersonIdenter,
             kjoenn = person.kjoenn?.kjoenn,
             uid = person.utenlandskIdentifikasjonsnummer
         )
     }
-
-//    fun valider(identifisertPerson: List<IdentifisertPerson>) : List<PersonIdentValidering>? {
-//
-//        return identifisertPerson
-//    }
 
 }
 

@@ -49,7 +49,6 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
-import kotlin.test.assertTrue
 
 internal open class MottattHendelseBase {
 
@@ -95,7 +94,7 @@ internal open class MottattHendelseBase {
         clearAllMocks()
     }
 
-    protected fun testRunner(
+   protected fun testRunner(
         fnr: String?,
         hendelse: SedHendelseModel,
         sed: SED,
@@ -121,7 +120,7 @@ internal open class MottattHendelseBase {
         } else{
             assertBlock(null)
         }
-        assertTrue(sedMottattListemerAckerMelding(), "Mangler acking av melding")
+        //assertTrue(sedMottattListemerAckerMelding(), "Mangler acking av melding")
         clearAllMocks()
     }
 
@@ -336,10 +335,11 @@ internal open class MottattHendelseBase {
         )
     }
 
-    fun sedMottattListemerAckerMelding() : Boolean {
+
+    fun validateSedMottattListenerLoggingMessage(keyword: String) : Boolean {
         val logsList: List<ILoggingEvent> = listAppender.list
         return logsList.find { asdsa ->
-            asdsa.message.contains("Acket sedMottatt melding")
+            asdsa.message.contains(keyword)
         }?.message?.isNotEmpty() ?: false
     }
 }

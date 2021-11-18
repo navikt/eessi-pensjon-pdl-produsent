@@ -91,6 +91,7 @@ internal class IntegrasjonsMottattNyUIDTest : MottattHendelseBase() {
             println("*".repeat(100))
             val identSe = it.first()
             assertEquals(2, it.size)
+            validateSedMottattListenerLoggingMessage("Acket sedMottatt melding med")
 //            assertEquals("1236549875456544", identSe.personRelasjon.uid?.firstOrNull { it.land == "SE" }?.identifikator)
         }
     }
@@ -112,4 +113,28 @@ internal class IntegrasjonsMottattNyUIDTest : MottattHendelseBase() {
             assertNull(it)
         }
     }
+
+    @Test
+    fun `mottatt hendelse sed uten norsk ident avsluttes med ack`() {
+        val hendelse = SedHendelseModel.fromJson(createHendelseJson(SedType.P2000, BucType.P_BUC_01, avsenderLand = "SE"))
+        val uid = "1236549875456544"
+
+        val pin = listOf(PinItem(identifikator = FNR_VOKSEN, land = "SE"), PinItem(identifikator = uid,land = hendelse.avsenderLand , institusjonsnavn = "important institution"))
+
+        val sed = SED.generateSedToClass<P2000>(createSed(SedType.P2000, pin = pin))
+
+        val utenlandskIdentifikasjonsnummer = listOf(UtenlandskIdentifikasjonsnummer(uid, "SWE", false, null, createMetadata()))
+
+        testRunner(
+            fnr = null,
+            sed = sed,
+            hendelse = hendelse,
+            uid = utenlandskIdentifikasjonsnummer
+        ) {
+            assertNotNull(it)
+            assertEquals(emptyList(), it)
+            validateSedMottattListenerLoggingMessage("Ingen identifiserte personer funnet Acket sedMottatt")
+        }
+    }
+
 }
