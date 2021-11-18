@@ -31,6 +31,8 @@ spec:
       value: eessi-basis-sedMottatt-v1
     - name: KAFKA_OPPGAVE_TOPIC
       value: eessipensjon.privat-oppgave
+    - name: KODEVERK_REST_API_URL
+      value: https://kodeverk.nais.adeo.no
   image: {{ image }}
   ingresses:
     - https://eessi-pensjon-pdl-produsent.nais.adeo.no

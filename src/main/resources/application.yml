@@ -10,6 +10,10 @@ kafka:
     groupid: eessi-pensjon-group
   security.protocol: ssl
 
+kodeverk:
+  rest-api:
+    url: ${KODEVERK_REST_API_URL}
+
 #Metrics
 management:
   metrics:
