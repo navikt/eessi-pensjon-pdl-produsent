@@ -1,0 +1,24 @@
+securityTokenService:
+  discoveryUrl: ${SECURITY_TOKEN_SERVICE_OPENID_CONFIGURATION_URL}
+
+kafka:
+  oppgave:
+    topic: ${KAFKA_OPPGAVE_TOPIC}
+    groupid: eessi-pensjon-group
+  sedMottatt:
+    topic: ${KAFKA_SEDMOTTATT_TOPIC}
+    groupid: eessi-pensjon-group
+
+#Metrics
+management:
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: info, health, metrics, prometheus
+  endpoint:
+    info:
+      show-details: "ALWAYS"
