@@ -1,16 +1,10 @@
 package no.nav.eessi.pensjon.listeners
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
-import no.nav.eessi.pensjon.buc.EuxDokumentHelper
+import no.nav.eessi.pensjon.eux.EuxDokumentHelper
 import no.nav.eessi.pensjon.metrics.MetricsHelper
-import no.nav.eessi.pensjon.models.BucType
-import no.nav.eessi.pensjon.models.HendelseType
-import no.nav.eessi.pensjon.models.SakInformasjon
-import no.nav.eessi.pensjon.models.SakStatus
-import no.nav.eessi.pensjon.models.Saktype
-import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
+import no.nav.eessi.pensjon.models.SedHendelseModel
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
-import no.nav.eessi.pensjon.sed.SedHendelseModel
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
@@ -20,7 +14,7 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.concurrent.CountDownLatch
+import java.util.concurrent.*
 import javax.annotation.PostConstruct
 
 @Service
@@ -37,6 +31,7 @@ class SedMottattListener(
     private lateinit var consumeIncomingSed: MetricsHelper.Metric
 
     fun getLatch() = latch
+    var result : Any? = null
 
     @PostConstruct
     fun initMetrics() {
@@ -62,29 +57,24 @@ class SedMottattListener(
                 logger.debug(hendelse)
 
                 //Forsøker med denne en gang til 258088L
-                val offsetToSkip = listOf(38518L,166333L, 195180L, 195186L, 195187L, 195188L, 195449L, 197341L, 197342L, 197343L, 206688L, 118452L, 268237L, 268268L, 268280L, 268281L, 268282L, 291953L)
                 try {
                     val offset = cr.offset()
-                    if (offsetToSkip.contains(offset)) {
-                        logger.warn("Hopper over offset: $offset grunnet feil.")
-                    } else {
-                        logger.info("*** Offset $offset  Partition ${cr.partition()} ***")
-                        val sedHendelse = SedHendelseModel.fromJson(hendelse)
-                        if (GyldigeHendelser.mottatt(sedHendelse)) {
-                            val bucType = sedHendelse.bucType!!
+                    logger.info("*** Offset $offset  Partition ${cr.partition()} ***")
+                    val sedHendelse = SedHendelseModel.fromJson(hendelse)
+                    if (GyldigeHendelser.mottatt(sedHendelse)) {
 
-                            logger.info("*** Starter innkommende journalføring for SED: ${sedHendelse.sedType}, BucType: $bucType, RinaSakID: ${sedHendelse.rinaSakId} ***")
-                            val buc = dokumentHelper.hentBuc(sedHendelse.rinaSakId)
-                            val erNavCaseOwner = dokumentHelper.isNavCaseOwner(buc)
-                            val alleGyldigeDokumenter = dokumentHelper.hentAlleGyldigeDokumenter(buc)
+                        val bucType = sedHendelse.bucType!!
 
-                            val alleSedIBucPair = dokumentHelper.hentAlleSedIBuc(sedHendelse.rinaSakId, alleGyldigeDokumenter)
+                        logger.info("*** Starter innkommende journalføring for BucType: $bucType, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
 
-                            //identifisere Person hent Person fra PDL valider Person
-                            val identifisertPerson = personidentifiseringService.hentIdentifisertPerson(
-                                alleSedIBucPair, bucType, sedHendelse.sedType, HendelseType.MOTTATT, sedHendelse.rinaDokumentId, erNavCaseOwner
-                            )
-                        }
+                        val currentSed = dokumentHelper.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId)
+
+                        //identifisere Person hent Person fra PDL valider Person
+                        val identifisertPersoner = personidentifiseringService.hentIdentifisertPersoner(
+                            currentSed, bucType, sedHendelse.sedType, sedHendelse.rinaDokumentId
+                        )
+                        result = identifisertPersoner
+                        //validerSedDataMotPDL()  --> PersonIdentValidering
                     }
 
                     acknowledgment.acknowledge()
@@ -92,33 +82,10 @@ class SedMottattListener(
 
                 } catch (ex: Exception) {
                     logger.error("Noe gikk galt under behandling av mottatt SED-hendelse:\n $hendelse \n", ex)
-                    throw SedMottattRuntimeException(ex)
+                    acknowledgment.acknowledge();
                 }
                 latch.countDown()
             }
         }
     }
-
-    /**
-     * Ikke slett funksjonene under før vi har et bedre opplegg for tilbakestilling av topic.
-     * Se jira-sak: EP-968
-     **/
-    /*
-   @KafkaListener(
-           containerFactory = "onpremKafkaListenerContainerFactory",
-           groupId = "\${kafka.sedMottatt.groupid}-recovery",
-           topicPartitions = [TopicPartition(topic = "\${kafka.sedMottatt.topic}",
-           partitionOffsets = [PartitionOffset(partition = "0", initialOffset = "104259")])])
-   fun recoverConsumeSedSendt(hendelse: String, cr: ConsumerRecord<String, String>, acknowledgment: Acknowledgment) {
-       if (cr.offset() == 104259L) {
-           logger.info("Behandler sedMottatt offset: ${cr.offset()}")
-           consumeSedMottatt(hendelse, cr, acknowledgment)
-       } else {
-           throw java.lang.RuntimeException()
-       }
-   }
-   */
-
 }
-
-internal class SedMottattRuntimeException(cause: Throwable) : RuntimeException(cause)

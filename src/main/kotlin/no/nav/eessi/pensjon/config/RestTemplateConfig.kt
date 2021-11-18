@@ -14,8 +14,11 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpRequest
 import org.springframework.http.MediaType
-import org.springframework.http.client.*
-import org.springframework.http.client.support.BasicAuthenticationInterceptor
+import org.springframework.http.client.BufferingClientHttpRequestFactory
+import org.springframework.http.client.ClientHttpRequestExecution
+import org.springframework.http.client.ClientHttpRequestInterceptor
+import org.springframework.http.client.ClientHttpResponse
+import org.springframework.http.client.SimpleClientHttpRequestFactory
 import org.springframework.web.client.DefaultResponseErrorHandler
 import org.springframework.web.client.RestTemplate
 import java.util.*
@@ -23,23 +26,8 @@ import java.util.*
 @Configuration
 class RestTemplateConfig(private val securityTokenExchangeService: STSService, private val meterRegistry: MeterRegistry) {
 
-    @Value("\${aktoerregister.api.v1.url}")
-    lateinit var aktoerregisterUrl: String
-
-    @Value("\${oppgave.oppgaver.url}")
-    lateinit var oppgaveUrl: String
-
-    @Value("\${EUX_RINA_API_V1_URL}")
-    lateinit var euxUrl: String
-
     @Value("\${NORG2_URL}")
     lateinit var norg2Url: String
-
-    @Value("\${srvusername}")
-    lateinit var username: String
-
-    @Value("\${srvpassword}")
-    lateinit var password: String
 
     @Bean
     fun norg2OidcRestTemplate(templateBuilder: RestTemplateBuilder): RestTemplate {
