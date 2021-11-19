@@ -1,5 +1,6 @@
 package no.nav.eessi.pensjon.pdl.integrajontest
 
+import io.mockk.verify
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.sed.P2000
 import no.nav.eessi.pensjon.eux.model.sed.P8000
@@ -18,30 +19,7 @@ import kotlin.test.assertNull
 internal class IntegrasjonsMottattNyUIDTest : MottattHendelseBase() {
 
     @Test
-    fun mottattHendelseMedUid() {
-        val hendelse = SedHendelseModel.fromJson(createHendelseJson(SedType.P2000, BucType.P_BUC_01, avsenderLand = "SE"))
-        val uid = "1236549875456544"
-
-        val pin = listOf(PinItem(identifikator = FNR_VOKSEN, land = "NO"), PinItem(identifikator = uid,land = hendelse.avsenderLand, institusjonsnavn = "important institution" ))
-
-        val sed = SED.generateSedToClass<P2000>(createSed(SedType.P2000, pin = pin))
-
-        testRunner(
-            fnr = FNR_VOKSEN,
-            sed = sed,
-            hendelse = hendelse
-        ) {
-            assertNotNull(it)
-            println("*".repeat(100))
-            println(it)
-            println("*".repeat(100))
-            val identSe = it.first()
-            assertEquals("1236549875456544", identSe.personIdenterFraPdl.uid?.firstOrNull { it.utstederland == "SE" }?.identifikasjonsnummer)
-        }
-    }
-
-    @Test
-    fun `mottatt hendelse med Uid i sed og som svar fra pdl`() {
+    fun `Gitt en mottatt hendelse med uid i sed saa skal du få en liste med identifiserte personer der uid samsvarer med uid fra pdl`() {
         val hendelse = SedHendelseModel.fromJson(createHendelseJson(SedType.P2000, BucType.P_BUC_01, avsenderLand = "SE"))
         val uid = "1236549875456544"
 
@@ -58,15 +36,14 @@ internal class IntegrasjonsMottattNyUIDTest : MottattHendelseBase() {
             uid = utenlandskIdentifikasjonsnummer
         ) {
             assertNotNull(it)
-            println("*".repeat(100))
-            println(it)
-            println("*".repeat(100))
             val identSe = it.first()
-            assertEquals(uid, identSe.personIdenterFraPdl.uid?.firstOrNull { it.utstederland == "SE" }?.identifikasjonsnummer)
+            assertEquals(uid, identSe.personIdenterFraPdl.uid.firstOrNull { it.utstederland == "SE" }?.identifikasjonsnummer)
             assertEquals(uid, identSe.uidFraPdl.first().identifikasjonsnummer)
             assertEquals("SWE", identSe.uidFraPdl.first().utstederland)
             assertNotNull(identSe.uidFraPdl.firstOrNull { it.identifikasjonsnummer == uid &&  it.utstederland == "SWE" && !it.opphoert })
         }
+
+        verify(exactly = 1) {  }
     }
 
     @Test
@@ -86,9 +63,6 @@ internal class IntegrasjonsMottattNyUIDTest : MottattHendelseBase() {
             hendelse = hendelse
         ) {
             assertNotNull(it)
-            println("*".repeat(100))
-            println(it)
-            println("*".repeat(100))
             val identSe = it.first()
             assertEquals(2, it.size)
             validateSedMottattListenerLoggingMessage("Acket sedMottatt melding med")

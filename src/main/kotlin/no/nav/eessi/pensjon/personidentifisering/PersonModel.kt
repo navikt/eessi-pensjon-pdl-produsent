@@ -1,8 +1,6 @@
 package no.nav.eessi.pensjon.personidentifisering
 
-import no.nav.eessi.pensjon.eux.model.sed.SedType
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
-import no.nav.eessi.pensjon.personoppslag.pdl.model.KjoennType
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 
 data class IdentifisertPerson(
@@ -12,8 +10,18 @@ data class IdentifisertPerson(
 
 data class PersonIdenter(
     val fnr: Fodselsnummer?,
-    val uid: List<UtenlandskPin>? = null,
-)
+    val uid: List<UtenlandskPin> = emptyList()
+
+) {
+    /**
+     * @return true dersom uid fra sed er lik uid fra pdl
+     * Sjekker om uid fra sed er lik uid i pdl.
+     */
+    fun finnesAlleredeIPDL(alleUidIPDL: List<String>) : Boolean {
+        val alleUidFraSed = uid.map { it.identifikasjonsnummer }
+        return  alleUidIPDL.any { it in alleUidFraSed }
+    }
+}
 
 data class UtenlandskPin(
     val kilde: String,
