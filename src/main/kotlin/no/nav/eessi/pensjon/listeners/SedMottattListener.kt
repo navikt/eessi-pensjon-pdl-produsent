@@ -1,9 +1,11 @@
 package no.nav.eessi.pensjon.listeners
 
+import com.google.common.annotations.VisibleForTesting
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.eessi.pensjon.eux.EuxDokumentHelper
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.SedHendelseModel
+import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
@@ -14,7 +16,7 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.concurrent.CountDownLatch
+import java.util.concurrent.*
 import javax.annotation.PostConstruct
 
 @Service
@@ -84,20 +86,11 @@ class SedMottattListener(
                             return@measure
                         }
 
-                        val personerUtenUtenlandskPinIPDL = identifisertPersoner.forEach { identifisertPerson ->
-                            if(identifisertPerson.uidFraPdl.isNullOrEmpty()) { identifisertPerson.uidFraPdl
-                                .flatMap { pdluid -> identifisertPerson.personIdenterFraPdl.uid!!
-                                    .filter { pdluid.identifikasjonsnummer == it.identifikasjonsnummer } }
-                            }
-                        }
-                        resultat = personerUtenUtenlandskPinIPDL
+                        val personerUtenUtenlandskPinIPDL = getPersonerUtenUtenlandskPinIPDL(identifisertPersoner)
 
-                        //logikk for veldigering av pdl-uid -> sed-uid
-
+                        //  x  logikk for valdigering av pdl-uid -> sed-uid
                         //logikk for validering av korrekt sed-uid
-
                         //logikk for muligens oppgave
-
                         //logikk for opprette pdl-endringsmelding
 
                     }
@@ -110,6 +103,15 @@ class SedMottattListener(
                     acknowledgment.acknowledge();
                 }
                 latch.countDown()
+            }
+        }
+    }
+
+    @VisibleForTesting
+    fun getPersonerUtenUtenlandskPinIPDL(identifisertPersoner: List<IdentifisertPerson>) {
+        identifisertPersoner.forEach { identifisertPerson ->
+            if (identifisertPerson.uidFraPdl.isNullOrEmpty()) {
+                identifisertPerson.uidFraPdl.flatMap { pdluid -> identifisertPerson.personIdenterFraPdl.uid.filter { pdluid.identifikasjonsnummer == it.identifikasjonsnummer } }
             }
         }
     }
