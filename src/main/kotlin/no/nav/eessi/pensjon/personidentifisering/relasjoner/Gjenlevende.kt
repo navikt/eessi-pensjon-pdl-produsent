@@ -3,7 +3,6 @@ package no.nav.eessi.pensjon.personidentifisering.relasjoner
 import no.nav.eessi.pensjon.eux.model.sed.Bruker
 import no.nav.eessi.pensjon.eux.model.sed.SedType
 import no.nav.eessi.pensjon.personidentifisering.PersonIdenter
-import no.nav.eessi.pensjon.personidentifisering.UtenlandskPin
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 
 class Gjenlevende() {
@@ -27,7 +26,6 @@ class Gjenlevende() {
                 PersonIdenter(
                     gjenlevendePin,
                     pinItemUtlandList,
-                    sedType = sedType,
                 )
             )
         }

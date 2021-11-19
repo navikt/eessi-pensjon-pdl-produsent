@@ -28,8 +28,6 @@ internal class RelasjonsHandlerTest : RelasjonTestBase() {
         )
 
         assertEquals(1, actual.size)
-        assertEquals(SedType.P2000, actual.firstOrNull { it.sedType == SedType.P2000 }?.sedType)
-        assertEquals(forventetFnr, actual.firstOrNull{ it.sedType == SedType.P2000}?.fnr?.value)
+        assertEquals(forventetFnr, actual.firstOrNull()?.fnr?.value)
     }
-
 }

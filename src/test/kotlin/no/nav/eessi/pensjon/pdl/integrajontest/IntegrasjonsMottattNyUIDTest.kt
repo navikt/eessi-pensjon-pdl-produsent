@@ -36,7 +36,7 @@ internal class IntegrasjonsMottattNyUIDTest : MottattHendelseBase() {
             println(it)
             println("*".repeat(100))
             val identSe = it.first()
-            assertEquals("1236549875456544", identSe.personIdenter.uid?.firstOrNull { it.utstederland == "SE" }?.identifikasjonsnummer)
+            assertEquals("1236549875456544", identSe.personIdenterFraPdl.uid?.firstOrNull { it.utstederland == "SE" }?.identifikasjonsnummer)
         }
     }
 
@@ -62,10 +62,10 @@ internal class IntegrasjonsMottattNyUIDTest : MottattHendelseBase() {
             println(it)
             println("*".repeat(100))
             val identSe = it.first()
-            assertEquals(uid, identSe.personIdenter.uid?.firstOrNull { it.utstederland == "SE" }?.identifikasjonsnummer)
-            assertEquals(uid, identSe.uid.first().identifikasjonsnummer)
-            assertEquals("SWE", identSe.uid.first().utstederland)
-            assertNotNull(identSe.uid.firstOrNull { it.identifikasjonsnummer == uid &&  it.utstederland == "SWE" && !it.opphoert })
+            assertEquals(uid, identSe.personIdenterFraPdl.uid?.firstOrNull { it.utstederland == "SE" }?.identifikasjonsnummer)
+            assertEquals(uid, identSe.uidFraPdl.first().identifikasjonsnummer)
+            assertEquals("SWE", identSe.uidFraPdl.first().utstederland)
+            assertNotNull(identSe.uidFraPdl.firstOrNull { it.identifikasjonsnummer == uid &&  it.utstederland == "SWE" && !it.opphoert })
         }
     }
 

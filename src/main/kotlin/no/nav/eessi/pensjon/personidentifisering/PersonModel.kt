@@ -6,21 +6,13 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.KjoennType
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 
 data class IdentifisertPerson(
-    val personNavn: String?,                                        //fra PDL
-    val personIdenter: PersonIdenter,                             //fra SED
-    val fdato: String? = personIdenter.fnr?.getBirthDateAsIso(),     //fra sed/pdl
-    val kjoenn: KjoennType? = null,
-    val uid: List<UtenlandskIdentifikasjonsnummer> = emptyList()
-) {
-    override fun toString(): String {
-        return "IdentifisertPerson(personNavn=$personNavn, personRelasjon=$personIdenter, uid=${personIdenter.uid})"
-    }
-}
+    val personIdenterFraPdl: PersonIdenter,
+    val uidFraPdl: List<UtenlandskIdentifikasjonsnummer> = emptyList()
+)
 
 data class PersonIdenter(
     val fnr: Fodselsnummer?,
     val uid: List<UtenlandskPin>? = null,
-    val sedType: SedType? = null,
 )
 
 data class UtenlandskPin(

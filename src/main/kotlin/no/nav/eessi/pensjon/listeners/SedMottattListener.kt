@@ -5,7 +5,6 @@ import no.nav.eessi.pensjon.eux.EuxDokumentHelper
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.SedHendelseModel
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
-import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
@@ -86,8 +85,9 @@ class SedMottattListener(
                         }
 
                         val personerUtenUtenlandskPinIPDL = identifisertPersoner.forEach { identifisertPerson ->
-                            if(identifisertPerson.uid.isNullOrEmpty()) {
-                                identifisertPerson.uid.flatMap { pdluid -> identifisertPerson.personIdenter.uid!!.filter { pdluid.identifikasjonsnummer == it.identifikasjonsnummer } }
+                            if(identifisertPerson.uidFraPdl.isNullOrEmpty()) { identifisertPerson.uidFraPdl
+                                .flatMap { pdluid -> identifisertPerson.personIdenterFraPdl.uid!!
+                                    .filter { pdluid.identifikasjonsnummer == it.identifikasjonsnummer } }
                             }
                         }
                         resultat = personerUtenUtenlandskPinIPDL

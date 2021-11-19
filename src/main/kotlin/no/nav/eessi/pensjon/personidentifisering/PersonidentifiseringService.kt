@@ -43,25 +43,19 @@ class PersonidentifiseringService(private val personService: PersonService, priv
     ): List<IdentifisertPerson> {
 
         val distinctByPotensielleSEDPersonRelasjoner = potensiellePersonRelasjoner.distinctBy { relasjon -> relasjon.fnr }
-
-        logger.info("Forsøker å identifisere personer ut fra følgende SED: ${distinctByPotensielleSEDPersonRelasjoner.map { "${it.sedType}, ${it.uid} "}}, BUC: $bucType")
-
             return distinctByPotensielleSEDPersonRelasjoner
                 .mapNotNull { relasjon ->
 
                     identifiserPerson(relasjon)
 
             }
-            .distinctBy { it.personIdenter.fnr }
-
+            .distinctBy { it.personIdenterFraPdl.fnr }
     }
 
     fun identifiserPerson(personIdenter: PersonIdenter): IdentifisertPerson? {
         logger.debug("Henter ut følgende personRelasjon: ${personIdenter.toJson()}")
 
         return try {
-            logger.info("Velger fnr: ${personIdenter.fnr}, uid: ${personIdenter.uid}, i SED: ${personIdenter.sedType}")
-
             val valgtFnr = personIdenter.fnr?.value
             if (valgtFnr == null) {
                 logger.info("Ingen gyldig ident, går ut av hentIdentifisertPerson!")
@@ -73,11 +67,6 @@ class PersonidentifiseringService(private val personService: PersonService, priv
                     populerIdentifisertPerson(
                         person,
                         personIdenter,
-                    )
-                }
-                ?.also {
-                    logger.debug(""" IdentifisertPerson hentet fra PDL
-                                     navn: ${it.personNavn}, sed: ${it.personIdenter})""".trimIndent()
                     )
                 }
         } catch (ex: Exception) {
@@ -97,10 +86,8 @@ class PersonidentifiseringService(private val personService: PersonService, priv
         val newPersonIdenter = personIdentier.copy(fnr = Fodselsnummer.fra(personFnr))
 
         return IdentifisertPerson(
-            personNavn,
             newPersonIdenter,
-            kjoenn = person.kjoenn?.kjoenn,
-            uid = person.utenlandskIdentifikasjonsnummer
+            uidFraPdl = person.utenlandskIdentifikasjonsnummer
         )
     }
 
