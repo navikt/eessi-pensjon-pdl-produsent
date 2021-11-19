@@ -49,7 +49,7 @@ class PersonidentifiseringService(private val personService: PersonService, priv
                     identifiserPerson(relasjon)
 
             }
-            .distinctBy { it.personIdenterFraPdl.fnr }
+            .distinctBy { it.personIdenterFraSed.fnr }
     }
 
     fun identifiserPerson(personIdenter: PersonIdenter): IdentifisertPerson? {

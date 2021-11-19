@@ -16,7 +16,7 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.concurrent.*
+import java.util.concurrent.CountDownLatch
 import javax.annotation.PostConstruct
 
 @Service
@@ -111,7 +111,7 @@ class SedMottattListener(
     fun getPersonerUtenUtenlandskPinIPDL(identifisertPersoner: List<IdentifisertPerson>) {
         identifisertPersoner.forEach { identifisertPerson ->
             if (identifisertPerson.uidFraPdl.isNullOrEmpty()) {
-                identifisertPerson.uidFraPdl.flatMap { pdluid -> identifisertPerson.personIdenterFraPdl.uid.filter { pdluid.identifikasjonsnummer == it.identifikasjonsnummer } }
+                identifisertPerson.uidFraPdl.flatMap { pdluid -> identifisertPerson.personIdenterFraSed.uid.filter { pdluid.identifikasjonsnummer == it.identifikasjonsnummer } }
             }
         }
     }

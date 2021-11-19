@@ -37,7 +37,7 @@ internal class IntegrasjonsMottattNyUIDTest : MottattHendelseBase() {
         ) {
             assertNotNull(it)
             val identSe = it.first()
-            assertEquals(uid, identSe.personIdenterFraPdl.uid.firstOrNull { it.utstederland == "SE" }?.identifikasjonsnummer)
+            assertEquals(uid, identSe.personIdenterFraSed.uid.firstOrNull { it.utstederland == "SE" }?.identifikasjonsnummer)
             assertEquals(uid, identSe.uidFraPdl.first().identifikasjonsnummer)
             assertEquals("SWE", identSe.uidFraPdl.first().utstederland)
             assertNotNull(identSe.uidFraPdl.firstOrNull { it.identifikasjonsnummer == uid &&  it.utstederland == "SWE" && !it.opphoert })
