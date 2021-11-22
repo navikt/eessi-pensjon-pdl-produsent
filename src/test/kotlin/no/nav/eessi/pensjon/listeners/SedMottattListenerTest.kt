@@ -1,6 +1,5 @@
 package no.nav.eessi.pensjon.listeners
 
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import no.nav.eessi.pensjon.eux.EuxDokumentHelper
@@ -20,7 +19,6 @@ import org.springframework.kafka.support.Acknowledgment
 import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 internal class SedMottattListenerTest {
 
@@ -81,93 +79,6 @@ internal class SedMottattListenerTest {
 
     }
 
-    @Test
-    fun `Gitt ident har uid fra SED som ikke finnes i PDL Så nytt ident med kun uid fra SED`() {
-        val identPerson = IdentifisertPerson(
-            PersonIdenter(
-                Fodselsnummer.fra("11067122781"), listOf(
-                    UtenlandskPin("P2000", "521552123456", "SE"),
-                    UtenlandskPin("P2000", "1234567891236540", "SE"),
-                    UtenlandskPin("P2000", "13451345234542", "DK")
-                )
-            ), listOf(
-                UtenlandskIdentifikasjonsnummer("1234567891236540", "SWE", true, metadata = Metadata(emptyList<Endring>(), false, "FREG", "321654")),
-                UtenlandskIdentifikasjonsnummer("521552123456", "SWE", false, metadata = Metadata(emptyList<Endring>(), false, "FREG", "321654"))
-            )
-        )
 
-        every { kodeverkClient.finnLandkode("SE") } returns "SWE"
-        every { kodeverkClient.finnLandkode("DK") } returns "DKK"
-
-        val newIdent = identPerson.validateSedUidAgainstPdlUid(kodeverkClient)
-
-        assertEquals(1, newIdent?.personIdenterFraSed?.uid?.size)
-        assertEquals(true, newIdent?.uidFraPdl?.isEmpty())
-    }
-
-    @Test
-    fun `Gitt ident har ingen uid fra SED new ident som er null`() {
-        val identPerson = IdentifisertPerson(
-            PersonIdenter(
-                Fodselsnummer.fra("11067122781"), emptyList()
-            ), listOf(
-                UtenlandskIdentifikasjonsnummer("1234567891236540", "SWE", true, metadata = Metadata(emptyList<Endring>(), false, "FREG", "321654")),
-                UtenlandskIdentifikasjonsnummer("521552123456", "SWE", false, metadata = Metadata(emptyList<Endring>(), false, "FREG", "321654"))
-            )
-        )
-
-        every { kodeverkClient.finnLandkode("SE") } returns "SWE"
-        every { kodeverkClient.finnLandkode("DK") } returns "DKK"
-
-        val newIdent = identPerson.validateSedUidAgainstPdlUid(kodeverkClient)
-
-        assertNull(newIdent)
-    }
-
-    @Test
-    fun `Gitt ident har uid fra SED som ikke finnes i PDL ingen uid i PDL Så nytt ident med kun uid fra SED`() {
-        val identPerson = IdentifisertPerson(
-            PersonIdenter(
-                Fodselsnummer.fra("11067122781"), listOf(
-                    UtenlandskPin("P2000", "521552123456", "SE"),
-                    UtenlandskPin("P2000", "1234567891236540", "SE"),
-                    UtenlandskPin("P2000", "13451345234542", "DK")
-                )
-            ),
-            emptyList()
-        )
-
-        every { kodeverkClient.finnLandkode("SE") } returns "SWE"
-        every { kodeverkClient.finnLandkode("DK") } returns "DKK"
-
-        val newIdent = identPerson.validateSedUidAgainstPdlUid(kodeverkClient)
-
-        assertEquals(3, newIdent?.personIdenterFraSed?.uid?.size)
-        assertEquals(true, newIdent?.uidFraPdl?.isEmpty())
-
-        println(newIdent)
-    }
-
-    @Test
-    fun `ident har uid fra SED som finnes i PDL Så nytt ident som er null`() {
-        val identPerson = IdentifisertPerson(
-            PersonIdenter(
-                Fodselsnummer.fra("11067122781"), listOf(
-                    UtenlandskPin("P2000", "521552123456", "SE"),
-                    UtenlandskPin("P2000", "1234567891236540", "SE"),
-                )
-            ), listOf(
-                UtenlandskIdentifikasjonsnummer("1234567891236540", "SWE", true, metadata = Metadata(emptyList<Endring>(), false, "FREG", "321654")),
-                UtenlandskIdentifikasjonsnummer("521552123456", "SWE", false, metadata = Metadata(emptyList<Endring>(), false, "FREG", "321654"))
-            )
-        )
-
-        every { kodeverkClient.finnLandkode("SE") } returns "SWE"
-        every { kodeverkClient.finnLandkode("DK") } returns "DKK"
-
-        val newIdent = identPerson.validateSedUidAgainstPdlUid(kodeverkClient)
-        assertNull(newIdent)
-
-    }
 
 }

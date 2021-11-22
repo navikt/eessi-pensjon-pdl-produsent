@@ -1,6 +1,5 @@
 package no.nav.eessi.pensjon.pdl.integrajontest
 
-import io.mockk.verify
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.sed.P2000
 import no.nav.eessi.pensjon.eux.model.sed.P8000
@@ -43,7 +42,6 @@ internal class IntegrasjonsMottattNyUIDTest : MottattHendelseBase() {
             assertNotNull(identSe.uidFraPdl.firstOrNull { it.identifikasjonsnummer == uid &&  it.utstederland == "SWE" && !it.opphoert })
         }
 
-        verify(exactly = 1) {  }
     }
 
     @Test

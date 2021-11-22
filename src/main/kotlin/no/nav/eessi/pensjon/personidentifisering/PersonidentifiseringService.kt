@@ -4,6 +4,7 @@ import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.eux.model.sed.SedType
 import no.nav.eessi.pensjon.json.toJson
+import no.nav.eessi.pensjon.models.FinnLand
 import no.nav.eessi.pensjon.personidentifisering.relasjoner.RelasjonsHandler
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
@@ -89,6 +90,25 @@ class PersonidentifiseringService(private val personService: PersonService, priv
             newPersonIdenter,
             uidFraPdl = person.utenlandskIdentifikasjonsnummer
         )
+    }
+
+    fun validateSedUidAgainstPdlUid(identifisertPerson: IdentifisertPerson, fl: FinnLand) : IdentifisertPerson? {
+        //pdl pair (land, ident)
+        val pdlPair = identifisertPerson.uidFraPdl.map { Pair(it.utstederland, it.identifikasjonsnummer) }
+
+        //make new seduid validatet against pdluid (contrycode, ident) map use interface FinnLand (iso2->iso3) SE->SWE
+        val newSedUid = identifisertPerson.personIdenterFraSed.uid
+            .mapNotNull { seduid -> fl.finnLandkode(seduid.utstederland)?.let {  UtenlandskPin(seduid.kilde, seduid.identifikasjonsnummer, it) } }
+            .filterNot { seduid ->
+                //sed pair (land, ident)
+                val seduidPair = Pair( seduid.utstederland , seduid.identifikasjonsnummer)
+                //filter current seduidPair in all pdlPair
+                seduidPair in pdlPair
+            }
+        if (newSedUid.isEmpty()) return null //no new uid to add to pdl
+
+        val newpersonIdenterFraSed = identifisertPerson.personIdenterFraSed.copy(uid = newSedUid)
+        return identifisertPerson.copy(personIdenterFraSed = newpersonIdenterFraSed, uidFraPdl = emptyList()) //new ident with uid not in pdl
     }
 
 }
