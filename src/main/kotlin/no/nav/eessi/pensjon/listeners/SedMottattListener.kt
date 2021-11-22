@@ -86,7 +86,11 @@ class SedMottattListener(
                             return@measure
                         }
 
-                        val validertIdentifisertPersoner = identifisertPersoner.mapNotNull { person -> personidentifiseringService.validateSedUidAgainstPdlUid(person) }
+                        val validertIdentifisertPersoner = filtrerValidertePersoner(identifisertPersoner)
+                        if(validertIdentifisertPersoner.isEmpty()) {
+                            acknowledgment.acknowledge()
+                            return@measure
+                        }
                      //   val personerUtenUtenlandskPinIPDL = getPersonerUtenUtenlandskPinIPDL(identifisertPersoner)
 
                         //  x  logikk for valdigering av pdl-uid -> sed-uid
@@ -106,6 +110,12 @@ class SedMottattListener(
                 latch.countDown()
             }
         }
+    }
+
+    fun filtrerValidertePersoner(identifisertPersoner: List<IdentifisertPerson>): List<IdentifisertPerson> {
+        val validertIdentifisertPersoner =
+            identifisertPersoner.mapNotNull { person -> personidentifiseringService.validateSedUidAgainstPdlUid(person) }
+        return validertIdentifisertPersoner
     }
 
     @VisibleForTesting

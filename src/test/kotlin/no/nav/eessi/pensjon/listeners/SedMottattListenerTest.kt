@@ -79,6 +79,19 @@ internal class SedMottattListenerTest {
 
     }
 
+    @Test
+    fun `Gitt en svensk Uid som ikke er registrert i pdl naar validering blir godkjent saa returner liste av nye utenlandske identer`() {
+        val identPerson = IdentifisertPerson(
+            PersonIdenter(Fodselsnummer.fra("11067122781"), listOf(UtenlandskPin("FREG", "521552123456", "SE"))),
+            listOf(UtenlandskIdentifikasjonsnummer("1234567891236540", "SWE", false, metadata = Metadata(emptyList<Endring>(), false, "FREG", "321654"))))
+
+        val validident = identPerson.personIdenterFraSed.finnesAlleredeIPDL(identPerson.uidFraPdl.map { it.identifikasjonsnummer })
+
+        assertEquals(validident, false)
+
+    }
+
+
 
 
 }
