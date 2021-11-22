@@ -3,18 +3,29 @@ package no.nav.eessi.pensjon.personidentifisering
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
+import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endring
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Metadata
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import no.nav.eessi.pensjon.services.kodeverk.KodeverkClient
+import org.aspectj.lang.annotation.Before
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class PersonidentifiseringServiceTest {
 
-    private val kodeverkClient: KodeverkClient = mockk()
-    private val personidentifiseringService: PersonidentifiseringService = mockk()
+    private val kodeverkClient: KodeverkClient = mockk(relaxed = true)
+    private val personService: PersonService = mockk()
+    private lateinit var personidentifiseringService: PersonidentifiseringService
+
+
+    @BeforeEach
+    fun setUp() {
+        personidentifiseringService = PersonidentifiseringService(personService, kodeverkClient)
+    }
 
 
     @Test
