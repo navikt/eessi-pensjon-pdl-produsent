@@ -86,7 +86,8 @@ class SedMottattListener(
                             return@measure
                         }
 
-                        val personerUtenUtenlandskPinIPDL = getPersonerUtenUtenlandskPinIPDL(identifisertPersoner)
+                        val validertIdentifisertPersoner = identifisertPersoner.mapNotNull { person -> personidentifiseringService.validateSedUidAgainstPdlUid(person) }
+                     //   val personerUtenUtenlandskPinIPDL = getPersonerUtenUtenlandskPinIPDL(identifisertPersoner)
 
                         //  x  logikk for valdigering av pdl-uid -> sed-uid
                         //logikk for validering av korrekt sed-uid
