@@ -4,7 +4,6 @@ import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.eux.model.sed.SedType
 import no.nav.eessi.pensjon.json.toJson
-import no.nav.eessi.pensjon.models.FinnLand
 import no.nav.eessi.pensjon.personidentifisering.relasjoner.RelasjonsHandler
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
@@ -19,8 +18,6 @@ import org.springframework.stereotype.Component
 class PersonidentifiseringService(private val personService: PersonService, private val kodeverk: KodeverkClient) {
 
     private val logger = LoggerFactory.getLogger(PersonidentifiseringService::class.java)
-
-    private val brukForikretPersonISed = listOf(SedType.H121, SedType.H120, SedType.H070)
 
     fun hentIdentifisertPersoner(
         sed: SED,
@@ -82,7 +79,6 @@ class PersonidentifiseringService(private val personService: PersonService, priv
     ): IdentifisertPerson {
         logger.debug("Populerer IdentifisertPerson med data fra PDL")
 
-        val personNavn = person.navn?.run { "$fornavn $etternavn" }
         val personFnr = person.identer.first { it.gruppe == IdentGruppe.FOLKEREGISTERIDENT }.ident
         val newPersonIdenter = personIdentier.copy(fnr = Fodselsnummer.fra(personFnr))
 
@@ -92,13 +88,13 @@ class PersonidentifiseringService(private val personService: PersonService, priv
         )
     }
 
-    fun validateSedUidAgainstPdlUid(identifisertPerson: IdentifisertPerson, fl: FinnLand) : IdentifisertPerson? {
+    fun validateSedUidAgainstPdlUid(identifisertPerson: IdentifisertPerson) : IdentifisertPerson? {
         //pdl pair (land, ident)
         val pdlPair = identifisertPerson.uidFraPdl.map { Pair(it.utstederland, it.identifikasjonsnummer) }
 
         //make new seduid validatet against pdluid (contrycode, ident) map use interface FinnLand (iso2->iso3) SE->SWE
         val newSedUid = identifisertPerson.personIdenterFraSed.uid
-            .mapNotNull { seduid -> fl.finnLandkode(seduid.utstederland)?.let {  UtenlandskPin(seduid.kilde, seduid.identifikasjonsnummer, it) } }
+            .mapNotNull { seduid -> kodeverk.finnLandkode(seduid.utstederland)?.let {  UtenlandskPin(seduid.kilde, seduid.identifikasjonsnummer, it) } }
             .filterNot { seduid ->
                 //sed pair (land, ident)
                 val seduidPair = Pair( seduid.utstederland , seduid.identifikasjonsnummer)

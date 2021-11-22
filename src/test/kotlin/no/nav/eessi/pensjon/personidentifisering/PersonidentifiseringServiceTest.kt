@@ -8,8 +8,6 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.Endring
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Metadata
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import no.nav.eessi.pensjon.services.kodeverk.KodeverkClient
-import org.aspectj.lang.annotation.Before
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -46,7 +44,7 @@ class PersonidentifiseringServiceTest {
         every { kodeverkClient.finnLandkode("SE") } returns "SWE"
         every { kodeverkClient.finnLandkode("DK") } returns "DKK"
 
-        val newIdent = personidentifiseringService.validateSedUidAgainstPdlUid(identPerson, kodeverkClient)
+        val newIdent = personidentifiseringService.validateSedUidAgainstPdlUid(identPerson)
 
         assertEquals(1, newIdent?.personIdenterFraSed?.uid?.size)
         assertEquals(true, newIdent?.uidFraPdl?.isEmpty())
@@ -66,7 +64,7 @@ class PersonidentifiseringServiceTest {
         every { kodeverkClient.finnLandkode("SE") } returns "SWE"
         every { kodeverkClient.finnLandkode("DK") } returns "DKK"
 
-        val newIdent = personidentifiseringService.validateSedUidAgainstPdlUid(identPerson,kodeverkClient)
+        val newIdent = personidentifiseringService.validateSedUidAgainstPdlUid(identPerson)
 
         assertNull(newIdent)
     }
@@ -87,7 +85,7 @@ class PersonidentifiseringServiceTest {
         every { kodeverkClient.finnLandkode("SE") } returns "SWE"
         every { kodeverkClient.finnLandkode("DK") } returns "DKK"
 
-        val newIdent = personidentifiseringService.validateSedUidAgainstPdlUid(identPerson,kodeverkClient)
+        val newIdent = personidentifiseringService.validateSedUidAgainstPdlUid(identPerson)
 
         assertEquals(3, newIdent?.personIdenterFraSed?.uid?.size)
         assertEquals(true, newIdent?.uidFraPdl?.isEmpty())
@@ -112,7 +110,7 @@ class PersonidentifiseringServiceTest {
         every { kodeverkClient.finnLandkode("SE") } returns "SWE"
         every { kodeverkClient.finnLandkode("DK") } returns "DKK"
 
-        val newIdent = personidentifiseringService.validateSedUidAgainstPdlUid(identPerson,kodeverkClient)
+        val newIdent = personidentifiseringService.validateSedUidAgainstPdlUid(identPerson)
         assertNull(newIdent)
 
     }

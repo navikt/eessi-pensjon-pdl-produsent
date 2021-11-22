@@ -3,7 +3,6 @@ package no.nav.eessi.pensjon.services.kodeverk
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.eessi.pensjon.metrics.MetricsHelper
-import no.nav.eessi.pensjon.models.FinnLand
 import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -29,7 +28,7 @@ import javax.annotation.PostConstruct
 class KodeverkClient(private val kodeRestTemplate: RestTemplate,
                      @Value("\${NAIS_APP_NAME}") private val appName: String,
                      @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper(SimpleMeterRegistry())
-    ): FinnLand {
+    ) {
 
     private val logger = LoggerFactory.getLogger(KodeverkClient::class.java)
 
@@ -59,7 +58,7 @@ class KodeverkClient(private val kodeRestTemplate: RestTemplate,
     }
 
     @Cacheable("landkoder")
-    override fun finnLandkode(landkode: String): String? {
+    fun finnLandkode(landkode: String): String? {
 
         if(landkode.isNullOrEmpty() || landkode.length !in 2..3){
             throw LandkodeException("Ugyldig landkode: $landkode")
