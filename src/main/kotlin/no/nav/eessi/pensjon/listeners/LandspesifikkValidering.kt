@@ -10,7 +10,7 @@ class LandspesifikkValidering() {
     fun validerLandsspesifikkUID(landkode: String, uid: String): Boolean {
         logger.debug("valider land: $landkode, uid: $uid")
         return when (landkode) {
-            "BEL" -> uid.length == 13 && uid.replace("-","") .length != 11 || uid.substring(6, 7) != "-" || uid.substring(8, 9) != "-"
+            "BEL" -> uid.length == 13 && uid.replace("-","") .length == 11 && uid.substring(6, 7) == "-" && uid.substring(10, 11) == "-"
             "BGR" -> uid.length != 10
             "FIN" -> uid.length != 11 || uid.substring(6, 7) != "-" || uid.substring(8, 9) != "-"
             "ISL" -> uid.length != 11 || uid.substring(6, 7) != "-" || uid.substring(8, 9) != "-"
