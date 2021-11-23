@@ -113,9 +113,7 @@ class SedMottattListener(
     }
 
     fun filtrerValidertePersoner(identifisertPersoner: List<IdentifisertPerson>): List<IdentifisertPerson> {
-        val validertIdentifisertPersoner =
-            identifisertPersoner.mapNotNull { person -> personidentifiseringService.validateSedUidAgainstPdlUid(person) }
-        return validertIdentifisertPersoner
+        return  identifisertPersoner.mapNotNull { person -> personidentifiseringService.validateSedUidAgainstPdlUid(person) }
     }
 
     @VisibleForTesting
