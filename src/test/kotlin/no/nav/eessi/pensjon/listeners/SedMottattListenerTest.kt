@@ -93,22 +93,4 @@ internal class SedMottattListenerTest {
         assertEquals(1, validident.size)
 
     }
-
-    @Test
-    fun `Gitt en svensk Uid som er registrert i pdl naar validering kjoerer så returneres tom list`() {
-        val identPerson = IdentifisertPerson(
-            PersonIdenter(Fodselsnummer.fra("11067122781"), listOf(UtenlandskPin("FREG", "1234567891236540", "SE"))),
-            listOf(UtenlandskIdentifikasjonsnummer("1234567891236540", "SWE", false, metadata = Metadata(emptyList<Endring>(), false, "FREG", "321654"))))
-
-        every { kodeverkClient.finnLandkode(any()) } returns "SWE"
-
-        val validident = sedListener.filtrerValidertePersoner(listOf(identPerson))
-
-        assertEquals(emptyList(), validident)
-
-    }
-
-
-
-
 }

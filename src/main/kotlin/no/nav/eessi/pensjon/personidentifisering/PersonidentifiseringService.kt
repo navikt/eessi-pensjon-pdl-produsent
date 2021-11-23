@@ -88,7 +88,7 @@ class PersonidentifiseringService(private val personService: PersonService, priv
         )
     }
 
-    fun validateSedUidAgainstPdlUid(identifisertPerson: IdentifisertPerson) : IdentifisertPerson? {
+    fun filtrerUidSomIkkeFinnesIPdl(identifisertPerson: IdentifisertPerson) : IdentifisertPerson? {
         //pdl pair (land, ident)
         val pdlPair = identifisertPerson.uidFraPdl.map { Pair(it.utstederland, it.identifikasjonsnummer) }
 

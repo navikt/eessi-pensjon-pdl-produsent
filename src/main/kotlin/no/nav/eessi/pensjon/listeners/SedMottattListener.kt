@@ -113,7 +113,7 @@ class SedMottattListener(
     }
 
     fun filtrerValidertePersoner(identifisertPersoner: List<IdentifisertPerson>): List<IdentifisertPerson> {
-        return  identifisertPersoner.mapNotNull { person -> personidentifiseringService.validateSedUidAgainstPdlUid(person) }
+        return  identifisertPersoner.mapNotNull { person -> personidentifiseringService.filtrerUidSomIkkeFinnesIPdl(person) }
     }
 
     @VisibleForTesting

@@ -44,7 +44,7 @@ class PersonidentifiseringServiceTest {
         every { kodeverkClient.finnLandkode("SE") } returns "SWE"
         every { kodeverkClient.finnLandkode("DK") } returns "DKK"
 
-        val newIdent = personidentifiseringService.validateSedUidAgainstPdlUid(identPerson)
+        val newIdent = personidentifiseringService.filtrerUidSomIkkeFinnesIPdl(identPerson)
 
         assertEquals(1, newIdent?.personIdenterFraSed?.uid?.size)
         assertEquals(true, newIdent?.uidFraPdl?.isEmpty())
@@ -64,7 +64,7 @@ class PersonidentifiseringServiceTest {
         every { kodeverkClient.finnLandkode("SE") } returns "SWE"
         every { kodeverkClient.finnLandkode("DK") } returns "DKK"
 
-        val newIdent = personidentifiseringService.validateSedUidAgainstPdlUid(identPerson)
+        val newIdent = personidentifiseringService.filtrerUidSomIkkeFinnesIPdl(identPerson)
 
         assertNull(newIdent)
     }
@@ -85,7 +85,7 @@ class PersonidentifiseringServiceTest {
         every { kodeverkClient.finnLandkode("SE") } returns "SWE"
         every { kodeverkClient.finnLandkode("DK") } returns "DKK"
 
-        val newIdent = personidentifiseringService.validateSedUidAgainstPdlUid(identPerson)
+        val newIdent = personidentifiseringService.filtrerUidSomIkkeFinnesIPdl(identPerson)
 
         assertEquals(3, newIdent?.personIdenterFraSed?.uid?.size)
         assertEquals(true, newIdent?.uidFraPdl?.isEmpty())
@@ -94,7 +94,7 @@ class PersonidentifiseringServiceTest {
     }
 
     @Test
-    fun `ident har uid fra SED som finnes i PDL Så nytt ident som er null`() {
+    fun `Gitt UIDer fra SED som finnes i PDL når filtrering av UID duplikater utføres Så returneres null`() {
         val identPerson = IdentifisertPerson(
             PersonIdenter(
                 Fodselsnummer.fra("11067122781"), listOf(
@@ -110,7 +110,7 @@ class PersonidentifiseringServiceTest {
         every { kodeverkClient.finnLandkode("SE") } returns "SWE"
         every { kodeverkClient.finnLandkode("DK") } returns "DKK"
 
-        val newIdent = personidentifiseringService.validateSedUidAgainstPdlUid(identPerson)
+        val newIdent = personidentifiseringService.filtrerUidSomIkkeFinnesIPdl(identPerson)
         assertNull(newIdent)
 
     }
