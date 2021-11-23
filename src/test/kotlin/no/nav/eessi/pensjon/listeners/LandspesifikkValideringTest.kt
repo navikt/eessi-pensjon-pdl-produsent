@@ -10,12 +10,13 @@ internal class LandspesifikkValideringTest {
 
     @ParameterizedTest
     @CsvSource(
-        "BEL, 770113-123-12",
-        "BGR, 770113-123-12",
-        "FIN, 770113-123-12",
-        "ISL, 770113-123-12",
-        "DNK, 770113-123-12")
-    fun `Gitt en  Belgisk UID som skal valideres mot landspesifikk formatering saa skal den returnere gyldig`(land : String, uid : String) {
-        assertEquals(true, valdidering.validerLandsspesifikkUID(land, uid))
+        "BEL, 770113-123-12, true",
+        "BEL, 770113-12312, false",
+        "BGR, 12345678901, true" ,
+        "FIN, 770113-123-12, true",
+        "ISL, 770113-123-12, true",
+        "DNK, 770113-123-12, true")
+    fun `Gitt en  Belgisk UID som skal valideres mot landspesifikk formatering saa skal den returnere gyldig`(land : String, uid : String, check: Boolean) {
+        assertEquals(check, valdidering.validerLandsspesifikkUID(land, uid))
     }
 }
