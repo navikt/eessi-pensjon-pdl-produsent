@@ -1,13 +1,11 @@
 package no.nav.eessi.pensjon.listeners
 
-import com.google.common.annotations.VisibleForTesting
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.eessi.pensjon.eux.EuxDokumentHelper
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.SedHendelseModel
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
-import no.nav.eessi.pensjon.services.kodeverk.Landkode
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
@@ -16,7 +14,6 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
-import java.rmi.server.UID
 import java.util.*
 import java.util.concurrent.CountDownLatch
 import javax.annotation.PostConstruct
@@ -99,11 +96,6 @@ class SedMottattListener(
                         //  *  logikk for filtrering duplikater seduid-pdluid ( av pdl-uid -> sed-uid)
                         //   logikk for validering av korrekt sed-uid
 
-                        fun validerLandsspesifikkUID(landkode: String, uid: String): Boolean {
-                            when(landkode) {
-                                "BEL" -> if(uid.length != 11 || uid.substring(6,7) != "-" || uid.substring(8,9) != "-" )
-                            }
-                        }
 
 
                         //logikk for muligens oppgave
