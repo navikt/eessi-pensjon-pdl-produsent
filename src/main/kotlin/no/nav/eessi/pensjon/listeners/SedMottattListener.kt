@@ -86,17 +86,18 @@ class SedMottattListener(
                             return@measure
                         }
 
-                        val validertIdentifisertPersoner = filtrerValidertePersoner(identifisertPersoner)
-                        if(validertIdentifisertPersoner.isEmpty()) {
+                        val filtrerUidSomIkkeFinnesIPdl = filtrerUidSomIkkeFinnesIPdl(identifisertPersoner)
+                        if(filtrerUidSomIkkeFinnesIPdl.isEmpty()) {
+                            logger.info("Ingen filterer identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
                             acknowledgment.acknowledge()
                             return@measure
                         }
                      //   val personerUtenUtenlandskPinIPDL = getPersonerUtenUtenlandskPinIPDL(identifisertPersoner)
 
-                        //  x  logikk for valdigering av pdl-uid -> sed-uid
+                        //  *  logikk for filtrering duplikater seduid-pdluid ( av pdl-uid -> sed-uid)
                         //logikk for validering av korrekt sed-uid
                         //logikk for muligens oppgave
-                        //logikk for opprette pdl-endringsmelding
+                        //  x logikk for opprette pdl-endringsmelding
 
                     }
 
@@ -112,7 +113,7 @@ class SedMottattListener(
         }
     }
 
-    fun filtrerValidertePersoner(identifisertPersoner: List<IdentifisertPerson>): List<IdentifisertPerson> {
+    fun filtrerUidSomIkkeFinnesIPdl(identifisertPersoner: List<IdentifisertPerson>): List<IdentifisertPerson> {
         return  identifisertPersoner.mapNotNull { person -> personidentifiseringService.filtrerUidSomIkkeFinnesIPdl(person) }
     }
 

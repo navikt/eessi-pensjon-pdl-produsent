@@ -51,7 +51,7 @@ class PersonidentifiseringServiceTest {
     }
 
     @Test
-    fun `Gitt ident har ingen uid fra SED new ident som er null`() {
+    fun `Gitt UIDer fra sed ikke finens når filtrering av UID duplikater utføres Så retureres null`() {
         val identPerson = IdentifisertPerson(
             PersonIdenter(
                 Fodselsnummer.fra("11067122781"), emptyList()
@@ -70,7 +70,7 @@ class PersonidentifiseringServiceTest {
     }
 
     @Test
-    fun `Gitt ident har uid fra SED som ikke finnes i PDL ingen uid i PDL Så nytt ident med kun uid fra SED`() {
+    fun `Gitt UIDer fra sed som ikke finnes i PDL når filtering av UID duplikater utførees Så returneres nytt personIdent`() {
         val identPerson = IdentifisertPerson(
             PersonIdenter(
                 Fodselsnummer.fra("11067122781"), listOf(
@@ -89,8 +89,6 @@ class PersonidentifiseringServiceTest {
 
         assertEquals(3, newIdent?.personIdenterFraSed?.uid?.size)
         assertEquals(true, newIdent?.uidFraPdl?.isEmpty())
-
-        println(newIdent)
     }
 
     @Test

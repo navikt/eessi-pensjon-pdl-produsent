@@ -1,6 +1,5 @@
 package no.nav.eessi.pensjon.listeners
 
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import no.nav.eessi.pensjon.eux.EuxDokumentHelper
@@ -80,17 +79,4 @@ internal class SedMottattListenerTest {
 
     }
 
-    @Test
-    fun `Gitt en svensk Uid som ikke er registrert i pdl naar validering blir godkjent saa returner liste av nye utenlandske identer`() {
-        val identPerson = IdentifisertPerson(
-            PersonIdenter(Fodselsnummer.fra("11067122781"), listOf(UtenlandskPin("FREG", "521552123456", "SE"))),
-            listOf(UtenlandskIdentifikasjonsnummer("1234567891236540", "SWE", false, metadata = Metadata(emptyList<Endring>(), false, "FREG", "321654"))))
-
-        every { kodeverkClient.finnLandkode(any()) } returns "SWE"
-
-        val validident = sedListener.filtrerValidertePersoner(listOf(identPerson))
-
-        assertEquals(1, validident.size)
-
-    }
 }
