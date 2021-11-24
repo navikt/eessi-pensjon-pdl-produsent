@@ -55,6 +55,14 @@ class LandspesifikkValidering() {
 
     fun String.isLettersOrDigit(): Boolean = this.none { it !in 'A'..'Z' && it !in 'a'..'z' && it !in '0'..'9' }
 
+    fun erHvertredjeBokstavBlank(str: String): Boolean {
+        for(i in 2..str.length step 3) {
+            if (i >= str.length) return true
+            if (str[i] != ' ') return false
+        }
+        return true
+    }
+
     private fun belgia(uid: String) = uid.length == 13 && uid.checkDigitsLength(11) && uid.substring(6, 7) == "-" && uid.substring(10, 11) == "-"
     private fun bulgaria(uid: String) = uid.checkDigitsLength(10)
     private fun finland(uid: String) = uid.length == 11 && uid.substring(6,7) in listOf("-","A","a") && uid.checkDigitsLength(IntRange(0,5), 6) && uid.checkDigitsLength(IntRange(7, 9), 3)
@@ -65,28 +73,17 @@ class LandspesifikkValidering() {
     private fun sverige(uid: String) = uid.length == 11 && uid.checkDigitsLength(10) && uid.substring(6, 7) in listOf("+","-")
     private fun danmarkIsland(uid: String) = uid.length == 11 && uid.checkDigitsLength(10) && uid.substring(5, 6) != "-" && uid.checkDigitsLength(IntRange(0,5), 6) && uid.checkDigitsLength(IntRange(7,10), 4)
     private fun estlandLitauenPolen(uid: String) = uid.checkDigitsLength(11) && uid.length == 11
-
     private fun tyskland(uid: String): Boolean {
         return uid.length == 15 && uid.substring(2,3) == " " && uid.substring(9, 10) == " " && uid.substring(11,12) == " " &&
                 uid.checkDigitsLength(IntRange(0,2), 2) &&
                 uid.checkDigitsLength(IntRange(3, 8), 6) &&
                 uid.checkDigitsLength(IntRange(12, 14), 3)
     }
-
-
     private fun ungarn(uid: String): Boolean = uid.checkDigitsLength(9) && uid.length == 11 && uid.substring(3,4) == "-" && uid.substring(7,8) == "-"
     private fun frankrike(uid: String): Boolean = uid.checkDigitsLength(13) && uid.length == 18  && uid.substring(1,2) == " " && uid.substring(4,5) == " " && uid.substring(7,8) == " " && uid.substring(10,11) == " "  && uid.substring(14,15) == " "
     private fun spania(uid: String): Boolean = uid.isLettersOrDigit() && uid.length == 10
     private fun storbritannia(uid: String): Boolean = uid.replace(" ","") .isLettersOrDigit() && erHvertredjeBokstavBlank(uid)
 
-
-    fun erHvertredjeBokstavBlank(str: String): Boolean {
-        for(i in 2..str.length step 3) {
-            if (i >= str.length) return true
-            if (str[i] != ' ') return false
-        }
-        return true
-    }
 }
 
 enum class GyldigeLand(val landkode: String) {
