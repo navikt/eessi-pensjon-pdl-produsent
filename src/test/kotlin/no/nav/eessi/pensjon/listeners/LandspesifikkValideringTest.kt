@@ -60,6 +60,8 @@ internal class LandspesifikkValideringTest {
         "FRA, 2 52 01 75 068 079, true",
         "FRA, 2 52 01 75 068 079A, false",
         "ESP, 0X5807635C, true",
+        "ESP, 0X5807635C%, false",
+        "ESP, 0X580763 5C, false",
         "GBR, ZX 91 67 77 C9, true",
         "GBR, ZX 91-67 77MØ, false",
         "GBR, ZX 91-6777M, false"
