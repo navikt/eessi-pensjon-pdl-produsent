@@ -3,7 +3,11 @@ package no.nav.eessi.pensjon.listeners
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.eessi.pensjon.eux.EuxDokumentHelper
 import no.nav.eessi.pensjon.metrics.MetricsHelper
+import no.nav.eessi.pensjon.models.Endringsmelding
+import no.nav.eessi.pensjon.models.PdlEndringOpplysning
+import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelseModel
+import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -22,6 +26,7 @@ import javax.annotation.PostConstruct
 class SedMottattListener(
     private val personidentifiseringService: PersonidentifiseringService,
     private val dokumentHelper: EuxDokumentHelper,
+    private val personMottakKlient: PersonMottakKlient,
     @Value("\${SPRING_PROFILES_ACTIVE}") private val profile: String,
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper(SimpleMeterRegistry())
 ) {
@@ -121,7 +126,22 @@ class SedMottattListener(
     }
 
     fun lagEndringsMelding(identifisertPersoner: List<IdentifisertPerson>){
-
+        identifisertPersoner.map { ident ->
+            val uid = ident.personIdenterFraSed.uid.first()
+            val fnr = ident.personIdenterFraSed.fnr?.value!!
+             PdlEndringOpplysning(
+                listOf(
+                    Personopplysninger(
+                        ident = fnr,
+                        endringsmelding = Endringsmelding(
+                            identifikasjonsnummer = uid.identifikasjonsnummer,
+                            utstederland = uid.utstederland,
+                            kilde = uid.kilde
+                        )
+                    )
+                )
+            )
+        }
     }
 
     fun validerUid(identifisertPersoner: List<IdentifisertPerson>): List<IdentifisertPerson> {
