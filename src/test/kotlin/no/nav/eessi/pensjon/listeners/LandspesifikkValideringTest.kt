@@ -47,6 +47,11 @@ internal class LandspesifikkValideringTest {
         "POL, 77011312345%, false",
         "POL, 771---12345%, false",
         "XKZ, 7732423, false",
+        "SLO, 1301771234567, true",
+        "SLO, 1301771234567%, false",
+        "SWE, 770113-1234, true",
+        "SWE, 770113+1234, true",
+        "SWE, 7701131+234, false",
     )
     fun `Gitt en UID som skal valideres mot landspesifikk formatering Så skal det retureres boolean`(land : String, uid : String, check: Boolean) {
         assertEquals(check, valdidering.validerLandsspesifikkUID(land, uid))
