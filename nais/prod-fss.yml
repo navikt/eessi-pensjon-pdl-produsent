@@ -19,7 +19,7 @@ spec:
       value: https://eux-rina-api.nais.adeo.no/cpi
     - name: PDL_URL
       value: https://pdl-api.nais.adeo.no/graphql
-    - name: PDL_MOTTAK_URL
+    - name: PDL_PERSON_MOTTAK_URL
       value: https://person-mottak.nais.adeo.no
     - name: SECURITY_TOKEN_SERVICE_OPENID_CONFIGURATION_URL
       value: https://security-token-service.nais.adeo.no/rest/v1/sts/.well-known/openid-configuration
