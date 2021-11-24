@@ -25,7 +25,7 @@ class LandspesifikkValidering() {
     private val logger = LoggerFactory.getLogger(LandspesifikkValidering::class.java)
 
     fun validerLandsspesifikkUID(landkode: String, uid: String): Boolean {
-        logger.debug("valider land: $landkode, uid: $uid")
+        logger.debug("valider land: $landkode, uid: $uid, len: ${uid.length}")
 
         return when (GyldigeLand.landkode(landkode)) {
             BELGIA -> belgia(uid)
@@ -47,7 +47,11 @@ class LandspesifikkValidering() {
         }.also { logger.debug("$landkode -> result  of our dreams: $it") }
     }
 
-    private fun tyskland(uid: String): Boolean = uid.isLettersOrDigit(12) && uid.length == 15
+    private fun tyskland(uid: String): Boolean {
+        return uid.length == 15 && uid.subSequence(2,3) == " " && uid.substring(9, 10) == " " && uid.substring(11,12) == " " && uid.checkDigitsLength(IntRange(0,2), 2)
+    }
+
+
     private fun ungarn(uid: String): Boolean = uid.isLettersOrDigit(9) && uid.length == 12
     private fun frankrike(uid: String): Boolean = uid.isLettersOrDigit(13) && uid.length == 18
     private fun spania(uid: String): Boolean = uid.isLettersOrDigit(10) && uid.length == 10
@@ -58,6 +62,7 @@ class LandspesifikkValidering() {
     fun String.checkDigitsLength(length: Int): Boolean = this.filter { it.isDigit() }.length == length
 
     fun String.isLettersOrDigit(length: Int): Boolean = this.none { it !in 'A'..'Z' && it !in 'a'..'z' && it !in '0'..'9' } && this.length == length
+
 
     private fun belgia(uid: String) = uid.length == 13 && uid.checkDigitsLength(11) && uid.substring(6, 7) == "-" && uid.substring(10, 11) == "-"
     private fun bulgaria(uid: String) = uid.checkDigitsLength(10)
