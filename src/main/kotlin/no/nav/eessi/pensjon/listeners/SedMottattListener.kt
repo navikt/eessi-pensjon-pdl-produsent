@@ -5,7 +5,6 @@ import no.nav.eessi.pensjon.eux.EuxDokumentHelper
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.SedHendelseModel
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
-import no.nav.eessi.pensjon.personidentifisering.PersonIdenter
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
@@ -93,10 +92,13 @@ class SedMottattListener(
                             return@measure
                         }
 
-
-
-
-                     //   val personerUtenUtenlandskPinIPDL = getPersonerUtenUtenlandskPinIPDL(identifisertPersoner)
+                        val validerteIdenter = validerUid(filtrerUidSomIkkeFinnesIPdl)
+                        if(validerteIdenter.isEmpty()) {
+                            logger.info("Ingen validerte identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
+                            acknowledgment.acknowledge()
+                            return@measure
+                        }
+                        lagEndringsMelding(validerteIdenter)
 
                         //  *  logikk for filtrering duplikater seduid-pdluid ( av pdl-uid -> sed-uid)
                         //  *  logikk for validering av korrekt sed-uid
@@ -118,11 +120,17 @@ class SedMottattListener(
         }
     }
 
+    fun lagEndringsMelding(identifisertPersoner: List<IdentifisertPerson>){
+
+    }
+
     fun validerUid(identifisertPersoner: List<IdentifisertPerson>): List<IdentifisertPerson> {
-        LandspesifikkValidering()
+        val validering = LandspesifikkValidering()
         val gyldigepersoner = identifisertPersoner.filter { it.personIdenterFraSed.uid.size == 1 }
-
-
+        return gyldigepersoner.filter { ident ->
+            val uid = ident.personIdenterFraSed.uid.first()
+            validering.validerLandsspesifikkUID(uid.utstederland, uid.identifikasjonsnummer)
+        }
     }
 
     fun filtrerUidSomIkkeFinnesIPdl(identifisertPersoner: List<IdentifisertPerson>): List<IdentifisertPerson> {

@@ -55,7 +55,7 @@ class LandspesifikkValidering() {
 
     fun String.isLettersOrDigit(): Boolean = this.none { it !in 'A'..'Z' && it !in 'a'..'z' && it !in '0'..'9' }
 
-    fun erHvertredjeBokstavBlank(str: String): Boolean {
+    private fun erHvertredjeBokstavBlank(str: String): Boolean {
         for(i in 2..str.length step 3) {
             if (i >= str.length) return true
             if (str[i] != ' ') return false
