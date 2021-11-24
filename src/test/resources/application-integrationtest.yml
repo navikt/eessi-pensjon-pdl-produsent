@@ -20,6 +20,7 @@ securitytokenservice:
 nais_app_name: eessi-pensjon-journalforing
 
 eux_rina_api_v1_url: http://localhost:${mockserverport}
+pdl_mottak_url: http://localhost:${mockserverport}
 pdl_url: http://localhost:${mockserverport}
 securitytokenservice.url: http://someurl
 srvusername: someuser
