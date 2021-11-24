@@ -54,7 +54,9 @@ internal class LandspesifikkValideringTest {
         "SWE, 7701131+234, false",
         "DEU, 56 120157 F 016, true",
         "DEU, 02 140477 T 039, true",
+      //  "DEU, 02 140477 T 03%, false",
         "HUN, 069-441-934, true",
+        "HUN, 069-441-S34, false",
         "FRA, 2 52 01 75 068 079, true",
         "ESP, 0X5807635C, true",
         "GBR, ZX 91 67 77 C9, true"
