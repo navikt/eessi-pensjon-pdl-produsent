@@ -1,6 +1,23 @@
 package no.nav.eessi.pensjon.listeners
 
-import no.nav.eessi.pensjon.listeners.GyldigeLand.*
+import no.nav.eessi.pensjon.listeners.GyldigeLand.BELGIA
+import no.nav.eessi.pensjon.listeners.GyldigeLand.BULGARIA
+import no.nav.eessi.pensjon.listeners.GyldigeLand.DANMARK
+import no.nav.eessi.pensjon.listeners.GyldigeLand.ESTLAND
+import no.nav.eessi.pensjon.listeners.GyldigeLand.FINLAND
+import no.nav.eessi.pensjon.listeners.GyldigeLand.FRANKRIKE
+import no.nav.eessi.pensjon.listeners.GyldigeLand.ISLAND
+import no.nav.eessi.pensjon.listeners.GyldigeLand.ITALIA
+import no.nav.eessi.pensjon.listeners.GyldigeLand.LATVIA
+import no.nav.eessi.pensjon.listeners.GyldigeLand.LITAUEN
+import no.nav.eessi.pensjon.listeners.GyldigeLand.NEDERLAND
+import no.nav.eessi.pensjon.listeners.GyldigeLand.POLEN
+import no.nav.eessi.pensjon.listeners.GyldigeLand.SLOVENIA
+import no.nav.eessi.pensjon.listeners.GyldigeLand.SPANIA
+import no.nav.eessi.pensjon.listeners.GyldigeLand.STORBRITANNIA
+import no.nav.eessi.pensjon.listeners.GyldigeLand.SVERIGE
+import no.nav.eessi.pensjon.listeners.GyldigeLand.TYSKLAND
+import no.nav.eessi.pensjon.listeners.GyldigeLand.UNGARN
 import org.slf4j.LoggerFactory
 
 class LandspesifikkValidering() {
@@ -21,9 +38,20 @@ class LandspesifikkValidering() {
             SVERIGE -> sverige(uid)
             ISLAND, DANMARK -> danmarkIsland(uid)
             ESTLAND, LITAUEN, POLEN -> estlandLitauenPolen(uid)
+            TYSKLAND -> tyskland(uid)
+            UNGARN -> ungarn(uid)
+            FRANKRIKE -> frankrike(uid)
+            SPANIA -> spania(uid)
+            STORBRITANNIA -> storbritannia(uid)
             else ->  false
         }.also { logger.debug("$landkode -> result  of our dreams: $it") }
     }
+
+    private fun tyskland(uid: String): Boolean = uid.isLettersOrDigit(12) && uid.length == 15
+    private fun ungarn(uid: String): Boolean = uid.isLettersOrDigit(9) && uid.length == 12
+    private fun frankrike(uid: String): Boolean = uid.isLettersOrDigit(13) && uid.length == 18
+    private fun spania(uid: String): Boolean = uid.isLettersOrDigit(10) && uid.length == 10
+    private fun storbritannia(uid: String): Boolean = uid.isLettersOrDigit(10) && uid.length == 14
 
     fun String.checkDigitsLength(range: IntRange, len: Int): Boolean =  this.substring(range).checkDigitsLength(len)
 
@@ -58,7 +86,12 @@ enum class GyldigeLand(val landkode: String) {
     ITALIA("ITA"),
     NEDERLAND("NLD"),
     SLOVENIA("SVN"),
-    SVERIGE("SWE");
+    SVERIGE("SWE"),
+    SPANIA("ESP"),
+    TYSKLAND("DEU"),
+    UNGARN("HUN"),
+    FRANKRIKE("FRA"),
+    STORBRITANNIA("GBR");
 
     companion object {
         fun landkode(landkode: String): GyldigeLand? = values().firstOrNull { it.landkode == landkode }
