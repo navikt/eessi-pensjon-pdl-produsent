@@ -1,27 +1,27 @@
 package no.nav.eessi.pensjon.personidentifisering
 
-import no.nav.eessi.pensjon.eux.model.sed.SedType
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
-import no.nav.eessi.pensjon.personoppslag.pdl.model.KjoennType
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 
 data class IdentifisertPerson(
-    val personNavn: String?,                                        //fra PDL
-    val personIdenter: PersonIdenter,                             //fra SED
-    val fdato: String? = personIdenter.fnr?.getBirthDateAsIso(),     //fra sed/pdl
-    val kjoenn: KjoennType? = null,
-    val uid: List<UtenlandskIdentifikasjonsnummer> = emptyList()
-) {
-    override fun toString(): String {
-        return "IdentifisertPerson(personNavn=$personNavn, personRelasjon=$personIdenter, uid=${personIdenter.uid})"
-    }
-}
+    val personIdenterFraSed: PersonIdenter,
+    val uidFraPdl: List<UtenlandskIdentifikasjonsnummer> = emptyList()
+)
 
 data class PersonIdenter(
     val fnr: Fodselsnummer?,
-    val uid: List<UtenlandskPin>? = null,
-    val sedType: SedType? = null,
-)
+    val uid: List<UtenlandskPin> = emptyList()
+
+) {
+    /**
+     * @return true dersom uid fra sed er lik uid fra pdl
+     * Sjekker om uid fra sed er lik uid i pdl.
+     */
+    fun finnesAlleredeIPDL(alleUidIPDL: List<String>) : Boolean {
+        val alleUidFraSed = uid.map { it.identifikasjonsnummer }
+        return  alleUidIPDL.any { it in alleUidFraSed }
+    }
+}
 
 data class UtenlandskPin(
     val kilde: String,

@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.eessi.pensjon.eux.EuxDokumentHelper
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.SedHendelseModel
+import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
@@ -32,6 +33,7 @@ class SedMottattListener(
 
     fun getLatch() = latch
     var result : Any? = null
+    var resultat : Any? = null
 
     @PostConstruct
     fun initMetrics() {
@@ -83,12 +85,20 @@ class SedMottattListener(
                             return@measure
                         }
 
-                        //logikk for veldigering av pdl-uid -> sed-uid
+                        val filtrerUidSomIkkeFinnesIPdl = filtrerUidSomIkkeFinnesIPdl(identifisertPersoner)
+                        if(filtrerUidSomIkkeFinnesIPdl.isEmpty()) {
+                            logger.info("Ingen filterer identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
+                            acknowledgment.acknowledge()
+                            return@measure
+                        }
+                     //   val personerUtenUtenlandskPinIPDL = getPersonerUtenUtenlandskPinIPDL(identifisertPersoner)
 
-                        //logikk for validering av korrekt sed-uid
+                        //  *  logikk for filtrering duplikater seduid-pdluid ( av pdl-uid -> sed-uid)
+                        //   logikk for validering av korrekt sed-uid
+
+
 
                         //logikk for muligens oppgave
-
                         //logikk for opprette pdl-endringsmelding
 
                     }
@@ -104,4 +114,9 @@ class SedMottattListener(
             }
         }
     }
+
+    fun filtrerUidSomIkkeFinnesIPdl(identifisertPersoner: List<IdentifisertPerson>): List<IdentifisertPerson> {
+        return  identifisertPersoner.mapNotNull { person -> personidentifiseringService.filtrerUidSomIkkeFinnesIPdl(person) }
+    }
+
 }

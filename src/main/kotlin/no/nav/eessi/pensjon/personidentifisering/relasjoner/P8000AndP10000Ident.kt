@@ -1,12 +1,10 @@
 package no.nav.eessi.pensjon.personidentifisering.relasjoner
 
-import no.nav.eessi.pensjon.eux.model.sed.Person
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.personidentifisering.PersonIdenter
 import no.nav.eessi.pensjon.personidentifisering.Rolle.BARN
 import no.nav.eessi.pensjon.personidentifisering.Rolle.ETTERLATTE
 import no.nav.eessi.pensjon.personidentifisering.Rolle.FORSORGER
-import no.nav.eessi.pensjon.personidentifisering.UtenlandskPin
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 
 class P8000AndP10000Ident(): AbstractIdent() {
@@ -42,7 +40,6 @@ class P8000AndP10000Ident(): AbstractIdent() {
                     BARN.kode, FORSORGER.kode, ETTERLATTE.kode -> PersonIdenter(
                         annenPersonPin,
                         pinItemUtlandList,
-                        sedType = sed.type,
                         )
                     else -> null
                 }

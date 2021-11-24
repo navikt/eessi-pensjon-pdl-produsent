@@ -19,8 +19,6 @@ class PersonidentifiseringService(private val personService: PersonService, priv
 
     private val logger = LoggerFactory.getLogger(PersonidentifiseringService::class.java)
 
-    private val brukForikretPersonISed = listOf(SedType.H121, SedType.H120, SedType.H070)
-
     fun hentIdentifisertPersoner(
         sed: SED,
         bucType: BucType,
@@ -43,25 +41,19 @@ class PersonidentifiseringService(private val personService: PersonService, priv
     ): List<IdentifisertPerson> {
 
         val distinctByPotensielleSEDPersonRelasjoner = potensiellePersonRelasjoner.distinctBy { relasjon -> relasjon.fnr }
-
-        logger.info("Forsøker å identifisere personer ut fra følgende SED: ${distinctByPotensielleSEDPersonRelasjoner.map { "${it.sedType}, ${it.uid} "}}, BUC: $bucType")
-
             return distinctByPotensielleSEDPersonRelasjoner
                 .mapNotNull { relasjon ->
 
                     identifiserPerson(relasjon)
 
             }
-            .distinctBy { it.personIdenter.fnr }
-
+            .distinctBy { it.personIdenterFraSed.fnr }
     }
 
     fun identifiserPerson(personIdenter: PersonIdenter): IdentifisertPerson? {
         logger.debug("Henter ut følgende personRelasjon: ${personIdenter.toJson()}")
 
         return try {
-            logger.info("Velger fnr: ${personIdenter.fnr}, uid: ${personIdenter.uid}, i SED: ${personIdenter.sedType}")
-
             val valgtFnr = personIdenter.fnr?.value
             if (valgtFnr == null) {
                 logger.info("Ingen gyldig ident, går ut av hentIdentifisertPerson!")
@@ -73,11 +65,6 @@ class PersonidentifiseringService(private val personService: PersonService, priv
                     populerIdentifisertPerson(
                         person,
                         personIdenter,
-                    )
-                }
-                ?.also {
-                    logger.debug(""" IdentifisertPerson hentet fra PDL
-                                     navn: ${it.personNavn}, sed: ${it.personIdenter})""".trimIndent()
                     )
                 }
         } catch (ex: Exception) {
@@ -92,16 +79,32 @@ class PersonidentifiseringService(private val personService: PersonService, priv
     ): IdentifisertPerson {
         logger.debug("Populerer IdentifisertPerson med data fra PDL")
 
-        val personNavn = person.navn?.run { "$fornavn $etternavn" }
         val personFnr = person.identer.first { it.gruppe == IdentGruppe.FOLKEREGISTERIDENT }.ident
         val newPersonIdenter = personIdentier.copy(fnr = Fodselsnummer.fra(personFnr))
 
         return IdentifisertPerson(
-            personNavn,
             newPersonIdenter,
-            kjoenn = person.kjoenn?.kjoenn,
-            uid = person.utenlandskIdentifikasjonsnummer
+            uidFraPdl = person.utenlandskIdentifikasjonsnummer
         )
+    }
+
+    fun filtrerUidSomIkkeFinnesIPdl(identifisertPerson: IdentifisertPerson) : IdentifisertPerson? {
+        //pdl pair (land, ident)
+        val pdlPair = identifisertPerson.uidFraPdl.map { Pair(it.utstederland, it.identifikasjonsnummer) }
+
+        //make new seduid validatet against pdluid (contrycode, ident) map use interface FinnLand (iso2->iso3) SE->SWE
+        val newSedUid = identifisertPerson.personIdenterFraSed.uid
+            .mapNotNull { seduid -> kodeverk.finnLandkode(seduid.utstederland)?.let {  UtenlandskPin(seduid.kilde, seduid.identifikasjonsnummer, it) } }
+            .filterNot { seduid ->
+                //sed pair (land, ident)
+                val seduidPair = Pair( seduid.utstederland , seduid.identifikasjonsnummer)
+                //filter current seduidPair in all pdlPair
+                seduidPair in pdlPair
+            }
+        if (newSedUid.isEmpty()) return null //no new uid to add to pdl
+
+        val newpersonIdenterFraSed = identifisertPerson.personIdenterFraSed.copy(uid = newSedUid)
+        return identifisertPerson.copy(personIdenterFraSed = newpersonIdenterFraSed, uidFraPdl = emptyList()) //new ident with uid not in pdl
     }
 
 }

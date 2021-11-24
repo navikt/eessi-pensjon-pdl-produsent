@@ -21,7 +21,8 @@ class R005Ident() : AbstractIdent() {
                     val pinItemUtlandList = bruker.person?.pin?.filterNot { it.land == "NO" }
                         ?.filter { it.land != null && it.identifikator != null && it.institusjonsnavn != null }
                         ?.map { UtenlandskPin(it.institusjonsnavn!!, it.identifikator!!, it.land!!) }
-                    PersonIdenter(fnr, pinItemUtlandList, sedType = sed.type)
+                        ?: emptyList()
+                    PersonIdenter(fnr, pinItemUtlandList)
 
                 } else {
                     null
