@@ -5,6 +5,7 @@ import no.nav.eessi.pensjon.eux.EuxDokumentHelper
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.SedHendelseModel
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
+import no.nav.eessi.pensjon.personidentifisering.PersonIdenter
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
@@ -91,12 +92,14 @@ class SedMottattListener(
                             acknowledgment.acknowledge()
                             return@measure
                         }
+
+
+
+
                      //   val personerUtenUtenlandskPinIPDL = getPersonerUtenUtenlandskPinIPDL(identifisertPersoner)
 
                         //  *  logikk for filtrering duplikater seduid-pdluid ( av pdl-uid -> sed-uid)
-                        //   logikk for validering av korrekt sed-uid
-
-
+                        //  *  logikk for validering av korrekt sed-uid
 
                         //logikk for muligens oppgave
                         //logikk for opprette pdl-endringsmelding
@@ -113,6 +116,13 @@ class SedMottattListener(
                 latch.countDown()
             }
         }
+    }
+
+    fun validerUid(identifisertPersoner: List<IdentifisertPerson>): List<IdentifisertPerson> {
+        LandspesifikkValidering()
+        val gyldigepersoner = identifisertPersoner.filter { it.personIdenterFraSed.uid.size == 1 }
+
+
     }
 
     fun filtrerUidSomIkkeFinnesIPdl(identifisertPersoner: List<IdentifisertPerson>): List<IdentifisertPerson> {
