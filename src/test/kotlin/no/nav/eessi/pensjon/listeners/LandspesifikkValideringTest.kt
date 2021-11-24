@@ -58,6 +58,7 @@ internal class LandspesifikkValideringTest {
         "HUN, 069-441-934, true",
         "HUN, 069-441-S34, false",
         "FRA, 2 52 01 75 068 079, true",
+        "FRA, 2 52 01 75 068 079A, false",
         "ESP, 0X5807635C, true",
         "GBR, ZX 91 67 77 C9, true"
     )
