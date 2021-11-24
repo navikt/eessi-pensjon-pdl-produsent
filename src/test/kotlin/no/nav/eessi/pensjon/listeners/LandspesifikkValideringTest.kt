@@ -60,13 +60,15 @@ internal class LandspesifikkValideringTest {
         "FRA, 2 52 01 75 068 079, true",
         "FRA, 2 52 01 75 068 079A, false",
         "ESP, 0X5807635C, true",
-        "GBR, ZX 91 67 77 C9, true"
+        "GBR, ZX 91 67 77 C9, true",
+        "GBR, ZX 91-67 77MØ, false"
     )
 /*
     Tyskland: Eks. 56 120157 F 016, 02 140477 T 039.
-
     12 tegn, bokstaver og tall, mellomrom etter 2. og 8. tall, samt etter bokstav (bokstav er første i etternavn)
+
     Storbritannia: Eks. ZX 91 67 77 C9 tegn, bokstaver og tall, mellomrom etter 2. bokstav, samt etter hvert 2. tall.
+
     Ungarn: Eks. 069-441-934.
     9 tall, bindestrek mellom hver 3. tall.
     Frankrike: Eks. 2 52 01 75 068 079
