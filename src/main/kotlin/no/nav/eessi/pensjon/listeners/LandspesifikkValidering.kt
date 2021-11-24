@@ -81,8 +81,8 @@ class LandspesifikkValidering() {
 
 
     fun erHvertredjeBokstavBlank(str: String): Boolean {
-        for(i in 0..str.length step 3) {
-            if (i > str.length) return true
+        for(i in 2..str.length step 3) {
+            if (i >= str.length) return true
             if (str[i] != ' ') return false
         }
         return true

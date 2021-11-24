@@ -61,7 +61,9 @@ internal class LandspesifikkValideringTest {
         "FRA, 2 52 01 75 068 079A, false",
         "ESP, 0X5807635C, true",
         "GBR, ZX 91 67 77 C9, true",
-        "GBR, ZX 91-67 77MØ, false"
+        "GBR, ZX 91-67 77MØ, false",
+        "GBR, ZX 91-6777M, false"
+
     )
 /*
     Tyskland: Eks. 56 120157 F 016, 02 140477 T 039.
