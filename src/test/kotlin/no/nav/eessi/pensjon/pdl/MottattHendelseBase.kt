@@ -1,4 +1,4 @@
-package no.nav.eessi.pensjon.pdl.integrajontest
+package no.nav.eessi.pensjon.pdl
 
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
@@ -61,6 +61,8 @@ internal open class MottattHendelseBase {
     private val deugLogger: Logger = LoggerFactory.getLogger("no.nav.eessi.pensjon") as Logger
     private val listAppender = ListAppender<ILoggingEvent>()
 
+    private val personMottakKlient: PersonMottakKlient = mockk(relaxed = true)
+
     companion object {
         const val SAK_ID = "12345"
 
@@ -77,6 +79,7 @@ internal open class MottattHendelseBase {
     protected val mottattListener: SedMottattListener = SedMottattListener(
         personidentifiseringService = personidentifiseringService,
         dokumentHelper = dokumentHelper,
+        personMottakKlient = personMottakKlient,
         profile = "test"
     )
 

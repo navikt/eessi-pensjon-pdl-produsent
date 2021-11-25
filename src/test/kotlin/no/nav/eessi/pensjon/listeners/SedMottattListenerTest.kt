@@ -3,6 +3,7 @@ package no.nav.eessi.pensjon.listeners
 import io.mockk.mockk
 import io.mockk.verify
 import no.nav.eessi.pensjon.eux.EuxDokumentHelper
+import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import no.nav.eessi.pensjon.personidentifisering.PersonIdenter
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
@@ -29,9 +30,12 @@ internal class SedMottattListenerTest {
 
     private val kodeverkClient = mockk<KodeverkClient>(relaxed = true)
 
+    private val personMottakKlient = mockk<PersonMottakKlient>(relaxed = true)
+
     private val sedListener = SedMottattListener(
         personidentifiseringService,
         sedDokumentHelper,
+        personMottakKlient,
         "test")
 
     @BeforeEach
