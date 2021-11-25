@@ -3,9 +3,6 @@ package no.nav.eessi.pensjon.pdl.integrationtest
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.clearAllMocks
 import io.mockk.every
-import io.mockk.mockk
-import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
-import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.security.sts.STSService
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -17,8 +14,6 @@ import org.mockserver.model.HttpStatusCode
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Primary
 import org.springframework.http.HttpMethod
 import org.springframework.kafka.test.EmbeddedKafkaBroker
 import java.nio.file.Files
@@ -108,7 +103,7 @@ abstract class IntegrationBase() {
                 )
         }
 
-        fun medPerson(fnr: Fodselsnummer, mockPersonlocation: String) = apply {
+/*        fun medPerson(fnr: Fodselsnummer, mockPersonlocation: String) = apply {
 
             mockServer.`when`(
                 HttpRequest.request()
@@ -121,6 +116,6 @@ abstract class IntegrationBase() {
                         .withStatusCode(HttpStatusCode.OK_200.code())
                         .withBody(String(Files.readAllBytes(Paths.get(bucLocation))))
                 )
-        }
+        }*/
     }
 }

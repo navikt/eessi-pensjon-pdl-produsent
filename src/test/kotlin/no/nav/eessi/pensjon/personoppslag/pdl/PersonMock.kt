@@ -16,6 +16,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.Metadata
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Navn
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
+import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Vegadresse
 import java.time.LocalDateTime
 
@@ -71,6 +72,46 @@ object PersonMock {
             doedsfall = null,
             forelderBarnRelasjon = emptyList(),
             sivilstand = emptyList()
+        )
+    }
+
+    internal fun createBrukerWithUid(
+        fnr: String?,
+        fornavn: String = "Fornavn",
+        etternavn: String = "Etternavn",
+        uid: List<UtenlandskIdentifikasjonsnummer> = emptyList(),
+    ): no.nav.eessi.pensjon.personoppslag.pdl.model.PersonUtenlandskIdent {
+
+        val identer = listOfNotNull(
+            fnr?.let { IdentInformasjon(ident = it, gruppe = IdentGruppe.FOLKEREGISTERIDENT) }
+        )
+
+        val metadata = createMetadata()
+
+        return no.nav.eessi.pensjon.personoppslag.pdl.model.PersonUtenlandskIdent(
+            identer = identer,
+            navn = Navn(
+                fornavn = fornavn, etternavn = etternavn, metadata = metadata
+            ),
+            kjoenn = Kjoenn(KjoennType.KVINNE, metadata = metadata),
+            utenlandskIdentifikasjonsnummer = uid
+
+        )
+    }
+    internal fun createMetadata() : Metadata {
+        return Metadata(
+            listOf(
+                Endring(
+                    "kilde",
+                    LocalDateTime.now(),
+                    "ole",
+                    "system1",
+                    Endringstype.OPPRETT
+                )
+            ),
+            false,
+            "nav",
+            "1234"
         )
     }
 }

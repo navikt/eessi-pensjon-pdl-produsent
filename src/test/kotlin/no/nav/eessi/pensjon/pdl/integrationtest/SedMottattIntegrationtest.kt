@@ -1,12 +1,15 @@
 package no.nav.eessi.pensjon.pdl.integrationtest
 
+import io.mockk.every
+import io.mockk.mockk
 import no.nav.eessi.pensjon.json.mapJsonToAny
 import no.nav.eessi.pensjon.json.toJson
 import no.nav.eessi.pensjon.json.typeRefs
 import no.nav.eessi.pensjon.listeners.SedMottattListener
-import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
+import no.nav.eessi.pensjon.personoppslag.pdl.PersonMock
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
-import no.nav.eessi.pensjon.services.kodeverk.KodeverkClient
+import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
+import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -32,14 +35,7 @@ class SedMottattIntegrationtest : IntegrationBase() {
     @Autowired
     private lateinit var template: KafkaTemplate<String, String>
 
-    @Autowired
-    private  lateinit var kodeverkClient : KodeverkClient
-
-    @Autowired
-    private lateinit var personidentifiseringService: PersonidentifiseringService
-
-    @Autowired
-    private lateinit var personService: PersonService
+    private var personService: PersonService = mockk()
 
 //    private val personidentifiseringService: PersonidentifiseringService = mockk()
 
@@ -54,7 +50,20 @@ class SedMottattIntegrationtest : IntegrationBase() {
 
     @Test
     fun `En sed hendelse skal sendes videre til riktig kanal  `() {
-       CustomMockServer()
+
+        val fnr = "11067122781"
+        val personMock =  PersonMock.createBrukerWithUid(
+            fnr = fnr,
+            uid = listOf(UtenlandskIdentifikasjonsnummer(
+                identifikasjonsnummer = "130177-1234",
+                utstederland = "DNK",
+                opphoert = false,
+                metadata = PersonMock.createMetadata()
+            ))
+        )
+
+        every { personService.hentPersonUtenlandskIdent(NorskIdent(fnr)) } returns personMock
+        CustomMockServer()
             .mockSTSToken()
             .medSed("/buc/147729/sed/b12e06dda2c7474b9998c7139c841646", "src/test/resources/eux/sed/P2100-PinDK-NAV.json")
 
