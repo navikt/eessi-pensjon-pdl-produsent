@@ -22,13 +22,13 @@ class EuxRestTemplate(
     private val stsService: STSService
 ) {
 
-//    @Value("\${EUX_RINA_API_V1_URL}")
-//    lateinit var url: String
+    @Value("\${EUX_RINA_API_V1_URL}")
+    lateinit var url: String
 
     @Bean
     fun euxUsernameOidcRestTemplate(templateBuilder: RestTemplateBuilder): RestTemplate {
         return templateBuilder
-            .rootUri("http://detteerfeil")
+            .rootUri(url)
             .errorHandler(DefaultResponseErrorHandler())
             .setReadTimeout(Duration.ofSeconds(120))
             .setConnectTimeout(Duration.ofSeconds(120))

@@ -1,5 +1,4 @@
-package no.nav.eessi.pensjon.config
-
+package no.nav.eessi.pensjon.pdl.integrationtest
 
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -19,7 +18,6 @@ import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.core.ProducerFactory
 import org.springframework.kafka.listener.ContainerProperties
 import java.time.Duration
-
 
 @EnableKafka
 @Profile("integrationtest")

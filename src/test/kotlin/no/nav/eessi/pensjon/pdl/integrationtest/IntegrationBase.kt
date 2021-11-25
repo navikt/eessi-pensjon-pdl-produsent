@@ -1,4 +1,4 @@
-package no.nav.eessi.pensjon.pdl.integrajontest
+package no.nav.eessi.pensjon.pdl.integrationtest
 
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.clearAllMocks
@@ -12,8 +12,6 @@ import org.mockserver.model.HttpRequest
 import org.mockserver.model.HttpResponse
 import org.mockserver.model.HttpStatusCode
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.http.HttpMethod
 import org.springframework.kafka.test.EmbeddedKafkaBroker
 import java.nio.file.Files
@@ -43,12 +41,6 @@ abstract class IntegrationBase() {
         }
         clearAllMocks()
         embeddedKafka.destroy()
-    }
-
-    @TestConfiguration
-    class TestConfig {
-        @Value("\${" + EmbeddedKafkaBroker.SPRING_EMBEDDED_KAFKA_BROKERS + "}")
-        private lateinit var brokerAddresses: String
     }
 
     init {

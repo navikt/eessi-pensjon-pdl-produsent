@@ -1,4 +1,4 @@
-package no.nav.eessi.pensjon.pdl.integrajontest
+package no.nav.eessi.pensjon.pdl.integrationtest
 
 import io.mockk.mockk
 import no.nav.eessi.pensjon.eux.EuxKlient
@@ -18,13 +18,13 @@ import java.util.concurrent.TimeUnit
 
 const val PDL_PRODUSENT_TOPIC_MOTATT = "eessi-pensjon-pdl-produsent-sed-mottatt"
 
-@SpringBootTest(classes = [IntegrationBase.TestConfig::class])
+@SpringBootTest()
 @ActiveProfiles("integrationtest")
 @DirtiesContext
 @EmbeddedKafka(
     topics = [PDL_PRODUSENT_TOPIC_MOTATT]
 )
-class SedMottattIntegrasjonsTest : IntegrationBase() {
+class SedMottattIntegrationtest : IntegrationBase() {
 
     val personMottakKlient: PersonMottakKlient = mockk(relaxed = true)
 
