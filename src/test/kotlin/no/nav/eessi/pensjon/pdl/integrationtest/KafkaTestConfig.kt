@@ -6,6 +6,7 @@ import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
@@ -19,10 +20,8 @@ import org.springframework.kafka.core.ProducerFactory
 import org.springframework.kafka.listener.ContainerProperties
 import java.time.Duration
 
-@EnableKafka
-@Profile("integrationtest")
-@Configuration
-class KafkaConfigIntegrationtest(
+@TestConfiguration
+class KafkaTestConfig(
     @param:Value("\${spring.embedded.kafka.brokers}") private val bootstrapServers: String) {
 
     @Bean

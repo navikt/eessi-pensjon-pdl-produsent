@@ -4,6 +4,7 @@ import com.ninjasquad.springmockk.MockkBean
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
+import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.security.sts.STSService
 import org.junit.jupiter.api.AfterEach
@@ -93,6 +94,21 @@ abstract class IntegrationBase() {
         }
 
         fun medSed(bucPath: String, bucLocation: String) = apply {
+
+            mockServer.`when`(
+                HttpRequest.request()
+                    .withMethod(HttpMethod.GET.name)
+                    .withPath(bucPath)
+            )
+                .respond(
+                    HttpResponse.response()
+                        .withHeader(Header("Content-Type", "application/json; charset=utf-8"))
+                        .withStatusCode(HttpStatusCode.OK_200.code())
+                        .withBody(String(Files.readAllBytes(Paths.get(bucLocation))))
+                )
+        }
+
+        fun medPerson(fnr: Fodselsnummer, mockPersonlocation: String) = apply {
 
             mockServer.`when`(
                 HttpRequest.request()

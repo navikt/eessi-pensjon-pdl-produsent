@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit
 
 const val PDL_PRODUSENT_TOPIC_MOTATT = "eessi-basis-sedmottatt-v1"
 
-@SpringBootTest( classes = [IntegrationBase.TestConfig::class])
+@SpringBootTest( classes = [IntegrationBase.TestConfig::class, KafkaTestConfig::class])
 @ActiveProfiles("integrationtest")
 @DirtiesContext
 @EmbeddedKafka(

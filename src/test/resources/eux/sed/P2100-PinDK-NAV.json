@@ -71,12 +71,23 @@
         "pin": [
           {
             "sektor": "alle",
-            "identifikator": "32451345134513451345",
+            "institusjonsnavn": "12347, DKK002, DK",
+            "identifikator": "130177-1234",
             "institusjon": {
               "institusjonsid": "NO:NAVT002",
               "institusjonsnavn": "12347, NAVT002, NO"
             },
             "land": "DK"
+          },
+          {
+            "sektor": "alle",
+            "identifikator": "11067122781",
+            "institusjonsnavn": "12347, NAVT002, NO",
+            "institusjon": {
+              "institusjonsid": "NO:NAVT002",
+              "institusjonsnavn": "12347, NAVT002, NO"
+            },
+            "land": "NO"
           }
         ],
         "tidligereetternavn": "rtqertqertqertqertqer",
