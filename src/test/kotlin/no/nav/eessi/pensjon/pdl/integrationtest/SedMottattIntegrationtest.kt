@@ -1,12 +1,15 @@
 package no.nav.eessi.pensjon.pdl.integrationtest
 
+import com.ninjasquad.springmockk.MockkBean
 import io.mockk.mockk
-import no.nav.eessi.pensjon.eux.EuxKlient
+import no.nav.eessi.pensjon.eux.EuxDokumentHelper
 import no.nav.eessi.pensjon.json.mapJsonToAny
 import no.nav.eessi.pensjon.json.toJson
 import no.nav.eessi.pensjon.json.typeRefs
 import no.nav.eessi.pensjon.listeners.SedMottattListener
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
+import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
+import no.nav.eessi.pensjon.services.kodeverk.KodeverkClient
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -18,7 +21,7 @@ import java.util.concurrent.TimeUnit
 
 const val PDL_PRODUSENT_TOPIC_MOTATT = "eessi-pensjon-pdl-produsent-sed-mottatt"
 
-@SpringBootTest()
+@SpringBootTest( classes = [KafkaConfigIntegrationtest::class])
 @ActiveProfiles("integrationtest")
 @DirtiesContext
 @EmbeddedKafka(
@@ -29,26 +32,34 @@ class SedMottattIntegrationtest : IntegrationBase() {
     val personMottakKlient: PersonMottakKlient = mockk(relaxed = true)
 
     @Autowired
-    lateinit var consumeSedMottatt: SedMottattListener
-
-    @Autowired
     private lateinit var template: KafkaTemplate<String, String>
 
-    @Autowired
-    lateinit var euxKlient: EuxKlient
+    @MockkBean
+    private  lateinit var kodeverkClient : KodeverkClient
+
+    @MockkBean
+    private lateinit var personidentifiseringService: PersonidentifiseringService
+
+    private val dokumentHelper = EuxDokumentHelper(mockk())
+
+    protected val sedMottattListener: SedMottattListener = SedMottattListener(
+        personidentifiseringService = personidentifiseringService,
+        dokumentHelper = dokumentHelper,
+        personMottakKlient = personMottakKlient,
+        profile = "test"
+    )
 
     @Test
     fun `En sed hendelse skal sendes videre til riktig kanal  `() {
        CustomMockServer()
             .mockSTSToken()
-            .medBuc("/buc/147729", "src/test/resources/buc/bucMedP6000.json")
-            .medBuc("/buc/147729/sed/ae000ec3d718416a934e94e22c844ba6", "src/test/resources/sed/P6000-komplett.json")
+            .medSed("/buc/147729/sed/b12e06dda2c7474b9998c7139c841646", "src/test/resources/eux/sed/P2100-PinDK-NAV.json")
 
-        val json = this::class.java.classLoader.getResource("eux/P_BUC_01_P2000.json")!!.readText()
+        val json = this::class.java.classLoader.getResource("eux/hendelser/P_BUC_01_P2000.json")!!.readText()
         val model = mapJsonToAny(json, typeRefs())
 
         template.send(PDL_PRODUSENT_TOPIC_MOTATT, model.toJson()).let {
-            consumeSedMottatt.getLatch().await(10, TimeUnit.SECONDS)
+            sedMottattListener.getLatch().await(10, TimeUnit.SECONDS)
         }
 
     }

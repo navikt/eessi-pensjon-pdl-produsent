@@ -17,7 +17,7 @@ namespace: 'test'
 securitytokenservice:
   discoveryurl: http://localhost:${mockserverport}/.well-known/openid-configuration
 
-nais_app_name: eessi-pensjon-journalforing
+NAIS_APP_NAME: eessi-pensjon-journalforing
 
 eux_rina_api_v1_url: http://localhost:${mockserverport}
 pdl_mottak_url: http://localhost:${mockserverport}
