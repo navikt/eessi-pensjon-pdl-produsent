@@ -1,6 +1,5 @@
 kafka_sedmottatt_topic: 'eessi-basis-sedmottatt-v1'
 kafka_oppgave_topic: 'eessi-pensjon-oppgave-v1'
-kafka_automatisering_topic: 'eessi-pensjon-auto'
 
 kafka:
   sedmottatt:
@@ -9,7 +8,6 @@ kafka:
   oppgave:
     topic: ${kafka_oppgave_topic}
     groupid: eessi-pensjon-group
-
   security.protocol: ssl
 
 namespace: 'test'
@@ -17,7 +15,7 @@ namespace: 'test'
 securitytokenservice:
   discoveryurl: http://localhost:${mockserverport}/.well-known/openid-configuration
 
-NAIS_APP_NAME: eessi-pensjon-journalforing
+NAIS_APP_NAME: eessi-pensjon-pdl-produsent
 
 eux_rina_api_v1_url: http://localhost:${mockserverport}
 pdl_mottak_url: http://localhost:${mockserverport}
@@ -26,11 +24,6 @@ securitytokenservice.url: http://someurl
 srvusername: someuser
 srvpassword: somepass
 oppgave.oppgaver.url: http://localhost:${mockserverport}
-journalpost_v1_url: http://localhost:${mockserverport}
 aktoerregister.api.v1.url: http://localhost:${mockserverport}
-virksomhet.person.v3:
-  endpointurl: http://localhost:${mockserverport}
-eessi_pensjon_fagmodul_url: http://localhost:${mockserverport}
 norg2_url: http://localhost:${mockserverport}
-bestemsak_url: http://localhost:${mockserverport}
 kodeverk_rest_api_url: http://localhost:${mockserverport}

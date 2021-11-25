@@ -4,7 +4,6 @@ import com.ninjasquad.springmockk.MockkBean
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
-import no.nav.eessi.pensjon.listeners.SedMottattListener
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.security.sts.STSService
 import org.junit.jupiter.api.AfterEach
@@ -57,10 +56,10 @@ abstract class IntegrationBase() {
         fun personService(): PersonService {
             return mockk()
         }
-        @Bean
-        fun sedMottattListener(): SedMottattListener {
-            return mockk()
-        }
+//        @Bean
+//        fun sedMottattListener(): SedMottattListener {
+//            return mockk()
+//        }
     }
 
     init {
