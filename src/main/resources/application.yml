@@ -12,7 +12,7 @@ kafka:
 
 kodeverk:
   rest-api:
-    url: ${KODEVERK_REST_API_URL}
+    url: ${kodeverk_rest_api.url}
 
 #Metrics
 management:

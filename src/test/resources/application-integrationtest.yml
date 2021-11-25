@@ -21,7 +21,7 @@ nais_app_name: eessi-pensjon-journalforing
 
 eux_rina_api_v1_url: http://localhost:${mockserverport}
 pdl_mottak_url: http://localhost:${mockserverport}
-pdl_url: http://localhost:${mockserverport}
+PDL_URL: http://localhost:${mockserverport}
 securitytokenservice.url: http://someurl
 srvusername: someuser
 srvpassword: somepass
@@ -33,3 +33,4 @@ virksomhet.person.v3:
 eessi_pensjon_fagmodul_url: http://localhost:${mockserverport}
 norg2_url: http://localhost:${mockserverport}
 bestemsak_url: http://localhost:${mockserverport}
+kodeverk_rest_api_url: http://localhost:${mockserverport}
