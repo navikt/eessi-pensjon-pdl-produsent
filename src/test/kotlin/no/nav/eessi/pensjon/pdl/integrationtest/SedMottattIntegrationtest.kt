@@ -5,6 +5,7 @@ import no.nav.eessi.pensjon.json.toJson
 import no.nav.eessi.pensjon.json.typeRefs
 import no.nav.eessi.pensjon.listeners.SedMottattListener
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
+import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.services.kodeverk.KodeverkClient
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -17,7 +18,7 @@ import java.util.concurrent.TimeUnit
 
 const val PDL_PRODUSENT_TOPIC_MOTATT = "eessi-basis-sedmottatt-v1"
 
-@SpringBootTest( classes = [KafkaConfigIntegrationtest::class])
+@SpringBootTest( classes = [IntegrationBase.TestConfig::class])
 @ActiveProfiles("integrationtest")
 @DirtiesContext
 @EmbeddedKafka(
@@ -36,6 +37,9 @@ class SedMottattIntegrationtest : IntegrationBase() {
 
     @Autowired
     private lateinit var personidentifiseringService: PersonidentifiseringService
+
+    @Autowired
+    private lateinit var personService: PersonService
 
 //    private val personidentifiseringService: PersonidentifiseringService = mockk()
 

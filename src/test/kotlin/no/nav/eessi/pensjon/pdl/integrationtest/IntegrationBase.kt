@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Primary
 import org.springframework.http.HttpMethod
 import org.springframework.kafka.test.EmbeddedKafkaBroker
 import java.nio.file.Files
@@ -52,10 +53,11 @@ abstract class IntegrationBase() {
         @Value("\${" + EmbeddedKafkaBroker.SPRING_EMBEDDED_KAFKA_BROKERS + "}")
         private lateinit var brokerAddresses: String
 
-        @Bean
-        fun personService(): PersonService {
-            return mockk()
-        }
+//        @Bean
+//        @Primary
+//        fun personService(): PersonService {
+//            return mockk()
+       // }
 //        @Bean
 //        fun sedMottattListener(): SedMottattListener {
 //            return mockk()
