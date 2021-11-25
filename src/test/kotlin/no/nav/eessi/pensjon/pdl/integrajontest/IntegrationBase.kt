@@ -1,14 +1,9 @@
-package no.nav.eessi.pensjon.statistikk.integrationtest
+package no.nav.eessi.pensjon.pdl.integrajontest
 
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.clearAllMocks
 import io.mockk.every
-import io.mockk.mockk
-import io.mockk.spyk
-import no.nav.eessi.pensjon.s3.S3StorageService
 import no.nav.eessi.pensjon.security.sts.STSService
-import no.nav.eessi.pensjon.statistikk.S3StorageHelper
-import no.nav.eessi.pensjon.statistikk.services.StatistikkPublisher
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.mockserver.integration.ClientAndServer
@@ -19,7 +14,6 @@ import org.mockserver.model.HttpStatusCode
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.context.annotation.Bean
 import org.springframework.http.HttpMethod
 import org.springframework.kafka.test.EmbeddedKafkaBroker
 import java.nio.file.Files
@@ -55,16 +49,6 @@ abstract class IntegrationBase() {
     class TestConfig {
         @Value("\${" + EmbeddedKafkaBroker.SPRING_EMBEDDED_KAFKA_BROKERS + "}")
         private lateinit var brokerAddresses: String
-
-        @Bean
-        fun statistikkPublisher(): StatistikkPublisher {
-            return spyk(StatistikkPublisher(mockk(relaxed = true), "bogusTopic"))
-        }
-
-        @Bean
-        fun s3StorageService(): S3StorageService {
-            return S3StorageHelper.createStoreService().also { it.init() }
-        }
     }
 
     init {

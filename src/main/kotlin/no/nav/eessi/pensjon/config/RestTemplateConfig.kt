@@ -26,10 +26,7 @@ import java.util.*
 @Configuration
 class RestTemplateConfig(private val securityTokenExchangeService: STSService, private val meterRegistry: MeterRegistry) {
 
-    @Value("\${NORG2_URL}")
-    lateinit var norg2Url: String
-
-    @Bean
+    /*@Bean
     fun norg2OidcRestTemplate(templateBuilder: RestTemplateBuilder): RestTemplate {
         return templateBuilder
                 .rootUri(norg2Url)
@@ -42,7 +39,7 @@ class RestTemplateConfig(private val securityTokenExchangeService: STSService, p
                 .build().apply {
                     requestFactory = BufferingClientHttpRequestFactory(SimpleClientHttpRequestFactory())
                 }
-    }
+    }*/
 
     class RequestInterceptor : ClientHttpRequestInterceptor {
         override fun intercept(request: HttpRequest, body: ByteArray, execution: ClientHttpRequestExecution): ClientHttpResponse {
