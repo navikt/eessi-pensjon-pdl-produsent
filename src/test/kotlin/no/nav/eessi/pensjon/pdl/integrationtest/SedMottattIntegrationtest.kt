@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit
 
 const val PDL_PRODUSENT_TOPIC_MOTATT = "eessi-basis-sedmottatt-v1"
 
-@SpringBootTest( classes = [IntegrationBase.TestConfig::class, KafkaTestConfig::class])
+@SpringBootTest( classes = [IntegrationBase.TestConfig::class, KafkaTestConfig::class], properties = ["spring.main.allow-bean-definition-overriding=true"])
 @ActiveProfiles("integrationtest")
 @DirtiesContext
 @EmbeddedKafka(
@@ -35,7 +35,8 @@ class SedMottattIntegrationtest : IntegrationBase() {
     @Autowired
     private lateinit var template: KafkaTemplate<String, String>
 
-    private var personService: PersonService = mockk()
+    @Autowired
+    private lateinit var personService: PersonService
 
 //    private val personidentifiseringService: PersonidentifiseringService = mockk()
 
