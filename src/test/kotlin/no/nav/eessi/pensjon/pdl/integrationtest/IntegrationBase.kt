@@ -6,6 +6,7 @@ import io.mockk.every
 import io.mockk.mockk
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.security.sts.STSService
+import no.nav.eessi.pensjon.services.kodeverk.KodeverkClient
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.mockserver.integration.ClientAndServer
@@ -58,6 +59,13 @@ abstract class IntegrationBase() {
         fun personService(): PersonService {
             return mockk(relaxed = true)
         }
+        
+        @Bean
+        @Primary
+        fun kodeverkKlient(): KodeverkClient {
+            return mockk(relaxed = true)
+        }
+
 //        @Bean
 //        fun sedMottattListener(): SedMottattListener {
 //            return mockk()
