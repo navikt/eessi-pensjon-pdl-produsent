@@ -6,7 +6,6 @@ import io.mockk.every
 import io.mockk.mockk
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.security.sts.STSService
-import no.nav.eessi.pensjon.services.kodeverk.KodeverkClient
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.mockserver.integration.ClientAndServer
@@ -60,11 +59,11 @@ abstract class IntegrationBase() {
             return mockk(relaxed = true)
         }
         
-        @Bean
-        @Primary
-        fun kodeverkKlient(): KodeverkClient {
-            return mockk(relaxed = true)
-        }
+//        @Bean
+//        @Primary
+//        fun kodeverkKlient(): KodeverkClient {
+//            return mockk(relaxed = true)
+//        }
 
 //        @Bean
 //        fun sedMottattListener(): SedMottattListener {
@@ -113,6 +112,23 @@ abstract class IntegrationBase() {
                         .withStatusCode(HttpStatusCode.OK_200.code())
                         .withBody(String(Files.readAllBytes(Paths.get(bucLocation))))
                 )
+        }
+
+        fun medKodeverk(kodeverkPath: String, kodeVerkLocation: String) = apply {
+
+            mockServer.`when`(
+                HttpRequest.request()
+                    .withMethod(HttpMethod.GET.name)
+                    .withPath(kodeverkPath)
+            )
+                .respond(
+                    HttpResponse.response()
+                        .withHeader(Header("Content-Type", "application/json; charset=utf-8"))
+                        .withStatusCode(HttpStatusCode.OK_200.code())
+                        .withBody(String(Files.readAllBytes(Paths.get(kodeVerkLocation))))
+                )
+
+
         }
 
 /*        fun medPerson(fnr: Fodselsnummer, mockPersonlocation: String) = apply {

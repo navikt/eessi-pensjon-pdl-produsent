@@ -1,7 +1,6 @@
 package no.nav.eessi.pensjon.pdl.integrationtest
 
 import io.mockk.every
-import io.mockk.mockk
 import no.nav.eessi.pensjon.json.mapJsonToAny
 import no.nav.eessi.pensjon.json.toJson
 import no.nav.eessi.pensjon.json.typeRefs
@@ -50,7 +49,7 @@ class SedMottattIntegrationtest : IntegrationBase() {
 //    )
 
     @Test
-    fun `En sed hendelse skal sendes videre til riktig kanal  `() {
+    fun `En sed hendelse med dansk uid i sed finnes også i pdl skal ack og avslute på en pen måte`() {
 
         val fnr = "11067122781"
         val personMock =  PersonMock.createBrukerWithUid(
@@ -67,6 +66,7 @@ class SedMottattIntegrationtest : IntegrationBase() {
         CustomMockServer()
             .mockSTSToken()
             .medSed("/buc/147729/sed/b12e06dda2c7474b9998c7139c841646", "src/test/resources/eux/sed/P2100-PinDK-NAV.json")
+            .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
 
         val json = this::class.java.classLoader.getResource("eux/hendelser/P_BUC_01_P2000.json")!!.readText()
         val model = mapJsonToAny(json, typeRefs())
@@ -74,6 +74,30 @@ class SedMottattIntegrationtest : IntegrationBase() {
         template.send(PDL_PRODUSENT_TOPIC_MOTATT, model.toJson()).let {
             sedMottattListener.getLatch().await(10, TimeUnit.SECONDS)
         }
-
     }
+
+    @Test
+    fun `En sed hendelse med dansk uid finnes ikke i pdl skal opperte en endringsmelding til person-mottak`() {
+
+        val fnr = "11067122781"
+        val personMock =  PersonMock.createBrukerWithUid(
+            fnr = fnr,
+            uid = emptyList()
+        )
+
+        every { personService.hentPersonUtenlandskIdent(NorskIdent(fnr)) } returns personMock
+        CustomMockServer()
+            .mockSTSToken()
+            .medSed("/buc/147729/sed/b12e06dda2c7474b9998c7139c841646", "src/test/resources/eux/sed/P2100-PinDK-NAV.json")
+            .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
+
+        val json = this::class.java.classLoader.getResource("eux/hendelser/P_BUC_01_P2000.json")!!.readText()
+        val model = mapJsonToAny(json, typeRefs())
+
+        template.send(PDL_PRODUSENT_TOPIC_MOTATT, model.toJson()).let {
+            sedMottattListener.getLatch().await(10, TimeUnit.SECONDS)
+        }
+    }
+
+
 }
