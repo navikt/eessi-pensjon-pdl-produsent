@@ -71,7 +71,7 @@ class SedMottattListener(
 
                         val bucType = sedHendelse.bucType!!
 
-                        logger.info("*** Starter innkommende journalføring for BucType: $bucType, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
+                        logger.info("*** Starter pdl endringsmelding prosess for BucType: $bucType, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
 
                         val currentSed = dokumentHelper.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId)
 
