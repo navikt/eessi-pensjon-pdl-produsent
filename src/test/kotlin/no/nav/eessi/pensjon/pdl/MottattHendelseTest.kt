@@ -1,4 +1,4 @@
-package no.nav.eessi.pensjon.pdl.integrajontest
+package no.nav.eessi.pensjon.pdl
 
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.sed.P2000
@@ -15,7 +15,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 @DisplayName("P_BUC_01 – Innkommende Test med UID SWE, Sweden")
-internal class IntegrasjonsMottattNyUIDTest : MottattHendelseBase() {
+internal class MottattHendelseTest : MottattHendelseBase() {
 
     @Test
     fun `Gitt en mottatt hendelse med uid i sed saa skal du få en liste med identifiserte personer der uid samsvarer med uid fra pdl`() {

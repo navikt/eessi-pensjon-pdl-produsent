@@ -1,4 +1,4 @@
-package no.nav.eessi.pensjon.eux
+package no.nav.eessi.pensjon.pdl
 
 import io.micrometer.core.instrument.MeterRegistry
 import no.nav.eessi.pensjon.logging.RequestIdHeaderInterceptor
@@ -17,16 +17,16 @@ import org.springframework.web.client.RestTemplate
 import java.time.Duration
 
 @Component
-class EuxRestTemplate(
+class PersonMottakRestTemplate(
     private val registry: MeterRegistry,
     private val stsService: STSService
 ) {
 
-    @Value("\${eux_rina_api_v1_url}")
+    @Value("\${PDL_PERSON_MOTTAK_URL}")
     lateinit var url: String
 
     @Bean
-    fun euxUsernameOidcRestTemplate(templateBuilder: RestTemplateBuilder): RestTemplate {
+    fun personMottakUsernameOidcRestTemplate(templateBuilder: RestTemplateBuilder): RestTemplate {
         return templateBuilder
             .rootUri(url)
             .errorHandler(DefaultResponseErrorHandler())

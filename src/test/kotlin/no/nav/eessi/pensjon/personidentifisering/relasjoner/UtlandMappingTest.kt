@@ -2,11 +2,9 @@ package no.nav.eessi.pensjon.personidentifisering.relasjoner
 
 import no.nav.eessi.pensjon.eux.model.sed.Person
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
-import no.nav.eessi.pensjon.models.SedHendelseModel
-import no.nav.eessi.pensjon.pdl.integrajontest.MottattHendelseBase
 import no.nav.eessi.pensjon.personidentifisering.Rolle
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class UtlandMappingTest() {

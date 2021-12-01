@@ -82,7 +82,7 @@ dependencies {
 		exclude module: 'junit'
 	}
 	testImplementation("org.mock-server:mockserver-client-java:${mockserverVersion}")
-	testImplementation("io.mockk:mockk:1.11.0")
+	testImplementation('io.mockk:mockk:1.12.0')
 	testImplementation("com.ninja-squad:springmockk:3.0.1")
 
 	// Architecture tests

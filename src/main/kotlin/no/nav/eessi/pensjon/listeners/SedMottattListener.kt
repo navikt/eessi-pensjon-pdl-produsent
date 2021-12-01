@@ -3,7 +3,11 @@ package no.nav.eessi.pensjon.listeners
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.eessi.pensjon.eux.EuxDokumentHelper
 import no.nav.eessi.pensjon.metrics.MetricsHelper
+import no.nav.eessi.pensjon.models.Endringsmelding
+import no.nav.eessi.pensjon.models.PdlEndringOpplysning
+import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelseModel
+import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -22,6 +26,7 @@ import javax.annotation.PostConstruct
 class SedMottattListener(
     private val personidentifiseringService: PersonidentifiseringService,
     private val dokumentHelper: EuxDokumentHelper,
+    private val personMottakKlient: PersonMottakKlient,
     @Value("\${SPRING_PROFILES_ACTIVE}") private val profile: String,
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper(SimpleMeterRegistry())
 ) {
@@ -46,7 +51,6 @@ class SedMottattListener(
         topics = ["\${kafka.sedMottatt.topic}"],
         groupId = "\${kafka.sedMottatt.groupid}"
     )
-
     fun consumeSedMottatt(hendelse: String, cr: ConsumerRecord<String, String>, acknowledgment: Acknowledgment) {
         MDC.putCloseable("x_request_id", UUID.randomUUID().toString()).use {
             consumeIncomingSed.measure {
@@ -91,12 +95,17 @@ class SedMottattListener(
                             acknowledgment.acknowledge()
                             return@measure
                         }
-                     //   val personerUtenUtenlandskPinIPDL = getPersonerUtenUtenlandskPinIPDL(identifisertPersoner)
+
+                        val validerteIdenter = validerUid(filtrerUidSomIkkeFinnesIPdl)
+                        if(validerteIdenter.isEmpty()) {
+                            logger.info("Ingen validerte identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
+                            acknowledgment.acknowledge()
+                            return@measure
+                        }
+                        lagEndringsMelding(validerteIdenter)
 
                         //  *  logikk for filtrering duplikater seduid-pdluid ( av pdl-uid -> sed-uid)
-                        //   logikk for validering av korrekt sed-uid
-
-
+                        //  *  logikk for validering av korrekt sed-uid
 
                         //logikk for muligens oppgave
                         //logikk for opprette pdl-endringsmelding
@@ -112,6 +121,35 @@ class SedMottattListener(
                 }
                 latch.countDown()
             }
+        }
+    }
+
+    fun lagEndringsMelding(identifisertPersoner: List<IdentifisertPerson>){
+        identifisertPersoner.map { ident ->
+            val uid = ident.personIdenterFraSed.uid.first()
+            val fnr = ident.personIdenterFraSed.fnr?.value!!
+            val pdlEndringsOpplysninger = PdlEndringOpplysning(
+                listOf(
+                    Personopplysninger(
+                        ident = fnr,
+                        endringsmelding = Endringsmelding(
+                            identifikasjonsnummer = uid.identifikasjonsnummer,
+                            utstederland = uid.utstederland,
+                            kilde = uid.kilde
+                        )
+                    )
+                )
+            )
+            personMottakKlient.opprettPersonopplysning(pdlEndringsOpplysninger)
+        }
+    }
+
+    fun validerUid(identifisertPersoner: List<IdentifisertPerson>): List<IdentifisertPerson> {
+        val validering = LandspesifikkValidering()
+        val gyldigepersoner = identifisertPersoner.filter { it.personIdenterFraSed.uid.size == 1 }
+        return gyldigepersoner.filter { ident ->
+            val uid = ident.personIdenterFraSed.uid.first()
+            validering.validerLandsspesifikkUID(uid.utstederland, uid.identifikasjonsnummer)
         }
     }
 

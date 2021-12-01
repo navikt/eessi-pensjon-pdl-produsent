@@ -16,7 +16,7 @@ import org.springframework.web.client.RestTemplate
 @Component
 class KodeverkRestTemplate(private val registry: MeterRegistry) {
 
-    @Value("\${kodeverk.rest-api.url}")
+    @Value("\${kodeverk_rest_api_url}")
     private lateinit var kodeverkUrl: String
 
     @Bean

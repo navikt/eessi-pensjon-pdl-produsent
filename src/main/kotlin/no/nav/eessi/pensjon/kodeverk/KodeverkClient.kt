@@ -63,6 +63,7 @@ class KodeverkClient(private val kodeRestTemplate: RestTemplate,
         if(landkode.isNullOrEmpty() || landkode.length !in 2..3){
             throw LandkodeException("Ugyldig landkode: $landkode")
         }
+        logger.debug("landkode: $landkode, landodersize: ${hentLandKoder().size}")
         return when(landkode.length){
             2 -> hentLandKoder().firstOrNull { it.landkode2 ==  landkode }?.landkode3
             3 -> hentLandKoder().firstOrNull { it.landkode3 ==  landkode }?.landkode2
@@ -105,7 +106,6 @@ class KodeverkClient(private val kodeRestTemplate: RestTemplate,
 
         val uriParams = mapOf("hierarki" to hierarki)
         val builder = UriComponentsBuilder.fromUriString(path).buildAndExpand(uriParams)
-
         return doRequest(builder)
     }
 }

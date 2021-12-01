@@ -19,6 +19,8 @@ spec:
       value: https://eux-rina-api-q2.nais.preprod.local/cpi
     - name: PDL_URL
       value: https://pdl-api.dev-fss.nais.io/graphql
+    - name: PDL_PERSON_MOTTAK_URL
+      value: https://person-mottak.dev.intern.nav.no/
     - name: SECURITY_TOKEN_SERVICE_OPENID_CONFIGURATION_URL
       value: https://security-token-service.nais.preprod.local/rest/v1/sts/.well-known/openid-configuration
     - name: SECURITYTOKENSERVICE_URL
