@@ -128,7 +128,7 @@ class SedMottattListener(
         identifisertPersoner.map { ident ->
             val uid = ident.personIdenterFraSed.uid.first()
             val fnr = ident.personIdenterFraSed.fnr?.value!!
-            PdlEndringOpplysning(
+            val pdlEndringsOpplysninger = PdlEndringOpplysning(
                 listOf(
                     Personopplysninger(
                         ident = fnr,
@@ -140,6 +140,7 @@ class SedMottattListener(
                     )
                 )
             )
+            personMottakKlient.opprettPersonopplysning(pdlEndringsOpplysninger)
         }
     }
 

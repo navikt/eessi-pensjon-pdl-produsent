@@ -19,17 +19,18 @@ class PersonMottakKlient(private val personMottakUsernameOidcRestTemplate: RestT
     private val logger: Logger by lazy { LoggerFactory.getLogger(PersonMottakKlient::class.java) }
 
     internal fun opprettPersonopplysning(personopplysning: PdlEndringOpplysning): Boolean {
-        logger.info("Henter PDF for SED og tilhørende vedlegg for rinaSakId: ")
+        logger.info("Dryrun: Kaller personMottak med nye personopplysninger fra avsenderLand: ${personopplysning.personopplysninger.first().endringsmelding.utstederland}")
 
         val httpEntity = HttpEntity(personopplysning.toJson(), createHeaders())
 
-        val response = personMottakUsernameOidcRestTemplate.exchange(
-            URI("/api/v1/endringer"),
-            HttpMethod.POST,
-            httpEntity,
-            String::class.java
-        )
-        return response.statusCode.is2xxSuccessful
+//        val response = personMottakUsernameOidcRestTemplate.exchange(
+//            URI("/api/v1/endringer"),
+//            HttpMethod.POST,
+//            httpEntity,
+//            String::class.java
+//        )
+//        return response.statusCode.is2xxSuccessful
+        return true
     }
 
     private fun createHeaders(): HttpHeaders? {
