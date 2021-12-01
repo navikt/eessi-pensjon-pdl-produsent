@@ -85,7 +85,7 @@ class PersonidentifiseringService(private val personService: PersonService, priv
         return IdentifisertPerson(
             newPersonIdenter,
             uidFraPdl = person.utenlandskIdentifikasjonsnummer
-        )
+        ).also { logger.debug("Følgende populert Person: $it") }
     }
 
     fun filtrerUidSomIkkeFinnesIPdl(identifisertPerson: IdentifisertPerson) : IdentifisertPerson? {
