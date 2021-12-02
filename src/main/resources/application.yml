@@ -4,10 +4,10 @@ securityTokenService:
 kafka:
   oppgave:
     topic: ${KAFKA_OPPGAVE_TOPIC}
-    groupid: eessi-pensjon-group
+    groupid: eessi-pensjon-pdl-produsent-group
   sedMottatt:
     topic: ${KAFKA_SEDMOTTATT_TOPIC}
-    groupid: eessi-pensjon-group
+    groupid: eessi-pensjon-pdl-produsent-group
   security.protocol: ssl
 
 kodeverk:

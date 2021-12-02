@@ -4,10 +4,10 @@ KAFKA_OPPGAVE_TOPIC: 'eessi-pensjon-oppgave-v1'
 kafka:
   sedmottatt:
     topic: ${kafka_sedmottatt_topic}
-    groupid: eessi-pensjon-group
+    groupid: eessi-pensjon-pdl-produsent-group
   oppgave:
     topic: ${kafka_oppgave_topic}
-    groupid: eessi-pensjon-group
+    groupid: eessi-pensjon-pdl-produsent-group
   security.protocol: ssl
 
 namespace: 'test'
