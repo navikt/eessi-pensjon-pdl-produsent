@@ -11,6 +11,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import org.junit.jupiter.api.Test
 import org.mockserver.model.HttpRequest
+import org.mockserver.verify.VerificationTimes
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.kafka.core.KafkaTemplate
@@ -125,7 +126,7 @@ class SedMottattIntegrationtest : IntegrationBase() {
         mockServer.verify(
             HttpRequest.request()
                 .withMethod("POST")
-                .withPath(""),
+                .withPath("api/v1/endringer"),
             VerificationTimes.exactly(1)
         );
     }

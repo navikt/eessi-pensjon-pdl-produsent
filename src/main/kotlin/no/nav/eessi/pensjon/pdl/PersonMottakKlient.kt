@@ -25,9 +25,9 @@ class PersonMottakKlient(@Value("\${namespace}") var nameSpace: String,
 
         val httpEntity = HttpEntity(personopplysning.toJson(), createHeaders())
 
-        if(nameSpace == "q2") {
+        if(nameSpace == "q2" || nameSpace == "test") {
                 val response = personMottakUsernameOidcRestTemplate.exchange(
-                    URI("/api/v1/endringer"),
+                    URI("api/v1/endringer"),
                     HttpMethod.POST,
                     httpEntity,
                     String::class.java
