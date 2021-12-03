@@ -9,7 +9,6 @@ import no.nav.eessi.pensjon.personoppslag.pdl.PersonMock
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockserver.model.HttpRequest
 import org.mockserver.verify.VerificationTimes
@@ -103,7 +102,6 @@ class SedMottattIntegrationtest : IntegrationBase() {
     }
 
     @Test
-    @Disabled
     fun `Gitt en sed-hendelse med tysk uid finnes ikke i pdl når P8000 prosesserers så oppertes en endringsmelding til person-mottak`() {
 
         val fnr = "29087021082"
@@ -129,20 +127,22 @@ class SedMottattIntegrationtest : IntegrationBase() {
             HttpRequest.request()
                 .withMethod("POST")
                 .withPath("/api/v1/endringer")
-                .withBody("{\n" +
-                        "  \"personopplysninger\" : [ {\n" +
-                        "    \"endringstype\" : \"OPPRETT\",\n" +
-                        "    \"ident\" : \"29087021082\",\n" +
-                        "    \"opplysningstype\" : \"UTENLANDSKIDENTIFIKASJONSNUMMER\",\n" +
-                        "    \"endringsmelding\" : {\n" +
-                        "      \"type\" : \"UTENLANDSKIDENTIFIKASJONSNUMMER\",\n" +
-                        "      \"identifikasjonsnummer\" : \"56 120157 F 016\",\n" +
-                        "      \"utstederland\" : \"DEU\",\n" +
-                        "      \"kilde\" : \"NAV ACC 05\"\n" +
-                        "    },\n" +
-                        "    \"opplysningsId\" : null\n" +
-                        "  } ]\n" +
-                        "}"),
+                .withBody("""
+                    {
+                      "personopplysninger" : [ {
+                        "endringstype" : "OPPRETT",
+                        "ident" : "29087021082",
+                        "opplysningstype" : "UTENLANDSKIDENTIFIKASJONSNUMMER",
+                        "endringsmelding" : {
+                          "@type" : "UTENLANDSKIDENTIFIKASJONSNUMMER",
+                          "identifikasjonsnummer" : "56 120157 F 016",
+                          "utstederland" : "DEU",
+                          "kilde" : "NAV ACC 05"
+                        },
+                        "opplysningsId" : null
+                      } ]
+                    }
+                """.trimIndent()),
             VerificationTimes.exactly(1)
         );
     }
