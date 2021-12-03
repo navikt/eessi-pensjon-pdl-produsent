@@ -1,0 +1,17 @@
+{
+  "id": 0,
+  "sedId": "1433072_7aa1a72d6f5946a186c79a7bcf46a922_6",
+  "sektorKode": "P",
+  "bucType": "P_BUC_05",
+  "rinaSakId": "1433072",
+  "avsenderId": "NO:NAVAT05",
+  "avsenderNavn": "NAV ACC 05",
+  "avsenderLand": "NO",
+  "mottakerId": "NO:NAVAT07",
+  "mottakerNavn": "NAV ACC 07",
+  "mottakerLand": "NO",
+  "rinaDokumentId": "7aa1a72d6f5946a186c79a7bcf46a922",
+  "rinaDokumentVersjon": "6",
+  "sedType": "P8000",
+  "navBruker": "29087021082 "
+}
