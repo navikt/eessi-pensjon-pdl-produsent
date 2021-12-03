@@ -61,6 +61,7 @@ class PersonMottakRestTemplate(
         ): ClientHttpResponse {
 
             val token = pdlTokens.callBack()
+            logger.debug("tokenIntercetorRequest: userToken: ${token.isUserToken}")
             // [System]
             request.headers["Nav-Consumer-Token"] = "Bearer ${token.systemToken}"
             return execution.execute(request, body)
