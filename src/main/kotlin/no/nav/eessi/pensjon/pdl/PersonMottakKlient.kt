@@ -41,9 +41,6 @@ class PersonMottakKlient(@Value("\${namespace}") var nameSpace: String,
         httpHeaders.add("Nav-Call-Id", UUID.randomUUID().toString())
         httpHeaders.add("Tema", "PEN")
         httpHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
-        // [System]
-        httpHeaders.headers["Nav-Consumer-Token"] = "Bearer ${token.systemToken}"
-
         return httpHeaders
     }
 
