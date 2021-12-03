@@ -11,7 +11,6 @@ import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
-import java.net.URI
 import java.util.*
 
 @Component
@@ -27,7 +26,7 @@ class PersonMottakKlient(@Value("\${namespace}") var nameSpace: String,
 
         if(nameSpace == "q2" || nameSpace == "test") {
                 val response = personMottakUsernameOidcRestTemplate.exchange(
-                    URI("api/v1/endringer"),
+                    "/api/v1/endringer",
                     HttpMethod.POST,
                     httpEntity,
                     String::class.java

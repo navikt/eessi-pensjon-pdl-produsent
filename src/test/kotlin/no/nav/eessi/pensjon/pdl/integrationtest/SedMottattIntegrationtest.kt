@@ -126,12 +126,22 @@ class SedMottattIntegrationtest : IntegrationBase() {
         mockServer.verify(
             HttpRequest.request()
                 .withMethod("POST")
-                .withPath("api/v1/endringer"),
+                .withPath("/api/v1/endringer")
+                .withBody("{\n" +
+                        "  \"personopplysninger\" : [ {\n" +
+                        "    \"endringstype\" : \"OPPRETT\",\n" +
+                        "    \"ident\" : \"29087021082\",\n" +
+                        "    \"opplysningstype\" : \"UTENLANDSKIDENTIFIKASJONSNUMMER\",\n" +
+                        "    \"endringsmelding\" : {\n" +
+                        "      \"type\" : \"UTENLANDSKIDENTIFIKASJONSNUMMER\",\n" +
+                        "      \"identifikasjonsnummer\" : \"56 120157 F 016\",\n" +
+                        "      \"utstederland\" : \"DEU\",\n" +
+                        "      \"kilde\" : \"NAV ACC 05\"\n" +
+                        "    },\n" +
+                        "    \"opplysningsId\" : null\n" +
+                        "  } ]\n" +
+                        "}"),
             VerificationTimes.exactly(1)
         );
     }
-
-
-
-
 }
