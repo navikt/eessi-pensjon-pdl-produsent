@@ -9,6 +9,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.PersonMock
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockserver.model.HttpRequest
 import org.mockserver.verify.VerificationTimes
@@ -102,6 +103,7 @@ class SedMottattIntegrationtest : IntegrationBase() {
     }
 
     @Test
+    @Disabled
     fun `Gitt en sed-hendelse med tysk uid finnes ikke i pdl når P8000 prosesserers så oppertes en endringsmelding til person-mottak`() {
 
         val fnr = "29087021082"
