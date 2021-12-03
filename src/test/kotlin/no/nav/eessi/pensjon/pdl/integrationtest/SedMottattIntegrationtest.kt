@@ -10,6 +10,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import org.junit.jupiter.api.Test
+import org.mockserver.model.HttpRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.kafka.core.KafkaTemplate
@@ -120,6 +121,13 @@ class SedMottattIntegrationtest : IntegrationBase() {
         template.send(PDL_PRODUSENT_TOPIC_MOTATT, model.toJson()).let {
             sedMottattListener.getLatch().await(10, TimeUnit.SECONDS)
         }
+
+        mockServer.verify(
+            HttpRequest.request()
+                .withMethod("POST")
+                .withPath(""),
+            VerificationTimes.exactly(1)
+        );
     }
 
 

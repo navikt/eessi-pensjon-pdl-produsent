@@ -24,7 +24,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.*
 
-private lateinit var mockServer: ClientAndServer
+lateinit var mockServer: ClientAndServer
 
 abstract class IntegrationBase() {
 
@@ -111,6 +111,18 @@ abstract class IntegrationBase() {
                         .withHeader(Header("Content-Type", "application/json; charset=utf-8"))
                         .withStatusCode(HttpStatusCode.OK_200.code())
                         .withBody(String(Files.readAllBytes(Paths.get(bucLocation))))
+                )
+
+            mockServer.`when`(
+                HttpRequest.request()
+                    .withMethod(HttpMethod.POST.name)
+                    .withPath("/api/v1/endringer")
+            )
+                .respond(
+                    HttpResponse.response()
+                        .withHeader(Header("Content-Type", "application/json; charset=utf-8"))
+                        .withStatusCode(HttpStatusCode.OK_200.code())
+                        .withBody("{}")
                 )
         }
 

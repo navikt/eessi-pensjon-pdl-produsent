@@ -4,6 +4,7 @@ import no.nav.eessi.pensjon.json.toJson
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -14,7 +15,8 @@ import java.net.URI
 import java.util.*
 
 @Component
-class PersonMottakKlient(private val personMottakUsernameOidcRestTemplate: RestTemplate) {
+class PersonMottakKlient(@Value("\${namespace}") var nameSpace: String,
+                         private val personMottakUsernameOidcRestTemplate: RestTemplate) {
 
     private val logger: Logger by lazy { LoggerFactory.getLogger(PersonMottakKlient::class.java) }
 
@@ -23,13 +25,15 @@ class PersonMottakKlient(private val personMottakUsernameOidcRestTemplate: RestT
 
         val httpEntity = HttpEntity(personopplysning.toJson(), createHeaders())
 
-//        val response = personMottakUsernameOidcRestTemplate.exchange(
-//            URI("/api/v1/endringer"),
-//            HttpMethod.POST,
-//            httpEntity,
-//            String::class.java
-//        )
-//        return response.statusCode.is2xxSuccessful
+        if(nameSpace == "q2") {
+                val response = personMottakUsernameOidcRestTemplate.exchange(
+                    URI("/api/v1/endringer"),
+                    HttpMethod.POST,
+                    httpEntity,
+                    String::class.java
+                )
+                return response.statusCode.is2xxSuccessful
+        }
         return true
     }
 
