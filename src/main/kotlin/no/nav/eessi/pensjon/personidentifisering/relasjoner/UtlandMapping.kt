@@ -8,7 +8,7 @@ class UtlandMapping {
     fun mapUtenlandsPin(person: Person): List<UtenlandskPin> {
 
         return person.pin?.filterNot { it.land == "NO" }
-            ?.filter { it.land != null && it.identifikator != null && it.institusjonsnavn != null }
+            ?.filter { it.land != null && it.identifikator != null && it.institusjon?.institusjonsnavn != null }
             ?.map { UtenlandskPin(it.institusjonsnavn!!, it.identifikator!!, it.land!!) }
             ?: emptyList()
     }
