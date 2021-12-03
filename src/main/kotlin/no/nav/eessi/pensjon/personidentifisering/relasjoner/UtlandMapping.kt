@@ -9,7 +9,7 @@ class UtlandMapping {
 
         return person.pin?.filterNot { it.land == "NO" }
             ?.filter { it.land != null && it.identifikator != null && it.institusjon?.institusjonsnavn != null }
-            ?.map { UtenlandskPin(it.institusjonsnavn!!, it.identifikator!!, it.land!!) }
+            ?.map { UtenlandskPin(it.institusjon?.institusjonsnavn!!, it.identifikator!!, it.land!!) }
             ?: emptyList()
     }
 }

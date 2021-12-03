@@ -1,6 +1,7 @@
 package no.nav.eessi.pensjon.pdl
 
 import no.nav.eessi.pensjon.eux.model.buc.BucType
+import no.nav.eessi.pensjon.eux.model.sed.Institusjon
 import no.nav.eessi.pensjon.eux.model.sed.P2000
 import no.nav.eessi.pensjon.eux.model.sed.P8000
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
@@ -22,7 +23,7 @@ internal class MottattHendelseTest : MottattHendelseBase() {
         val hendelse = SedHendelseModel.fromJson(createHendelseJson(SedType.P2000, BucType.P_BUC_01, avsenderLand = "SE"))
         val uid = "1236549875456544"
 
-        val pin = listOf(PinItem(identifikator = FNR_VOKSEN, land = "NO"), PinItem(identifikator = uid,land = hendelse.avsenderLand , institusjonsnavn = "important institution"))
+        val pin = listOf(PinItem(identifikator = FNR_VOKSEN, land = "NO"), PinItem(identifikator = uid,land = hendelse.avsenderLand , institusjon =  Institusjon(institusjonsnavn = "NAVNO", institusjonsid = "123")))
 
         val sed = SED.generateSedToClass<P2000>(createSed(SedType.P2000, pin = pin))
 
@@ -41,7 +42,6 @@ internal class MottattHendelseTest : MottattHendelseBase() {
             assertEquals("SWE", identSe.uidFraPdl.first().utstederland)
             assertNotNull(identSe.uidFraPdl.firstOrNull { it.identifikasjonsnummer == uid &&  it.utstederland == "SWE" && !it.opphoert })
         }
-
     }
 
     @Test
@@ -91,7 +91,7 @@ internal class MottattHendelseTest : MottattHendelseBase() {
         val hendelse = SedHendelseModel.fromJson(createHendelseJson(SedType.P2000, BucType.P_BUC_01, avsenderLand = "SE"))
         val uid = "1236549875456544"
 
-        val pin = listOf(PinItem(identifikator = FNR_VOKSEN, land = "SE"), PinItem(identifikator = uid,land = hendelse.avsenderLand , institusjonsnavn = "important institution"))
+        val pin = listOf(PinItem(identifikator = FNR_VOKSEN, land = "SE"), PinItem(identifikator = uid,land = hendelse.avsenderLand , institusjon =  Institusjon(institusjonsnavn = "NAVSE", institusjonsid = "123")))
 
         val sed = SED.generateSedToClass<P2000>(createSed(SedType.P2000, pin = pin))
 
