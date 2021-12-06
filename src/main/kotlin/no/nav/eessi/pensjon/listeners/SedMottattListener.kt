@@ -8,8 +8,11 @@ import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelseModel
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
+import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
+import no.nav.eessi.pensjon.pdl.validering.PdlValidering
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
+import no.nav.eessi.pensjon.services.kodeverk.KodeverkClient
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
@@ -27,6 +30,7 @@ class SedMottattListener(
     private val personidentifiseringService: PersonidentifiseringService,
     private val dokumentHelper: EuxDokumentHelper,
     private val personMottakKlient: PersonMottakKlient,
+    private val kodeverkClient: KodeverkClient,
     @Value("\${SPRING_PROFILES_ACTIVE}") private val profile: String,
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper(SimpleMeterRegistry())
 ) {
@@ -35,6 +39,8 @@ class SedMottattListener(
 
     private val latch = CountDownLatch(1)
     private lateinit var consumeIncomingSed: MetricsHelper.Metric
+
+    private val pdlFiltrering = PdlFiltrering()
 
     fun getLatch() = latch
     var result : Any? = null
@@ -51,11 +57,14 @@ class SedMottattListener(
         topics = ["\${kafka.sedMottatt.topic}"],
         groupId = "\${kafka.sedMottatt.groupid}"
     )
+
     fun consumeSedMottatt(hendelse: String, cr: ConsumerRecord<String, String>, acknowledgment: Acknowledgment) {
         MDC.putCloseable("x_request_id", UUID.randomUUID().toString()).use {
             consumeIncomingSed.measure {
 
                 logger.info("Innkommet sedMottatt hendelse i partisjon: ${cr.partition()}, med offset: ${cr.offset()}")
+                val pdlValidering =  PdlValidering()
+
                 if(cr.offset() == 0L && profile == "prod") {
                     logger.error("Applikasjonen har forsøkt å prosessere sedMottatt meldinger fra offset 0, stopper prosessering")
                     throw RuntimeException("Applikasjonen har forsøkt å prosessere sedMottatt meldinger fra offset 0, stopper prosessering")
@@ -83,34 +92,31 @@ class SedMottattListener(
                         //kun for test
                         result = identifisertPersoner
 
-                        if (identifisertPersoner.isEmpty()) {
+                        if (!pdlValidering.finnesIdentifisertePersoner(identifisertPersoner)) {
+                            no.nav.eessi.pensjon.personidentifisering.relasjoner.logger.info("Ingen identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
                             acknowledgment.acknowledge()
-                            logger.info("Ingen identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
                             return@measure
                         }
 
                         logger.debug("Validerer uid fra sed som ikke finnes i PDL: ${identifisertPersoner.size}")
                         val filtrerUidSomIkkeFinnesIPdl = filtrerUidSomIkkeFinnesIPdl(identifisertPersoner)
                         if(filtrerUidSomIkkeFinnesIPdl.isEmpty()) {
-                            acknowledgment.acknowledge()
                             logger.info("Ingen filtrerte personer funnet Acket sedMottatt: ${cr.offset()}")
+                            acknowledgment.acknowledge()
                             return@measure
+
                         }
 
                         logger.debug("Validerer uid fra sed: ${filtrerUidSomIkkeFinnesIPdl.size}")
                         val validerteIdenter = validerUid(filtrerUidSomIkkeFinnesIPdl)
                         if(validerteIdenter.isEmpty()) {
-                            acknowledgment.acknowledge()
                             logger.info("Ingen validerte identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
+                            acknowledgment.acknowledge()
                             return@measure
                         }
                         lagEndringsMelding(validerteIdenter)
 
-                        //  *  logikk for filtrering duplikater seduid-pdluid ( av pdl-uid -> sed-uid)
-                        //  *  logikk for validering av korrekt sed-uid
-
                         //logikk for muligens oppgave
-                        //logikk for opprette pdl-endringsmelding
 
                     }
 
@@ -125,6 +131,7 @@ class SedMottattListener(
             }
         }
     }
+
 
     fun lagEndringsMelding(identifisertPersoner: List<IdentifisertPerson>){
         identifisertPersoner.map { ident ->
@@ -156,7 +163,7 @@ class SedMottattListener(
     }
 
     fun filtrerUidSomIkkeFinnesIPdl(identifisertPersoner: List<IdentifisertPerson>): List<IdentifisertPerson> {
-        return  identifisertPersoner.mapNotNull { person -> personidentifiseringService.filtrerUidSomIkkeFinnesIPdl(person) }
+        return  identifisertPersoner.mapNotNull { person -> pdlFiltrering.filtrerUidSomIkkeFinnesIPdl(person, kodeverkClient) }
     }
 
 }

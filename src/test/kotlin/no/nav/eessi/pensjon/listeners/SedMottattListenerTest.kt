@@ -36,6 +36,7 @@ internal class SedMottattListenerTest {
         personidentifiseringService,
         sedDokumentHelper,
         personMottakKlient,
+        kodeverkClient,
         "test")
 
     @BeforeEach

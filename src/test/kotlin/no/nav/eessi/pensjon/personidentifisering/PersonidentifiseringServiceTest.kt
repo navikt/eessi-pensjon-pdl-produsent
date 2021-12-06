@@ -2,6 +2,7 @@ package no.nav.eessi.pensjon.personidentifisering
 
 import io.mockk.every
 import io.mockk.mockk
+import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endring
@@ -18,6 +19,7 @@ class PersonidentifiseringServiceTest {
     private val kodeverkClient: KodeverkClient = mockk(relaxed = true)
     private val personService: PersonService = mockk()
     private lateinit var personidentifiseringService: PersonidentifiseringService
+    private val pdlFiltrering: PdlFiltrering = PdlFiltrering()
 
 
     @BeforeEach
@@ -44,7 +46,7 @@ class PersonidentifiseringServiceTest {
         every { kodeverkClient.finnLandkode("SE") } returns "SWE"
         every { kodeverkClient.finnLandkode("DK") } returns "DKK"
 
-        val newIdent = personidentifiseringService.filtrerUidSomIkkeFinnesIPdl(identPerson)
+        val newIdent = pdlFiltrering.filtrerUidSomIkkeFinnesIPdl(identPerson, kodeverkClient)
 
         assertEquals(1, newIdent?.personIdenterFraSed?.uid?.size)
         assertEquals(true, newIdent?.uidFraPdl?.isEmpty())
@@ -64,7 +66,7 @@ class PersonidentifiseringServiceTest {
         every { kodeverkClient.finnLandkode("SE") } returns "SWE"
         every { kodeverkClient.finnLandkode("DK") } returns "DKK"
 
-        val newIdent = personidentifiseringService.filtrerUidSomIkkeFinnesIPdl(identPerson)
+        val newIdent = pdlFiltrering.filtrerUidSomIkkeFinnesIPdl(identPerson, kodeverkClient)
 
         assertNull(newIdent)
     }
@@ -85,7 +87,7 @@ class PersonidentifiseringServiceTest {
         every { kodeverkClient.finnLandkode("SE") } returns "SWE"
         every { kodeverkClient.finnLandkode("DK") } returns "DKK"
 
-        val newIdent = personidentifiseringService.filtrerUidSomIkkeFinnesIPdl(identPerson)
+        val newIdent = pdlFiltrering.filtrerUidSomIkkeFinnesIPdl(identPerson, kodeverkClient)
 
         assertEquals(3, newIdent?.personIdenterFraSed?.uid?.size)
         assertEquals(true, newIdent?.uidFraPdl?.isEmpty())
@@ -108,7 +110,7 @@ class PersonidentifiseringServiceTest {
         every { kodeverkClient.finnLandkode("SE") } returns "SWE"
         every { kodeverkClient.finnLandkode("DK") } returns "DKK"
 
-        val newIdent = personidentifiseringService.filtrerUidSomIkkeFinnesIPdl(identPerson)
+        val newIdent = pdlFiltrering.filtrerUidSomIkkeFinnesIPdl(identPerson, kodeverkClient)
         assertNull(newIdent)
 
     }

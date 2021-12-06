@@ -80,6 +80,7 @@ internal open class MottattHendelseBase {
         personidentifiseringService = personidentifiseringService,
         dokumentHelper = dokumentHelper,
         personMottakKlient = personMottakKlient,
+        kodeverkClient,
         profile = "test"
     )
 
