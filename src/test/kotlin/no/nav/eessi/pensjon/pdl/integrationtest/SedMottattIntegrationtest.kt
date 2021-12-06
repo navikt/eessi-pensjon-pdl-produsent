@@ -1,6 +1,7 @@
 package no.nav.eessi.pensjon.pdl.integrationtest
 
 import io.mockk.every
+import io.mockk.verify
 import no.nav.eessi.pensjon.json.mapJsonToAny
 import no.nav.eessi.pensjon.json.toJson
 import no.nav.eessi.pensjon.json.typeRefs
@@ -159,10 +160,10 @@ class SedMottattIntegrationtest : IntegrationBase() {
         every { personService.hentPersonUtenlandskIdent(NorskIdent(fnr)) } returns personMock
         CustomMockServer()
             .mockSTSToken()
-            .medSed("/buc/147729/sed/b12e06dda2c7474b9998c7139c841646", "src/test/resources/eux/sed/P8000-TyskPIN-utenland.json")
+            .medSed("/buc/147729/sed/b12e06dda2c7474b9998c7139c841646", "src/test/resources/eux/sed/P8000-TyskPIN.json")
             .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
 
-        val json = this::class.java.classLoader.getResource("eux/hendelser/P_BUC_01_P2000.json")!!.readText()
+        val json = this::class.java.classLoader.getResource("eux/hendelser/P_BUC_01_P2000-utenland.json")!!.readText()
         val model = mapJsonToAny(json, typeRefs())
 
         template.send(PDL_PRODUSENT_TOPIC_MOTATT, model.toJson()).let {
@@ -172,25 +173,40 @@ class SedMottattIntegrationtest : IntegrationBase() {
         mockServer.verify(
             HttpRequest.request()
                 .withMethod("POST")
-                .withPath("/api/v1/endringer")
-                .withBody("""
-                    {
-                      "personopplysninger" : [ {
-                        "endringstype" : "OPPRETT",
-                        "ident" : "29087021082",
-                        "opplysningstype" : "UTENLANDSKIDENTIFIKASJONSNUMMER",
-                        "endringsmelding" : {
-                          "@type" : "UTENLANDSKIDENTIFIKASJONSNUMMER",
-                          "identifikasjonsnummer" : "56 120157 F 016",
-                          "utstederland" : "DEU",
-                          "kilde" : "NAVT003"
-                        },
-                        "opplysningsId" : null
-                      } ]
-                    }
-                """.trimIndent()),
-            VerificationTimes.exactly(1)
+                .withPath("/api/v1/endringer"),
+            VerificationTimes.exactly(0)
         );
     }
+
+    @Test
+    fun `Gitt en sed-hendelse fra Sverige som sender inn en finsk uid så skal det stoppes av valideringen`() {
+
+        val fnr = "29087021082"
+        val personMock =  PersonMock.createBrukerWithUid(
+            fnr = fnr,
+            uid = emptyList()
+        )
+
+        every { personService.hentPersonUtenlandskIdent(NorskIdent(fnr)) } returns personMock
+        CustomMockServer()
+            .mockSTSToken()
+            .medSed("/buc/147729/sed/b12e06dda2c7474b9998c7139c841646", "src/test/resources/eux/sed/P8000-TyskPIN.json")
+            .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
+
+        val json = this::class.java.classLoader.getResource("eux/hendelser/P_BUC_01_P2000-utenland.json")!!.readText()
+        val model = mapJsonToAny(json, typeRefs())
+
+        template.send(PDL_PRODUSENT_TOPIC_MOTATT, model.toJson()).let {
+            sedMottattListener.getLatch().await(10, TimeUnit.SECONDS)
+        }
+
+        mockServer.verify(
+            HttpRequest.request()
+                .withMethod("POST")
+                .withPath("/api/v1/endringer"),
+            VerificationTimes.exactly(0)
+        );
+    }
+
 
 }
