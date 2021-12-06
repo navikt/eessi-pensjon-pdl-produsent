@@ -137,7 +137,7 @@ class SedMottattIntegrationtest : IntegrationBase() {
                           "@type" : "UTENLANDSKIDENTIFIKASJONSNUMMER",
                           "identifikasjonsnummer" : "56 120157 F 016",
                           "utstederland" : "DEU",
-                          "kilde" : "NAV ACC 05"
+                          "kilde" : "NAVT003"
                         },
                         "opplysningsId" : null
                       } ]
