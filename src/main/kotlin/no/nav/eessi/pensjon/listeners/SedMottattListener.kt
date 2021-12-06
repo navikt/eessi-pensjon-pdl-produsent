@@ -99,7 +99,7 @@ class SedMottattListener(
                         }
 
                         logger.debug("Validerer uid fra sed som ikke finnes i PDL: ${identifisertPersoner.size}")
-                        val filtrerUidSomIkkeFinnesIPdl = pdlFiltrering.filtrerUidSomIkkeFinnesIPdl(identifisertPersoner, kodeverkClient)
+                        val filtrerUidSomIkkeFinnesIPdl = pdlFiltrering.filtrerUidSomIkkeFinnesIPdl(identifisertPersoner, kodeverkClient, sedHendelse.avsenderNavn!!)
                         if(filtrerUidSomIkkeFinnesIPdl.isEmpty()) {
                             logger.info("Ingen filtrerte personer funnet Acket sedMottatt: ${cr.offset()}")
                             acknowledgment.acknowledge()
