@@ -99,7 +99,7 @@ class SedMottattListener(
                         }
 
                         logger.debug("Validerer uid fra sed som ikke finnes i PDL: ${identifisertPersoner.size}")
-                        val filtrerUidSomIkkeFinnesIPdl = filtrerUidSomIkkeFinnesIPdl(identifisertPersoner)
+                        val filtrerUidSomIkkeFinnesIPdl = pdlFiltrering.filtrerUidSomIkkeFinnesIPdl(identifisertPersoner, kodeverkClient)
                         if(filtrerUidSomIkkeFinnesIPdl.isEmpty()) {
                             logger.info("Ingen filtrerte personer funnet Acket sedMottatt: ${cr.offset()}")
                             acknowledgment.acknowledge()
@@ -108,7 +108,7 @@ class SedMottattListener(
                         }
 
                         logger.debug("Validerer uid fra sed: ${filtrerUidSomIkkeFinnesIPdl.size}")
-                        val validerteIdenter = validerUid(filtrerUidSomIkkeFinnesIPdl)
+                        val validerteIdenter = pdlValidering.validerUid(filtrerUidSomIkkeFinnesIPdl)
                         if(validerteIdenter.isEmpty()) {
                             logger.info("Ingen validerte identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
                             acknowledgment.acknowledge()
@@ -151,19 +151,6 @@ class SedMottattListener(
             )
             personMottakKlient.opprettPersonopplysning(pdlEndringsOpplysninger)
         }
-    }
-
-    fun validerUid(identifisertPersoner: List<IdentifisertPerson>): List<IdentifisertPerson> {
-        val validering = LandspesifikkValidering()
-        val gyldigepersoner = identifisertPersoner.filter { it.personIdenterFraSed.uid.size == 1 }
-        return gyldigepersoner.filter { ident ->
-            val uid = ident.personIdenterFraSed.uid.first()
-            validering.validerLandsspesifikkUID(uid.utstederland, uid.identifikasjonsnummer)
-        }
-    }
-
-    fun filtrerUidSomIkkeFinnesIPdl(identifisertPersoner: List<IdentifisertPerson>): List<IdentifisertPerson> {
-        return  identifisertPersoner.mapNotNull { person -> pdlFiltrering.filtrerUidSomIkkeFinnesIPdl(person, kodeverkClient) }
     }
 
 }

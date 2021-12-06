@@ -24,4 +24,8 @@ class PdlFiltrering {
         val newpersonIdenterFraSed = identifisertPerson.personIdenterFraSed.copy(uid = newSedUid)
         return identifisertPerson.copy(personIdenterFraSed = newpersonIdenterFraSed, uidFraPdl = emptyList()) //new ident with uid not in pdl
     }
+
+    fun filtrerUidSomIkkeFinnesIPdl(identifisertPersoner: List<IdentifisertPerson>, kodeverk: KodeverkClient): List<IdentifisertPerson> {
+        return  identifisertPersoner.mapNotNull { person -> filtrerUidSomIkkeFinnesIPdl(person, kodeverk) }
+    }
 }
