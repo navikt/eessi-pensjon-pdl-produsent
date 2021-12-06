@@ -146,4 +146,51 @@ class SedMottattIntegrationtest : IntegrationBase() {
             VerificationTimes.exactly(1)
         );
     }
+
+    @Test
+    fun `Gitt en sed-hendelse med tysk uid som mangler institusjon så skal den stoppes av validering`() {
+
+        val fnr = "29087021082"
+        val personMock =  PersonMock.createBrukerWithUid(
+            fnr = fnr,
+            uid = emptyList()
+        )
+
+        every { personService.hentPersonUtenlandskIdent(NorskIdent(fnr)) } returns personMock
+        CustomMockServer()
+            .mockSTSToken()
+            .medSed("/buc/147729/sed/b12e06dda2c7474b9998c7139c841646", "src/test/resources/eux/sed/P8000-TyskPIN-utenland.json")
+            .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
+
+        val json = this::class.java.classLoader.getResource("eux/hendelser/P_BUC_01_P2000.json")!!.readText()
+        val model = mapJsonToAny(json, typeRefs())
+
+        template.send(PDL_PRODUSENT_TOPIC_MOTATT, model.toJson()).let {
+            sedMottattListener.getLatch().await(10, TimeUnit.SECONDS)
+        }
+
+        mockServer.verify(
+            HttpRequest.request()
+                .withMethod("POST")
+                .withPath("/api/v1/endringer")
+                .withBody("""
+                    {
+                      "personopplysninger" : [ {
+                        "endringstype" : "OPPRETT",
+                        "ident" : "29087021082",
+                        "opplysningstype" : "UTENLANDSKIDENTIFIKASJONSNUMMER",
+                        "endringsmelding" : {
+                          "@type" : "UTENLANDSKIDENTIFIKASJONSNUMMER",
+                          "identifikasjonsnummer" : "56 120157 F 016",
+                          "utstederland" : "DEU",
+                          "kilde" : "NAVT003"
+                        },
+                        "opplysningsId" : null
+                      } ]
+                    }
+                """.trimIndent()),
+            VerificationTimes.exactly(1)
+        );
+    }
+
 }

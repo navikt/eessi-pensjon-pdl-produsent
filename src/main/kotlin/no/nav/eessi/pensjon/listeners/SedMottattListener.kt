@@ -78,6 +78,12 @@ class SedMottattListener(
                     val sedHendelse = SedHendelseModel.fromJson(hendelse)
                     if (GyldigeHendelser.mottatt(sedHendelse)) {
 
+                        if(!pdlValidering.finnesAvsenderInstitusjon(sedHendelse.avsenderNavn)){
+                            acknowledgment.acknowledge()
+                            logger.error("Institusjon mangler, stopper identifisering av personer")
+                            return@measure
+                        }
+
                         val bucType = sedHendelse.bucType!!
 
                         logger.info("*** Starter pdl endringsmelding prosess for BucType: $bucType, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")

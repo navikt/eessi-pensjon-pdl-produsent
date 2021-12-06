@@ -22,4 +22,6 @@ class PdlValidering {
             validering.validerLandsspesifikkUID(uid.utstederland, uid.identifikasjonsnummer)
         }
     }
+
+    fun finnesAvsenderInstitusjon(avsenderNavn: String?) = avsenderNavn != null
 }
