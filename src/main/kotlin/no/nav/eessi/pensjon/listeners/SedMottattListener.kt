@@ -84,22 +84,24 @@ class SedMottattListener(
                         result = identifisertPersoner
 
                         if (identifisertPersoner.isEmpty()) {
-                            logger.info("Ingen identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
                             acknowledgment.acknowledge()
+                            logger.info("Ingen identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
                             return@measure
                         }
 
+                        logger.debug("Validerer uid fra sed som ikke finnes i PDL: ${identifisertPersoner.size}")
                         val filtrerUidSomIkkeFinnesIPdl = filtrerUidSomIkkeFinnesIPdl(identifisertPersoner)
                         if(filtrerUidSomIkkeFinnesIPdl.isEmpty()) {
-                            logger.info("Ingen filterer identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
                             acknowledgment.acknowledge()
+                            logger.info("Ingen identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
                             return@measure
                         }
 
+                        logger.debug("Validerer uid fra sed: ${filtrerUidSomIkkeFinnesIPdl.size}")
                         val validerteIdenter = validerUid(filtrerUidSomIkkeFinnesIPdl)
                         if(validerteIdenter.isEmpty()) {
-                            logger.info("Ingen validerte identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
                             acknowledgment.acknowledge()
+                            logger.info("Ingen validerte identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
                             return@measure
                         }
                         lagEndringsMelding(validerteIdenter)
