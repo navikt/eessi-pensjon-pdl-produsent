@@ -93,7 +93,7 @@ class SedMottattListener(
                         val filtrerUidSomIkkeFinnesIPdl = filtrerUidSomIkkeFinnesIPdl(identifisertPersoner)
                         if(filtrerUidSomIkkeFinnesIPdl.isEmpty()) {
                             acknowledgment.acknowledge()
-                            logger.info("Ingen identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
+                            logger.info("Ingen filtrerte personer funnet Acket sedMottatt: ${cr.offset()}")
                             return@measure
                         }
 
