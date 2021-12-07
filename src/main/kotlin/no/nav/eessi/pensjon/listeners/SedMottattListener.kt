@@ -44,7 +44,6 @@ class SedMottattListener(
 
     fun getLatch() = latch
     var result : Any? = null
-    var resultat : Any? = null
 
     @PostConstruct
     fun initMetrics() {
