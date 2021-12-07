@@ -64,10 +64,12 @@ class SedMottattListener(
                 logger.info("Innkommet sedMottatt hendelse i partisjon: ${cr.partition()}, med offset: ${cr.offset()}")
                 val pdlValidering =  PdlValidering()
 
+/*
                 if(cr.offset() == 0L && profile == "prod") {
                     logger.error("Applikasjonen har forsøkt å prosessere sedMottatt meldinger fra offset 0, stopper prosessering")
                     throw RuntimeException("Applikasjonen har forsøkt å prosessere sedMottatt meldinger fra offset 0, stopper prosessering")
                 }
+*/
                 logger.debug(hendelse)
 
                 //Forsøker med denne en gang til 258088L
