@@ -1,4 +1,4 @@
-package no.nav.eessi.pensjon.listeners
+package no.nav.eessi.pensjon.pdl.validering
 
 import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -65,7 +65,8 @@ internal class LandspesifikkValideringTest {
         "ESP, 0X580763 5C, false",
         "GBR, ZX 91 67 77 C9, true",
         "GBR, ZX 91-67 77MØ, false",
-        "GBR, ZX 91-6777M, false"
+        "GBR, ZX 91-6777M, false",
+        "GBR, ZX, false"
 
     )
 /*

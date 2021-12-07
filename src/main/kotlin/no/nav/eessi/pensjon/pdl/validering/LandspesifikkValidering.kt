@@ -60,7 +60,7 @@ class LandspesifikkValidering() {
             if (i >= str.length) return true
             if (str[i] != ' ') return false
         }
-        return true
+        return false
     }
 
     private fun belgia(uid: String) = uid.length == 13 && uid.checkDigitsLength(11) && uid.substring(6, 7) == "-" && uid.substring(10, 11) == "-"
