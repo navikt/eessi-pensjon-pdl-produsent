@@ -1,5 +1,6 @@
 package no.nav.eessi.pensjon.listeners
 
+import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
