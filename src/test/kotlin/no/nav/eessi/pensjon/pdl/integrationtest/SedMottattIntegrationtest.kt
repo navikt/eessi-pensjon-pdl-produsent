@@ -91,7 +91,7 @@ class SedMottattIntegrationtest : IntegrationBase() {
     }
 
     @Test
-    fun `Gitt en sed-hendelse med tysk uid finnes ikke i pdl når P8000 prosesserers så oppertes en endringsmelding til person-mottak`() {
+    fun `Gitt en sed-hendelse med tysk uid finnes ikke i pdl når P8000 prosesserers så opprettes det en endringsmelding til person-mottak`() {
 
         val fnr = "29087021082"
         val personMock =  PersonMock.createBrukerWithUid(
@@ -105,7 +105,7 @@ class SedMottattIntegrationtest : IntegrationBase() {
             .medSed("/buc/147729/sed/b12e06dda2c7474b9998c7139c841646", "src/test/resources/eux/sed/P8000-TyskPIN.json")
             .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
 
-        val json = this::class.java.classLoader.getResource("eux/hendelser/P_BUC_01_P2000.json")!!.readText()
+        val json = this::class.java.classLoader.getResource("eux/hendelser/P_BUC_01_P2000-avsenderDE.json")!!.readText()
         val model = mapJsonToAny(json, typeRefs())
 
         template.send(PDL_PRODUSENT_TOPIC_MOTATT, model.toJson()).let {
