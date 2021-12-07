@@ -1,23 +1,23 @@
-package no.nav.eessi.pensjon.listeners
+package no.nav.eessi.pensjon.pdl.validering
 
-import no.nav.eessi.pensjon.listeners.GyldigeLand.BELGIA
-import no.nav.eessi.pensjon.listeners.GyldigeLand.BULGARIA
-import no.nav.eessi.pensjon.listeners.GyldigeLand.DANMARK
-import no.nav.eessi.pensjon.listeners.GyldigeLand.ESTLAND
-import no.nav.eessi.pensjon.listeners.GyldigeLand.FINLAND
-import no.nav.eessi.pensjon.listeners.GyldigeLand.FRANKRIKE
-import no.nav.eessi.pensjon.listeners.GyldigeLand.ISLAND
-import no.nav.eessi.pensjon.listeners.GyldigeLand.ITALIA
-import no.nav.eessi.pensjon.listeners.GyldigeLand.LATVIA
-import no.nav.eessi.pensjon.listeners.GyldigeLand.LITAUEN
-import no.nav.eessi.pensjon.listeners.GyldigeLand.NEDERLAND
-import no.nav.eessi.pensjon.listeners.GyldigeLand.POLEN
-import no.nav.eessi.pensjon.listeners.GyldigeLand.SLOVENIA
-import no.nav.eessi.pensjon.listeners.GyldigeLand.SPANIA
-import no.nav.eessi.pensjon.listeners.GyldigeLand.STORBRITANNIA
-import no.nav.eessi.pensjon.listeners.GyldigeLand.SVERIGE
-import no.nav.eessi.pensjon.listeners.GyldigeLand.TYSKLAND
-import no.nav.eessi.pensjon.listeners.GyldigeLand.UNGARN
+import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.BELGIA
+import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.BULGARIA
+import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.DANMARK
+import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.ESTLAND
+import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.FINLAND
+import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.FRANKRIKE
+import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.ISLAND
+import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.ITALIA
+import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.LATVIA
+import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.LITAUEN
+import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.NEDERLAND
+import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.POLEN
+import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.SLOVENIA
+import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.SPANIA
+import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.STORBRITANNIA
+import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.SVERIGE
+import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.TYSKLAND
+import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.UNGARN
 import org.slf4j.LoggerFactory
 
 class LandspesifikkValidering() {

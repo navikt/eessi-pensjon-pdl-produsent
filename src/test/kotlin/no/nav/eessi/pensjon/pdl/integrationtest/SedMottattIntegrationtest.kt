@@ -39,17 +39,6 @@ class SedMottattIntegrationtest : IntegrationBase() {
     @Autowired
     private lateinit var personService: PersonService
 
-//    private val personidentifiseringService: PersonidentifiseringService = mockk()
-
-//    private val dokumentHelper = EuxDokumentHelper(mockk())
-
-//    protected val sedMottattListener: SedMottattListener = SedMottattListener(
-//        personidentifiseringService = personidentifiseringService,
-//        dokumentHelper = dokumentHelper,
-//        personMottakKlient = personMottakKlient,
-//        profile = "test"
-//    )
-
     @Test
     fun `En sed hendelse med dansk uid i sed finnes også i pdl skal ack og avslute på en pen måte`() {
 
@@ -102,7 +91,7 @@ class SedMottattIntegrationtest : IntegrationBase() {
     }
 
     @Test
-    fun `Gitt en sed-hendelse med tysk uid finnes ikke i pdl når P8000 prosesserers så oppertes en endringsmelding til person-mottak`() {
+    fun `Gitt en sed-hendelse med tysk uid finnes ikke i pdl når P8000 prosesserers så opprettes det en endringsmelding til person-mottak`() {
 
         val fnr = "29087021082"
         val personMock =  PersonMock.createBrukerWithUid(
@@ -116,7 +105,7 @@ class SedMottattIntegrationtest : IntegrationBase() {
             .medSed("/buc/147729/sed/b12e06dda2c7474b9998c7139c841646", "src/test/resources/eux/sed/P8000-TyskPIN.json")
             .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
 
-        val json = this::class.java.classLoader.getResource("eux/hendelser/P_BUC_01_P2000.json")!!.readText()
+        val json = this::class.java.classLoader.getResource("eux/hendelser/P_BUC_01_P2000-avsenderDE.json")!!.readText()
         val model = mapJsonToAny(json, typeRefs())
 
         template.send(PDL_PRODUSENT_TOPIC_MOTATT, model.toJson()).let {
@@ -137,13 +126,73 @@ class SedMottattIntegrationtest : IntegrationBase() {
                           "@type" : "UTENLANDSKIDENTIFIKASJONSNUMMER",
                           "identifikasjonsnummer" : "56 120157 F 016",
                           "utstederland" : "DEU",
-                          "kilde" : "NAV ACC 05"
+                          "kilde" : "NAVT003"
                         },
                         "opplysningsId" : null
                       } ]
                     }
                 """.trimIndent()),
             VerificationTimes.exactly(1)
-        );
+        )
+    }
+
+    @Test
+    fun `Gitt en sed-hendelse med tysk uid som mangler institusjon så skal den stoppes av validering`() {
+
+        val fnr = "29087021082"
+        val personMock =  PersonMock.createBrukerWithUid(
+            fnr = fnr,
+            uid = emptyList()
+        )
+
+        every { personService.hentPersonUtenlandskIdent(NorskIdent(fnr)) } returns personMock
+        CustomMockServer()
+            .mockSTSToken()
+            .medSed("/buc/147729/sed/b12e06dda2c7474b9998c7139c841646", "src/test/resources/eux/sed/P8000-TyskPIN.json")
+            .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
+
+        val json = this::class.java.classLoader.getResource("eux/hendelser/P_BUC_01_P2000-utenland.json")!!.readText()
+        val model = mapJsonToAny(json, typeRefs())
+
+        template.send(PDL_PRODUSENT_TOPIC_MOTATT, model.toJson()).let {
+            sedMottattListener.getLatch().await(10, TimeUnit.SECONDS)
+        }
+
+        mockServer.verify(
+            HttpRequest.request()
+                .withMethod("POST")
+                .withPath("/api/v1/endringer"),
+            VerificationTimes.exactly(0)
+        )
+    }
+
+    @Test
+    fun `Gitt en sed-hendelse fra Sverige som sender inn en tysk uid så skal det stoppes av valideringen`() {
+
+        val fnr = "29087021082"
+        val personMock =  PersonMock.createBrukerWithUid(
+            fnr = fnr,
+            uid = emptyList()
+        )
+
+        every { personService.hentPersonUtenlandskIdent(NorskIdent(fnr)) } returns personMock
+        CustomMockServer()
+            .mockSTSToken()
+            .medSed("/buc/147729/sed/b12e06dda2c7474b9998c7139c841646", "src/test/resources/eux/sed/P8000-TyskOgFinskPIN.json")
+            .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
+
+        val json = this::class.java.classLoader.getResource("eux/hendelser/P_BUC_01_P2000-avsenderSE.json")!!.readText()
+        val model = mapJsonToAny(json, typeRefs())
+
+        template.send(PDL_PRODUSENT_TOPIC_MOTATT, model.toJson()).let {
+            sedMottattListener.getLatch().await(10, TimeUnit.SECONDS)
+        }
+
+        mockServer.verify(
+            HttpRequest.request()
+                .withMethod("POST")
+                .withPath("/api/v1/endringer"),
+            VerificationTimes.exactly(0)
+        )
     }
 }

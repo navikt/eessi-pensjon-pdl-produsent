@@ -46,7 +46,7 @@ class PersonidentifiseringServiceTest {
         every { kodeverkClient.finnLandkode("SE") } returns "SWE"
         every { kodeverkClient.finnLandkode("DK") } returns "DKK"
 
-        val newIdent = pdlFiltrering.filtrerUidSomIkkeFinnesIPdl(identPerson, kodeverkClient)
+        val newIdent = pdlFiltrering.filtrerUidSomIkkeFinnesIPdl(identPerson, kodeverkClient, "enFinInstitusjon")
 
         assertEquals(1, newIdent?.personIdenterFraSed?.uid?.size)
         assertEquals(true, newIdent?.uidFraPdl?.isEmpty())
@@ -66,7 +66,7 @@ class PersonidentifiseringServiceTest {
         every { kodeverkClient.finnLandkode("SE") } returns "SWE"
         every { kodeverkClient.finnLandkode("DK") } returns "DKK"
 
-        val newIdent = pdlFiltrering.filtrerUidSomIkkeFinnesIPdl(identPerson, kodeverkClient)
+        val newIdent = pdlFiltrering.filtrerUidSomIkkeFinnesIPdl(identPerson, kodeverkClient, "enFinInstitusjon")
 
         assertNull(newIdent)
     }
@@ -87,7 +87,7 @@ class PersonidentifiseringServiceTest {
         every { kodeverkClient.finnLandkode("SE") } returns "SWE"
         every { kodeverkClient.finnLandkode("DK") } returns "DKK"
 
-        val newIdent = pdlFiltrering.filtrerUidSomIkkeFinnesIPdl(identPerson, kodeverkClient)
+        val newIdent = pdlFiltrering.filtrerUidSomIkkeFinnesIPdl(identPerson, kodeverkClient, "enFinInstitusjon")
 
         assertEquals(3, newIdent?.personIdenterFraSed?.uid?.size)
         assertEquals(true, newIdent?.uidFraPdl?.isEmpty())
@@ -110,7 +110,7 @@ class PersonidentifiseringServiceTest {
         every { kodeverkClient.finnLandkode("SE") } returns "SWE"
         every { kodeverkClient.finnLandkode("DK") } returns "DKK"
 
-        val newIdent = pdlFiltrering.filtrerUidSomIkkeFinnesIPdl(identPerson, kodeverkClient)
+        val newIdent = pdlFiltrering.filtrerUidSomIkkeFinnesIPdl(identPerson, kodeverkClient, "enFinInstitusjon")
         assertNull(newIdent)
 
     }

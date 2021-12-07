@@ -6,13 +6,15 @@ import no.nav.eessi.pensjon.services.kodeverk.KodeverkClient
 
 class PdlFiltrering {
 
-    fun filtrerUidSomIkkeFinnesIPdl(identifisertPerson: IdentifisertPerson, kodeverk: KodeverkClient) : IdentifisertPerson? {
+    fun filtrerUidSomIkkeFinnesIPdl(identifisertPerson: IdentifisertPerson,
+                                    kodeverk: KodeverkClient,
+                                    institusjon: String) : IdentifisertPerson? {
         //pdl pair (land, ident)
         val pdlPair = identifisertPerson.uidFraPdl.map { Pair(it.utstederland, it.identifikasjonsnummer) }
 
         //make new seduid validatet against pdluid (contrycode, ident) map use interface FinnLand (iso2->iso3) SE->SWE
         val newSedUid = identifisertPerson.personIdenterFraSed.uid
-            .mapNotNull { seduid -> kodeverk.finnLandkode(seduid.utstederland)?.let {  UtenlandskPin(seduid.kilde, seduid.identifikasjonsnummer, it) } }
+            .mapNotNull { seduid -> kodeverk.finnLandkode(seduid.utstederland)?.let {  UtenlandskPin(institusjon, seduid.identifikasjonsnummer, it) } }
             .filterNot { seduid ->
                 //sed pair (land, ident)
                 val seduidPair = Pair( seduid.utstederland , seduid.identifikasjonsnummer)
@@ -25,7 +27,7 @@ class PdlFiltrering {
         return identifisertPerson.copy(personIdenterFraSed = newpersonIdenterFraSed, uidFraPdl = emptyList()) //new ident with uid not in pdl
     }
 
-    fun filtrerUidSomIkkeFinnesIPdl(identifisertPersoner: List<IdentifisertPerson>, kodeverk: KodeverkClient): List<IdentifisertPerson> {
-        return  identifisertPersoner.mapNotNull { person -> filtrerUidSomIkkeFinnesIPdl(person, kodeverk) }
+    fun filtrerUidSomIkkeFinnesIPdl(identifisertPersoner: List<IdentifisertPerson>, kodeverk: KodeverkClient, institusjon: String): List<IdentifisertPerson> {
+        return  identifisertPersoner.mapNotNull { identifisertPerson -> filtrerUidSomIkkeFinnesIPdl(identifisertPerson, kodeverk, institusjon) }
     }
 }

@@ -78,6 +78,7 @@ class SedMottattListener(
                     val sedHendelse = SedHendelseModel.fromJson(hendelse)
                     if (GyldigeHendelser.mottatt(sedHendelse)) {
 
+
                         val bucType = sedHendelse.bucType!!
 
                         logger.info("*** Starter pdl endringsmelding prosess for BucType: $bucType, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
@@ -89,17 +90,23 @@ class SedMottattListener(
                             currentSed, bucType, sedHendelse.sedType, sedHendelse.rinaDokumentId
                         )
 
+                        if(sedHendelse.avsenderLand == null || pdlValidering.erUidLandAnnetEnnAvsenderLand(identifisertPersoner, sedHendelse.avsenderLand)){
+                            acknowledgment.acknowledge()
+                            logger.error("Avsenderland mangler, stopper identifisering av personer")
+                            return@measure
+                        }
+
                         //kun for test
                         result = identifisertPersoner
 
                         if (!pdlValidering.finnesIdentifisertePersoner(identifisertPersoner)) {
-                            no.nav.eessi.pensjon.personidentifisering.relasjoner.logger.info("Ingen identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
+                            logger.info("Ingen identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
                             acknowledgment.acknowledge()
                             return@measure
                         }
 
                         logger.debug("Validerer uid fra sed som ikke finnes i PDL: ${identifisertPersoner.size}")
-                        val filtrerUidSomIkkeFinnesIPdl = pdlFiltrering.filtrerUidSomIkkeFinnesIPdl(identifisertPersoner, kodeverkClient)
+                        val filtrerUidSomIkkeFinnesIPdl = pdlFiltrering.filtrerUidSomIkkeFinnesIPdl(identifisertPersoner, kodeverkClient, sedHendelse.avsenderNavn!!)
                         if(filtrerUidSomIkkeFinnesIPdl.isEmpty()) {
                             logger.info("Ingen filtrerte personer funnet Acket sedMottatt: ${cr.offset()}")
                             acknowledgment.acknowledge()
@@ -108,7 +115,7 @@ class SedMottattListener(
                         }
 
                         logger.debug("Validerer uid fra sed: ${filtrerUidSomIkkeFinnesIPdl.size}")
-                        val validerteIdenter = pdlValidering.validerUid(filtrerUidSomIkkeFinnesIPdl)
+                        val validerteIdenter = pdlValidering.personerValidertPaaLand(filtrerUidSomIkkeFinnesIPdl)
                         if(validerteIdenter.isEmpty()) {
                             logger.info("Ingen validerte identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
                             acknowledgment.acknowledge()
