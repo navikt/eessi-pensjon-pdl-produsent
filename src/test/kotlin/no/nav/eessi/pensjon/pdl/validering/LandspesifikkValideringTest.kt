@@ -1,6 +1,5 @@
 package no.nav.eessi.pensjon.pdl.validering
 
-import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
@@ -66,7 +65,8 @@ internal class LandspesifikkValideringTest {
         "GBR, ZX 91 67 77 C9, true",
         "GBR, ZX 91-67 77MØ, false",
         "GBR, ZX 91-6777M, false",
-        "GBR, ZX, false"
+        "GBR, ZXS, false", //format og lengde
+        "GBR, ZX, false" //length
 
     )
 /*

@@ -56,11 +56,10 @@ class LandspesifikkValidering() {
     fun String.isLettersOrDigit(): Boolean = this.none { it !in 'A'..'Z' && it !in 'a'..'z' && it !in '0'..'9' }
 
     private fun erHvertredjeBokstavBlank(str: String): Boolean {
-        for(i in 2..str.length step 3) {
-            if (i >= str.length) return true
+        for(i in 2 until str.length step 3) {
             if (str[i] != ' ') return false
         }
-        return false
+        return true
     }
 
     private fun belgia(uid: String) = uid.length == 13 && uid.checkDigitsLength(11) && uid.substring(6, 7) == "-" && uid.substring(10, 11) == "-"
@@ -82,7 +81,7 @@ class LandspesifikkValidering() {
     private fun ungarn(uid: String): Boolean = uid.checkDigitsLength(9) && uid.length == 11 && uid.substring(3,4) == "-" && uid.substring(7,8) == "-"
     private fun frankrike(uid: String): Boolean = uid.checkDigitsLength(13) && uid.length == 18  && uid.substring(1,2) == " " && uid.substring(4,5) == " " && uid.substring(7,8) == " " && uid.substring(10,11) == " "  && uid.substring(14,15) == " "
     private fun spania(uid: String): Boolean = uid.isLettersOrDigit() && uid.length == 10
-    private fun storbritannia(uid: String): Boolean = uid.replace(" ","") .isLettersOrDigit() && erHvertredjeBokstavBlank(uid)
+    private fun storbritannia(uid: String): Boolean = uid.replace(" ","") .isLettersOrDigit() && erHvertredjeBokstavBlank(uid)  && uid.length > 10
 
 }
 
