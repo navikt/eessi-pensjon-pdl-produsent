@@ -1,7 +1,6 @@
 package no.nav.eessi.pensjon.pdl.integrationtest
 
 import io.mockk.every
-import io.mockk.verify
 import no.nav.eessi.pensjon.json.mapJsonToAny
 import no.nav.eessi.pensjon.json.toJson
 import no.nav.eessi.pensjon.json.typeRefs
@@ -39,17 +38,6 @@ class SedMottattIntegrationtest : IntegrationBase() {
 
     @Autowired
     private lateinit var personService: PersonService
-
-//    private val personidentifiseringService: PersonidentifiseringService = mockk()
-
-//    private val dokumentHelper = EuxDokumentHelper(mockk())
-
-//    protected val sedMottattListener: SedMottattListener = SedMottattListener(
-//        personidentifiseringService = personidentifiseringService,
-//        dokumentHelper = dokumentHelper,
-//        personMottakKlient = personMottakKlient,
-//        profile = "test"
-//    )
 
     @Test
     fun `En sed hendelse med dansk uid i sed finnes også i pdl skal ack og avslute på en pen måte`() {
@@ -145,7 +133,7 @@ class SedMottattIntegrationtest : IntegrationBase() {
                     }
                 """.trimIndent()),
             VerificationTimes.exactly(1)
-        );
+        )
     }
 
     @Test
@@ -175,7 +163,7 @@ class SedMottattIntegrationtest : IntegrationBase() {
                 .withMethod("POST")
                 .withPath("/api/v1/endringer"),
             VerificationTimes.exactly(0)
-        );
+        )
     }
 
     @Test
@@ -205,8 +193,6 @@ class SedMottattIntegrationtest : IntegrationBase() {
                 .withMethod("POST")
                 .withPath("/api/v1/endringer"),
             VerificationTimes.exactly(0)
-        );
+        )
     }
-
-
 }
