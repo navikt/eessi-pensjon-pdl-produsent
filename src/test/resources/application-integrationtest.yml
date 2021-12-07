@@ -18,7 +18,7 @@ securitytokenservice:
 
 NAIS_APP_NAME: eessi-pensjon-pdl-produsent
 
-eux_rina_api_v1_url: http://localhost:${mockserverport}
+EUX_RINA_API_V1_URL: http://localhost:${mockserverport}
 PDL_URL: http://localhost:${mockserverport}
 PDL_PERSON_MOTTAK_URL: http://localhost:${mockserverport}
 securitytokenservice.url: http://someurl

@@ -22,7 +22,7 @@ class EuxRestTemplate(
     private val stsService: STSService
 ) {
 
-    @Value("\${eux_rina_api_v1_url}")
+    @Value("\${EUX_RINA_API_V1_URL}")
     lateinit var url: String
 
     @Bean

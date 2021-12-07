@@ -36,7 +36,7 @@ class PersonMottakKlient(@Value("\${namespace}") var nameSpace: String,
         return true
     }
 
-    private fun createHeaders(): HttpHeaders? {
+    private fun createHeaders(): HttpHeaders {
         val httpHeaders = HttpHeaders()
         httpHeaders.add("Nav-Call-Id", UUID.randomUUID().toString())
         httpHeaders.add("Tema", "PEN")
