@@ -1,0 +1,43 @@
+{
+  "nav": {
+    "bruker": {
+      "person": {
+        "kjoenn": "K",
+        "etternavn": "SKILPADDE ",
+        "pin": [
+          {
+            "land": "NO",
+            "identifikator": "29087021082 "
+          },
+          {
+            "land": "DE",
+            "institusjon": {
+              "institusjonsnavn": "NAV ACC 05",
+              "institusjonsid": "NO:NAVAT05"
+            },
+            "identifikator": "56 120157 F 016"
+          },
+          {
+            "land": "FI",
+            "institusjon": {
+              "institusjonsnavn": "FIN NAV ACC",
+              "institusjonsid": "FIN:NAVAT05"
+            },
+            "identifikator": "130177-308T"
+          }
+        ],
+        "fornavn": "TALENTFULL",
+        "foedselsdato": "1970-08-29"
+      }
+    },
+    "eessisak": [
+      {
+        "saksnummer": "123456",
+        "land": "DE"
+      }
+    ]
+  },
+  "sedGVer": "4",
+  "sedVer": "2",
+  "sed": "P8000"
+}
