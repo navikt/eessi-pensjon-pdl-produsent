@@ -167,7 +167,7 @@ class SedMottattIntegrationtest : IntegrationBase() {
     }
 
     @Test
-    fun `Gitt en sed-hendelse fra Sverige som sender inn en finsk uid så skal det stoppes av valideringen`() {
+    fun `Gitt en sed-hendelse fra Sverige som sender inn en tysk uid så skal det stoppes av valideringen`() {
 
         val fnr = "29087021082"
         val personMock =  PersonMock.createBrukerWithUid(

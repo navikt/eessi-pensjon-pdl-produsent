@@ -14,7 +14,9 @@ class PdlValidering {
         return true
     }
 
-    fun validerUid(identifisertPersoner: List<IdentifisertPerson>): List<IdentifisertPerson> {
+    fun validerUid(identifisertPersoner: List<IdentifisertPerson>, avsenderLand: String): List<IdentifisertPerson> {
+        identifisertPersoner.flatMap { it -> it.personIdenterFraSed.uid}
+
         val validering = LandspesifikkValidering()
         val gyldigepersoner = identifisertPersoner.filter { it.personIdenterFraSed.uid.size == 1 }
         return gyldigepersoner.filter { ident ->

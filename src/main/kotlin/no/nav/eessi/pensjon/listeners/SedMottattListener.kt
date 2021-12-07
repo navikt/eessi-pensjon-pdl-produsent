@@ -114,7 +114,7 @@ class SedMottattListener(
                         }
 
                         logger.debug("Validerer uid fra sed: ${filtrerUidSomIkkeFinnesIPdl.size}")
-                        val validerteIdenter = pdlValidering.validerUid(filtrerUidSomIkkeFinnesIPdl)
+                        val validerteIdenter = pdlValidering.validerUid(filtrerUidSomIkkeFinnesIPdl, sedHendelse.avsenderLand)
                         if(validerteIdenter.isEmpty()) {
                             logger.info("Ingen validerte identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
                             acknowledgment.acknowledge()
