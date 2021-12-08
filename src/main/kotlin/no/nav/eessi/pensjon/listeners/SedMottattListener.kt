@@ -87,31 +87,37 @@ class SedMottattListener(
                         val currentSed = dokumentHelper.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId)
 
                         //identifisere Person hent Person fra PDL valider Person
-                        val identifisertPersoner = personidentifiseringService.hentIdentifisertPersoner(
+                        val identifisertePersoner = personidentifiseringService.hentIdentifisertPersoner(
                             currentSed, bucType, sedHendelse.sedType, sedHendelse.rinaDokumentId
                         )
 
-                        if(sedHendelse.avsenderLand == null || pdlValidering.erUidLandAnnetEnnAvsenderLand(identifisertPersoner, sedHendelse.avsenderLand)){
+                        if (identifisertePersoner.size > 1) {
+                            acknowledgment.acknowledge()
+                            logger.info("Antall identifiserte personer er fler enn en")
+                            return@measure
+                        }
+
+                        if(sedHendelse.avsenderLand == null || pdlValidering.erUidLandAnnetEnnAvsenderLand(identifisertePersoner, sedHendelse.avsenderLand)){
                             acknowledgment.acknowledge()
                             logger.error("Avsenderland mangler, stopper identifisering av personer")
                             return@measure
                         }
 
                         //kun for test
-                        result = identifisertPersoner
+                        result = identifisertePersoner
 
-                        if (!pdlValidering.finnesIdentifisertePersoner(identifisertPersoner)) {
+                        if (!pdlValidering.finnesIdentifisertePersoner(identifisertePersoner)) {
                             logger.info("Ingen identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
                             acknowledgment.acknowledge()
                             return@measure
                         }
 
-                        val firstOrNull = identifisertPersoner.firstOrNull { person ->
+                        val firstOrNull = identifisertePersoner.firstOrNull { person ->
                             person.personIdenterFraSed.finnesAlleredeIPDL(person.uidFraPdl.map { it.identifikasjonsnummer })
                         }
 
-                        logger.debug("Validerer uid fra sed som ikke finnes i PDL: ${identifisertPersoner.size}")
-                        val filtrerUidSomIkkeFinnesIPdl = pdlFiltrering.filtrerUidSomIkkeFinnesIPdl(identifisertPersoner, kodeverkClient, sedHendelse.avsenderNavn!!)
+                        logger.debug("Validerer uid fra sed som ikke finnes i PDL: ${identifisertePersoner.size}")
+                        val filtrerUidSomIkkeFinnesIPdl = pdlFiltrering.filtrerUidSomIkkeFinnesIPdl(identifisertePersoner, kodeverkClient, sedHendelse.avsenderNavn!!)
                         if(filtrerUidSomIkkeFinnesIPdl.isEmpty()) {
                             logger.info("Ingen filtrerte personer funnet Acket sedMottatt: ${cr.offset()}")
                             acknowledgment.acknowledge()
