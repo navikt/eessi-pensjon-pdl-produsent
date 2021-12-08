@@ -11,8 +11,14 @@ import no.nav.eessi.pensjon.eux.EuxDokumentHelper
 import no.nav.eessi.pensjon.eux.EuxKlient
 import no.nav.eessi.pensjon.eux.model.buc.Buc
 import no.nav.eessi.pensjon.eux.model.buc.BucType
-import no.nav.eessi.pensjon.eux.model.sed.*
+import no.nav.eessi.pensjon.eux.model.sed.Bruker
+import no.nav.eessi.pensjon.eux.model.sed.Nav
 import no.nav.eessi.pensjon.eux.model.sed.Person
+import no.nav.eessi.pensjon.eux.model.sed.PinItem
+import no.nav.eessi.pensjon.eux.model.sed.RelasjonAvdodItem
+import no.nav.eessi.pensjon.eux.model.sed.RelasjonTilAvdod
+import no.nav.eessi.pensjon.eux.model.sed.SED
+import no.nav.eessi.pensjon.eux.model.sed.SedType
 import no.nav.eessi.pensjon.json.toJson
 import no.nav.eessi.pensjon.listeners.GyldigeHendelser
 import no.nav.eessi.pensjon.listeners.SedMottattListener
@@ -22,7 +28,23 @@ import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
 import no.nav.eessi.pensjon.personidentifisering.Rolle
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
-import no.nav.eessi.pensjon.personoppslag.pdl.model.*
+import no.nav.eessi.pensjon.personoppslag.pdl.model.AdressebeskyttelseGradering
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Bostedsadresse
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Endring
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Foedsel
+import no.nav.eessi.pensjon.personoppslag.pdl.model.GeografiskTilknytning
+import no.nav.eessi.pensjon.personoppslag.pdl.model.GtType
+import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
+import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentInformasjon
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Kjoenn
+import no.nav.eessi.pensjon.personoppslag.pdl.model.KjoennType
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Metadata
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Navn
+import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
+import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
+import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Vegadresse
 import no.nav.eessi.pensjon.services.kodeverk.KodeverkClient
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -33,7 +55,7 @@ internal open class MottattHendelseBase {
 
     private val euxKlient: EuxKlient = mockk()
     private val dokumentHelper = EuxDokumentHelper(euxKlient)
-    private val kodeverkClient : KodeverkClient = mockk()
+    private val kodeverkClient: KodeverkClient = mockk()
     private val personService: PersonService = mockk(relaxed = true)
     private val personidentifiseringService = PersonidentifiseringService(personService, kodeverkClient)
 
@@ -69,6 +91,9 @@ internal open class MottattHendelseBase {
         dokumentHelper.initMetrics()
         listAppender.start()
         deugLogger.addAppender(listAppender)
+
+        every { kodeverkClient.finnLandkode("SE") } returns "SWE"
+        every { kodeverkClient.finnLandkode("NO") } returns "NOR"
     }
 
     @AfterEach
@@ -77,7 +102,7 @@ internal open class MottattHendelseBase {
         clearAllMocks()
     }
 
-   protected fun testRunner(
+    protected fun testRunner(
         fnr: String?,
         hendelse: SedHendelseModel,
         sed: SED,
@@ -98,10 +123,10 @@ internal open class MottattHendelseBase {
         }
 
         mottattListener.consumeSedMottatt(hendelse.toJson(), mockk(relaxed = true), mockk(relaxed = true))
-        if(GyldigeHendelser.erGyldigInnkommetSed(hendelse)) {
+        if (GyldigeHendelser.erGyldigInnkommetSed(hendelse)) {
             verify(exactly = 1) { euxKlient.hentSedJson(any(), any()) }
-            assertBlock( mottattListener.result as List<IdentifisertPerson> )
-        } else{
+            assertBlock(mottattListener.result as List<IdentifisertPerson>?)
+        } else {
             assertBlock(null)
         }
         //assertTrue(sedMottattListemerAckerMelding(), "Mangler acking av melding")
@@ -138,9 +163,9 @@ internal open class MottattHendelseBase {
         }
 
         mottattListener.consumeSedMottatt(hendelse.toJson(), mockk(relaxed = true), mockk(relaxed = true))
-        if(GyldigeHendelser.erGyldigInnkommetSed(hendelse)) {
+        if (GyldigeHendelser.erGyldigInnkommetSed(hendelse)) {
             verify(exactly = 1) { euxKlient.hentSedJson(any(), any()) }
-            assertBlock( mottattListener.result as List<IdentifisertPerson>)
+            assertBlock(mottattListener.result as List<IdentifisertPerson>?)
         } else {
             assertBlock(null)
         }
@@ -214,7 +239,7 @@ internal open class MottattHendelseBase {
         )
     }
 
-    protected fun createMetadata() : Metadata {
+    protected fun createMetadata(): Metadata {
         return Metadata(
             listOf(
                 Endring(
@@ -323,7 +348,7 @@ internal open class MottattHendelseBase {
     }
 
 
-    fun validateSedMottattListenerLoggingMessage(keyword: String) : Boolean {
+    fun validateSedMottattListenerLoggingMessage(keyword: String): Boolean {
         val logsList: List<ILoggingEvent> = listAppender.list
         return logsList.find { asdsa ->
             asdsa.message.contains(keyword)

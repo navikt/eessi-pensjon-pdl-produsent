@@ -126,6 +126,21 @@ abstract class IntegrationBase() {
                 )
         }
 
+        fun medbBuc(bucPath: String, bucLocation: String) = apply {
+
+            mockServer.`when`(
+                HttpRequest.request()
+                    .withMethod(HttpMethod.GET.name)
+                    .withPath(bucPath)
+            )
+                .respond(
+                    HttpResponse.response()
+                        .withHeader(Header("Content-Type", "application/json; charset=utf-8"))
+                        .withStatusCode(HttpStatusCode.OK_200.code())
+                        .withBody(String(Files.readAllBytes(Paths.get(bucLocation))))
+                )
+        }
+
         fun medKodeverk(kodeverkPath: String, kodeVerkLocation: String) = apply {
 
             mockServer.`when`(
