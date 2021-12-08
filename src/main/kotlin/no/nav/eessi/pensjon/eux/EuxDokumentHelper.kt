@@ -1,6 +1,8 @@
 package no.nav.eessi.pensjon.eux
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
+import no.nav.eessi.pensjon.eux.model.buc.Buc
+import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import org.slf4j.LoggerFactory
@@ -36,6 +38,40 @@ class EuxDokumentHelper(
             val json = euxKlient.hentSedJson(rinaSakId, dokumentId)
             SED.fromJsonToConcrete(json)
         }
+    }
+
+    fun hentAlleSedIBuc(rinaSakId: String, documents: List<ForenkletSED>): List<Pair<String, SED>> {
+        return documents
+            .filter(ForenkletSED::harGyldigStatus)
+            .map { sed -> Pair(sed.id, hentSed(rinaSakId, sed.id)) }
+            .also { logger.info("Fant ${it.size} SED i BUCid: $rinaSakId") }
+    }
+
+    fun hentAlleGyldigeDokumenter(buc: Buc): List<ForenkletSED> {
+
+        return hentBucDokumenter(buc)
+            .filter { it.type.erGyldig() }
+            .also { logger.info("Fant ${it.size} dokumenter i BUC: $it") }
+    }
+
+    /**
+     * Henter Buc fra Rina.
+     */
+    fun hentBuc(rinaSakId: String): Buc {
+        return hentBuc.measure {
+            euxKlient.hentBuc(rinaSakId) ?: throw RuntimeException("Ingen BUC")
+        }
+    }
+
+    /**
+     * Henter alle dokumenter (SEDer) i en Buc.
+     */
+    fun hentBucDokumenter(buc: Buc): List<ForenkletSED> {
+        val documents = buc.documents ?: return emptyList()
+        return documents
+            .filter { it.id != null }
+            .map { ForenkletSED(it.id!!, it.type, SedStatus.fra(it.status)) }
+            .filter { it.harGyldigStatus() }
     }
 
 }

@@ -2,6 +2,7 @@ package no.nav.eessi.pensjon.listeners
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.eessi.pensjon.eux.EuxDokumentHelper
+import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.Endringsmelding
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
@@ -77,7 +78,7 @@ class SedMottattListener(
                     val offset = cr.offset()
                     logger.info("*** Offset $offset  Partition ${cr.partition()} ***")
                     val sedHendelse = SedHendelseModel.fromJson(hendelse)
-                    if (GyldigeHendelser.mottatt(sedHendelse)) {
+                    if (GyldigeHendelser.erGyldigInnkommetSed(sedHendelse)) {
 
 
                         val bucType = sedHendelse.bucType!!
@@ -86,10 +87,10 @@ class SedMottattListener(
 
                         val currentSed = dokumentHelper.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId)
 
+                        val alleGyldigeSED = hentAlleGyldigeSedFraBUC(sedHendelse)
+
                         //identifisere Person hent Person fra PDL valider Person
-                        val identifisertePersoner = personidentifiseringService.hentIdentifisertPersoner(
-                            currentSed, bucType, sedHendelse.sedType, sedHendelse.rinaDokumentId
-                        )
+                        val identifisertePersoner = personidentifiseringService.hentIdentifisertPersoner(currentSed, bucType, sedHendelse.sedType, sedHendelse.rinaDokumentId)
 
                         if (identifisertePersoner.size > 1) {
                             acknowledgment.acknowledge()
@@ -148,6 +149,12 @@ class SedMottattListener(
                 latch.countDown()
             }
         }
+    }
+
+    private fun hentAlleGyldigeSedFraBUC(sedHendelse: SedHendelseModel): List<Pair<String, SED>> {
+        val buc = dokumentHelper.hentBuc(sedHendelse.rinaSakId)
+        val alleGyldigeDokumenter = dokumentHelper.hentAlleGyldigeDokumenter(buc)
+        return dokumentHelper.hentAlleSedIBuc(sedHendelse.rinaSakId)
     }
 
     fun lagEndringsMelding(identifisertPersoner: List<IdentifisertPerson>){
