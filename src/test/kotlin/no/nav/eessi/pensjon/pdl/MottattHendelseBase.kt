@@ -328,8 +328,8 @@ internal open class MottattHendelseBase {
 
     fun validateSedMottattListenerLoggingMessage(keyword: String): Boolean {
         val logsList: List<ILoggingEvent> = listAppender.list
-        return logsList.find { asdsa ->
-            asdsa.message.contains(keyword)
+        return logsList.find { logMelding ->
+            logMelding.message.contains(keyword)
         }?.message?.isNotEmpty() ?: false
     }
 }

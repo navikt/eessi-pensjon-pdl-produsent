@@ -80,29 +80,13 @@ class SedMottattListener(
                         //identifisere Person hent Person fra PDL valider Person
                         val identifisertePersoner = personidentifiseringService.hentIdentifisertPersoner(alleGyldigeSED, bucType, sedHendelse.sedType, sedHendelse.rinaDokumentId)
 
-                        if (!pdlValidering.finnesIdentifisertePersoner(identifisertePersoner)) {
-                            logger.info("Ingen identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
-                            acknowledgment.acknowledge()
-                            return@measure
-                        }
-
-                        if (identifisertePersoner.size > 1) {
-                            acknowledgment.acknowledge()
-                            logger.info("Antall identifiserte personer er fler enn en")
-                            return@measure
-                        }
-
-                        if (identifisertePersoner.first().uidFraPdl.size > 1) {
-                            acknowledgment.acknowledge()
-                            logger.info("Antall utenlandske IDer er flere enn en")
-                            return@measure
-                        }
-
-                        if(sedHendelse.avsenderLand == null || pdlValidering.erUidLandAnnetEnnAvsenderLand(identifisertePersoner, sedHendelse.avsenderLand)){
-                            acknowledgment.acknowledge()
-                            logger.error("Avsenderland mangler, stopper identifisering av personer")
-                            return@measure
-                        }
+                        if (eridenterGyldige(
+                                pdlValidering,
+                                identifisertePersoner,
+                                acknowledgment,
+                                sedHendelse
+                            )
+                        ) return@measure
 
                         logger.debug("Validerer uid fra sed som ikke finnes i PDL: ${identifisertePersoner.size}")
                         val filtrerUidSomIkkeFinnesIPdl = pdlFiltrering.filtrerUidSomIkkeFinnesIPdl(identifisertePersoner, kodeverkClient, sedHendelse.avsenderNavn!!)
@@ -136,6 +120,42 @@ class SedMottattListener(
                 latch.countDown()
             }
         }
+    }
+
+    private fun eridenterGyldige(
+        pdlValidering: PdlValidering,
+        identifisertePersoner: List<IdentifisertPerson>,
+        acknowledgment: Acknowledgment,
+        sedHendelse: SedHendelseModel
+    ): Boolean {
+        if (!pdlValidering.finnesIdentifisertePersoner(identifisertePersoner)) {
+            logger.info("Ingen identifiserte personer funnet Acket sedMottatt")
+            acknowledgment.acknowledge()
+            return true
+        }
+
+        if (identifisertePersoner.size > 1) {
+            acknowledgment.acknowledge()
+            logger.info("Antall identifiserte personer er fler enn en")
+            return true
+        }
+
+        if (identifisertePersoner.first().uidFraPdl.size > 1) {
+            acknowledgment.acknowledge()
+            logger.info("Antall utenlandske IDer er flere enn en")
+            return true
+        }
+
+        if (sedHendelse.avsenderLand == null || pdlValidering.erUidLandAnnetEnnAvsenderLand(
+                identifisertePersoner,
+                sedHendelse.avsenderLand
+            )
+        ) {
+            acknowledgment.acknowledge()
+            logger.error("Avsenderland mangler, stopper identifisering av personer")
+            return true
+        }
+        return false
     }
 
     private fun hentAlleGyldigeSedFraBUC(sedHendelse: SedHendelseModel): List<SED> {
