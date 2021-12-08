@@ -44,7 +44,6 @@ class SedMottattListener(
     private val pdlFiltrering = PdlFiltrering()
 
     fun getLatch() = latch
-    var result : Any? = null
 
     @PostConstruct
     fun initMetrics() {
@@ -65,12 +64,6 @@ class SedMottattListener(
                 logger.info("Innkommet sedMottatt hendelse i partisjon: ${cr.partition()}, med offset: ${cr.offset()}")
                 val pdlValidering =  PdlValidering()
 
-/*
-                if(cr.offset() == 0L && profile == "prod") {
-                    logger.error("Applikasjonen har forsøkt å prosessere sedMottatt meldinger fra offset 0, stopper prosessering")
-                    throw RuntimeException("Applikasjonen har forsøkt å prosessere sedMottatt meldinger fra offset 0, stopper prosessering")
-                }
-*/
                 logger.debug(hendelse)
 
                 //Forsøker med denne en gang til 258088L
@@ -87,9 +80,21 @@ class SedMottattListener(
                         //identifisere Person hent Person fra PDL valider Person
                         val identifisertePersoner = personidentifiseringService.hentIdentifisertPersoner(alleGyldigeSED, bucType, sedHendelse.sedType, sedHendelse.rinaDokumentId)
 
+                        if (!pdlValidering.finnesIdentifisertePersoner(identifisertePersoner)) {
+                            logger.info("Ingen identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
+                            acknowledgment.acknowledge()
+                            return@measure
+                        }
+
                         if (identifisertePersoner.size > 1) {
                             acknowledgment.acknowledge()
                             logger.info("Antall identifiserte personer er fler enn en")
+                            return@measure
+                        }
+
+                        if (identifisertePersoner.first().uidFraPdl.size > 1) {
+                            acknowledgment.acknowledge()
+                            logger.info("Antall utenlandske IDer er flere enn en")
                             return@measure
                         }
 
@@ -97,19 +102,6 @@ class SedMottattListener(
                             acknowledgment.acknowledge()
                             logger.error("Avsenderland mangler, stopper identifisering av personer")
                             return@measure
-                        }
-
-                        //kun for test
-                        result = identifisertePersoner
-
-                        if (!pdlValidering.finnesIdentifisertePersoner(identifisertePersoner)) {
-                            logger.info("Ingen identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
-                            acknowledgment.acknowledge()
-                            return@measure
-                        }
-
-                        val firstOrNull = identifisertePersoner.firstOrNull { person ->
-                            person.personIdenterFraSed.finnesAlleredeIPDL(person.uidFraPdl.map { it.identifikasjonsnummer })
                         }
 
                         logger.debug("Validerer uid fra sed som ikke finnes i PDL: ${identifisertePersoner.size}")
