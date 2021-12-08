@@ -1,5 +1,6 @@
 package no.nav.eessi.pensjon.pdl.validering
 
+import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import org.slf4j.LoggerFactory
 

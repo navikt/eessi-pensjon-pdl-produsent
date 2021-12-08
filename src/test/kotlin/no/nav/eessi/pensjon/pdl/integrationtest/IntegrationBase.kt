@@ -14,7 +14,6 @@ import org.mockserver.model.HttpRequest
 import org.mockserver.model.HttpResponse
 import org.mockserver.model.HttpStatusCode
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Primary
@@ -26,7 +25,7 @@ import java.util.*
 
 lateinit var mockServer: ClientAndServer
 
-abstract class IntegrationBase() {
+abstract class IntegrationBase {
 
     @Autowired
     lateinit var embeddedKafka: EmbeddedKafkaBroker
@@ -50,41 +49,24 @@ abstract class IntegrationBase() {
     }
     @TestConfiguration
     class TestConfig {
-        @Value("\${" + EmbeddedKafkaBroker.SPRING_EMBEDDED_KAFKA_BROKERS + "}")
-        private lateinit var brokerAddresses: String
-
         @Bean
         @Primary
         fun personService(): PersonService {
             return mockk(relaxed = true)
         }
-        
-//        @Bean
-//        @Primary
-//        fun kodeverkKlient(): KodeverkClient {
-//            return mockk(relaxed = true)
-//        }
-
-//        @Bean
-//        fun sedMottattListener(): SedMottattListener {
-//            return mockk()
-//        }
     }
 
     init {
         val port = randomFrom()
-        println("****************************** init med post: $port ********************************")
 
         System.setProperty("mockserverport", port.toString())
         mockServer = ClientAndServer.startClientAndServer(port)
-
     }
     private fun randomFrom(from: Int = 1024, to: Int = 65535): Int {
         return Random().nextInt(to - from) + from
     }
 
-    class CustomMockServer() {
-
+    class CustomMockServer {
         fun mockSTSToken() = apply {
             mockServer.`when`(
                 HttpRequest.request()
@@ -126,6 +108,21 @@ abstract class IntegrationBase() {
                 )
         }
 
+        fun medbBuc(bucPath: String, bucLocation: String) = apply {
+
+            mockServer.`when`(
+                HttpRequest.request()
+                    .withMethod(HttpMethod.GET.name)
+                    .withPath(bucPath)
+            )
+                .respond(
+                    HttpResponse.response()
+                        .withHeader(Header("Content-Type", "application/json; charset=utf-8"))
+                        .withStatusCode(HttpStatusCode.OK_200.code())
+                        .withBody(String(Files.readAllBytes(Paths.get(bucLocation))))
+                )
+        }
+
         fun medKodeverk(kodeverkPath: String, kodeVerkLocation: String) = apply {
 
             mockServer.`when`(
@@ -139,23 +136,6 @@ abstract class IntegrationBase() {
                         .withStatusCode(HttpStatusCode.OK_200.code())
                         .withBody(String(Files.readAllBytes(Paths.get(kodeVerkLocation))))
                 )
-
-
         }
-
-/*        fun medPerson(fnr: Fodselsnummer, mockPersonlocation: String) = apply {
-
-            mockServer.`when`(
-                HttpRequest.request()
-                    .withMethod(HttpMethod.GET.name)
-                    .withPath(bucPath)
-            )
-                .respond(
-                    HttpResponse.response()
-                        .withHeader(Header("Content-Type", "application/json; charset=utf-8"))
-                        .withStatusCode(HttpStatusCode.OK_200.code())
-                        .withBody(String(Files.readAllBytes(Paths.get(bucLocation))))
-                )
-        }*/
     }
 }

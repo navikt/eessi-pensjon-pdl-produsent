@@ -20,14 +20,15 @@ class PersonidentifiseringService(private val personService: PersonService, priv
     private val logger = LoggerFactory.getLogger(PersonidentifiseringService::class.java)
 
     fun hentIdentifisertPersoner(
-        sed: SED,
+        seder: List<SED>,
         bucType: BucType,
         sedType: SedType?,
         rinaDocumentId: String
     ): List<IdentifisertPerson> {
 
         //fin norskident og utlandskeidenter
-        val potensiellePersonRelasjoner = RelasjonsHandler.hentRelasjoner(sed, rinaDocumentId, bucType)
+//        val potensiellePersonRelasjoner = RelasjonsHandler.hentRelasjoner(seder, rinaDocumentId, bucType)
+        val potensiellePersonRelasjoner = seder.flatMap { RelasjonsHandler.hentRelasjoner(it, rinaDocumentId, bucType) }
 
         //slå opp PDL
         return hentIdentifisertePersoner(bucType, potensiellePersonRelasjoner, rinaDocumentId)

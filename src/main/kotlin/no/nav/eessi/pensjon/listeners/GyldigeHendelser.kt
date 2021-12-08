@@ -27,10 +27,12 @@ class GyldigeHendelser {
             P15000, H020, H021, H070, H120, H121, R005
         )
 
-        fun mottatt(hendelse: SedHendelseModel) =
+        fun erGyldigInnkommetSed(hendelse: SedHendelseModel) =
                 when {
                     hendelse.sedType in gyldigeInnkommendeSedType -> true
                     else -> false
                 }
+        //TODO: Sjekke om dette er godt nok, eller ha en egen type for ugyldige
+        fun erGyldig(sedType: SedType?): Boolean = sedType != null && sedType in gyldigeInnkommendeSedType
     }
 }
