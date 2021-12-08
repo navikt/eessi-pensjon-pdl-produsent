@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.eessi.pensjon.eux.model.buc.Buc
 import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.eux.model.sed.SED
+import no.nav.eessi.pensjon.listeners.GyldigeHendelser
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -18,6 +19,7 @@ class EuxDokumentHelper(
 
     private val logger = LoggerFactory.getLogger(EuxDokumentHelper::class.java)
 
+    private lateinit var hentBuc: MetricsHelper.Metric
     private lateinit var hentSed: MetricsHelper.Metric
 
     @PostConstruct
@@ -50,7 +52,7 @@ class EuxDokumentHelper(
     fun hentAlleGyldigeDokumenter(buc: Buc): List<ForenkletSED> {
 
         return hentBucDokumenter(buc)
-            .filter { it.type.erGyldig() }
+            .filter { GyldigeHendelser.(it.type) }
             .also { logger.info("Fant ${it.size} dokumenter i BUC: $it") }
     }
 

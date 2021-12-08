@@ -1,5 +1,6 @@
 package no.nav.eessi.pensjon.eux
 
+import no.nav.eessi.pensjon.eux.model.buc.Buc
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpMethod
@@ -44,6 +45,22 @@ class EuxKlient(private val euxUsernameOidcRestTemplate: RestTemplate) {
                 return null
             logger.error("Ukjent feil oppsto: ", ex)
             throw ex
+        }
+    }
+
+    @Retryable(
+        include = [HttpStatusCodeException::class],
+        exclude = [HttpClientErrorException.NotFound::class],
+        backoff = Backoff(delay = 30000L, maxDelay = 3600000L, multiplier = 3.0)
+    )
+    internal fun hentBuc(rinaSakId: String): Buc? {
+        logger.info("Henter BUC (RinaSakId: $rinaSakId)")
+
+        return execute {
+            euxUsernameOidcRestTemplate.getForObject(
+                "/buc/$rinaSakId",
+                Buc::class.java
+            )
         }
     }
 
