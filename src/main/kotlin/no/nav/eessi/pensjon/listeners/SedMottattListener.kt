@@ -89,6 +89,14 @@ class SedMottattListener(
 
                         val alleGyldigeSED = hentAlleGyldigeSedFraBUC(sedHendelse)
 
+
+                        if(!pdlValidering.finnesKunEtNorskFNR(alleGyldigeSED)){
+                            acknowledgment.acknowledge()
+                            logger.info("Finnes flere enn et norsk FNR i sed liste, avslutter")
+                            return@measure
+                        }
+
+
                         //identifisere Person hent Person fra PDL valider Person
                         val identifisertePersoner = personidentifiseringService.hentIdentifisertPersoner(currentSed, bucType, sedHendelse.sedType, sedHendelse.rinaDokumentId)
 
@@ -154,7 +162,7 @@ class SedMottattListener(
     private fun hentAlleGyldigeSedFraBUC(sedHendelse: SedHendelseModel): List<Pair<String, SED>> {
         val buc = dokumentHelper.hentBuc(sedHendelse.rinaSakId)
         val alleGyldigeDokumenter = dokumentHelper.hentAlleGyldigeDokumenter(buc)
-        return dokumentHelper.hentAlleSedIBuc(sedHendelse.rinaSakId)
+        return dokumentHelper.hentAlleSedIBuc(sedHendelse.rinaSakId, alleGyldigeDokumenter)
     }
 
     fun lagEndringsMelding(identifisertPersoner: List<IdentifisertPerson>){

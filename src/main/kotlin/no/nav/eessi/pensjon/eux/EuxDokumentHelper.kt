@@ -3,6 +3,7 @@ package no.nav.eessi.pensjon.eux
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.eessi.pensjon.eux.model.buc.Buc
 import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
+import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.listeners.GyldigeHendelser
 import no.nav.eessi.pensjon.metrics.MetricsHelper
@@ -52,7 +53,7 @@ class EuxDokumentHelper(
     fun hentAlleGyldigeDokumenter(buc: Buc): List<ForenkletSED> {
 
         return hentBucDokumenter(buc)
-            .filter { GyldigeHendelser.(it.type) }
+            .filter {GyldigeHendelser.erGyldig(it.type) }
             .also { logger.info("Fant ${it.size} dokumenter i BUC: $it") }
     }
 
