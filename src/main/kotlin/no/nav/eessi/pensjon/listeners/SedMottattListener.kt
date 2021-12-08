@@ -106,6 +106,10 @@ class SedMottattListener(
                             return@measure
                         }
 
+                        val firstOrNull = identifisertPersoner.firstOrNull { person ->
+                            person.personIdenterFraSed.finnesAlleredeIPDL(person.uidFraPdl.map { it.identifikasjonsnummer })
+                        }
+
                         logger.debug("Validerer uid fra sed som ikke finnes i PDL: ${identifisertPersoner.size}")
                         val filtrerUidSomIkkeFinnesIPdl = pdlFiltrering.filtrerUidSomIkkeFinnesIPdl(identifisertPersoner, kodeverkClient, sedHendelse.avsenderNavn!!)
                         if(filtrerUidSomIkkeFinnesIPdl.isEmpty()) {
@@ -139,7 +143,6 @@ class SedMottattListener(
             }
         }
     }
-
 
     fun lagEndringsMelding(identifisertPersoner: List<IdentifisertPerson>){
         identifisertPersoner.map { ident ->
