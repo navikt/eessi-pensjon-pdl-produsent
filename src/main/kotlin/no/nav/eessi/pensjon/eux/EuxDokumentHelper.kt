@@ -43,10 +43,10 @@ class EuxDokumentHelper(
         }
     }
 
-    fun hentAlleSedIBuc(rinaSakId: String, documents: List<ForenkletSED>): List<Pair<String, SED>> {
+    fun hentAlleSedIBuc(rinaSakId: String, documents: List<ForenkletSED>): List<SED> {
         return documents
             .filter(ForenkletSED::harGyldigStatus)
-            .map { sed -> Pair(sed.id, hentSed(rinaSakId, sed.id)) }
+            .map { sed -> hentSed(rinaSakId, sed.id) }
             .also { logger.info("Fant ${it.size} SED i BUCid: $rinaSakId") }
     }
 

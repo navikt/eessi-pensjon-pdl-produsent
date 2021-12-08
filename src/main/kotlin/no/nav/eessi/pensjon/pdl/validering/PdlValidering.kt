@@ -44,7 +44,4 @@ class PdlValidering {
         return false
     }
 
-    fun finnesKunEtNorskFNR(alleGyldigeSED: List<Pair<String, SED>>) : Boolean {
-
-    }
 }
