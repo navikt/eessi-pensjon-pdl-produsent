@@ -26,6 +26,7 @@ class EuxDokumentHelper(
     @PostConstruct
     fun initMetrics() {
         hentSed = metricsHelper.init("hentSed", alert = MetricsHelper.Toggle.OFF)
+        hentBuc = metricsHelper.init("hentBuc", alert = MetricsHelper.Toggle.OFF)
     }
 
     /**

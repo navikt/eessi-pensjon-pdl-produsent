@@ -79,23 +79,10 @@ class SedMottattListener(
                     logger.info("*** Offset $offset  Partition ${cr.partition()} ***")
                     val sedHendelse = SedHendelseModel.fromJson(hendelse)
                     if (GyldigeHendelser.erGyldigInnkommetSed(sedHendelse)) {
-
-
                         val bucType = sedHendelse.bucType!!
-
                         logger.info("*** Starter pdl endringsmelding prosess for BucType: $bucType, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
 
-                        val currentSed = dokumentHelper.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId)
-
                         val alleGyldigeSED = hentAlleGyldigeSedFraBUC(sedHendelse)
-
-
-//                        if(!pdlValidering.finnesKunEtNorskFNR(alleGyldigeSED)){
-//                            acknowledgment.acknowledge()
-//                            logger.info("Finnes flere enn et norsk FNR i sed liste, avslutter")
-//                            return@measure
-//                        }
-
 
                         //identifisere Person hent Person fra PDL valider Person
                         val identifisertePersoner = personidentifiseringService.hentIdentifisertPersoner(alleGyldigeSED, bucType, sedHendelse.sedType, sedHendelse.rinaDokumentId)
