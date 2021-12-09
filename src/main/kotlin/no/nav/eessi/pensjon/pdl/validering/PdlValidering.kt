@@ -28,7 +28,7 @@ class PdlValidering {
         return gyldigepersoner.filter { ident ->
             val uid = ident.personIdenterFraSed.uid.first()
             validering.validerLandsspesifikkUID(uid.utstederland, uid.identifikasjonsnummer)
-        }.also { logger.info("Det er funnet ${it.size} gyldige personer validert på land") }
+        }.also { logger.info("Det er funnet ${it.size} gyldige utenlandske IDer") }
     }
 
     fun erUidLandAnnetEnnAvsenderLand(

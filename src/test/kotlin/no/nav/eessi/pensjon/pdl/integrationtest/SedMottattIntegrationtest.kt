@@ -56,7 +56,8 @@ class SedMottattIntegrationtest : IntegrationBase() {
         every { personService.hentPersonUtenlandskIdent(NorskIdent(fnr)) } returns personMock
         CustomMockServer()
             .mockSTSToken()
-            .medSed("/buc/147729/sed/b12e06dda2c7474b9998c7139c841646", "src/test/resources/eux/sed/P2100-PinDK-NAV.json")
+            .medSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", "src/test/resources/eux/sed/P2100-PinDK-NAV.json")
+            .medbBuc("/buc/147729", "src/test/resources/eux/buc/buc279020.json")
             .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
 
         val json = javaClass.getResource("/eux/hendelser/P_BUC_01_P2000.json")!!.readText()
@@ -210,7 +211,8 @@ class SedMottattIntegrationtest : IntegrationBase() {
         every { personService.hentPersonUtenlandskIdent(NorskIdent(fnr)) } returns personMock
         CustomMockServer()
             .mockSTSToken()
-            .medSed("/buc/147729/sed/b12e06dda2c7474b9998c7139c841646", "src/test/resources/eux/sed/P8000-TyskOgFinskPIN.json")
+            .medSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", "src/test/resources/eux/sed/P8000-TyskOgFinskPIN.json")
+            .medbBuc("/buc/147729", "src/test/resources/eux/buc/buc279020.json")
             .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
 
         val json = javaClass.getResource("/eux/hendelser/P_BUC_01_P2000-avsenderSE.json")!!.readText()

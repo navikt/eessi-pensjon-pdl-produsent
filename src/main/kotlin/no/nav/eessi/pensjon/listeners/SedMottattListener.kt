@@ -140,7 +140,7 @@ class SedMottattListener(
             return true
         }
 
-        if (identifisertePersoner.first().uidFraPdl.size > 1) {
+        if (identifisertePersoner.first().uidFraPdl.isNotEmpty()) {
             acknowledgment.acknowledge()
             logger.info("Antall utenlandske IDer er flere enn en")
             return true
