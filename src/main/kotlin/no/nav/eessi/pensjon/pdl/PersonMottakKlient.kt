@@ -14,7 +14,8 @@ import org.springframework.web.client.RestTemplate
 import java.util.*
 
 @Component
-class PersonMottakKlient(private val personMottakUsernameOidcRestTemplate: RestTemplate) {
+class PersonMottakKlient(@Value("\${namespace}") var nameSpace: String,
+                         private val personMottakUsernameOidcRestTemplate: RestTemplate) {
 
     private val logger: Logger by lazy { LoggerFactory.getLogger(PersonMottakKlient::class.java) }
 
@@ -23,13 +24,16 @@ class PersonMottakKlient(private val personMottakUsernameOidcRestTemplate: RestT
 
         val httpEntity = HttpEntity(personopplysning.toJson(), createHeaders())
 
-            val response = personMottakUsernameOidcRestTemplate.exchange(
-                "/api/v1/endringer",
-                HttpMethod.POST,
-                httpEntity,
-                String::class.java
-            )
-        return response.statusCode.is2xxSuccessful
+        if(nameSpace == "q2" || nameSpace == "test") {
+                val response = personMottakUsernameOidcRestTemplate.exchange(
+                    "/api/v1/endringer",
+                    HttpMethod.POST,
+                    httpEntity,
+                    String::class.java
+                )
+                return response.statusCode.is2xxSuccessful
+        }
+        return true
     }
 
     private fun createHeaders(): HttpHeaders {
