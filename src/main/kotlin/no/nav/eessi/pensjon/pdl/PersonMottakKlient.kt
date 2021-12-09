@@ -19,7 +19,7 @@ class PersonMottakKlient(private val personMottakUsernameOidcRestTemplate: RestT
     private val logger: Logger by lazy { LoggerFactory.getLogger(PersonMottakKlient::class.java) }
 
     internal fun opprettPersonopplysning(personopplysning: PdlEndringOpplysning): Boolean {
-        logger.info("Dryrun: Kaller personMottak med nye personopplysninger fra avsenderLand: ${personopplysning.personopplysninger.first().endringsmelding.utstederland}")
+        logger.info("Oppretter endringsmelding med nye personopplysninger fra avsenderLand: ${personopplysning.personopplysninger.first().endringsmelding.utstederland}")
 
         val httpEntity = HttpEntity(personopplysning.toJson(), createHeaders())
 
