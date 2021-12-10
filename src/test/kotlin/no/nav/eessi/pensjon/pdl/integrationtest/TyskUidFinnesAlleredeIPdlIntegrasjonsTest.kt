@@ -13,6 +13,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockserver.model.HttpRequest
 import org.mockserver.verify.VerificationTimes
@@ -54,7 +55,7 @@ class SedMottattIntegrationtest : IntegrationBase() {
         deugLogger.addAppender(listAppender)
     }
 
-
+    @Disabled
     @Test
     fun `Gitt en sed hendelse med tysk uid i sed som også finnes i pdl så skal vi acke og avslutte på en pen måte`() {
 
