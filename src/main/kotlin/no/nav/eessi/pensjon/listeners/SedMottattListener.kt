@@ -129,14 +129,14 @@ class SedMottattListener(
         sedHendelse: SedHendelseModel
     ): Boolean {
         if (!pdlValidering.finnesIdentifisertePersoner(identifisertePersoner)) {
-            logger.info("Ingen identifiserte personer funnet Acket sedMottatt")
             acknowledgment.acknowledge()
+            logger.info("Ingen identifiserte FNR funnet, Acket melding")
             return false
         }
 
         if (identifisertePersoner.size > 1) {
             acknowledgment.acknowledge()
-            logger.info("Antall identifiserte personer er fler enn en")
+            logger.info("Antall identifiserte FNR er fler enn en, Acket melding")
             return false
         }
 
