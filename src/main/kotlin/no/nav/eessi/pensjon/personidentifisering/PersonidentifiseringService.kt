@@ -55,11 +55,7 @@ class PersonidentifiseringService(private val personService: PersonService, priv
         logger.debug("Henter ut følgende personRelasjon: ${personIdenter.toJson()}")
 
         return try {
-            val valgtFnr = personIdenter.fnr?.value
-            if (valgtFnr == null) {
-                logger.info("Ingen gyldig ident, går ut av hentIdentifisertPerson!")
-                return null
-            }
+            val valgtFnr = personIdenter.fnr?.value ?: return null
 
             personService.hentPersonUtenlandskIdent(NorskIdent(valgtFnr))
                 ?.let { person ->

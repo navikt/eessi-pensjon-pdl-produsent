@@ -80,7 +80,7 @@ class SedMottattListener(
                         //identifisere Person hent Person fra PDL valider Person
                         val identifisertePersoner = personidentifiseringService.hentIdentifisertPersoner(alleGyldigeSED, bucType, sedHendelse.sedType, sedHendelse.rinaDokumentId)
 
-                        if (eridenterGyldige(
+                        if (!eridenterGyldige(
                                 pdlValidering,
                                 identifisertePersoner,
                                 acknowledgment,
@@ -129,21 +129,21 @@ class SedMottattListener(
         sedHendelse: SedHendelseModel
     ): Boolean {
         if (!pdlValidering.finnesIdentifisertePersoner(identifisertePersoner)) {
-            logger.info("Ingen identifiserte personer funnet Acket sedMottatt")
             acknowledgment.acknowledge()
-            return true
+            logger.info("Ingen identifiserte FNR funnet, Acket melding")
+            return false
         }
 
         if (identifisertePersoner.size > 1) {
             acknowledgment.acknowledge()
-            logger.info("Antall identifiserte personer er fler enn en")
-            return true
+            logger.info("Antall identifiserte FNR er fler enn en, Acket melding")
+            return false
         }
 
-        if (identifisertePersoner.first().uidFraPdl.size > 1) {
+        if (identifisertePersoner.first().personIdenterFraSed.uid.size > 1) {
             acknowledgment.acknowledge()
             logger.info("Antall utenlandske IDer er flere enn en")
-            return true
+            return false
         }
 
         if (sedHendelse.avsenderLand == null || pdlValidering.erUidLandAnnetEnnAvsenderLand(
@@ -152,10 +152,10 @@ class SedMottattListener(
             )
         ) {
             acknowledgment.acknowledge()
-            logger.error("Avsenderland mangler, stopper identifisering av personer")
-            return true
+            logger.error("Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer")
+            return false
         }
-        return false
+        return true
     }
 
     private fun hentAlleGyldigeSedFraBUC(sedHendelse: SedHendelseModel): List<SED> {
