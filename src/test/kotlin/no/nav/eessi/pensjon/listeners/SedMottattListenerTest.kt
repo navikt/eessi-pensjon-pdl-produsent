@@ -5,7 +5,6 @@ import io.mockk.verify
 import no.nav.eessi.pensjon.eux.EuxDokumentHelper
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
-import no.nav.eessi.pensjon.personidentifisering.PersonIdenter
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endring
@@ -62,7 +61,7 @@ internal class SedMottattListenerTest {
     @Test
     fun `Gitt en svensk Uid som allerede er registrert i pdl naar duplikat sjekk utfores saa returner true`() {
         val identPerson = IdentifisertPerson(
-            PersonIdenter(Fodselsnummer.fra("1234567891236540")),
+            Fodselsnummer.fra("1234567891236540"),
             listOf(UtenlandskIdentifikasjonsnummer("1234567891236540", "SWE", false, metadata = Metadata(emptyList<Endring>(), false, "FREG", "321654"))))
 
         val validident = identPerson.personIdenterFraSed.finnesAlleredeIPDL(identPerson.uidFraPdl.map { it.identifikasjonsnummer })
