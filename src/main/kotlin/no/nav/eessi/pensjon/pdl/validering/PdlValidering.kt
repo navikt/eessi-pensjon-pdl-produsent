@@ -43,4 +43,11 @@ class PdlValidering {
         return false
     }
 
+    /**
+     * @return true dersom uid fra sed er lik uid fra pdl
+     * Sjekker om uid fra sed er lik uid i pdl.
+     */
+    fun finnesAlleredeIPDL(alleUidIPDL: List<String>, uidISed: String) : Boolean {
+        return  alleUidIPDL.any { it in uidISed }
+    }
 }

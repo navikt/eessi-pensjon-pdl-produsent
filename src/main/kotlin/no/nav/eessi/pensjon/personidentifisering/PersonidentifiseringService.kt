@@ -26,8 +26,6 @@ class PersonidentifiseringService(private val personService: PersonService, priv
         rinaDocumentId: String
     ): List<IdentifisertPerson> {
 
-        //fin norskident og utlandskeidenter
-//        val potensiellePersonRelasjoner = RelasjonsHandler.hentRelasjoner(seder, rinaDocumentId, bucType)
         val potensiellePersonRelasjoner = seder.flatMap { RelasjonsHandler.hentRelasjoner(it, rinaDocumentId, bucType) }
 
         //slå opp PDL

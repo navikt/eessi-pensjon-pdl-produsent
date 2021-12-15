@@ -22,7 +22,7 @@ class R005Ident() : AbstractIdent() {
                         ?.filter { it.land != null && it.identifikator != null && it.institusjonsnavn != null }
                         ?.map { UtenlandskPin(it.institusjonsnavn!!, it.identifikator!!, it.land!!) }
                         ?: emptyList()
-                    PersonIdenter(fnr, pinItemUtlandList)
+                    PersonIdenter(fnr)
 
                 } else {
                     null

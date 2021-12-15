@@ -2,6 +2,8 @@ package no.nav.eessi.pensjon.listeners
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.eessi.pensjon.eux.EuxDokumentHelper
+import no.nav.eessi.pensjon.eux.UtenlandskId
+import no.nav.eessi.pensjon.eux.UtenlandskPersonIdentifisering
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.Endringsmelding
@@ -32,6 +34,7 @@ class SedMottattListener(
     private val dokumentHelper: EuxDokumentHelper,
     private val personMottakKlient: PersonMottakKlient,
     private val kodeverkClient: KodeverkClient,
+    private val utenlandskPersonIdentifisering: UtenlandskPersonIdentifisering,
     @Value("\${SPRING_PROFILES_ACTIVE}") private val profile: String,
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper(SimpleMeterRegistry())
 ) {
@@ -78,6 +81,7 @@ class SedMottattListener(
                         val alleGyldigeSED = hentAlleGyldigeSedFraBUC(sedHendelse)
 
                         //identifisere Person hent Person fra PDL valider Person
+                        val utenlandskeIder = utenlandskPersonIdentifisering.hentAlleUtenlandskeIder(alleGyldigeSED)
                         val identifisertePersoner = personidentifiseringService.hentIdentifisertPersoner(alleGyldigeSED, bucType, sedHendelse.sedType, sedHendelse.rinaDokumentId)
 
                         if (!eridenterGyldige(
@@ -94,7 +98,6 @@ class SedMottattListener(
                             logger.info("Ingen filtrerte personer funnet Acket sedMottatt: ${cr.offset()}")
                             acknowledgment.acknowledge()
                             return@measure
-
                         }
 
                         logger.debug("Validerer uid fra sed: ${filtrerUidSomIkkeFinnesIPdl.size}")
@@ -164,24 +167,21 @@ class SedMottattListener(
         return dokumentHelper.hentAlleSedIBuc(sedHendelse.rinaSakId, alleGyldigeDokumenter)
     }
 
-    fun lagEndringsMelding(identifisertPersoner: List<IdentifisertPerson>){
-        identifisertPersoner.map { ident ->
-            val uid = ident.personIdenterFraSed.uid.first()
-            val fnr = ident.personIdenterFraSed.fnr?.value!!
-            val pdlEndringsOpplysninger = PdlEndringOpplysning(
-                listOf(
-                    Personopplysninger(
-                        ident = fnr,
-                        endringsmelding = Endringsmelding(
-                            identifikasjonsnummer = uid.identifikasjonsnummer,
-                            utstederland = uid.utstederland,
-                            kilde = uid.kilde
-                        )
+    fun lagEndringsMelding(utenlandskPin: UtenlandskId,
+                           norskFnr: String,
+                           kilde: String){
+        val pdlEndringsOpplysninger = PdlEndringOpplysning(
+            listOf(
+                Personopplysninger(
+                    ident = norskFnr,
+                    endringsmelding = Endringsmelding(
+                        identifikasjonsnummer = utenlandskPin.id,
+                        utstederland = utenlandskPin.land,
+                        kilde = kilde
                     )
                 )
             )
-            personMottakKlient.opprettPersonopplysning(pdlEndringsOpplysninger)
-        }
+        )
+        personMottakKlient.opprettPersonopplysning(pdlEndringsOpplysninger)
     }
-
 }

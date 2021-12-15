@@ -36,7 +36,7 @@ class GenericIdent() : AbstractIdent() {
             val fodselnummer = Fodselsnummer.fra(person.pin?.firstOrNull { it.land == "NO" }?.identifikator)
 
             val pinItemUtlandList = UtlandMapping().mapUtenlandsPin(person)
-            return PersonIdenter(fodselnummer, pinItemUtlandList)
+            return PersonIdenter(fodselnummer)
         }
         return null
     }

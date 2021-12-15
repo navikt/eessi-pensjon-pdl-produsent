@@ -32,11 +32,7 @@ class PersonidentifiseringServiceTest {
     fun `Gitt ident har uid fra SED som ikke finnes i PDL Så nytt ident med kun uid fra SED`() {
         val identPerson = IdentifisertPerson(
             PersonIdenter(
-                Fodselsnummer.fra("11067122781"), listOf(
-                    UtenlandskPin("P2000", "521552123456", "SE"),
-                    UtenlandskPin("P2000", "1234567891236540", "SE"),
-                    UtenlandskPin("P2000", "13451345234542", "DK")
-                )
+                Fodselsnummer.fra("11067122781")
             ), listOf(
                 UtenlandskIdentifikasjonsnummer("1234567891236540", "SWE", true, metadata = Metadata(emptyList<Endring>(), false, "FREG", "321654")),
                 UtenlandskIdentifikasjonsnummer("521552123456", "SWE", false, metadata = Metadata(emptyList<Endring>(), false, "FREG", "321654"))
@@ -56,7 +52,7 @@ class PersonidentifiseringServiceTest {
     fun `Gitt UIDer fra sed ikke finens når filtrering av UID duplikater utføres Så retureres null`() {
         val identPerson = IdentifisertPerson(
             PersonIdenter(
-                Fodselsnummer.fra("11067122781"), emptyList()
+                Fodselsnummer.fra("11067122781")
             ), listOf(
                 UtenlandskIdentifikasjonsnummer("1234567891236540", "SWE", true, metadata = Metadata(emptyList<Endring>(), false, "FREG", "321654")),
                 UtenlandskIdentifikasjonsnummer("521552123456", "SWE", false, metadata = Metadata(emptyList<Endring>(), false, "FREG", "321654"))
@@ -75,11 +71,7 @@ class PersonidentifiseringServiceTest {
     fun `Gitt UIDer fra sed som ikke finnes i PDL når filtering av UID duplikater utførees Så returneres nytt personIdent`() {
         val identPerson = IdentifisertPerson(
             PersonIdenter(
-                Fodselsnummer.fra("11067122781"), listOf(
-                    UtenlandskPin("P2000", "521552123456", "SE"),
-                    UtenlandskPin("P2000", "1234567891236540", "SE"),
-                    UtenlandskPin("P2000", "13451345234542", "DK")
-                )
+                Fodselsnummer.fra("11067122781")
             ),
             emptyList()
         )
@@ -97,10 +89,7 @@ class PersonidentifiseringServiceTest {
     fun `Gitt UIDer fra SED som finnes i PDL når filtrering av UID duplikater utføres Så returneres null`() {
         val identPerson = IdentifisertPerson(
             PersonIdenter(
-                Fodselsnummer.fra("11067122781"), listOf(
-                    UtenlandskPin("P2000", "521552123456", "SE"),
-                    UtenlandskPin("P2000", "1234567891236540", "SE"),
-                )
+                Fodselsnummer.fra("11067122781")
             ), listOf(
                 UtenlandskIdentifikasjonsnummer("1234567891236540", "SWE", true, metadata = Metadata(emptyList<Endring>(), false, "FREG", "321654")),
                 UtenlandskIdentifikasjonsnummer("521552123456", "SWE", false, metadata = Metadata(emptyList<Endring>(), false, "FREG", "321654"))
