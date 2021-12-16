@@ -11,7 +11,6 @@ import no.nav.eessi.pensjon.listeners.SedMottattListener
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonMock
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
-import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockserver.model.HttpRequest
@@ -57,7 +56,7 @@ class NyDanskUidIntegrasjonsTest : IntegrationBase() {
 
 
     @Test
-    fun `Gitt en sed hendelse med dansk uid som ikke finnes i pdl skal det opprettes det en endringsmelding til person-mottak`() {
+    fun `Gitt en sed hendelse med en dansk uid som ikke finnes i pdl skal det opprettes det en endringsmelding til person-mottak`() {
 
         val fnr = "11067122781"
         val personMock =  PersonMock.createBrukerWithUid(

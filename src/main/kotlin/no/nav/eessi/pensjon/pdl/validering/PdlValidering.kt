@@ -2,9 +2,12 @@ package no.nav.eessi.pensjon.pdl.validering
 
 import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
+import no.nav.eessi.pensjon.services.kodeverk.KodeverkClient
 import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Component
 
-class PdlValidering {
+@Component
+class PdlValidering(private val kodeverkClient: KodeverkClient) {
 
     private val logger = LoggerFactory.getLogger(PdlValidering::class.java)
 
@@ -24,7 +27,7 @@ class PdlValidering {
     fun erPersonValidertPaaLand(utenlandskId: UtenlandskId): Boolean {
         val validering = LandspesifikkValidering()
 
-        return validering.validerLandsspesifikkUID(utenlandskId.land, utenlandskId.id)
+        return validering.validerLandsspesifikkUID(kodeverkClient.finnLandkode(utenlandskId.land)!!, utenlandskId.id)
     }
 
     fun erUidLandAnnetEnnAvsenderLand(

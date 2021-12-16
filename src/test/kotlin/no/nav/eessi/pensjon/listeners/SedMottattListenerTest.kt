@@ -7,6 +7,7 @@ import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.eux.UtenlandskPersonIdentifisering
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
+import no.nav.eessi.pensjon.pdl.validering.PdlValidering
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endring
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Metadata
@@ -32,6 +33,7 @@ internal class SedMottattListenerTest {
     private val personMottakKlient = mockk<PersonMottakKlient>(relaxed = true)
     private val utenlandskPersonIdentifisering = mockk<UtenlandskPersonIdentifisering>(relaxed = true)
     private val pdlFiltrering = mockk<PdlFiltrering>(relaxed = true)
+    private val pdlValidering = mockk<PdlValidering>(relaxed = true)
 
     private val sedListener = SedMottattListener(
         personidentifiseringService,
@@ -39,6 +41,7 @@ internal class SedMottattListenerTest {
         personMottakKlient,
         utenlandskPersonIdentifisering,
         pdlFiltrering,
+        pdlValidering,
         "test")
 
     @BeforeEach

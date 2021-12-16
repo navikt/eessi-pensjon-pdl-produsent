@@ -179,17 +179,7 @@
             "land": "NO"
           }
         ],
-        "pin": [
-          {
-            "sektor": "alle",
-            "identifikator": "32451345134513451345",
-            "institusjon": {
-              "institusjonsid": "NO:NAVT002",
-              "institusjonsnavn": "12347, NAVT002, NO"
-            },
-            "land": "DK"
-          }
-        ],
+        "pin": [],
         "foedested": {
           "region": "sdfsdf",
           "land": "DK",
@@ -268,17 +258,7 @@
           }
         },
         "person": {
-          "pin": [
-            {
-              "identifikator": "35345345345345345345345345",
-              "institusjon": {
-                "institusjonsnavn": "12348, NAVT003, NO",
-                "institusjonsid": "NO:NAVT003"
-              },
-              "sektor": "alle",
-              "land": "DK"
-            }
-          ],
+          "pin": [],
           "foedested": {
             "by": "fgdfgadfgadgadd",
             "land": "NO",

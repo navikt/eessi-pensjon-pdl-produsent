@@ -19,6 +19,7 @@ import no.nav.eessi.pensjon.listeners.GyldigeHendelser
 import no.nav.eessi.pensjon.listeners.SedMottattListener
 import no.nav.eessi.pensjon.models.SedHendelseModel
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
+import no.nav.eessi.pensjon.pdl.validering.PdlValidering
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
 import no.nav.eessi.pensjon.personidentifisering.Rolle
@@ -45,6 +46,7 @@ internal open class MottattHendelseBase {
     private val personMottakKlient: PersonMottakKlient = mockk(relaxed = true)
     private val utenlandskPersonIdentifisering = mockk<UtenlandskPersonIdentifisering>(relaxed = true)
     private val pdlFiltrering = mockk<PdlFiltrering>(relaxed = true)
+    private val pdlValidering = mockk<PdlValidering>(relaxed = true)
 
     companion object {
         const val SAK_ID = "12345"
@@ -64,6 +66,7 @@ internal open class MottattHendelseBase {
         personMottakKlient,
         utenlandskPersonIdentifisering,
         pdlFiltrering,
+        pdlValidering,
         "test"
     )
 

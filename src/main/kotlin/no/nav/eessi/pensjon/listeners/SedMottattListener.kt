@@ -34,6 +34,7 @@ class SedMottattListener(
     private val personMottakKlient: PersonMottakKlient,
     private val utenlandskPersonIdentifisering: UtenlandskPersonIdentifisering,
     private val pdlFiltrering: PdlFiltrering,
+    private val pdlValidering: PdlValidering,
     @Value("\${SPRING_PROFILES_ACTIVE}") private val profile: String,
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper(SimpleMeterRegistry())
 ) {
@@ -62,7 +63,6 @@ class SedMottattListener(
             consumeIncomingSed.measure {
 
                 logger.info("Innkommet sedMottatt hendelse i partisjon: ${cr.partition()}, med offset: ${cr.offset()}")
-                val pdlValidering =  PdlValidering()
 
                 logger.debug(hendelse)
 
@@ -100,8 +100,7 @@ class SedMottattListener(
                         }
 
                         logger.debug("Validerer uid fra sed: $filtrerUidSomIkkeFinnesIPdl")
-                        val validerteIdenter = pdlValidering.erPersonValidertPaaLand(utenlandskeIderFraSed.first())
-                        if(validerteIdenter) {
+                        if(!pdlValidering.erPersonValidertPaaLand(utenlandskeIderFraSed.first())) {
                             logger.info("Ingen validerte identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
                             acknowledgment.acknowledge()
                             return@measure
@@ -153,11 +152,7 @@ class SedMottattListener(
             return false
         }
 
-        if (sedHendelse.avsenderLand == null || pdlValidering.erUidLandAnnetEnnAvsenderLand(
-                utenlandskeIder.first(),
-                sedHendelse.avsenderLand
-            )
-        ) {
+        if (sedHendelse.avsenderLand == null || pdlValidering.erUidLandAnnetEnnAvsenderLand(utenlandskeIder.first(), sedHendelse.avsenderLand)) {
             acknowledgment.acknowledge()
             logger.error("Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer")
             return false

@@ -5,31 +5,33 @@ import org.springframework.stereotype.Component
 
 @Component
 class UtenlandskPersonIdentifisering {
-    fun hentAllePersoner(sed: SED): List<Person> {
-        val personer: List<Person>  = mutableListOf()
-        personer.plus(sed.nav?.bruker?.person)
-        personer.plus(sed.nav?.annenperson?.person)
-        personer.plus(sed.nav?.ektefelle?.person)
-        personer.plus(sed.nav?.verge?.person)
-        personer.plus(sed.nav?.ektefelle?.person)
-        personer.plus(sed.nav?.barn?.map { barn -> barn.person })
-        personer.plus(sed.pensjon?.gjenlevende?.person)
+    fun hentAllePersoner(sed: SED): List<Person?> {
+        var personer: List<Person?>  = mutableListOf()
+        personer = personer.plus(sed.nav?.bruker?.person)
+        personer = personer.plus(sed.nav?.annenperson?.person)
+
+        sed.nav?.barn?.forEach { personer = personer.plus(it.person) }
+
+        personer = personer.plus(sed.nav?.ektefelle?.person)
+        personer = personer.plus(sed.nav?.verge?.person)
+        personer = personer.plus(sed.nav?.ektefelle?.person)
+        personer = personer.plus(sed.pensjon?.gjenlevende?.person)
 
 
         when(sed.type) {
-            SedType.P4000 -> personer.plus(hentP4000Personer(sed as P4000Pensjon))
-            SedType.P5000 -> personer.plus(hentP5000Personer(sed as P5000Pensjon))
-            SedType.P6000 -> personer.plus(hentP6000Personer(sed as P6000Pensjon))
-            SedType.P7000 -> personer.plus(hentP7000Personer(sed as P7000Pensjon))
-            SedType.P15000 -> personer.plus(hentP15000Personer(sed as P15000Pensjon))
+            SedType.P4000 -> personer = personer.plus(hentP4000Personer(sed as P4000Pensjon))
+            SedType.P5000 -> personer = personer.plus(hentP5000Personer(sed as P5000Pensjon))
+            SedType.P6000 -> personer = personer.plus(hentP6000Personer(sed as P6000Pensjon))
+            SedType.P7000 -> personer = personer.plus(hentP7000Personer(sed as P7000Pensjon))
+            SedType.P15000 ->personer =  personer.plus(hentP15000Personer(sed as P15000Pensjon))
             else -> {}
         }
         return personer
     }
 
-    fun filtrerAlleUtenlandskeIder(personer: List<Person>): List<UtenlandskId> {
-        return personer.filter { person -> person.pin != null }
-            .flatMap { person -> person.pin!! }
+    fun filtrerAlleUtenlandskeIder(personer: List<Person?>): List<UtenlandskId> {
+        return personer.filter { person -> person?.pin != null }
+            .flatMap { person -> person?.pin!! }
             .filter { pin -> pin.land != null && pin.identifikator != null }
             .filter { pin -> pin.land != "NO" }
             .map { pin -> UtenlandskId(pin.identifikator!!, pin.land!!) }
