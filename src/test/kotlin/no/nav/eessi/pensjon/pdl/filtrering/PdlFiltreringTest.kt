@@ -1,5 +1,6 @@
 package no.nav.eessi.pensjon.pdl.filtrering
 
+import io.mockk.every
 import io.mockk.mockk
 import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endring
@@ -43,8 +44,9 @@ internal class PdlFiltreringTest {
         null,
         metadata))
 
+        every { kodeverkClient.finnLandkode("SE") } returns "SWE"
 
-        assertTrue(pdlFiltrering.finnesUidFraSedIPDL(utenlandskeIdentifikasjonsnummer, UtenlandskId("12345", "SE")))
+        assertTrue(pdlFiltrering.finnesUidFraSedIPDL(utenlandskeIdentifikasjonsnummer, UtenlandskId("12345", "SWE")))
     }
 
     @Test
@@ -72,7 +74,8 @@ internal class PdlFiltreringTest {
             null,
             metadata))
 
-        assertFalse(pdlFiltrering.finnesUidFraSedIPDL(utenlandskeIdentifikasjonsnummer, UtenlandskId("12345", "SE")))
+        every { kodeverkClient.finnLandkode("SE") } returns "SWE"
+        assertFalse(pdlFiltrering.finnesUidFraSedIPDL(utenlandskeIdentifikasjonsnummer, UtenlandskId("12345", "SWE")))
     }
 
     @Test

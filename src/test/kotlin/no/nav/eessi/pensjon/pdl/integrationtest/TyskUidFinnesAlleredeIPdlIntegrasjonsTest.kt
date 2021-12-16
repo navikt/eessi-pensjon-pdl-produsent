@@ -55,16 +55,15 @@ class SedMottattIntegrationtest : IntegrationBase() {
         deugLogger.addAppender(listAppender)
     }
 
-    @Disabled
     @Test
-    fun `Gitt en sed hendelse med tysk uid i sed som også finnes i pdl så skal vi acke og avslutte på en pen måte`() {
+    fun `Gitt en sed hendelse med dansk uid i sed som også finnes i pdl så skal vi acke og avslutte på en pen måte`() {
 
         val fnr = "11067122781"
         val personMock =  PersonMock.createBrukerWithUid(
             fnr = fnr,
             uid = listOf(UtenlandskIdentifikasjonsnummer(
                 identifikasjonsnummer = "130177-1234",
-                utstederland = "DEU",
+                utstederland = "DNK",
                 opphoert = false,
                 metadata = PersonMock.createMetadata()
             ))
