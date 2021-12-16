@@ -44,10 +44,6 @@ class UtenlandskPersonIdentifisering {
     private fun hentP7000Personer(p7000Pensjon: P7000Pensjon): List<Person?> = listOf(p7000Pensjon.gjenlevende?.person, p7000Pensjon.bruker?.person)
     private fun hentP15000Personer(p15000Pensjon: P15000Pensjon): Person? = p15000Pensjon.gjenlevende?.person
 
-
-
-
-
 }
 
 

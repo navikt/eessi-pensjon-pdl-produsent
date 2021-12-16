@@ -1,8 +1,6 @@
 package no.nav.eessi.pensjon.pdl.filtrering
 
 import no.nav.eessi.pensjon.eux.UtenlandskId
-import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
-import no.nav.eessi.pensjon.personidentifisering.UtenlandskPin
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import no.nav.eessi.pensjon.services.kodeverk.KodeverkClient
 import org.springframework.stereotype.Component

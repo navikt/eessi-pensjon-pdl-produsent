@@ -1,9 +1,12 @@
 package no.nav.eessi.pensjon.pdl.filtrering
 
+import io.mockk.mockk
+import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endring
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Metadata
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
+import no.nav.eessi.pensjon.services.kodeverk.KodeverkClient
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -11,7 +14,9 @@ import java.time.LocalDateTime
 
 internal class PdlFiltreringTest {
 
-    val pdlFiltrering = PdlFiltrering()
+    private val kodeverkClient: KodeverkClient = mockk()
+
+    val pdlFiltrering = PdlFiltrering(kodeverkClient)
 
     @Test
     fun`Gitt en UID som finnes i PDL når det sjekkes om UID finnes i PDL så returner true`() {
@@ -38,7 +43,8 @@ internal class PdlFiltreringTest {
         null,
         metadata))
 
-        assertTrue(pdlFiltrering.finnesUidIPdl(utenlandskeIdentifikasjonsnummer, "12345"))
+
+        assertTrue(pdlFiltrering.finnesUidFraSedIPDL(utenlandskeIdentifikasjonsnummer, UtenlandskId("12345", "SE")))
     }
 
     @Test
@@ -66,7 +72,7 @@ internal class PdlFiltreringTest {
             null,
             metadata))
 
-        assertFalse(pdlFiltrering.finnesUidIPdl(utenlandskeIdentifikasjonsnummer, "12345"))
+        assertFalse(pdlFiltrering.finnesUidFraSedIPDL(utenlandskeIdentifikasjonsnummer, UtenlandskId("12345", "SE")))
     }
 
     @Test
@@ -87,6 +93,6 @@ internal class PdlFiltreringTest {
             "1234"
         )
 
-        assertFalse(pdlFiltrering.finnesUidIPdl(emptyList(), "12345"))
+        assertFalse(pdlFiltrering.finnesUidFraSedIPDL(emptyList(), UtenlandskId("12345", "SE")))
     }
 }
