@@ -10,7 +10,7 @@ internal class PdlValideringTest {
     @Test
     fun `Gitt en ny uid naar avsenderland og uidland ikke er det samme saa returner true`() {
         val pdlValidering = PdlValidering()
-        val identifisertPerson = UtenlandskId("11067122781", "SE")
+        val identifisertPerson = UtenlandskId("11067122781", "DE")
 
         assertTrue(pdlValidering.erUidLandAnnetEnnAvsenderLand(identifisertPerson, "SE"))
     }
