@@ -81,6 +81,14 @@ internal class PdlFiltreringTest {
     @Test
     fun `Gitt en uid fra sed og det ikke finnes noen uid i pdl så returnerer vi false`() {
 
+        assertFalse(pdlFiltrering.finnesUidFraSedIPDL(emptyList(), UtenlandskId("12345", "SE")))
+    }
+
+    @Test
+    fun `Gitt en svensk uid i sed og en svensk uid i pdl som ikke er like så opprettes det en oppgavemelding`() {
+
+        val utenlandskIdSed = UtenlandskId("12345", "SE")
+
         val metadata = Metadata(
             listOf(
                 Endring(
@@ -96,6 +104,49 @@ internal class PdlFiltreringTest {
             "1234"
         )
 
-        assertFalse(pdlFiltrering.finnesUidFraSedIPDL(emptyList(), UtenlandskId("12345", "SE")))
+        val utenlandskIdPDL = listOf(
+            UtenlandskIdentifikasjonsnummer(
+                "12345678",
+                "SWE",
+                false,
+                null,
+                metadata
+            )
+        )
+
+        every { kodeverkClient.finnLandkode("SWE") } returns "SE"
+        assertTrue(pdlFiltrering.skalOppgaveOpprettes(utenlandskIdPDL, utenlandskIdSed))
     }
+
+    @Test
+    fun `Gitt en svensk uid i sed og en svensk uid i pdl som er like så opprettes det en oppgavemelding`() {
+
+        val utenlandskIdSed = UtenlandskId("12345", "SE")
+
+        val metadata = Metadata(
+            listOf(
+                Endring(
+                    "kilde",
+                    LocalDateTime.now(),
+                    "ole",
+                    "system1",
+                    Endringstype.OPPRETT
+                )
+            ),
+            false,
+            "nav",
+            "1234"
+        )
+
+        val utenlandskeIdentifikasjonsnummer = listOf(UtenlandskIdentifikasjonsnummer(
+            "12345",
+            "SWE",
+            false,
+            null,
+            metadata))
+
+        every { kodeverkClient.finnLandkode("SWE") } returns "SE"
+        assertFalse(pdlFiltrering.skalOppgaveOpprettes(utenlandskeIdentifikasjonsnummer, utenlandskIdSed))
+    }
+
 }

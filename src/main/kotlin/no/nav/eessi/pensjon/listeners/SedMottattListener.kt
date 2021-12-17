@@ -98,6 +98,11 @@ class SedMottattListener(
                             acknowledgment.acknowledge()
                             return@measure
                         }
+                        if(pdlFiltrering.skalOppgaveOpprettes(identifisertePersoner.first().uidFraPdl, utenlandskeIderFraSed.first())) {
+                            logger.info("Ident i sed finnes som ikke finnes i pdl, oppretter oppgave")
+                            acknowledgment.acknowledge()
+                            return@measure
+                        }
 
                         logger.debug("Validerer uid fra sed: $filtrerUidSomIkkeFinnesIPdl")
                         if(!pdlValidering.erPersonValidertPaaLand(utenlandskeIderFraSed.first())) {

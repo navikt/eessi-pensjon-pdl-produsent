@@ -17,16 +17,43 @@ class PdlFiltrering(private val kodeverk: KodeverkClient) {
      *
      */
     fun finnesUidFraSedIPDL(
-        utenlandskIdPDL: List<UtenlandskIdentifikasjonsnummer>,
+        utenlandskeIdPDL: List<UtenlandskIdentifikasjonsnummer>,
         utenlandskIdSed: UtenlandskId
     ): Boolean {
 
-        utenlandskIdPDL.forEach { utenlandskId ->
-            val landkodeFraPdl = kodeverk.finnLandkode(utenlandskId.utstederland)
-            if (utenlandskIdSed.land == landkodeFraPdl && utenlandskIdSed.id == utenlandskId.identifikasjonsnummer) {
+        utenlandskeIdPDL.forEach { utenlandskIdIPDL ->
+            val landkodeFraPdl = kodeverk.finnLandkode(utenlandskIdIPDL.utstederland)
+            if (utenlandskIdSed.land == landkodeFraPdl && utenlandskIdSed.id == utenlandskIdIPDL.identifikasjonsnummer) {
                 return true
             }
         }
         return false
     }
+
+    /**
+     * Sjekk om uid i Sed finnes i PDL
+     *
+     * Konverterer 2 bokstavsutlandkode til trebokstavsutlandskode
+     * Sjekker om 3-bokstavslandkode og identifikasjonsnummer fra Sed finnes i PDL
+     *
+     */
+    fun finnesMinstEnAnnenUidFraSammeLand (
+        utenlandskeIdPDL: List<UtenlandskIdentifikasjonsnummer>,
+        utenlandskIdSed: UtenlandskId
+    ): Boolean {
+
+        utenlandskeIdPDL.forEach { utenlandskIdIPDL ->
+            val landkodeFraPdl = kodeverk.finnLandkode(utenlandskIdIPDL.utstederland)
+            if (utenlandskIdSed.land == landkodeFraPdl && utenlandskIdSed.id != utenlandskIdIPDL.identifikasjonsnummer) {
+                return true
+            }
+        }
+        return false
+    }
+
+    fun skalOppgaveOpprettes(utenlandskeIdPDL: List<UtenlandskIdentifikasjonsnummer>,
+                             utenlandskIdSed: UtenlandskId): Boolean {
+        return finnesMinstEnAnnenUidFraSammeLand(utenlandskeIdPDL, utenlandskIdSed)
+    }
+
 }

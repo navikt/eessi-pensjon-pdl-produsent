@@ -11,10 +11,10 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.Metadata
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import no.nav.eessi.pensjon.services.kodeverk.KodeverkClient
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
-import kotlin.test.assertTrue
 
 class PersonidentifiseringServiceTest {
 
@@ -48,7 +48,7 @@ class PersonidentifiseringServiceTest {
             "1234"
         )
 
-        val listeOverutenlandskIdentifikasjonsnummer = listOf(UtenlandskIdentifikasjonsnummer(
+        val utenlandskeIdPDL = listOf(UtenlandskIdentifikasjonsnummer(
                 "11067122781",
                 "SWE",
                 false,
@@ -57,10 +57,10 @@ class PersonidentifiseringServiceTest {
             )
         )
 
-        val listeOverutenlandskId = UtenlandskId("110671227812", "SWE")
+        val utenlandskIdSed = UtenlandskId("110671227812", "SE")
         every { kodeverkClient.finnLandkode("SE") } returns "SWE"
 
-        assertFalse(pdlFiltrering.finnesUidFraSedIPDL(listeOverutenlandskIdentifikasjonsnummer, listeOverutenlandskId))
+        assertFalse(pdlFiltrering.finnesUidFraSedIPDL(utenlandskeIdPDL, utenlandskIdSed))
 
     }
 
