@@ -9,6 +9,7 @@ import org.springframework.http.HttpMethod
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.concurrent.*
+import java.util.concurrent.CompletableFuture
 
 class CustomMockServer() {
     private val serverPort = CompletableFuture.completedFuture(System.getProperty("mockserverport").toInt())
