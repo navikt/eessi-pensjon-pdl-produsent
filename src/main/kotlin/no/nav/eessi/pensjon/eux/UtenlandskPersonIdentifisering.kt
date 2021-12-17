@@ -1,6 +1,18 @@
 package no.nav.eessi.pensjon.eux
 
-import no.nav.eessi.pensjon.eux.model.sed.*
+import no.nav.eessi.pensjon.eux.model.SedType
+import no.nav.eessi.pensjon.eux.model.sed.P15000
+import no.nav.eessi.pensjon.eux.model.sed.P15000Pensjon
+import no.nav.eessi.pensjon.eux.model.sed.P4000
+import no.nav.eessi.pensjon.eux.model.sed.P4000Pensjon
+import no.nav.eessi.pensjon.eux.model.sed.P5000
+import no.nav.eessi.pensjon.eux.model.sed.P5000Pensjon
+import no.nav.eessi.pensjon.eux.model.sed.P6000
+import no.nav.eessi.pensjon.eux.model.sed.P6000Pensjon
+import no.nav.eessi.pensjon.eux.model.sed.P7000
+import no.nav.eessi.pensjon.eux.model.sed.P7000Pensjon
+import no.nav.eessi.pensjon.eux.model.sed.Person
+import no.nav.eessi.pensjon.eux.model.sed.SED
 import org.springframework.stereotype.Component
 
 @Component
