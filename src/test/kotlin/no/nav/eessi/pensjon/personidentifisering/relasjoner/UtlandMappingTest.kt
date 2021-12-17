@@ -20,8 +20,8 @@ internal class UtlandMappingTest() {
         val pinItems =  UtlandMapping().mapUtenlandsPin(person)
 
         assert(pinItems.size == 2)
-        assertEquals(1, pinItems.filterNot { it.utstederland == "DE" }?.size)
-        assertEquals(1, pinItems.filterNot { it.utstederland == "SE" }?.size)
+        assertEquals(1, pinItems.filterNot { it.utstederland == "DE" }.size)
+        assertEquals(1, pinItems.filterNot { it.utstederland == "SE" }.size)
     }
 
     private fun createPersonForUtland(fnr: String?, rolle: Rolle? = null): Person {

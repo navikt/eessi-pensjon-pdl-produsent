@@ -8,9 +8,6 @@ import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Profile
-import org.springframework.kafka.annotation.EnableKafka
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory
 import org.springframework.kafka.core.ConsumerFactory
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory
@@ -54,7 +51,7 @@ class KafkaTestConfig(
         val factory = ConcurrentKafkaListenerContainerFactory<String, String>()
         factory.consumerFactory = kafkaConsumerFactory()
         factory.containerProperties.ackMode = ContainerProperties.AckMode.MANUAL
-        factory.containerProperties.authorizationExceptionRetryInterval =  Duration.ofSeconds(4L)
+        factory.containerProperties.setAuthExceptionRetryInterval(Duration.ofSeconds(4L))
         return factory
     }
 
@@ -68,7 +65,7 @@ class KafkaTestConfig(
         val factory = ConcurrentKafkaListenerContainerFactory<String, String>()
         factory.consumerFactory = kafkaConsumerFactory()
         factory.containerProperties.ackMode = ContainerProperties.AckMode.MANUAL
-        factory.containerProperties.authorizationExceptionRetryInterval =  Duration.ofSeconds(4L)
+        factory.containerProperties.setAuthExceptionRetryInterval(Duration.ofSeconds(4L))
         return factory
     }
 
