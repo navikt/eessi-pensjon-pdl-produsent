@@ -19,14 +19,14 @@ class UtenlandskPersonIdentifisering {
 
 
         when(sed.type) {
-            SedType.P4000 -> personer = personer.plus(hentP4000Personer(sed as P4000Pensjon))
-            SedType.P5000 -> personer = personer.plus(hentP5000Personer(sed as P5000Pensjon))
-            SedType.P6000 -> personer = personer.plus(hentP6000Personer(sed as P6000Pensjon))
-            SedType.P7000 -> personer = personer.plus(hentP7000Personer(sed as P7000Pensjon))
-            SedType.P15000 ->personer =  personer.plus(hentP15000Personer(sed as P15000Pensjon))
+            SedType.P4000 -> personer = personer.plus(hentP4000Personer((sed as P4000).p4000Pensjon))
+            SedType.P5000 -> personer = personer.plus(hentP5000Personer((sed as P5000).p5000Pensjon))
+            SedType.P6000 -> personer = personer.plus(hentP6000Personer((sed as P6000).p6000Pensjon))
+            SedType.P7000 -> personer = personer.plus(hentP7000Personer((sed as P7000).p7000Pensjon))
+            SedType.P15000 ->personer =  personer.plus(hentP15000Personer((sed as P15000).p15000Pensjon))
             else -> {}
         }
-        return personer
+        return personer.filterNotNull().filterNot { person -> person.pin == null }
     }
 
     fun filtrerAlleUtenlandskeIder(personer: List<Person?>): List<UtenlandskId> {
@@ -40,11 +40,11 @@ class UtenlandskPersonIdentifisering {
     fun hentAlleUtenlandskeIder(sed: SED): List<UtenlandskId> = filtrerAlleUtenlandskeIder(hentAllePersoner(sed))
     fun hentAlleUtenlandskeIder(seder: List<SED>): List<UtenlandskId> = seder.flatMap { sed -> hentAlleUtenlandskeIder(sed) }
 
-    private fun hentP4000Personer(p4000Pensjon: P4000Pensjon): Person? = p4000Pensjon.gjenlevende?.person
-    private fun hentP5000Personer(p5000Pensjon: P5000Pensjon): Person? = p5000Pensjon.gjenlevende?.person
-    private fun hentP6000Personer(p6000Pensjon: P6000Pensjon): Person? = p6000Pensjon.gjenlevende?.person
-    private fun hentP7000Personer(p7000Pensjon: P7000Pensjon): List<Person?> = listOf(p7000Pensjon.gjenlevende?.person, p7000Pensjon.bruker?.person)
-    private fun hentP15000Personer(p15000Pensjon: P15000Pensjon): Person? = p15000Pensjon.gjenlevende?.person
+    private fun hentP4000Personer(p4000Pensjon: P4000Pensjon?): Person? = p4000Pensjon?.gjenlevende?.person
+    private fun hentP5000Personer(p5000Pensjon: P5000Pensjon?): Person? = p5000Pensjon?.gjenlevende?.person
+    private fun hentP6000Personer(p6000Pensjon: P6000Pensjon?): Person? = p6000Pensjon?.gjenlevende?.person
+    private fun hentP7000Personer(p7000Pensjon: P7000Pensjon?): Person? = p7000Pensjon?.gjenlevende?.person
+    private fun hentP15000Personer(p15000Pensjon: P15000Pensjon?): Person? = p15000Pensjon?.gjenlevende?.person
 
 }
 

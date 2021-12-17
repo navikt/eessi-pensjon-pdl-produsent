@@ -1,0 +1,157 @@
+{
+  "sed" : "P2200",
+  "nav" : {
+    "eessisak" : [ {
+      "institusjonsid" : "NO:noinst002",
+      "institusjonsnavn" : "NOINST002, NO INST002, NO",
+      "saksnummer" : "22922563",
+      "land" : "NO"
+    } ],
+    "bruker" : {
+      "person" : {
+        "pin" : [ {
+          "institusjonsnavn" : "NOINST002, NO INST002, NO",
+          "institusjonsid" : "NO:noinst002",
+          "identifikator" : "21118143326",
+          "land" : "NO"
+        } ],
+        "statsborgerskap" : [ {
+          "land" : "QX"
+        } ],
+        "etternavn" : "TESTER",
+        "fornavn" : "HOVED PERSON",
+        "kjoenn" : "M",
+        "foedested" : {
+          "by" : "Unknown",
+          "land" : "QX"
+        },
+        "foedselsdato" : "1981-11-21"
+      },
+      "adresse" : {
+        "gate" : "Oppoverbakken 66",
+        "by" : "SÃRUMSAND",
+        "postnummer" : "1920",
+        "land" : "NO"
+      }
+    },
+    "ektefelle" : {
+      "person" : {
+        "pin" : [ {
+          "institusjonsnavn" : "NOINST002, NO INST002, NO",
+          "institusjonsid" : "NO:noinst002",
+          "identifikator" : "26118543385",
+          "land" : "NO"
+        } ],
+        "statsborgerskap" : [ {
+          "land" : "QX"
+        } ],
+        "etternavn" : "BOUWMANS",
+        "fornavn" : "JESSINE TORDNU",
+        "kjoenn" : "K",
+        "foedested" : {
+          "by" : "Unknown",
+          "land" : "QX"
+        },
+        "foedselsdato" : "1985-11-26"
+      },
+      "type" : "ektefelle"
+    },
+    "barn" : [ {
+      "mor" : {
+        "person" : {
+          "pin" : [ {
+            "institusjonsnavn" : "NOINST002, NO INST002, NO",
+            "institusjonsid" : "NO:noinst002",
+            "identifikator" : "26118543385",
+            "land" : "NO"
+          } ],
+          "fornavn" : "JESSINE TORDNU"
+        }
+      },
+      "person" : {
+        "pin" : [ {
+          "institusjonsnavn" : "NOINST002, NO INST002, NO",
+          "institusjonsid" : "NO:noinst002",
+          "identifikator" : "24110954383",
+          "land" : "NO"
+        } ],
+        "statsborgerskap" : [ {
+          "land" : "QX"
+        } ],
+        "etternavn" : "UNG",
+        "fornavn" : "TOPPI DOTTO",
+        "kjoenn" : "M",
+        "foedested" : {
+          "by" : "Unknown",
+          "land" : "QX"
+        },
+        "foedselsdato" : "2009-11-24"
+      },
+      "far" : {
+        "person" : {
+          "pin" : [ {
+            "institusjonsnavn" : "NOINST002, NO INST002, NO",
+            "institusjonsid" : "NO:noinst002",
+            "identifikator" : "21118143326",
+            "land" : "NO"
+          } ],
+          "fornavn" : "HOVED PERSON"
+        }
+      },
+      "relasjontilbruker" : "BARN"
+    }, {
+      "mor" : {
+        "person" : {
+          "pin" : [ {
+            "institusjonsnavn" : "NOINST002, NO INST002, NO",
+            "institusjonsid" : "NO:noinst002",
+            "identifikator" : "26118543385",
+            "land" : "NO"
+          } ],
+          "fornavn" : "JESSINE TORDNU"
+        }
+      },
+      "person" : {
+        "pin" : [ {
+          "institusjonsnavn" : "NOINST002, NO INST002, NO",
+          "institusjonsid" : "NO:noinst002",
+          "identifikator" : "24110454399",
+          "land" : "NO"
+        } ],
+        "statsborgerskap" : [ {
+          "land" : "QX"
+        } ],
+        "etternavn" : "MED",
+        "fornavn" : "EGIDIJS ER",
+        "kjoenn" : "K",
+        "foedested" : {
+          "by" : "Unknown",
+          "land" : "QX"
+        },
+        "foedselsdato" : "2004-11-24"
+      },
+      "far" : {
+        "person" : {
+          "pin" : [ {
+            "institusjonsnavn" : "NOINST002, NO INST002, NO",
+            "institusjonsid" : "NO:noinst002",
+            "identifikator" : "21118143326",
+            "land" : "NO"
+          } ],
+          "fornavn" : "HOVED PERSON"
+        }
+      },
+      "relasjontilbruker" : "BARN"
+    } ],
+    "krav" : {
+      "dato" : "2020-07-01"
+    }
+  },
+  "pensjon" : {
+    "kravDato" : {
+      "dato" : "2020-07-01"
+    }
+  },
+  "sedGVer" : "4",
+  "sedVer" : "2"
+}
