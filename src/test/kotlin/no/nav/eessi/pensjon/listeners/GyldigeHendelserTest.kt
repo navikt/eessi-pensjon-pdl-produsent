@@ -21,9 +21,6 @@ internal class GyldigeHendelserTest {
         assertFalse(GyldigeHendelser.erGyldigInnkommetSed(hendelse))
     }
 
-
-
-
     @Test
     fun `mottatt hendelse som mangler BucType`() {
         val hendelse = createDummy("", null)
