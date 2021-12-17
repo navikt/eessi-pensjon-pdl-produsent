@@ -2,6 +2,8 @@ package no.nav.eessi.pensjon.listeners
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.eessi.pensjon.eux.EuxDokumentHelper
+import no.nav.eessi.pensjon.eux.UtenlandskId
+import no.nav.eessi.pensjon.eux.UtenlandskPersonIdentifisering
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.Endringsmelding
@@ -13,7 +15,6 @@ import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.pdl.validering.PdlValidering
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
-import no.nav.eessi.pensjon.services.kodeverk.KodeverkClient
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
@@ -31,7 +32,9 @@ class SedMottattListener(
     private val personidentifiseringService: PersonidentifiseringService,
     private val dokumentHelper: EuxDokumentHelper,
     private val personMottakKlient: PersonMottakKlient,
-    private val kodeverkClient: KodeverkClient,
+    private val utenlandskPersonIdentifisering: UtenlandskPersonIdentifisering,
+    private val pdlFiltrering: PdlFiltrering,
+    private val pdlValidering: PdlValidering,
     @Value("\${SPRING_PROFILES_ACTIVE}") private val profile: String,
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper(SimpleMeterRegistry())
 ) {
@@ -40,8 +43,6 @@ class SedMottattListener(
 
     private val latch = CountDownLatch(1)
     private lateinit var consumeIncomingSed: MetricsHelper.Metric
-
-    private val pdlFiltrering = PdlFiltrering()
 
     fun getLatch() = latch
 
@@ -62,7 +63,6 @@ class SedMottattListener(
             consumeIncomingSed.measure {
 
                 logger.info("Innkommet sedMottatt hendelse i partisjon: ${cr.partition()}, med offset: ${cr.offset()}")
-                val pdlValidering =  PdlValidering()
 
                 logger.debug(hendelse)
 
@@ -78,33 +78,37 @@ class SedMottattListener(
                         val alleGyldigeSED = hentAlleGyldigeSedFraBUC(sedHendelse)
 
                         //identifisere Person hent Person fra PDL valider Person
+                        val utenlandskeIderFraSed = utenlandskPersonIdentifisering.hentAlleUtenlandskeIder(alleGyldigeSED)
                         val identifisertePersoner = personidentifiseringService.hentIdentifisertPersoner(alleGyldigeSED, bucType, sedHendelse.sedType, sedHendelse.rinaDokumentId)
 
                         if (!eridenterGyldige(
                                 pdlValidering,
                                 identifisertePersoner,
                                 acknowledgment,
-                                sedHendelse
+                                sedHendelse,
+                                utenlandskeIderFraSed
                             )
                         ) return@measure
 
                         logger.debug("Validerer uid fra sed som ikke finnes i PDL: ${identifisertePersoner.size}")
-                        val filtrerUidSomIkkeFinnesIPdl = pdlFiltrering.filtrerUidSomIkkeFinnesIPdl(identifisertePersoner, kodeverkClient, sedHendelse.avsenderNavn!!)
-                        if(filtrerUidSomIkkeFinnesIPdl.isEmpty()) {
+                        val filtrerUidSomIkkeFinnesIPdl = pdlFiltrering.finnesUidFraSedIPDL(identifisertePersoner.first().uidFraPdl, utenlandskeIderFraSed.first())
+//                        filtrerUidSomIkkeFinnesIPdl(identifisertePersoner, kodeverkClient, sedHendelse.avsenderNavn!!)
+                        if(filtrerUidSomIkkeFinnesIPdl) {
                             logger.info("Ingen filtrerte personer funnet Acket sedMottatt: ${cr.offset()}")
                             acknowledgment.acknowledge()
                             return@measure
-
                         }
 
-                        logger.debug("Validerer uid fra sed: ${filtrerUidSomIkkeFinnesIPdl.size}")
-                        val validerteIdenter = pdlValidering.personerValidertPaaLand(filtrerUidSomIkkeFinnesIPdl)
-                        if(validerteIdenter.isEmpty()) {
+                        logger.debug("Validerer uid fra sed: $filtrerUidSomIkkeFinnesIPdl")
+                        if(!pdlValidering.erPersonValidertPaaLand(utenlandskeIderFraSed.first())) {
                             logger.info("Ingen validerte identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
                             acknowledgment.acknowledge()
                             return@measure
                         }
-                        lagEndringsMelding(validerteIdenter)
+                        sedHendelse.avsenderNavn?.let { avsender ->
+                            lagEndringsMelding(utenlandskeIderFraSed.first(), identifisertePersoner.first().fnr!!.value, avsender
+                            )
+                        }
 
                         //logikk for muligens oppgave
 
@@ -126,8 +130,10 @@ class SedMottattListener(
         pdlValidering: PdlValidering,
         identifisertePersoner: List<IdentifisertPerson>,
         acknowledgment: Acknowledgment,
-        sedHendelse: SedHendelseModel
+        sedHendelse: SedHendelseModel,
+        utenlandskeIder: List<UtenlandskId>
     ): Boolean {
+
         if (!pdlValidering.finnesIdentifisertePersoner(identifisertePersoner)) {
             acknowledgment.acknowledge()
             logger.info("Ingen identifiserte FNR funnet, Acket melding")
@@ -140,17 +146,13 @@ class SedMottattListener(
             return false
         }
 
-        if (identifisertePersoner.first().personIdenterFraSed.uid.size > 1) {
+        if (utenlandskeIder.size > 1) {
             acknowledgment.acknowledge()
             logger.info("Antall utenlandske IDer er flere enn en")
             return false
         }
 
-        if (sedHendelse.avsenderLand == null || pdlValidering.erUidLandAnnetEnnAvsenderLand(
-                identifisertePersoner,
-                sedHendelse.avsenderLand
-            )
-        ) {
+        if (sedHendelse.avsenderLand == null || pdlValidering.erUidLandAnnetEnnAvsenderLand(utenlandskeIder.first(), sedHendelse.avsenderLand)) {
             acknowledgment.acknowledge()
             logger.error("Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer")
             return false
@@ -164,24 +166,21 @@ class SedMottattListener(
         return dokumentHelper.hentAlleSedIBuc(sedHendelse.rinaSakId, alleGyldigeDokumenter)
     }
 
-    fun lagEndringsMelding(identifisertPersoner: List<IdentifisertPerson>){
-        identifisertPersoner.map { ident ->
-            val uid = ident.personIdenterFraSed.uid.first()
-            val fnr = ident.personIdenterFraSed.fnr?.value!!
-            val pdlEndringsOpplysninger = PdlEndringOpplysning(
-                listOf(
-                    Personopplysninger(
-                        ident = fnr,
-                        endringsmelding = Endringsmelding(
-                            identifikasjonsnummer = uid.identifikasjonsnummer,
-                            utstederland = uid.utstederland,
-                            kilde = uid.kilde
-                        )
+    fun lagEndringsMelding(utenlandskPin: UtenlandskId,
+                           norskFnr: String,
+                           kilde: String){
+        val pdlEndringsOpplysninger = PdlEndringOpplysning(
+            listOf(
+                Personopplysninger(
+                    ident = norskFnr,
+                    endringsmelding = Endringsmelding(
+                        identifikasjonsnummer = utenlandskPin.id,
+                        utstederland = utenlandskPin.land,
+                        kilde = kilde
                     )
                 )
             )
-            personMottakKlient.opprettPersonopplysning(pdlEndringsOpplysninger)
-        }
+        )
+        personMottakKlient.opprettPersonopplysning(pdlEndringsOpplysninger)
     }
-
 }

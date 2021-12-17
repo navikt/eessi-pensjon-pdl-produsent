@@ -9,6 +9,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import no.nav.eessi.pensjon.eux.EuxDokumentHelper
 import no.nav.eessi.pensjon.eux.EuxKlient
+import no.nav.eessi.pensjon.eux.UtenlandskPersonIdentifisering
 import no.nav.eessi.pensjon.eux.model.buc.Buc
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.sed.*
@@ -17,6 +18,8 @@ import no.nav.eessi.pensjon.json.toJson
 import no.nav.eessi.pensjon.listeners.GyldigeHendelser
 import no.nav.eessi.pensjon.listeners.SedMottattListener
 import no.nav.eessi.pensjon.models.SedHendelseModel
+import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
+import no.nav.eessi.pensjon.pdl.validering.PdlValidering
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
 import no.nav.eessi.pensjon.personidentifisering.Rolle
@@ -41,6 +44,9 @@ internal open class MottattHendelseBase {
     private val listAppender = ListAppender<ILoggingEvent>()
 
     private val personMottakKlient: PersonMottakKlient = mockk(relaxed = true)
+    private val utenlandskPersonIdentifisering = mockk<UtenlandskPersonIdentifisering>(relaxed = true)
+    private val pdlFiltrering = mockk<PdlFiltrering>(relaxed = true)
+    private val pdlValidering = mockk<PdlValidering>(relaxed = true)
 
     companion object {
         const val SAK_ID = "12345"
@@ -54,13 +60,14 @@ internal open class MottattHendelseBase {
         const val AKTOER_ID_2 = "0009876543210"
     }
 
-
     protected val mottattListener: SedMottattListener = SedMottattListener(
-        personidentifiseringService = personidentifiseringService,
-        dokumentHelper = dokumentHelper,
-        personMottakKlient = personMottakKlient,
-        kodeverkClient,
-        profile = "test"
+        personidentifiseringService,
+        dokumentHelper,
+        personMottakKlient,
+        utenlandskPersonIdentifisering,
+        pdlFiltrering,
+        pdlValidering,
+        "test"
     )
 
     @BeforeEach

@@ -1,38 +1,70 @@
 package no.nav.eessi.pensjon.pdl.validering
 
+import io.mockk.mockk
+import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
-import no.nav.eessi.pensjon.personidentifisering.PersonIdenter
-import no.nav.eessi.pensjon.personidentifisering.UtenlandskPin
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Endring
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Metadata
+import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
+import no.nav.eessi.pensjon.services.kodeverk.KodeverkClient
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.time.LocalDateTime
 import kotlin.test.assertFalse
 
 internal class PdlValideringTest {
+    private val kodeverkClient = mockk<KodeverkClient>(relaxed = true)
+
+    private val pdlValidering = PdlValidering(kodeverkClient)
 
     @Test
     fun `Gitt en ny uid naar avsenderland og uidland ikke er det samme saa returner true`() {
-        val pdlValidering = PdlValidering()
-        val identifisertPerson = IdentifisertPerson(
-            PersonIdenter(
-                Fodselsnummer.fra("11067122781"), listOf(
-                    UtenlandskPin("P2000", "1234567891236540", "DE"),
-                )
-            ), emptyList()
-        )
-        assertTrue(pdlValidering.erUidLandAnnetEnnAvsenderLand(listOf(identifisertPerson), "SE"))
+
+        val identifisertPerson = UtenlandskId("11067122781", "DE")
+        assertTrue(pdlValidering.erUidLandAnnetEnnAvsenderLand(identifisertPerson, "SE"))
     }
 
     @Test
     fun `Gitt en ny uid naar avsenderland og uidland er det samme saa returner false`() {
-        val pdlValidering = PdlValidering()
-        val identifisertPerson = IdentifisertPerson(
-            PersonIdenter(
-                Fodselsnummer.fra("11067122781"), listOf(
-                    UtenlandskPin("P2000", "1234567891236540", "DE"),
-                )
-            ), emptyList()
-        )
-        assertFalse (pdlValidering.erUidLandAnnetEnnAvsenderLand(listOf(identifisertPerson), "DE"))
+
+        val identifisertPerson = UtenlandskId("11067122781", "DE")
+        assertFalse (pdlValidering.erUidLandAnnetEnnAvsenderLand(identifisertPerson, "DE"))
     }
+
+    @Test
+    fun `Gitt at vi ikke har en identifisert person så returnerer vi false `() {
+        assertFalse (pdlValidering.finnesIdentifisertePersoner(emptyList()))
+    }
+
+    @Test
+    fun `Gitt at vi har en identifisert person så returnerer vi true `() {
+
+        val metadata = Metadata(
+            listOf(
+                Endring(
+                    "kilde",
+                    LocalDateTime.now(),
+                    "ole",
+                    "system1",
+                    Endringstype.OPPRETT
+                )
+            ),
+            false,
+            "nav",
+            "1234"
+        )
+
+        val identifisertPerson = listOf(IdentifisertPerson(
+            Fodselsnummer.fra("11067122781"), listOf(
+                UtenlandskIdentifikasjonsnummer(
+                    "321654687", "DE", false, null, metadata
+                )
+            )
+        ))
+
+        assertTrue(pdlValidering.finnesIdentifisertePersoner(identifisertPerson))
+    }
+
 }

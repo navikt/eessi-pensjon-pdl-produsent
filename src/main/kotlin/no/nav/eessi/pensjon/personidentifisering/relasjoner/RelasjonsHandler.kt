@@ -3,7 +3,7 @@ package no.nav.eessi.pensjon.personidentifisering.relasjoner
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.eux.model.sed.SedType
-import no.nav.eessi.pensjon.personidentifisering.PersonIdenter
+import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -11,11 +11,11 @@ object RelasjonsHandler {
 
     private val logger: Logger = LoggerFactory.getLogger(RelasjonsHandler::class.java)
 
-    fun hentRelasjoner(sed: SED, rinaDocumentId: String, bucType: BucType): List<PersonIdenter> {
+    fun hentRelasjoner(sed: SED, rinaDocumentId: String, bucType: BucType): List<Fodselsnummer?> {
         try {
             getRelasjonHandler(sed, bucType, rinaDocumentId).let { handler ->
                 logger.debug("Benytter følgende handler: ${handler.javaClass.simpleName}")
-                return filterRleasjoner(handler.hentRelasjoner(sed))
+                return filterRelasjoner(handler.hentRelasjoner(sed))
             }
         } catch (ex: Exception) {
             logger.warn("Noe gikk galt under innlesing av fnr fra sed", ex)
@@ -23,17 +23,15 @@ object RelasjonsHandler {
         return emptyList()
     }
 
-    private fun filterRleasjoner(relasjonList: List<PersonIdenter>): List<PersonIdenter> {
+    private fun filterRelasjoner(fnrListe: List<Fodselsnummer?>): List<Fodselsnummer?> {
         logger.debug("*** Filterer relasjonListe, samme oppføringer, ufyldige verdier o.l")
 
-        relasjonList.onEach { logger.debug("$it") }
+        fnrListe.onEach { logger.debug("$it") }
 
         //filterering av relasjoner med kjent fnr
-        val relasjonerMedFnr = relasjonList.filter { it.fnr != null }.distinctBy { it.fnr }
-        //filtering av relasjoner uten kjent fnr
-        val relasjonerUtenFnr = relasjonList.filter { it.fnr == null }
+        val relasjonerMedFnr = fnrListe.filterNotNull().distinctBy { it.value }
 
-        return (relasjonerMedFnr + relasjonerUtenFnr).also { logger.debug("$it") }
+        return (relasjonerMedFnr).also { logger.debug("$it") }
     }
 
     private fun getRelasjonHandler(sed: SED, bucType: BucType, rinaDocumentId: String): AbstractIdent {

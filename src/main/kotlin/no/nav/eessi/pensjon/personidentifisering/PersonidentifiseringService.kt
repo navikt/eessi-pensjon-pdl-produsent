@@ -7,7 +7,6 @@ import no.nav.eessi.pensjon.json.toJson
 import no.nav.eessi.pensjon.personidentifisering.relasjoner.RelasjonsHandler
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
-import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.PersonUtenlandskIdent
 import no.nav.eessi.pensjon.services.kodeverk.KodeverkClient
@@ -26,42 +25,31 @@ class PersonidentifiseringService(private val personService: PersonService, priv
         rinaDocumentId: String
     ): List<IdentifisertPerson> {
 
-        //fin norskident og utlandskeidenter
-//        val potensiellePersonRelasjoner = RelasjonsHandler.hentRelasjoner(seder, rinaDocumentId, bucType)
         val potensiellePersonRelasjoner = seder.flatMap { RelasjonsHandler.hentRelasjoner(it, rinaDocumentId, bucType) }
 
         //slå opp PDL
-        return hentIdentifisertePersoner(bucType, potensiellePersonRelasjoner, rinaDocumentId)
+        return hentIdentifisertePersoner(potensiellePersonRelasjoner, rinaDocumentId)
 
     }
 
     fun hentIdentifisertePersoner(
-        bucType: BucType,
-        potensiellePersonRelasjoner: List<PersonIdenter>,
+        potensielleFnr: List<Fodselsnummer?>,
         rinaDocumentId: String
     ): List<IdentifisertPerson> {
 
-        val distinctByPotensielleSEDPersonRelasjoner = potensiellePersonRelasjoner.distinctBy { relasjon -> relasjon.fnr }
-            return distinctByPotensielleSEDPersonRelasjoner
-                .mapNotNull { relasjon ->
+        return potensielleFnr.filterNotNull().distinctBy { fnr -> fnr.value }.mapNotNull { identifiserPerson(it) }
 
-                    identifiserPerson(relasjon)
-
-            }
-            .distinctBy { it.personIdenterFraSed.fnr }
     }
 
-    fun identifiserPerson(personIdenter: PersonIdenter): IdentifisertPerson? {
-        logger.debug("Henter ut følgende personRelasjon: ${personIdenter.toJson()}")
+    fun identifiserPerson(fodselsnummer: Fodselsnummer): IdentifisertPerson? {
+        logger.debug("Henter ut følgende personRelasjon: ${fodselsnummer.toJson()}")
 
         return try {
-            val valgtFnr = personIdenter.fnr?.value ?: return null
-
-            personService.hentPersonUtenlandskIdent(NorskIdent(valgtFnr))
+            personService.hentPersonUtenlandskIdent(NorskIdent(fodselsnummer.value))
                 ?.let { person ->
                     populerIdentifisertPerson(
                         person,
-                        personIdenter,
+                        fodselsnummer,
                     )
                 }
         } catch (ex: Exception) {
@@ -72,16 +60,13 @@ class PersonidentifiseringService(private val personService: PersonService, priv
 
     private fun populerIdentifisertPerson(
         person: PersonUtenlandskIdent,
-        personIdentier: PersonIdenter,
+        fodselsnummer: Fodselsnummer,
     ): IdentifisertPerson {
         logger.debug("Populerer IdentifisertPerson med data fra PDL")
 
-        val personFnr = person.identer.first { it.gruppe == IdentGruppe.FOLKEREGISTERIDENT }.ident
-        val newPersonIdenter = personIdentier.copy(fnr = Fodselsnummer.fra(personFnr))
-
         return IdentifisertPerson(
-            newPersonIdenter,
-            uidFraPdl = person.utenlandskIdentifikasjonsnummer
+            fodselsnummer,
+            person.utenlandskIdentifikasjonsnummer
         ).also { logger.debug("Følgende populert Person: $it") }
     }
 
