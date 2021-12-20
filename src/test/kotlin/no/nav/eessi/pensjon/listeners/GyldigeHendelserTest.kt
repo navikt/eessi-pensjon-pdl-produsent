@@ -12,20 +12,20 @@ internal class GyldigeHendelserTest {
     fun `Mottatt hendelse som IKKE er R_BUC_02, H_BUC_07, eller sektorkode P er ugyldig`() {
         val hendelse = createDummy("", BucType.P_BUC_01)
 
-        assertFalse(GyldigeHendelser.erGyldigInnkommetSed(hendelse))
+        assertFalse(GyldigeHendelser.mottatt(hendelse))
     }
 
     @Test
     fun `Mottatt hendelse som mangler BucType`() {
         val hendelse = createDummy("", null)
-        assertFalse(GyldigeHendelser.erGyldigInnkommetSed(hendelse))
+        assertFalse(GyldigeHendelser.mottatt(hendelse))
     }
 
     @Test
     fun `mottatt hendelse som mangler BucType`() {
         val hendelse = createDummy("", null)
 
-        assertFalse(GyldigeHendelser.erGyldigInnkommetSed(hendelse))
+        assertFalse(GyldigeHendelser.mottatt(hendelse))
     }
 
     private fun createDummy(sektor: String, bucType: BucType?) =

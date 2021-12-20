@@ -1,6 +1,7 @@
 package no.nav.eessi.pensjon.pdl.validering
 
 import no.nav.eessi.pensjon.eux.UtenlandskId
+import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import no.nav.eessi.pensjon.services.kodeverk.KodeverkClient
 import org.slf4j.LoggerFactory
@@ -40,5 +41,12 @@ class PdlValidering(private val kodeverkClient: KodeverkClient) {
         }
         return false
     }
+
+    fun finnesUgyldigeSederIBuc(seder: List<SED>, antallsediBuc: Int) : Boolean {
+        return seder.size == antallsediBuc
+
+    }
+
+
 
 }
