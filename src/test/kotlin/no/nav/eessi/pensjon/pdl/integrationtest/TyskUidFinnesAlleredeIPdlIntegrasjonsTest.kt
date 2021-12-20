@@ -35,6 +35,9 @@ class SedMottattIntegrationtest : IntegrationBase() {
             ))
         )
 
+//        val listOverSeder = listOf(mockForenkletSed("eb938171a4cb4e658b3a6c011962d204", SedType.P2100, SedStatus.RECEIVED))
+//        val mockBuc = mockBuc("147729", BucType.P_BUC_02, listOverSeder)
+
         every { personService.hentPersonUtenlandskIdent(NorskIdent(fnr)) } returns personMock
         CustomMockServer()
             .mockSTSToken()

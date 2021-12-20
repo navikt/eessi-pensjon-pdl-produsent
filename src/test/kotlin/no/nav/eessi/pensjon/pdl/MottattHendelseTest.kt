@@ -28,7 +28,7 @@ internal class MottattHendelseTest : MottattHendelseBase() {
 
         val sed = SED.generateSedToClass<P2000>(createSed(SedType.P2000, pin = pin))
 
-        val buc  = mapJsonToAny(javaClass.getResource("/eux/buc/buc279020.json").readText(), typeRefs<Buc>())
+        val buc  = mapJsonToAny(javaClass.getResource("/eux/buc/buc279020.json")!!.readText(), typeRefs<Buc>())
 
         val utenlandskIdentifikasjonsnummer = listOf(UtenlandskIdentifikasjonsnummer(uid, "SWE", false, null, createMetadata()))
 

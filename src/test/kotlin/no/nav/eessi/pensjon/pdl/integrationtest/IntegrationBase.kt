@@ -5,9 +5,14 @@ import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
+import no.nav.eessi.pensjon.eux.model.SedType
+import no.nav.eessi.pensjon.eux.model.buc.BucType
+import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
+import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.listeners.SedMottattListener
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.security.sts.STSService
+import no.nav.eessi.pensjon.utils.toJson
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.mockserver.integration.ClientAndServer
@@ -120,4 +125,21 @@ abstract class IntegrationBase {
             logMelding.message.contains(keyword)
         }?.message?.isNotEmpty() ?: false
     }
+
+    fun mockBuc(bucId: String, bucType: BucType, docIder: List<ForenkletSED>) : String {
+        return """
+            {
+              "id": "$bucId",
+              "processDefinitionName": "${bucType.name}",
+              "documents": ${docIder.toJson()}
+              
+            } 
+          
+        """.trimIndent()
+    }
+
+    fun mockForenkletSed(id: String, type: SedType, status: SedStatus) : ForenkletSED {
+        return ForenkletSED(id, type, status)
+    }
+
 }

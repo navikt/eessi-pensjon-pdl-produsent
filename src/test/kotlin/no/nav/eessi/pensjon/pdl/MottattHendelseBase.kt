@@ -131,8 +131,8 @@ internal open class MottattHendelseBase {
         }
 
         mottattListener.consumeSedMottatt(hendelse.toJson(), mockk(relaxed = true), mockk(relaxed = true))
-        if (GyldigeHendelser.erGyldigInnkommetSed(hendelse)) {
-            verify(exactly = 1) { euxKlient.hentSedJson(any(), any()) }
+        if (GyldigeHendelser.mottatt(hendelse)) {
+            verify(exactly = 2) { euxKlient.hentSedJson(any(), any()) }
       //      assertBlock(mottattListener.result as List<IdentifisertPerson>?)
         } else {
             assertBlock(null)
@@ -171,8 +171,8 @@ internal open class MottattHendelseBase {
         }
 
         mottattListener.consumeSedMottatt(hendelse.toJson(), mockk(relaxed = true), mockk(relaxed = true))
-        if (GyldigeHendelser.erGyldigInnkommetSed(hendelse)) {
-            verify(exactly = 1) { euxKlient.hentSedJson(any(), any()) }
+        if (GyldigeHendelser.mottatt(hendelse)) {
+            verify(exactly = 2) { euxKlient.hentSedJson(any(), any()) }
           //  assertBlock(mottattListener.result as List<IdentifisertPerson>?)
         } else {
             assertBlock(null)
