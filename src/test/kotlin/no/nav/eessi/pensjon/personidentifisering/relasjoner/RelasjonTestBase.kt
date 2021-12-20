@@ -14,7 +14,7 @@ import no.nav.eessi.pensjon.eux.model.sed.RNav
 import no.nav.eessi.pensjon.eux.model.sed.RelasjonAvdodItem
 import no.nav.eessi.pensjon.eux.model.sed.RelasjonTilAvdod
 import no.nav.eessi.pensjon.eux.model.sed.SED
-import no.nav.eessi.pensjon.eux.model.sed.SedType
+import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.sed.Status
 import no.nav.eessi.pensjon.eux.model.sed.TilbakekrevingBrukere
 import no.nav.eessi.pensjon.personidentifisering.Rolle

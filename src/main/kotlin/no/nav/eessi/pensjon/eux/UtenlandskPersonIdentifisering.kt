@@ -1,6 +1,7 @@
 package no.nav.eessi.pensjon.eux
 
 import no.nav.eessi.pensjon.eux.model.sed.*
+import no.nav.eessi.pensjon.eux.model.SedType
 import org.springframework.stereotype.Component
 
 @Component

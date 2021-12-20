@@ -1,7 +1,7 @@
 package no.nav.eessi.pensjon.eux
 
 import no.nav.eessi.pensjon.eux.model.sed.SED
-import no.nav.eessi.pensjon.eux.model.sed.SedType
+import no.nav.eessi.pensjon.eux.model.SedType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

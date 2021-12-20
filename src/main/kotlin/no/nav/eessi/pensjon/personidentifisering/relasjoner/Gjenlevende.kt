@@ -1,8 +1,7 @@
 package no.nav.eessi.pensjon.personidentifisering.relasjoner
 
+import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.sed.Bruker
-import no.nav.eessi.pensjon.eux.model.sed.SedType
-import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 
 class Gjenlevende {

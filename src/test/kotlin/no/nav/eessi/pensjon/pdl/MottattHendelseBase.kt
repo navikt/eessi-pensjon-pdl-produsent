@@ -10,6 +10,7 @@ import io.mockk.verify
 import no.nav.eessi.pensjon.eux.EuxDokumentHelper
 import no.nav.eessi.pensjon.eux.EuxKlient
 import no.nav.eessi.pensjon.eux.UtenlandskPersonIdentifisering
+import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.Buc
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.sed.*

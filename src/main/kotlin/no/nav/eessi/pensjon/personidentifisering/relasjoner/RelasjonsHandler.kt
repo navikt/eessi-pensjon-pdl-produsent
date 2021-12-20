@@ -2,7 +2,7 @@ package no.nav.eessi.pensjon.personidentifisering.relasjoner
 
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.sed.SED
-import no.nav.eessi.pensjon.eux.model.sed.SedType
+import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

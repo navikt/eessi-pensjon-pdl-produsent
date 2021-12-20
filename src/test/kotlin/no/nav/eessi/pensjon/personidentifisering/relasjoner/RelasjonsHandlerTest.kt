@@ -1,12 +1,11 @@
 package no.nav.eessi.pensjon.personidentifisering.relasjoner
 
+import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.sed.P8000
 import no.nav.eessi.pensjon.eux.model.sed.RelasjonTilAvdod
 import no.nav.eessi.pensjon.eux.model.sed.SED
-import no.nav.eessi.pensjon.eux.model.sed.SedType
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 internal class RelasjonsHandlerTest : RelasjonTestBase() {
