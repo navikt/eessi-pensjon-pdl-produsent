@@ -1,6 +1,5 @@
 package no.nav.eessi.pensjon.handler
 
-
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.json.mapJsonToAny
 import no.nav.eessi.pensjon.json.toJson
