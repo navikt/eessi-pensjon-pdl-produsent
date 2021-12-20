@@ -142,4 +142,5 @@ abstract class IntegrationBase {
         return ForenkletSED(id, type, status)
     }
 
+
 }
