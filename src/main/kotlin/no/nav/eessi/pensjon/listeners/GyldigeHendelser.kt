@@ -1,24 +1,29 @@
 package no.nav.eessi.pensjon.listeners
 
-import no.nav.eessi.pensjon.eux.model.SedType
-import no.nav.eessi.pensjon.eux.model.SedType.*
+import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.models.SedHendelseModel
 
 class GyldigeHendelser {
     companion object {
+        private const val gyldigSektorKode = "P"
 
-        //Gyldige SED vi godkjenner for å innhente norsk og utlandsk ident(er)
-        private val gyldigeInnkommendeSedType: Set<SedType> = setOf(
-            P2000, P2100, P2200, P5000, P6000, P7000, P8000, P10000,
-            P15000, H020, H021, H070, H120, H121, R005
-        )
+        private val gyldigeInnkommendeBucTyper = listOf(BucType.H_BUC_07, BucType.R_BUC_02)
+        private val gyldigUtgaaendeBucType = BucType.R_BUC_02
 
-        fun erGyldigInnkommetSed(hendelse: SedHendelseModel) =
+        fun mottatt(hendelse: SedHendelseModel) =
                 when {
-                    hendelse.sedType in gyldigeInnkommendeSedType -> true
+                    hendelse.bucType == null -> false
+                    hendelse.bucType in gyldigeInnkommendeBucTyper -> true
+                    hendelse.sektorKode == gyldigSektorKode -> true
                     else -> false
                 }
-        //TODO: Sjekke om dette er godt nok, eller ha en egen type for ugyldige
-        fun erGyldig(sedType: SedType?): Boolean = sedType != null && sedType in gyldigeInnkommendeSedType
+
+        fun sendt(hendelse: SedHendelseModel) =
+                when {
+                    hendelse.bucType == null -> false
+                    hendelse.bucType  == gyldigUtgaaendeBucType -> true
+                    hendelse.sektorKode == gyldigSektorKode -> true
+                    else -> false
+                }
     }
 }

@@ -10,6 +10,7 @@ import no.nav.eessi.pensjon.models.Endringsmelding
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelseModel
+import no.nav.eessi.pensjon.models.erGyldig
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.pdl.validering.PdlValidering
@@ -71,7 +72,7 @@ class SedMottattListener(
                     val offset = cr.offset()
                     logger.info("*** Offset $offset  Partition ${cr.partition()} ***")
                     val sedHendelse = SedHendelseModel.fromJson(hendelse)
-                    if (GyldigeHendelser.erGyldigInnkommetSed(sedHendelse)) {
+                    if (GyldigeHendelser.mottatt(sedHendelse)) {
                         val bucType = sedHendelse.bucType!!
                         logger.info("*** Starter pdl endringsmelding prosess for BucType: $bucType, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
 

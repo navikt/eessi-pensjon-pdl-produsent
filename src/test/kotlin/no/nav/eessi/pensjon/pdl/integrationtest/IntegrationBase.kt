@@ -4,6 +4,11 @@ import com.ninjasquad.springmockk.MockkBean
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
+import no.nav.eessi.pensjon.eux.model.SedType
+import no.nav.eessi.pensjon.eux.model.buc.BucType
+import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
+import no.nav.eessi.pensjon.eux.model.document.SedStatus
+import no.nav.eessi.pensjon.json.toJson
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.security.sts.STSService
 import org.junit.jupiter.api.AfterEach
@@ -123,6 +128,21 @@ abstract class IntegrationBase {
                 )
         }
 
+        fun medbMockBuc(bucPath: String, mockBuc: String) = apply {
+
+            mockServer.`when`(
+                HttpRequest.request()
+                    .withMethod(HttpMethod.GET.name)
+                    .withPath(bucPath)
+            )
+                .respond(
+                    HttpResponse.response()
+                        .withHeader(Header("Content-Type", "application/json; charset=utf-8"))
+                        .withStatusCode(HttpStatusCode.OK_200.code())
+                        .withBody(mockBuc)
+                )
+        }
+
         fun medKodeverk(kodeverkPath: String, kodeVerkLocation: String) = apply {
 
             mockServer.`when`(
@@ -138,4 +158,21 @@ abstract class IntegrationBase {
                 )
         }
     }
+
+    fun mockBuc(bucId: String, bucType: BucType, docIder: List<ForenkletSED>) : String {
+        return """
+            {
+              "id": "$bucId",
+              "processDefinitionName": "${bucType.name}",
+              "documents": ${docIder.toJson()}
+              
+            } 
+          
+        """.trimIndent()
+    }
+
+    fun mockForenkletSed(id: String, type: SedType, status: SedStatus) : ForenkletSED {
+        return ForenkletSED(id, type, status)
+    }
+
 }
