@@ -1,6 +1,9 @@
 package no.nav.eessi.pensjon.pdl.integrationtest
 
 import io.mockk.every
+import no.nav.eessi.pensjon.eux.model.SedType
+import no.nav.eessi.pensjon.eux.model.buc.BucType
+import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonMock
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import org.junit.jupiter.api.Test
@@ -29,14 +32,14 @@ class NyTyskUidManglerInstIntegrasjonsTest : IntegrationBase() {
             uid = emptyList()
         )
 
-//        val listOverSeder = listOf(mockForenkletSed("eb938171a4cb4e658b3a6c011962d204", SedType.P8000, SedStatus.RECEIVED))
-//        val mockBuc = mockBuc("147729", BucType.P_BUC_02, listOverSeder)
+        val listOverSeder = listOf(mockForenkletSed("eb938171a4cb4e658b3a6c011962d204", SedType.P8000, SedStatus.RECEIVED))
+        val mockBuc = mockBuc("147729", BucType.P_BUC_02, listOverSeder)
 
         every { personService.hentPersonUtenlandskIdent(NorskIdent(fnr)) } returns personMock
         CustomMockServer()
             .mockSTSToken()
             .medSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", "src/test/resources/eux/sed/P8000-TyskPIN.json")
-            .medbBuc("/buc/147729", "src/test/resources/eux/buc/buc279020.json")
+            .medMockBuc("/buc/147729", mockBuc)
             .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
 
         val json = javaClass.getResource("/eux/hendelser/P_BUC_01_P2000-utenland.json")!!.readText()

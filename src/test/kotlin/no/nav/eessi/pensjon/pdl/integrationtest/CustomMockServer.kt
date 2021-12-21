@@ -8,7 +8,7 @@ import org.mockserver.model.HttpStatusCode
 import org.springframework.http.HttpMethod
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.util.concurrent.CompletableFuture
+import java.util.concurrent.*
 
 class CustomMockServer() {
     private val serverPort = CompletableFuture.completedFuture(System.getProperty("mockserverport").toInt())
@@ -64,6 +64,20 @@ class CustomMockServer() {
                     .withHeader(Header("Content-Type", "application/json; charset=utf-8"))
                     .withStatusCode(HttpStatusCode.OK_200.code())
                     .withBody(String(Files.readAllBytes(Paths.get(bucLocation))))
+            )
+    }
+
+    fun medMockBuc(bucPath: String, mockBuc: String) = apply {
+        MockServerClient(serverPort).`when`(
+            HttpRequest.request()
+                .withMethod(HttpMethod.GET.name)
+                .withPath(bucPath)
+        )
+            .respond(
+                HttpResponse.response()
+                    .withHeader(Header("Content-Type", "application/json; charset=utf-8"))
+                    .withStatusCode(HttpStatusCode.OK_200.code())
+                    .withBody(mockBuc)
             )
     }
 
