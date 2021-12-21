@@ -19,7 +19,7 @@ import kotlin.test.assertTrue
 @ActiveProfiles("integrationtest")
 @DirtiesContext
 @EmbeddedKafka(
-    topics = [PDL_PRODUSENT_TOPIC_MOTATT]
+    topics = [PDL_PRODUSENT_TOPIC_MOTATT, PDL_PRODUSENT_TOPIC_SENDT]
 )
 class NyDanskUidIntegrasjonsTest : IntegrationBase() {
 
@@ -45,7 +45,7 @@ class NyDanskUidIntegrasjonsTest : IntegrationBase() {
 
         initAndRunContainer(PDL_PRODUSENT_TOPIC_MOTATT).also {
             it.sendMsgOnDefaultTopic(json)
-            it.waitForlatch(sedMottattListener)
+            it.waitForlatch(sedListener)
         }
 
         assertTrue(validateSedMottattListenerLoggingMessage("Oppretter endringsmelding med nye personopplysninger fra avsenderLand:"))

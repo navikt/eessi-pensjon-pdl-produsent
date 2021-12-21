@@ -22,7 +22,7 @@ import no.nav.eessi.pensjon.eux.model.sed.RelasjonTilAvdod
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.json.toJson
 import no.nav.eessi.pensjon.listeners.GyldigeHendelser
-import no.nav.eessi.pensjon.listeners.SedMottattListener
+import no.nav.eessi.pensjon.listeners.SedListener
 import no.nav.eessi.pensjon.models.SedHendelseModel
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.pdl.validering.PdlValidering
@@ -83,7 +83,7 @@ internal open class MottattHendelseBase {
         const val AKTOER_ID_2 = "0009876543210"
     }
 
-    protected val mottattListener: SedMottattListener = SedMottattListener(
+    protected val mottattListener: SedListener = SedListener(
         personidentifiseringService,
         dokumentHelper,
         personMottakKlient,

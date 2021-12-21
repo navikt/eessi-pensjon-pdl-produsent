@@ -52,7 +52,7 @@ class SedMottattIntegrationtest : IntegrationBase() {
 
         initAndRunContainer(PDL_PRODUSENT_TOPIC_MOTATT).also {
             it.sendMsgOnDefaultTopic(json)
-            it.waitForlatch(sedMottattListener)
+            it.waitForlatch(sedListener)
         }
 
         assertTrue(validateSedMottattListenerLoggingMessage("Ingen filtrerte personer funnet Acket sedMottatt"))

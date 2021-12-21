@@ -46,7 +46,7 @@ class NyTyskUidManglerInstIntegrasjonsTest : IntegrationBase() {
 
         initAndRunContainer(PDL_PRODUSENT_TOPIC_MOTATT).also {
             it.sendMsgOnDefaultTopic(json)
-            it.waitForlatch(sedMottattListener)
+            it.waitForlatch(sedListener)
         }
 
         assertTrue(validateSedMottattListenerLoggingMessage("Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer"))

@@ -46,7 +46,7 @@ class NyTyskUidMedFlereUidSenderTyskInstIntegrasjonsTest : IntegrationBase() {
 
         initAndRunContainer(PDL_PRODUSENT_TOPIC_MOTATT).also {
             it.sendMsgOnDefaultTopic(json)
-            it.waitForlatch(sedMottattListener)
+            it.waitForlatch(sedListener)
         }
 
         assertTrue(validateSedMottattListenerLoggingMessage("Antall utenlandske IDer er flere enn en"))
