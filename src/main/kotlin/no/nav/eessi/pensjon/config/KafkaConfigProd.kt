@@ -76,7 +76,6 @@ class KafkaConfigProd(
         factory.consumerFactory = onpremKafkaConsumerFactory()
         factory.containerProperties.ackMode = ContainerProperties.AckMode.MANUAL
         factory.containerProperties.setAuthExceptionRetryInterval(Duration.ofSeconds(4L))
-
         return factory
     }
 
