@@ -79,6 +79,8 @@ class CustomMockServer() {
                     .withStatusCode(HttpStatusCode.OK_200.code())
                     .withBody(mockBuc)
             )
+    }.also {
+        println("CustomMockServer Port: ${serverPort.get().toString()}")
     }
 
     fun medKodeverk(kodeverkPath: String, kodeVerkLocation: String) = apply {

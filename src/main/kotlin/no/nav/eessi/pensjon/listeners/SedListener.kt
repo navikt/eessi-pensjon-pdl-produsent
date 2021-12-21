@@ -25,7 +25,7 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.concurrent.*
+import java.util.concurrent.CountDownLatch
 import javax.annotation.PostConstruct
 
 @Service
@@ -43,11 +43,12 @@ class SedListener(
     private val logger = LoggerFactory.getLogger(SedListener::class.java)
 
     private val latch = CountDownLatch(1)
+    private val sendtLatch = CountDownLatch( 1)
     private lateinit var consumeIncomingSed: MetricsHelper.Metric
     private lateinit var consumeOutgoingSed: MetricsHelper.Metric
 
-
     fun getLatch() = latch
+    fun getSendtLatch() = sendtLatch
 
     @PostConstruct
     fun initMetrics() {
@@ -65,8 +66,8 @@ class SedListener(
     fun consumeSedMottatt(hendelse: String, cr: ConsumerRecord<String, String>, acknowledgment: Acknowledgment) {
         MDC.putCloseable("x_request_id", UUID.randomUUID().toString()).use {
             consumeIncomingSed.measure {
-
                 consumeHendelse(cr, hendelse, acknowledgment, HendelseType.MOTTATT)
+                latch.countDown()
             }
         }
     }
@@ -81,8 +82,8 @@ class SedListener(
     fun consumeSedSendt(hendelse: String, cr: ConsumerRecord<String, String>, acknowledgment: Acknowledgment) {
         MDC.putCloseable("x_request_id", UUID.randomUUID().toString()).use {
             consumeOutgoingSed.measure {
-
                 consumeHendelse(cr, hendelse, acknowledgment, HendelseType.SENDT)
+                sendtLatch.countDown()
             }
         }
     }
@@ -171,7 +172,6 @@ class SedListener(
             logger.error("Noe gikk galt under behandling av mottatt SED-hendelse:\n $hendelse \n", ex)
             acknowledgment.acknowledge();
         }
-        latch.countDown()
     }
 
     private fun eridenterGyldige(
