@@ -28,7 +28,7 @@ import org.springframework.kafka.test.EmbeddedKafkaBroker
 import org.springframework.kafka.test.utils.ContainerTestUtils
 import org.springframework.kafka.test.utils.KafkaTestUtils
 import java.util.*
-import java.util.concurrent.*
+import java.util.concurrent.TimeUnit
 
 const val PDL_PRODUSENT_TOPIC_MOTATT = "eessi-basis-sedMottatt-v1"
 const val PDL_PRODUSENT_TOPIC_SENDT = "eessi-basis-sedSendt-v1"
@@ -99,7 +99,10 @@ abstract class IntegrationBase {
             kafkaTemplate.sendDefault(kafkaMsgFromPath)
         }
 
-        fun waitForlatch(listener: SedListener) = listener.getLatch().await(10, TimeUnit.SECONDS)
+        fun waitForlatch(listener: SedListener) {
+            listener.getLatch().await(15, TimeUnit.SECONDS)
+            listener.getSendtLatch().await(15, TimeUnit.SECONDS)
+        }
     }
 
     private fun initConsumer(topicName: String): KafkaMessageListenerContainer<String, String> {
