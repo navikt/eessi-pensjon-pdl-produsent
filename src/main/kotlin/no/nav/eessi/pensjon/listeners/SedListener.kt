@@ -72,21 +72,24 @@ class SedListener(
         }
     }
 
-    @KafkaListener(
-        containerFactory = "onpremKafkaListenerContainerFactory",
-        idIsGroup = false,
-        topics = ["\${kafka.sedSendt.topic}"],
-        groupId = "\${kafka.sedSendt.groupid}"
-    )
+//   TODO Ikke tilgang til sedSend topic auth.
 
-    fun consumeSedSendt(hendelse: String, cr: ConsumerRecord<String, String>, acknowledgment: Acknowledgment) {
-        MDC.putCloseable("x_request_id", UUID.randomUUID().toString()).use {
-            consumeOutgoingSed.measure {
-                consumeHendelse(cr, hendelse, acknowledgment, HendelseType.SENDT)
-                sendtLatch.countDown()
-            }
-        }
-    }
+
+//    @KafkaListener(
+//        containerFactory = "onpremKafkaListenerContainerFactory",
+//        idIsGroup = false,
+//        topics = ["\${kafka.sedSendt.topic}"],
+//        groupId = "\${kafka.sedSendt.groupid}"
+//    )
+//
+//    fun consumeSedSendt(hendelse: String, cr: ConsumerRecord<String, String>, acknowledgment: Acknowledgment) {
+//        MDC.putCloseable("x_request_id", UUID.randomUUID().toString()).use {
+//            consumeOutgoingSed.measure {
+//                consumeHendelse(cr, hendelse, acknowledgment, HendelseType.SENDT)
+//                sendtLatch.countDown()
+//            }
+//        }
+//    }
 
     private fun consumeHendelse(
         cr: ConsumerRecord<String, String>,
