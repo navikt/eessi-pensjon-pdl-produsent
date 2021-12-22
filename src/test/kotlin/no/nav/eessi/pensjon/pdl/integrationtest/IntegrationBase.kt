@@ -101,8 +101,8 @@ abstract class IntegrationBase {
         }
 
         fun waitForlatch(listener: SedListener) {
-            listener.getLatch().await(5, TimeUnit.SECONDS)
-            listener.getSendtLatch().await(5, TimeUnit.SECONDS)
+            listener.getLatch().await(30, TimeUnit.SECONDS)
+            listener.getSendtLatch().await(30, TimeUnit.SECONDS)
         }
     }
 
