@@ -13,6 +13,7 @@ import no.nav.eessi.pensjon.listeners.SedListener
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.security.sts.STSService
 import no.nav.eessi.pensjon.utils.toJson
+import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.mockserver.integration.ClientAndServer
@@ -100,18 +101,18 @@ abstract class IntegrationBase {
         }
 
         fun waitForlatch(listener: SedListener) {
-            listener.getLatch().await(15, TimeUnit.SECONDS)
-            listener.getSendtLatch().await(15, TimeUnit.SECONDS)
+            listener.getLatch().await(5, TimeUnit.SECONDS)
+            listener.getSendtLatch().await(5, TimeUnit.SECONDS)
         }
     }
 
     private fun initConsumer(topicName: String): KafkaMessageListenerContainer<String, String> {
         val consumerProperties = KafkaTestUtils.consumerProps(
-            "eessi-pensjon-group",
+            UUID.randomUUID().toString(),
             "false",
             embeddedKafka
         )
-        consumerProperties["auto.offset.reset"] = "earliest"
+        consumerProperties[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
         val consumerFactory = DefaultKafkaConsumerFactory<String, String>(consumerProperties)
 
         return KafkaMessageListenerContainer(consumerFactory, ContainerProperties(topicName)).apply {
