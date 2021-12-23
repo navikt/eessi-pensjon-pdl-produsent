@@ -15,6 +15,7 @@ import no.nav.eessi.pensjon.eux.model.sed.P7000
 import no.nav.eessi.pensjon.eux.model.sed.P7000Pensjon
 import no.nav.eessi.pensjon.eux.model.sed.Person
 import no.nav.eessi.pensjon.eux.model.sed.SED
+import no.nav.eessi.pensjon.personidentifisering.relasjoner.logger
 import org.springframework.stereotype.Component
 
 @Component
@@ -45,9 +46,12 @@ class UtenlandskPersonIdentifisering {
     }
 
     fun filterKunPaaSedStatus(forenkletSED: ForenkletSED, sed: SED) : List<Person?> {
+        logger.debug("sedType: ${forenkletSED.type}, SEDType: ${sed.type}, status: ${forenkletSED.status}")
+
         return if (forenkletSED.status == SedStatus.RECEIVED)
             hentAllePersoner(sed)
         else {
+            logger.debug("Ikke ${SedStatus.RECEIVED}")
             emptyList()
         }
     }

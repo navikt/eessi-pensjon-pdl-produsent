@@ -4,7 +4,9 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.eessi.pensjon.eux.EuxDokumentHelper
 import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.eux.UtenlandskPersonIdentifisering
+import no.nav.eessi.pensjon.eux.model.buc.Buc
 import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
+import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.Endringsmelding
@@ -12,6 +14,7 @@ import no.nav.eessi.pensjon.models.HendelseType
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelseModel
+import no.nav.eessi.pensjon.models.erGyldig
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.pdl.validering.PdlValidering
@@ -106,20 +109,29 @@ class SedListener(
         try {
             val offset = cr.offset()
             val sedHendelse = SedHendelseModel.fromJson(hendelse)
+
             if (GyldigeHendelser.mottatt(sedHendelse)) {
                 val bucType = sedHendelse.bucType!!
                 logger.info("*** Starter pdl endringsmelding prosess for BucType: $bucType, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
 
-                val alleGyldigeSED = hentAlleGyldigeSedFraBUC(sedHendelse)
+                val buc = hentBuc(sedHendelse)
 
-                //identifisere Person hent Person fra PDL valider Person
+                val alleDocumenter = hentAlleDocumenter(buc)
+
+                val alleGyldigeSED = hentAlleGyldigeSedFraBUC(sedHendelse, alleDocumenter)
+
+                //trekk UT uident fra SED som kun er mottatt.
                 val utenlandskeIderFraSed = utenlandskPersonIdentifisering.hentAlleUtenlandskeIder(alleGyldigeSED)
+                //identifisere Person hent Person fra PDL valider Person
                 val identifisertePersoner = personidentifiseringService.hentIdentifisertPersoner(
                     alleGyldigeSED,
                     bucType,
                     sedHendelse.sedType,
                     sedHendelse.rinaDokumentId
                 )
+
+                //litt logging
+                loggingAvForenkledSed(alleDocumenter, alleGyldigeSED)
 
                 if (!eridenterGyldige(
                         pdlValidering,
@@ -135,36 +147,37 @@ class SedListener(
                     identifisertePersoner.first().uidFraPdl,
                     utenlandskeIderFraSed.first()
                 )
-    //                        filtrerUidSomIkkeFinnesIPdl(identifisertePersoner, kodeverkClient, sedHendelse.avsenderNavn!!)
+
                 if (filtrerUidSomIkkeFinnesIPdl) {
                     logger.info("Ingen filtrerte personer funnet Acket sedMottatt: ${cr.offset()}")
                     acknowledgment.acknowledge()
                     return
                 }
+
                 if (pdlFiltrering.skalOppgaveOpprettes(
                         identifisertePersoner.first().uidFraPdl,
                         utenlandskeIderFraSed.first()
                     )
                 ) {
                     logger.info("Det finnes allerede en annen uid fra samme land, TODO opprette oppgave")
-
                     acknowledgment.acknowledge()
                     return
                 }
 
                 logger.debug("Validerer uid fra sed: $filtrerUidSomIkkeFinnesIPdl")
+
+                //validering av uid korrekt format
                 if (!pdlValidering.erPersonValidertPaaLand(utenlandskeIderFraSed.first())) {
                     logger.info("Ingen validerte identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
                     acknowledgment.acknowledge()
                     return
                 }
+
                 sedHendelse.avsenderNavn?.let { avsender ->
                     lagEndringsMelding(
                         utenlandskeIderFraSed.first(), identifisertePersoner.first().fnr!!.value, avsender
                     )
                 }
-
-                //logikk for muligens oppgave
 
             }
 
@@ -217,11 +230,23 @@ class SedListener(
         return true
     }
 
-    private fun hentAlleGyldigeSedFraBUC(sedHendelse: SedHendelseModel): List<Pair<ForenkletSED, SED>> {
-        val buc = dokumentHelper.hentBuc(sedHendelse.rinaSakId)
-        val alleGyldigeDokumenter = dokumentHelper.hentAlleGyldigeDokumenter(buc)
-        return dokumentHelper.hentAlleSedIBuc(sedHendelse.rinaSakId, alleGyldigeDokumenter)
+    private fun hentBuc(sedHendelse: SedHendelseModel): Buc = dokumentHelper.hentBuc(sedHendelse.rinaSakId)
+
+    private fun hentAlleDocumenter(buc: Buc): List<ForenkletSED> = dokumentHelper.hentAlleDocumenter(buc)
+
+    private fun hentAlleGyldigeSedFraBUC(sedHendelse: SedHendelseModel, docs: List<ForenkletSED>): List<Pair<ForenkletSED, SED>> {
+        val alleGyldigDokuenter = docs
+            .filter { it.type.erGyldig() }
+            .also { logger.info("Fant ${it.size} dokumenter i BUC: $it") }
+        return dokumentHelper.hentAlleSedIBuc(sedHendelse.rinaSakId , alleGyldigDokuenter)
     }
+
+//    private fun hentAlleGyldigeSedFraBUC(sedHendelse: SedHendelseModel): List<Pair<ForenkletSED, SED>> {
+//        val buc = dokumentHelper.hentBuc(sedHendelse.rinaSakId)
+//        val alleGyldigeDokumenter = dokumentHelper.hentAlleGyldigeDokumenter(buc)
+//        return dokumentHelper.hentAlleSedIBuc(sedHendelse.rinaSakId, alleGyldigeDokumenter)
+//    }
+
 
     fun lagEndringsMelding(utenlandskPin: UtenlandskId,
                            norskFnr: String,
@@ -239,5 +264,19 @@ class SedListener(
             )
         )
         personMottakKlient.opprettPersonopplysning(pdlEndringsOpplysninger)
+    }
+
+    fun loggingAvForenkledSed(alledocs : List<ForenkletSED> , list: List<Pair<ForenkletSED, SED>>) {
+        logger.info("Ufiltert Sed i buc")
+        logger.info("Antall Sed i buc: ${alledocs.size }")
+        logger.info("Antall Sed mottatt i buc: ${alledocs.filter { doc -> doc.status == SedStatus.RECEIVED }.size }")
+        logger.info("Antall Sed sendt i buc: ${alledocs.filter { doc -> doc.status == SedStatus.SENT }.size }")
+        logger.info("*".repeat(20))
+
+        logger.info("Filtrert gyldige Sed i buc: ${alledocs.size }")
+        logger.info("Antall Sed i buc: ${list.filter { (doc, sed) -> doc.harGyldigStatus() }.size }")
+        logger.info("Antall Sed mottatt i buc: ${list.filter { (doc, sed) -> doc.status == SedStatus.RECEIVED }.size }")
+        logger.info("Antall Sed sendt i buc: ${list.filter { (doc, sed) -> doc.status == SedStatus.SENT }.size }")
+        logger.info("*".repeat(20))
     }
 }

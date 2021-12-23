@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component
 class PdlValidering(private val kodeverkClient: KodeverkClient) {
 
     private val logger = LoggerFactory.getLogger(PdlValidering::class.java)
+    private val validering = LandspesifikkValidering()
 
     fun finnesIdentifisertePersoner(
         identifisertPersoner:List<IdentifisertPerson>,
@@ -26,8 +27,6 @@ class PdlValidering(private val kodeverkClient: KodeverkClient) {
      * Aksepterer kun et nytt UID om gangen
      */
     fun erPersonValidertPaaLand(utenlandskId: UtenlandskId): Boolean {
-        val validering = LandspesifikkValidering()
-
         return validering.validerLandsspesifikkUID(kodeverkClient.finnLandkode(utenlandskId.land)!!, utenlandskId.id)
     }
 

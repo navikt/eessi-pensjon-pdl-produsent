@@ -53,9 +53,13 @@ class EuxDokumentHelper(
     }
 
     fun hentAlleGyldigeDokumenter(buc: Buc): List<ForenkletSED> {
-
         return hentBucDokumenter(buc)
             .filter { it.type.erGyldig() }
+            .also { logger.info("Fant ${it.size} dokumenter i BUC: $it") }
+    }
+
+    fun hentAlleDocumenter(buc: Buc): List<ForenkletSED> {
+        return hentBucDokumenter(buc)
             .also { logger.info("Fant ${it.size} dokumenter i BUC: $it") }
     }
 

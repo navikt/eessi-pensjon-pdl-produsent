@@ -147,5 +147,75 @@ abstract class IntegrationBase {
         return ForenkletSED(id, type, status)
     }
 
+    fun mockHendlese(avsenderLand: String = "DK", avsenderNavn: String = "DK:D005", bucType: BucType = BucType.P_BUC_01, sedType: SedType = SedType.P2000, docId: String = "b12e06dda2c7474b9998c7139c841646"): String {
+        return """
+            {
+              "id": 1869,
+              "sedId": "${sedType.name}-$docId-1",
+              "sektorKode": "P",
+              "bucType": "${bucType.name}",
+              "rinaSakId": "147729",
+              "avsenderId": "NO:NAVT003",
+              "avsenderNavn": "$avsenderNavn",
+              "avsenderLand": "$avsenderLand",
+              "mottakerId": "NO:NAVT007",
+              "mottakerNavn": "NAV Test 07",
+              "mottakerLand": "NO",
+              "rinaDokumentId": "$docId",
+              "rinaDokumentVersjon": "1",
+              "sedType": "${sedType.name}",
+              "navBruker": null
+            }
+        """.trimIndent()
+    }
+
+    fun mockPin(ident: String = "12312312312", land: String = "NO") : String {
+        return """
+            {
+          "institusjonsnavn" : "NOINST002, NO INST002, NO",
+          "institusjonsid" : "NO:noinst002",
+          "identifikator" : "$ident",
+          "land" : "$land"
+        }
+        """.trimIndent()
+    }
+
+    fun mockSedUtenPensjon(sedType: SedType, pin: String, fornavn: String = "Fornavn", krav: String = "01"): String {
+        return """
+            {
+              "sed" : "${sedType.name}",
+              "sedGVer" : "4",
+              "sedVer" : "2",
+              "nav" : {
+                "eessisak" : [ {
+                  "institusjonsid" : "NO:noinst002",
+                  "institusjonsnavn" : "NOINST002, NO INST002, NO",
+                  "saksnummer" : "22915555",
+                  "land" : "NO"
+                } ],
+                "bruker" : {
+                  "person" : {
+                    "pin" : [ $pin ],
+                    "etternavn" : "Etternavn",
+                    "fornavn" : "$fornavn",
+                    "kjoenn" : "M",
+                    "foedselsdato" : "1976-07-12"
+                  },
+                  "adresse" : {
+                    "gate" : "Oppoverbakken 66",
+                    "by" : "SØRUMSAND",
+                    "postnummer" : "1920",
+                    "land" : "NO"
+                  }
+                },
+                "krav" : {
+                  "dato" : "2020-01-01",
+                  "type" : "$krav"
+                }
+              },
+              "pensjon" : null
+        }
+        """.trimIndent()
+    }
 
 }

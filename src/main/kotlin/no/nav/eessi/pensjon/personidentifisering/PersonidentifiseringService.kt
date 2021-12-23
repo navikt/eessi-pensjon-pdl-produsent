@@ -33,6 +33,7 @@ class PersonidentifiseringService(private val personService: PersonService, priv
 
     }
 
+
     fun hentIdentifisertePersoner(
         potensielleFnr: List<Fodselsnummer?>,
         rinaDocumentId: String

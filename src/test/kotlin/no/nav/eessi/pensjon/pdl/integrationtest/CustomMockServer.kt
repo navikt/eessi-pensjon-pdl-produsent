@@ -27,7 +27,7 @@ class CustomMockServer() {
             )
     }
 
-    fun medSed(bucPath: String, bucLocation: String) = apply {
+    fun medSed(bucPath: String, sedLocation: String) = apply {
         MockServerClient(serverPort).`when`(
             HttpRequest.request()
                 .withMethod(HttpMethod.GET.name)
@@ -37,9 +37,25 @@ class CustomMockServer() {
                 HttpResponse.response()
                     .withHeader(Header("Content-Type", "application/json; charset=utf-8"))
                     .withStatusCode(HttpStatusCode.OK_200.code())
-                    .withBody(String(Files.readAllBytes(Paths.get(bucLocation))))
+                    .withBody(String(Files.readAllBytes(Paths.get(sedLocation))))
             )
+    }
 
+    fun medMockSed(bucPath: String, mockSed: String) = apply {
+        MockServerClient(serverPort).`when`(
+            HttpRequest.request()
+                .withMethod(HttpMethod.GET.name)
+                .withPath(bucPath)
+        )
+            .respond(
+                HttpResponse.response()
+                    .withHeader(Header("Content-Type", "application/json; charset=utf-8"))
+                    .withStatusCode(HttpStatusCode.OK_200.code())
+                    .withBody(mockSed)
+            )
+    }
+
+    fun medEndring() = apply {
         MockServerClient(serverPort).`when`(
             HttpRequest.request()
                 .withMethod(HttpMethod.POST.name)
