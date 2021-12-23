@@ -1,8 +1,9 @@
 package no.nav.eessi.pensjon.personidentifisering
 
-import no.nav.eessi.pensjon.eux.model.buc.BucType
-import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.eux.model.SedType
+import no.nav.eessi.pensjon.eux.model.buc.BucType
+import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
+import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.json.toJson
 import no.nav.eessi.pensjon.personidentifisering.relasjoner.RelasjonsHandler
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
@@ -19,13 +20,13 @@ class PersonidentifiseringService(private val personService: PersonService, priv
     private val logger = LoggerFactory.getLogger(PersonidentifiseringService::class.java)
 
     fun hentIdentifisertPersoner(
-        seder: List<SED>,
+        seder: List<Pair<ForenkletSED, SED>>,
         bucType: BucType,
         sedType: SedType?,
         rinaDocumentId: String
     ): List<IdentifisertPerson> {
 
-        val potensiellePersonRelasjoner = seder.flatMap { RelasjonsHandler.hentRelasjoner(it, rinaDocumentId, bucType) }
+        val potensiellePersonRelasjoner = seder.flatMap { (docitem, sed) -> RelasjonsHandler.hentRelasjoner(sed, rinaDocumentId, bucType) }
 
         //slå opp PDL
         return hentIdentifisertePersoner(potensiellePersonRelasjoner, rinaDocumentId)

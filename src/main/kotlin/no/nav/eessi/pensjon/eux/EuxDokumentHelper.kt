@@ -44,11 +44,12 @@ class EuxDokumentHelper(
         }
     }
 
-    fun hentAlleSedIBuc(rinaSakId: String, documents: List<ForenkletSED>): List<SED> {
+    fun hentAlleSedIBuc(rinaSakId: String, documents: List<ForenkletSED>): List<Pair<ForenkletSED, SED>> {
         return documents
             .filter(ForenkletSED::harGyldigStatus)
-            .map { sed -> hentSed(rinaSakId, sed.id) }
-            .also { logger.info("Fant ${it.size} SED i BUCid: $rinaSakId") }
+            .map { docitem -> Pair(docitem, hentSed(rinaSakId, docitem.id)) }
+            .onEach { (docitem, sed) ->  logger.debug("SED av type: ${docitem.type}, status: ${docitem.status}") }
+
     }
 
     fun hentAlleGyldigeDokumenter(buc: Buc): List<ForenkletSED> {

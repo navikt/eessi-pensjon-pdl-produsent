@@ -1,7 +1,9 @@
 package no.nav.eessi.pensjon.eux
 
-import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.eux.model.SedType
+import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
+import no.nav.eessi.pensjon.eux.model.document.SedStatus
+import no.nav.eessi.pensjon.eux.model.sed.SED
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -33,7 +35,7 @@ internal class UtenlandskPersonIdentifiseringTest {
 
         val sed = SED.fromJsonToConcrete(javaClass.getResource("/eux/sed/P2100-PinDK-NAV.json")!!.readText())
 
-        val resultat = utenlandskPersonIdentifisering.hentAlleUtenlandskeIder(listOf(sed))
+        val resultat = utenlandskPersonIdentifisering.hentAlleUtenlandskeIder(listOf(Pair(mockForenkledSed(SedType.P2100), sed)))
 
         assertEquals(1, resultat.size)
         assertEquals(resultat.first().id, "130177-1234")
@@ -83,5 +85,7 @@ internal class UtenlandskPersonIdentifiseringTest {
         assertEquals(5, utenlandskPersonIdentifisering.hentAllePersoner(p2200).size)
 
     }
+
+    private fun mockForenkledSed(sedType: SedType): ForenkletSED = ForenkletSED("1231231", sedType, SedStatus.RECEIVED)
 
 }

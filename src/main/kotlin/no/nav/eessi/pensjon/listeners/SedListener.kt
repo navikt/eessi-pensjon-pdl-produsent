@@ -4,9 +4,14 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.eessi.pensjon.eux.EuxDokumentHelper
 import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.eux.UtenlandskPersonIdentifisering
+import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.metrics.MetricsHelper
-import no.nav.eessi.pensjon.models.*
+import no.nav.eessi.pensjon.models.Endringsmelding
+import no.nav.eessi.pensjon.models.HendelseType
+import no.nav.eessi.pensjon.models.PdlEndringOpplysning
+import no.nav.eessi.pensjon.models.Personopplysninger
+import no.nav.eessi.pensjon.models.SedHendelseModel
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.pdl.validering.PdlValidering
@@ -212,7 +217,7 @@ class SedListener(
         return true
     }
 
-    private fun hentAlleGyldigeSedFraBUC(sedHendelse: SedHendelseModel): List<SED> {
+    private fun hentAlleGyldigeSedFraBUC(sedHendelse: SedHendelseModel): List<Pair<ForenkletSED, SED>> {
         val buc = dokumentHelper.hentBuc(sedHendelse.rinaSakId)
         val alleGyldigeDokumenter = dokumentHelper.hentAlleGyldigeDokumenter(buc)
         return dokumentHelper.hentAlleSedIBuc(sedHendelse.rinaSakId, alleGyldigeDokumenter)

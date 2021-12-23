@@ -1,11 +1,25 @@
 package no.nav.eessi.pensjon.eux
 
-import no.nav.eessi.pensjon.eux.model.sed.*
 import no.nav.eessi.pensjon.eux.model.SedType
+import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
+import no.nav.eessi.pensjon.eux.model.document.SedStatus
+import no.nav.eessi.pensjon.eux.model.sed.P15000
+import no.nav.eessi.pensjon.eux.model.sed.P15000Pensjon
+import no.nav.eessi.pensjon.eux.model.sed.P4000
+import no.nav.eessi.pensjon.eux.model.sed.P4000Pensjon
+import no.nav.eessi.pensjon.eux.model.sed.P5000
+import no.nav.eessi.pensjon.eux.model.sed.P5000Pensjon
+import no.nav.eessi.pensjon.eux.model.sed.P6000
+import no.nav.eessi.pensjon.eux.model.sed.P6000Pensjon
+import no.nav.eessi.pensjon.eux.model.sed.P7000
+import no.nav.eessi.pensjon.eux.model.sed.P7000Pensjon
+import no.nav.eessi.pensjon.eux.model.sed.Person
+import no.nav.eessi.pensjon.eux.model.sed.SED
 import org.springframework.stereotype.Component
 
 @Component
 class UtenlandskPersonIdentifisering {
+
     fun hentAllePersoner(sed: SED): List<Person?> {
         var personer: List<Person?>  = mutableListOf()
         personer = personer.plus(sed.nav?.bruker?.person)
@@ -30,6 +44,14 @@ class UtenlandskPersonIdentifisering {
         return personer.filterNotNull().filterNot { person -> person.pin == null }
     }
 
+    fun filterKunPaaSedStatus(forenkletSED: ForenkletSED, sed: SED) : List<Person?> {
+        return if (forenkletSED.status == SedStatus.RECEIVED)
+            hentAllePersoner(sed)
+        else {
+            emptyList()
+        }
+    }
+
     fun filtrerAlleUtenlandskeIder(personer: List<Person?>): List<UtenlandskId> {
         return personer.filter { person -> person?.pin != null }
             .flatMap { person -> person?.pin!! }
@@ -38,8 +60,8 @@ class UtenlandskPersonIdentifisering {
             .map { pin -> UtenlandskId(pin.identifikator!!, pin.land!!) }
     }
 
-    fun hentAlleUtenlandskeIder(sed: SED): List<UtenlandskId> = filtrerAlleUtenlandskeIder(hentAllePersoner(sed))
-    fun hentAlleUtenlandskeIder(seder: List<SED>): List<UtenlandskId> = seder.flatMap { sed -> hentAlleUtenlandskeIder(sed) }
+    private fun hentAlleUtenlandskeIder(doc: ForenkletSED, sed: SED): List<UtenlandskId> = filtrerAlleUtenlandskeIder(filterKunPaaSedStatus(doc, sed))
+    fun hentAlleUtenlandskeIder(seder: List<Pair<ForenkletSED, SED>>): List<UtenlandskId> = seder.flatMap { (docitem, sed) -> hentAlleUtenlandskeIder(docitem, sed) }
 
     private fun hentP4000Personer(p4000Pensjon: P4000Pensjon?): Person? = p4000Pensjon?.gjenlevende?.person
     private fun hentP5000Personer(p5000Pensjon: P5000Pensjon?): Person? = p5000Pensjon?.gjenlevende?.person
@@ -48,6 +70,5 @@ class UtenlandskPersonIdentifisering {
     private fun hentP15000Personer(p15000Pensjon: P15000Pensjon?): Person? = p15000Pensjon?.gjenlevende?.person
 
 }
-
 
 data class UtenlandskId(val id: String, val land: String)
