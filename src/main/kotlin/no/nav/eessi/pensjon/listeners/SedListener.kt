@@ -100,7 +100,6 @@ class SedListener(
         //Forsøker med denne en gang til 258088L
         try {
             val offset = cr.offset()
-            logger.info("*** Offset $offset  Partition ${cr.partition()} ***")
             val sedHendelse = SedHendelseModel.fromJson(hendelse)
             if (GyldigeHendelser.mottatt(sedHendelse)) {
                 val bucType = sedHendelse.bucType!!
