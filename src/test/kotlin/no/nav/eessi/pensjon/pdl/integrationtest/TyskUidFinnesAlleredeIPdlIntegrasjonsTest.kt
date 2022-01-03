@@ -20,7 +20,9 @@ import kotlin.test.assertTrue
 @ActiveProfiles("integrationtest")
 @DirtiesContext
 @EmbeddedKafka(
-    topics = [PDL_PRODUSENT_TOPIC_MOTATT]
+    topics = [PDL_PRODUSENT_TOPIC_MOTATT],
+    brokerProperties = ["log.dir=/tmp/embedded-kafka-SedMottattIntegrationtest"]
+
 )
 class SedMottattIntegrationtest : IntegrationBase() {
 

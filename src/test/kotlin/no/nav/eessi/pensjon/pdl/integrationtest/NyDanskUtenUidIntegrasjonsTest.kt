@@ -4,7 +4,6 @@ import io.mockk.every
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
-import no.nav.eessi.pensjon.personoppslag.FodselsnummerGenerator
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonMock
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import org.junit.jupiter.api.Test
@@ -21,12 +20,13 @@ import kotlin.test.assertTrue
     topics = [PDL_PRODUSENT_TOPIC_MOTATT, PDL_PRODUSENT_TOPIC_SENDT],
     brokerProperties = ["log.dir=/tmp/embedded-kafka-NyDanskUtenUidIntegrasjonsTest"]
 )
+
 class NyDanskUtenUidIntegrasjonsTest : IntegrationBase() {
 
     @Test
     fun `Gitt en sed hendelse med uten dansk uid som ikke finnes i pdl skal det ack med logg Ingen utenlandske IDer funnet i BUC`() {
 
-        val fnr = FodselsnummerGenerator.generateFnrForTest(67)
+        val fnr = "29087021082"
         val personMock = PersonMock.createBrukerWithUid(
             fnr = fnr,
             uid = emptyList()
