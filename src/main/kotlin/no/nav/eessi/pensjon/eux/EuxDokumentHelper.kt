@@ -60,7 +60,6 @@ class EuxDokumentHelper(
 
     fun hentAlleDocumenter(buc: Buc): List<ForenkletSED> {
         return hentBucDokumenter(buc)
-            .also { logger.info("Fant ${it.size} dokumenter i BUC: $it") }
     }
 
     /**
