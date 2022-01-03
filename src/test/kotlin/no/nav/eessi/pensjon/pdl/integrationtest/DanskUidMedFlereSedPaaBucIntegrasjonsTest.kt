@@ -52,6 +52,7 @@ class DanskUidMedFlereSedPaaBucIntegrasjonsTest : IntegrationBase() {
             .medSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d504", "src/test/resources/eux/sed/P7000-NAV.json")
             .medMockBuc("/buc/147729", mockBuc)
             .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
+            .medEndring()
 
         val hendelseJson = mockHendlese(bucType = BucType.P_BUC_02, sedType = SedType.P7000, docId = "eb938171a4cb4e658b3a6c011962d504")
 
