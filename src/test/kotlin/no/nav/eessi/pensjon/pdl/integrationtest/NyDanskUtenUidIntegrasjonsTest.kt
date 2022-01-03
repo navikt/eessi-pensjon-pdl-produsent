@@ -6,6 +6,7 @@ import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonMock
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.kafka.test.context.EmbeddedKafka
@@ -21,6 +22,7 @@ import kotlin.test.assertTrue
     brokerProperties = ["log.dir=/tmp/embedded-kafka-NyDanskUtenUidIntegrasjonsTest"]
 )
 
+@Disabled // disabler grunnet kafka problemer i Integrasjonstestene
 class NyDanskUtenUidIntegrasjonsTest : IntegrationBase() {
 
     @Test
