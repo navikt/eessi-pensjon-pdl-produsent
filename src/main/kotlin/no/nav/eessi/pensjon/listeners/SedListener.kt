@@ -76,24 +76,21 @@ class SedListener(
         }
     }
 
-//   TODO Ikke tilgang til sedSend topic auth.
+    @KafkaListener(
+        containerFactory = "onpremKafkaListenerContainerFactory",
+        idIsGroup = false,
+        topics = ["\${kafka.sedSendt.topic}"],
+        groupId = "\${kafka.sedSendt.groupid}"
+    )
 
-
-//    @KafkaListener(
-//        containerFactory = "onpremKafkaListenerContainerFactory",
-//        idIsGroup = false,
-//        topics = ["\${kafka.sedSendt.topic}"],
-//        groupId = "\${kafka.sedSendt.groupid}"
-//    )
-//
-//    fun consumeSedSendt(hendelse: String, cr: ConsumerRecord<String, String>, acknowledgment: Acknowledgment) {
-//        MDC.putCloseable("x_request_id", UUID.randomUUID().toString()).use {
-//            consumeOutgoingSed.measure {
-//                consumeHendelse(cr, hendelse, acknowledgment, HendelseType.SENDT)
-//                sendtLatch.countDown()
-//            }
-//        }
-//    }
+    fun consumeSedSendt(hendelse: String, cr: ConsumerRecord<String, String>, acknowledgment: Acknowledgment) {
+        MDC.putCloseable("x_request_id", UUID.randomUUID().toString()).use {
+            consumeOutgoingSed.measure {
+                consumeHendelse(cr, hendelse, acknowledgment, HendelseType.SENDT)
+                sendtLatch.countDown()
+            }
+        }
+    }
 
     private fun consumeHendelse(
         cr: ConsumerRecord<String, String>,
@@ -267,16 +264,15 @@ class SedListener(
     }
 
     fun loggingAvForenkledSed(alledocs : List<ForenkletSED> , list: List<Pair<ForenkletSED, SED>>) {
-        logger.info("Ufiltert Sed i buc")
-        logger.info("Antall Sed i buc: ${alledocs.size }")
-        logger.info("Antall Sed mottatt i buc: ${alledocs.filter { doc -> doc.status == SedStatus.RECEIVED }.size }")
-        logger.info("Antall Sed sendt i buc: ${alledocs.filter { doc -> doc.status == SedStatus.SENT }.size }")
-        logger.info("*".repeat(20))
-
-        logger.info("Filtrert gyldige Sed i buc: ${alledocs.size }")
-        logger.info("Antall Sed i buc: ${list.filter { (doc, sed) -> doc.harGyldigStatus() }.size }")
-        logger.info("Antall Sed mottatt i buc: ${list.filter { (doc, sed) -> doc.status == SedStatus.RECEIVED }.size }")
-        logger.info("Antall Sed sendt i buc: ${list.filter { (doc, sed) -> doc.status == SedStatus.SENT }.size }")
-        logger.info("*".repeat(20))
+        logger.debug("Ufiltert Sed i buc")
+        logger.debug("Antall Sed i buc: ${alledocs.size }")
+        logger.debug("Antall Sed mottatt i buc: ${alledocs.filter { doc -> doc.status == SedStatus.RECEIVED }.size }")
+        logger.debug("Antall Sed sendt i buc: ${alledocs.filter { doc -> doc.status == SedStatus.SENT }.size }")
+        logger.debug("*".repeat(20))
+        logger.debug("Filtrert gyldige Sed i buc: ${alledocs.size }")
+        logger.debug("Antall Sed i buc: ${list.filter { (doc, sed) -> doc.harGyldigStatus() }.size }")
+        logger.debug("Antall Sed mottatt i buc: ${list.filter { (doc, sed) -> doc.status == SedStatus.RECEIVED }.size }")
+        logger.debug("Antall Sed sendt i buc: ${list.filter { (doc, sed) -> doc.status == SedStatus.SENT }.size }")
+        logger.debug("*".repeat(20))
     }
 }
