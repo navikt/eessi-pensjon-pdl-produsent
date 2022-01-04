@@ -20,6 +20,7 @@ import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.pdl.validering.PdlValidering
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
+import no.nav.eessi.pensjon.services.kodeverk.KodeverkClient
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
@@ -40,6 +41,7 @@ class SedListener(
     private val utenlandskPersonIdentifisering: UtenlandskPersonIdentifisering,
     private val pdlFiltrering: PdlFiltrering,
     private val pdlValidering: PdlValidering,
+    private val kodeverkClient: KodeverkClient,
     @Value("\${SPRING_PROFILES_ACTIVE}") private val profile: String,
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper(SimpleMeterRegistry())
 ) {
@@ -238,23 +240,16 @@ class SedListener(
         return dokumentHelper.hentAlleSedIBuc(sedHendelse.rinaSakId , alleGyldigDokuenter)
     }
 
-//    private fun hentAlleGyldigeSedFraBUC(sedHendelse: SedHendelseModel): List<Pair<ForenkletSED, SED>> {
-//        val buc = dokumentHelper.hentBuc(sedHendelse.rinaSakId)
-//        val alleGyldigeDokumenter = dokumentHelper.hentAlleGyldigeDokumenter(buc)
-//        return dokumentHelper.hentAlleSedIBuc(sedHendelse.rinaSakId, alleGyldigeDokumenter)
-//    }
-
-
     fun lagEndringsMelding(utenlandskPin: UtenlandskId,
                            norskFnr: String,
-                           kilde: String){
+                           kilde: String)  {
         val pdlEndringsOpplysninger = PdlEndringOpplysning(
             listOf(
                 Personopplysninger(
                     ident = norskFnr,
                     endringsmelding = Endringsmelding(
                         identifikasjonsnummer = utenlandskPin.id,
-                        utstederland = utenlandskPin.land,
+                        utstederland = kodeverkClient.finnLandkode(utenlandskPin.land) ?: throw RuntimeException("Feil ved landkode"),
                         kilde = kilde
                     )
                 )

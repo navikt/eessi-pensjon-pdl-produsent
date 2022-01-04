@@ -24,7 +24,7 @@ class PersonMottakKlient(@Value("\${namespace}") var nameSpace: String,
 
         val httpEntity = HttpEntity(personopplysning.toJson(), createHeaders())
 
-        if(nameSpace == "q2" || nameSpace == "test") {
+//        if(nameSpace == "q2" || nameSpace == "test") {
                 val response = personMottakUsernameOidcRestTemplate.exchange(
                     "/api/v1/endringer",
                     HttpMethod.POST,
@@ -32,8 +32,8 @@ class PersonMottakKlient(@Value("\${namespace}") var nameSpace: String,
                     String::class.java
                 )
                 return response.statusCode.is2xxSuccessful
-        }
-        return true
+//        }
+//        return true
     }
 
     private fun createHeaders(): HttpHeaders {

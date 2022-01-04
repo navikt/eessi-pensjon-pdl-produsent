@@ -67,6 +67,24 @@ class DanskUidMedFlereSedPaaBucIntegrasjonsTest : IntegrationBase() {
         assertTrue(validateSedMottattListenerLoggingMessage("SED av type: P7000, status: RECEIVED"))
         assertTrue(validateSedMottattListenerLoggingMessage("Oppretter endringsmelding med nye personopplysninger fra avsenderLand:"))
 
+        val check = """
+              "personopplysninger" : [ {
+                "endringstype" : "OPPRETT",
+                "ident" : "11067122781",
+                "opplysningstype" : "UTENLANDSKIDENTIFIKASJONSNUMMER",
+                "endringsmelding" : {
+                  "@type" : "UTENLANDSKIDENTIFIKASJONSNUMMER",
+                  "identifikasjonsnummer" : "130177-1234",
+                  "utstederland" : "DNK",
+                  "kilde" : "DK:D005"
+                },
+                "opplysningsId" : null
+              } ]
+            }
+        """.trimIndent()
+
+        assertTrue(validateSedMottattListenerLoggingMessage(check))
+
         mockServer.verify(
             HttpRequest.request()
                 .withMethod("POST")
