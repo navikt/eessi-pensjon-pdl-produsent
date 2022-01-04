@@ -1,5 +1,6 @@
 package no.nav.eessi.pensjon.listeners
 
+import io.micrometer.core.instrument.Metrics
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.eessi.pensjon.eux.EuxDokumentHelper
 import no.nav.eessi.pensjon.eux.UtenlandskId
@@ -106,9 +107,7 @@ class SedListener(
 
         //Forsøker med denne en gang til 258088L
         try {
-            val offset = cr.offset()
             val sedHendelse = SedHendelseModel.fromJson(hendelse)
-
             if (GyldigeHendelser.mottatt(sedHendelse)) {
                 val bucType = sedHendelse.bucType!!
                 logger.info("*** Starter pdl endringsmelding prosess for BucType: $bucType, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
@@ -149,6 +148,7 @@ class SedListener(
 
                 if (filtrerUidSomIkkeFinnesIPdl) {
                     logger.info("Ingen filtrerte personer funnet Acket sedMottatt: ${cr.offset()}")
+                    countEnthet("Ingen filtrerte personer funnet")
                     acknowledgment.acknowledge()
                     return
                 }
@@ -159,6 +159,7 @@ class SedListener(
                     )
                 ) {
                     logger.info("Det finnes allerede en annen uid fra samme land, TODO opprette oppgave")
+                    countEnthet("Det finnes allerede en annen uid fra samme land (Oppgave)")
                     acknowledgment.acknowledge()
                     return
                 }
@@ -168,6 +169,7 @@ class SedListener(
                 //validering av uid korrekt format
                 if (!pdlValidering.erPersonValidertPaaLand(utenlandskeIderFraSed.first())) {
                     logger.info("Ingen validerte identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
+                    countEnthet("Ingen validerte identifiserte personer funnet")
                     acknowledgment.acknowledge()
                     return
                 }
@@ -176,6 +178,7 @@ class SedListener(
                     lagEndringsMelding(
                         utenlandskeIderFraSed.first(), identifisertePersoner.first().fnr!!.value, avsender
                     )
+                    countEnthet("Innsending av endringsmelding")
                 }
 
             }
@@ -184,8 +187,9 @@ class SedListener(
             logger.info("Acket sedMottatt melding med offset: ${cr.offset()} i partisjon ${cr.partition()}")
 
         } catch (ex: Exception) {
-            logger.error("Noe gikk galt under behandling av mottatt SED-hendelse:\n $hendelse \n", ex)
-            acknowledgment.acknowledge();
+            logger.error("Noe gikk galt under behandling av $hendelsesType SED-hendelse:\n $hendelse \n", ex)
+            countEnthet("Noe gikk galt under behandling av $hendelsesType")
+            acknowledgment.acknowledge()
         }
     }
 
@@ -200,30 +204,35 @@ class SedListener(
         if (!pdlValidering.finnesIdentifisertePersoner(identifisertePersoner)) {
             acknowledgment.acknowledge()
             logger.info("Ingen identifiserte FNR funnet, Acket melding")
+            countEnthet("Ingen identifiserte FNR funnet")
             return false
         }
 
         if (identifisertePersoner.size > 1) {
             acknowledgment.acknowledge()
             logger.info("Antall identifiserte FNR er fler enn en, Acket melding")
+            countEnthet("Antall identifiserte FNR er fler enn en")
             return false
         }
 
         if (utenlandskeIder.size > 1) {
             acknowledgment.acknowledge()
             logger.info("Antall utenlandske IDer er flere enn en")
+            countEnthet("Antall utenlandske IDer er flere enn en")
             return false
         }
 
         if (utenlandskeIder.isEmpty()) {
             acknowledgment.acknowledge()
             logger.info("Ingen utenlandske IDer funnet i BUC")
+            countEnthet("Ingen utenlandske IDer funnet i BUC")
             return false
         }
 
         if (sedHendelse.avsenderLand == null || pdlValidering.erUidLandAnnetEnnAvsenderLand(utenlandskeIder.first(), sedHendelse.avsenderLand)) {
             acknowledgment.acknowledge()
             logger.error("Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer")
+            countEnthet("Avsenderland mangler eller avsenderland er ikke det samme som uidland")
             return false
         }
         return true
@@ -265,9 +274,18 @@ class SedListener(
         logger.debug("Antall Sed sendt i buc: ${alledocs.filter { doc -> doc.status == SedStatus.SENT }.size }")
         logger.debug("*".repeat(20))
         logger.debug("Filtrert gyldige Sed i buc: ${alledocs.size }")
-        logger.debug("Antall Sed i buc: ${list.filter { (doc, sed) -> doc.harGyldigStatus() }.size }")
-        logger.debug("Antall Sed mottatt i buc: ${list.filter { (doc, sed) -> doc.status == SedStatus.RECEIVED }.size }")
-        logger.debug("Antall Sed sendt i buc: ${list.filter { (doc, sed) -> doc.status == SedStatus.SENT }.size }")
+        logger.debug("Antall Sed i buc: ${list.filter { (doc, _) -> doc.harGyldigStatus() }.size }")
+        logger.debug("Antall Sed mottatt i buc: ${list.filter { (doc, _) -> doc.status == SedStatus.RECEIVED }.size }")
+        logger.debug("Antall Sed sendt i buc: ${list.filter { (doc, _) -> doc.status == SedStatus.SENT }.size }")
         logger.debug("*".repeat(20))
     }
+
+    fun countEnthet(melding: String) {
+        try {
+            Metrics.counter("PDLmeldingSteg",   "melding", melding).increment()
+        } catch (e: Exception) {
+            logger.warn("Metrics feilet på enhet: $melding")
+        }
+    }
+
 }
