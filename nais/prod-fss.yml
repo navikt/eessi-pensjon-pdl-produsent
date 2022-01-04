@@ -37,6 +37,10 @@ spec:
       value: eessipensjon.privat-oppgave
     - name: KODEVERK_REST_API_URL
       value: https://kodeverk.nais.adeo.no
+    - name: S3_FSS_URL
+      value: http://objectstore.rook-ceph.svc.nais.local
+    - name: EESSI_PENSJON_PDLP_S3_CREDS_USERNAME
+      value: JFGD3ZCGGB6UGOL4VQA1
   image: {{ image }}
   ingresses:
     - https://eessi-pensjon-pdl-produsent.nais.adeo.no

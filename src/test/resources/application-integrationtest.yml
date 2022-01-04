@@ -14,8 +14,17 @@ kafka:
     groupid: eessi-pensjon-pdl-produsent-group
   security.protocol: ssl
 
+s3_url: 'http://objectstore.rook-ceph.svc.nais.local'
+s3_region: 'us-east-1'
+s3_fss_url: "http://objectstore.rook-ceph.svc.nais.local"
+#eessi_pensjon_pdlp_s3_bucket_name: 'eessipensjon'
+eessi.pensjon.pdlp.s3.bucket.name: 'eessipensjon'
+eessi_pensjon_pdlp_s3_creds_username: 'dummy'
+eessi_pensjon_pdlp_s3_creds_password: 'dummy'
+
 namespace: 'test'
 SPRING_PROFILES_ACTIVE: 'integrationtest'
+ENV: 'q2'
 
 securitytokenservice:
   discoveryurl: http://localhost:${mockserverport}/.well-known/openid-configuration

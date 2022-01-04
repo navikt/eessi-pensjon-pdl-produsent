@@ -31,7 +31,7 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.concurrent.*
+import java.util.concurrent.CountDownLatch
 import javax.annotation.PostConstruct
 
 @Service
@@ -97,6 +97,7 @@ class SedListener(
                 logger.info("*** Starter pdl endringsmelding prosess for BucType: $bucType, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
 
                 val buc = hentBuc(sedHendelse)
+                val rinasaknr = buc.id
 
                 val alleDocumenter = hentAlleDocumenter(buc)
 
@@ -144,6 +145,9 @@ class SedListener(
                 ) {
                     logger.info("Det finnes allerede en annen uid fra samme land, TODO opprette oppgave")
                     countEnthet("Det finnes allerede en annen uid fra samme land (Oppgave)")
+//TODO
+//                    OppgaveMelding(null, null, Enhet.ID_OG_FORDELING, "", rinasaknr!!, hendelsesType, null, OppgaveType.PDL)
+//                    OppgaveHandler.
                     acknowledgment.acknowledge()
                     return
                 }
