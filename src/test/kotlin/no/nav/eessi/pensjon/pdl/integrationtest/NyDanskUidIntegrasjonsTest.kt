@@ -20,7 +20,7 @@ import kotlin.test.assertTrue
 @ActiveProfiles("integrationtest")
 @DirtiesContext
 @EmbeddedKafka(
-    topics = [PDL_PRODUSENT_TOPIC_MOTATT, PDL_PRODUSENT_TOPIC_SENDT],
+    topics = [PDL_PRODUSENT_TOPIC_MOTTATT],
     brokerProperties = ["log.dir=/tmp/embedded-kafka-NyDanskUidIntegrasjonsTest"]
 
 )
@@ -48,7 +48,7 @@ class NyDanskUidIntegrasjonsTest : IntegrationBase() {
 
         val json = javaClass.getResource("/eux/hendelser/P_BUC_01_P2000-avsenderDK.json")!!.readText()
 
-        initAndRunContainer(PDL_PRODUSENT_TOPIC_MOTATT).also {
+        initAndRunContainer(PDL_PRODUSENT_TOPIC_MOTTATT).also {
             it.sendMsgOnDefaultTopic(json)
             it.waitForlatch(sedListener)
         }

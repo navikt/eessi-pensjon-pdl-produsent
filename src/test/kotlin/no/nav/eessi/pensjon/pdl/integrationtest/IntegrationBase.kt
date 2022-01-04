@@ -31,8 +31,7 @@ import org.springframework.kafka.test.utils.KafkaTestUtils
 import java.util.*
 import java.util.concurrent.*
 
-const val PDL_PRODUSENT_TOPIC_MOTATT = "eessi-basis-sedMottatt-v1"
-const val PDL_PRODUSENT_TOPIC_SENDT = "eessi-basis-sedSendt-v1"
+const val PDL_PRODUSENT_TOPIC_MOTTATT = "eessi-basis-sedMottatt-v1"
 
 abstract class IntegrationBase {
 

@@ -15,7 +15,7 @@ import kotlin.test.assertTrue
 @ActiveProfiles("integrationtest")
 @DirtiesContext
 @EmbeddedKafka(
-    topics = [PDL_PRODUSENT_TOPIC_MOTATT, PDL_PRODUSENT_TOPIC_SENDT],
+    topics = [PDL_PRODUSENT_TOPIC_MOTTATT],
     brokerProperties = ["log.dir=/tmp/embedded-kafka-UtenIdentIntegrasjonsTest"]
 )
 
@@ -36,7 +36,7 @@ class UtenIdentIntegrasjonsTest : IntegrationBase() {
 
         val hendelseJson = mockHendlese(bucType = BucType.P_BUC_10, sedType = SedType.P15000, docId = "eb938171a4cb4e658b3a6c011962d204")
 
-        initAndRunContainer(PDL_PRODUSENT_TOPIC_MOTATT).also {
+        initAndRunContainer(PDL_PRODUSENT_TOPIC_MOTTATT).also {
             it.sendMsgOnDefaultTopic(hendelseJson)
             it.waitForlatch(sedListener)
         }
