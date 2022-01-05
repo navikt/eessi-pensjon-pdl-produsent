@@ -41,6 +41,8 @@ spec:
       value: http://objectstore.rook-ceph.svc.nais.local
     - name: EESSI_PENSJON_PDLP_S3_CREDS_USERNAME
       value: 4IKMSHTFG2HENOZ6QGNI
+    - name: ENV
+      value: q2
   image: {{ image }}
   ingresses:
     - https://eessi-pensjon-pdl-produsent-q2.nais.preprod.local
