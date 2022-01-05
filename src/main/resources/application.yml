@@ -17,7 +17,7 @@ kodeverk:
   rest-api:
     url: ${kodeverk_rest_api.url}
 
-eessi.pensjon.krav:
+eessi.pensjon.pdlp:
   s3:
     bucket.name: 'eessipensjon-pdlp'
 s3_region: us-east-1
