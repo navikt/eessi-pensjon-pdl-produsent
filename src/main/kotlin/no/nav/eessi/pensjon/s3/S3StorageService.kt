@@ -15,12 +15,11 @@ import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import java.io.BufferedReader
 import java.io.InputStreamReader
-import java.util.stream.Collectors.joining
+import java.util.stream.Collectors.*
 
 private val logger = LoggerFactory.getLogger(S3StorageService::class.java)
 
 @Component
-//@Profile("!integrationtest")
 class S3StorageService(private val s3: AmazonS3){
 
     @Value("\${eessi.pensjon.pdlp.s3.bucket.name}")

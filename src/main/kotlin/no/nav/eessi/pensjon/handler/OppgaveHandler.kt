@@ -35,10 +35,6 @@ class OppgaveHandler(private val aivenOppgaveKafkaTemplate: KafkaTemplate<String
         oppgaveForUid = metricsHelper.init("OppgaveForUid")
     }
 
-
-    //TODO
-    //OppgaveMelding(null, null, Enhet.ID_OG_FORDELING, "", rinasaknr!!, hendelsesType, null, OppgaveType.PDL)
-    //OppgaveHandler.
     fun opprettOppgaveForUid(hendelseModel: SedHendelseModel, utenlandskIdSed: UtenlandskId, identifisertePerson : IdentifisertPerson): Boolean {
         if(nameSpace == "p") {
             logger.warn("OppgaveHandler ikke klar for PROD ennå")
