@@ -31,7 +31,8 @@ class PersonMottakKlient(@Value("\${namespace}") var nameSpace: String,
                     httpEntity,
                     String::class.java
                 )
-                return response.statusCode.is2xxSuccessful
+                logger.info("Endringresponse StatusCode: ${response.statusCode}, Body: ${response.body}")
+                return  response.statusCode.is2xxSuccessful
 //        }
 //        return true
     }

@@ -1,30 +1,75 @@
 package no.nav.eessi.pensjon.handler
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
+import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.json.toJson
+import no.nav.eessi.pensjon.lagring.LagringsService
 import no.nav.eessi.pensjon.metrics.MetricsHelper
+import no.nav.eessi.pensjon.models.Enhet
+import no.nav.eessi.pensjon.models.HendelseType
+import no.nav.eessi.pensjon.models.SedHendelseModel
+import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
 import javax.annotation.PostConstruct
 
 @Service
 class OppgaveHandler(private val aivenOppgaveKafkaTemplate: KafkaTemplate<String, String>,
+                     private val lagringsService: LagringsService,
+                     @Value("\${namespace}") var nameSpace: String,
                      @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper(SimpleMeterRegistry()) ) {
 
     private val logger = LoggerFactory.getLogger(OppgaveHandler::class.java)
     private val X_REQUEST_ID = "x_request_id"
 
     private lateinit var publiserOppgavemelding: MetricsHelper.Metric
+    private lateinit var oppgaveForUid: MetricsHelper.Metric
 
     @PostConstruct
     fun initMetrics() {
         publiserOppgavemelding = metricsHelper.init("publiserOppgavemelding")
+        oppgaveForUid = metricsHelper.init("OppgaveForUid")
     }
 
-    fun opprettOppgaveMeldingPaaKafkaTopic(melding: OppgaveMelding) {
+
+    //TODO
+    //OppgaveMelding(null, null, Enhet.ID_OG_FORDELING, "", rinasaknr!!, hendelsesType, null, OppgaveType.PDL)
+    //OppgaveHandler.
+    fun opprettOppgaveForUid(hendelseModel: SedHendelseModel, utenlandskIdSed: UtenlandskId, identifisertePerson : IdentifisertPerson): Boolean {
+        if(nameSpace == "p") {
+            logger.warn("OppgaveHandler ikke klar for PROD ennå")
+            return false
+        }
+
+        return oppgaveForUid.measure {
+            return@measure if (lagringsService.kanHendelsenOpprettes(hendelseModel)) {
+
+                val melding = OppgaveMelding(
+                    aktoerId = null,
+                    filnavn = null,
+                    sedType = null,
+                    tildeltEnhetsnr = Enhet.ID_OG_FORDELING,
+                    rinaSakId = hendelseModel.rinaSakId,
+                    hendelseType = HendelseType.MOTTATT,
+                    oppgaveType = OppgaveType.PDL
+                )
+
+                opprettOppgaveMeldingPaaKafkaTopic(melding)
+                lagringsService.lagreHendelseMedSakId(hendelseModel)
+                logger.info("Opprett oppgave og lagret til s3")
+                true
+            } else {
+                logger.info("Finnes fra før, gjør ingenting. .. ")
+                false
+            }
+        }
+    }
+
+    private fun opprettOppgaveMeldingPaaKafkaTopic(melding: OppgaveMelding) {
         val key = MDC.get(X_REQUEST_ID)
         val payload = melding.toJson()
 

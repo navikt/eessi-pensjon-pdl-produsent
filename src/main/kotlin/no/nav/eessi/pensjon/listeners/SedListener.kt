@@ -9,6 +9,7 @@ import no.nav.eessi.pensjon.eux.model.buc.Buc
 import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.eux.model.sed.SED
+import no.nav.eessi.pensjon.handler.OppgaveHandler
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.Endringsmelding
 import no.nav.eessi.pensjon.models.HendelseType
@@ -43,6 +44,7 @@ class SedListener(
     private val pdlFiltrering: PdlFiltrering,
     private val pdlValidering: PdlValidering,
     private val kodeverkClient: KodeverkClient,
+    private val oppgaveHandler: OppgaveHandler,
     @Value("\${SPRING_PROFILES_ACTIVE}") private val profile: String,
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper(SimpleMeterRegistry())
 ) {
@@ -143,12 +145,10 @@ class SedListener(
                         utenlandskeIderFraSed.first()
                     )
                 ) {
-                    logger.info("Det finnes allerede en annen uid fra samme land, TODO opprette oppgave")
-                    countEnthet("Det finnes allerede en annen uid fra samme land (Oppgave)")
-//TODO
-//                    OppgaveMelding(null, null, Enhet.ID_OG_FORDELING, "", rinasaknr!!, hendelsesType, null, OppgaveType.PDL)
-//                    OppgaveHandler.
+                    logger.info("Det finnes allerede en annen uid fra samme land, opprette oppgave")
                     acknowledgment.acknowledge()
+                    val result = oppgaveHandler.opprettOppgaveForUid(sedHendelse, utenlandskeIderFraSed.first(), identifisertePersoner.first())
+                    if (result) countEnthet("Det finnes allerede en annen uid fra samme land (Oppgave)")
                     return
                 }
 

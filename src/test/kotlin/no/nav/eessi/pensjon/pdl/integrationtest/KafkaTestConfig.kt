@@ -1,5 +1,11 @@
 package no.nav.eessi.pensjon.pdl.integrationtest
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider
+import com.amazonaws.auth.AnonymousAWSCredentials
+import com.amazonaws.client.builder.AwsClientBuilder
+import com.amazonaws.services.s3.AmazonS3ClientBuilder
+import io.findify.s3mock.S3Mock
+import no.nav.eessi.pensjon.s3.S3StorageService
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
@@ -15,11 +21,13 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.core.ProducerFactory
 import org.springframework.kafka.listener.ContainerProperties
+import java.net.ServerSocket
 import java.time.Duration
 
 @TestConfiguration
 class KafkaTestConfig(
-    @param:Value("\${spring.embedded.kafka.brokers}") private val bootstrapServers: String) {
+    @param:Value("\${spring.embedded.kafka.brokers}") private val bootstrapServers: String,
+    @Value("\${KAFKA_OPPGAVE_TOPIC}") private val oppgaveTopic: String) {
 
     @Bean
     fun aivenProducerFactory(): ProducerFactory<String, String> {
@@ -31,6 +39,13 @@ class KafkaTestConfig(
         configMap[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = bootstrapServers
 
         return DefaultKafkaProducerFactory(configMap)
+    }
+
+    @Bean("aivenOppgaveKafkaTemplate")
+    fun aivenOppgaveKafkaTemplate(): KafkaTemplate<String, String> {
+        val template = KafkaTemplate(aivenProducerFactory())
+        template.defaultTopic = oppgaveTopic
+        return template
     }
 
     @Bean
@@ -71,5 +86,32 @@ class KafkaTestConfig(
 
     private fun populerCommonConfig(configMap: MutableMap<String, Any>) {
         configMap[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = "PLAINTEXT"
+    }
+
+    @Bean
+    fun s3StorageService(): S3StorageService {
+        return initMockS3()
+    }
+
+    private fun initMockS3(): S3StorageService {
+        val s3Port = ServerSocket(0).use { it.localPort }
+
+        val s3api = S3Mock.Builder().withPort(s3Port).withInMemoryBackend().build()
+        s3api.start()
+        val endpoint = AwsClientBuilder.EndpointConfiguration("http://localhost:$s3Port", "us-east-1")
+
+        val s3MockClient = AmazonS3ClientBuilder.standard()
+            .withPathStyleAccessEnabled(true)
+            .withCredentials(AWSStaticCredentialsProvider(AnonymousAWSCredentials()))
+            .withEndpointConfiguration(endpoint)
+            .build()
+
+        s3MockClient.createBucket("eessipensjon")
+        //return s3MockClient
+        val storageService = S3StorageService(s3MockClient)
+        storageService.bucketname = "eessipensjon"
+        storageService.env = "q1"
+        storageService.init()
+        return storageService
     }
 }

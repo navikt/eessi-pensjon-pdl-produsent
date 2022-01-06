@@ -4,6 +4,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import no.nav.eessi.pensjon.eux.EuxDokumentHelper
 import no.nav.eessi.pensjon.eux.UtenlandskPersonIdentifisering
+import no.nav.eessi.pensjon.handler.OppgaveHandler
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.pdl.validering.PdlValidering
@@ -27,6 +28,7 @@ internal class SedMottattListenerTest {
     private val pdlFiltrering = mockk<PdlFiltrering>(relaxed = true)
     private val pdlValidering = mockk<PdlValidering>(relaxed = true)
     private val kodeverkClient = mockk<KodeverkClient>(relaxed = true)
+    private val oppgaveHandler = mockk<OppgaveHandler>(relaxed = true)
 
     private val sedListener = SedListener(
         personidentifiseringService,
@@ -36,6 +38,7 @@ internal class SedMottattListenerTest {
         pdlFiltrering,
         pdlValidering,
         kodeverkClient,
+        oppgaveHandler,
         "test",
     )
 
