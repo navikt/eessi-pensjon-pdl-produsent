@@ -9,6 +9,9 @@ import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
+import no.nav.eessi.pensjon.eux.model.sed.PinItem
+import no.nav.eessi.pensjon.json.mapJsonToAny
+import no.nav.eessi.pensjon.json.typeRefs
 import no.nav.eessi.pensjon.listeners.SedListener
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.security.sts.STSService
@@ -29,7 +32,7 @@ import org.springframework.kafka.test.EmbeddedKafkaBroker
 import org.springframework.kafka.test.utils.ContainerTestUtils
 import org.springframework.kafka.test.utils.KafkaTestUtils
 import java.util.*
-import java.util.concurrent.*
+import java.util.concurrent.TimeUnit
 
 const val PDL_PRODUSENT_TOPIC_MOTTATT = "eessi-basis-sedMottatt-v1"
 
@@ -85,7 +88,7 @@ abstract class IntegrationBase {
         container.start()
 
         ContainerTestUtils.waitForAssignment(container, embeddedKafka.partitionsPerTopic)
-        var template = KafkaTemplate(producerFactory).apply { defaultTopic = topic }
+        val template = KafkaTemplate(producerFactory).apply { defaultTopic = topic }
         return TestResult(template, container).also {
             println("*************************  INIT DONE *****************************")
         }
@@ -168,8 +171,8 @@ abstract class IntegrationBase {
         """.trimIndent()
     }
 
-    fun mockPin(ident: String = "12312312312", land: String = "NO") : String {
-        return """
+    fun mockPin(ident: String = "12312312312", land: String = "NO") : PinItem {
+        val pinjson =  """
             {
           "institusjonsnavn" : "NOINST002, NO INST002, NO",
           "institusjonsid" : "NO:noinst002",
@@ -177,9 +180,10 @@ abstract class IntegrationBase {
           "land" : "$land"
         }
         """.trimIndent()
+        return mapJsonToAny(pinjson, typeRefs())
     }
 
-    fun mockSedUtenPensjon(sedType: SedType, pin: String, fornavn: String = "Fornavn", krav: String = "01"): String {
+    fun mockSedUtenPensjon(sedType: SedType, pin: List<PinItem>, fornavn: String = "Fornavn", krav: String = "01"): String {
         return """
             {
               "sed" : "${sedType.name}",
@@ -194,7 +198,7 @@ abstract class IntegrationBase {
                 } ],
                 "bruker" : {
                   "person" : {
-                    "pin" : [ $pin ],
+                    "pin" : ${pin.toJson()},
                     "etternavn" : "Etternavn",
                     "fornavn" : "$fornavn",
                     "kjoenn" : "M",

@@ -6,7 +6,7 @@ import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonMock
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
-import org.junit.jupiter.api.Disabled
+import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.kafka.test.context.EmbeddedKafka
@@ -22,23 +22,31 @@ import kotlin.test.assertTrue
     brokerProperties = ["log.dir=/tmp/embedded-kafka-NyDanskUtenUidIntegrasjonsTest"]
 )
 
-@Disabled // disabler grunnet kafka problemer i Integrasjonstestene
-class NyDanskUtenUidIntegrasjonsTest : IntegrationBase() {
+ // disabler grunnet kafka problemer i Integrasjonstestene
+class DanskUidSomErFordkjelligFraPdlOppgaveOpprettesIntegrasjonsTest : IntegrationBase() {
 
     @Test
-    fun `Gitt en sed hendelse med uten dansk uid som ikke finnes i pdl skal det ack med logg Ingen utenlandske IDer funnet i BUC`() {
+    fun `Gitt en sed hendelse dansk uid som er forskjellig fra det som finnes i PDL skal det ack med logg Det finnes allerede en annen uid fra samme land Og Oppgave skal opprettes `() {
 
         val fnr = "29087021082"
         val personMock = PersonMock.createBrukerWithUid(
             fnr = fnr,
-            uid = emptyList()
+            uid = listOf(
+                UtenlandskIdentifikasjonsnummer(
+                identifikasjonsnummer = "130177-1234",
+                utstederland = "DNK",
+                opphoert = false,
+                metadata = PersonMock.createMetadata()
+            ))
         )
 
         val listOverSeder = listOf(mockForenkletSed("eb938171a4cb4e658b3a6c011962d204", SedType.P15000, SedStatus.RECEIVED))
         val mockBuc = mockBuc("147729", BucType.P_BUC_10, listOverSeder)
 
-        val mockPin = mockPin(fnr, "NO")
-        val mockSed = mockSedUtenPensjon(sedType = SedType.P15000, pin = listOf(mockPin))
+        val mockPin = listOf(mockPin(fnr, "NO"),
+                            mockPin("130177-5432", "DK"))
+
+        val mockSed = mockSedUtenPensjon(sedType = SedType.P15000, pin = mockPin)
 
         every { personService.hentPersonUtenlandskIdent(NorskIdent(fnr)) } returns personMock
         CustomMockServer()
@@ -54,7 +62,22 @@ class NyDanskUtenUidIntegrasjonsTest : IntegrationBase() {
             it.waitForlatch(sedListener)
         }
 
-        assertTrue(validateSedMottattListenerLoggingMessage("Ingen utenlandske IDer funnet i BUC"))
+        assertTrue(validateSedMottattListenerLoggingMessage("Det finnes allerede en annen uid fra samme land, opprette oppgave"))
+        val check = """
+            Opprette oppgave melding på kafka: eessi-pensjon-oppgave-v1  melding: {
+              "sedType" : null,
+              "journalpostId" : null,
+              "tildeltEnhetsnr" : "4303",
+              "aktoerId" : null,
+              "rinaSakId" : "147729",
+              "hendelseType" : "MOTTATT",
+              "filnavn" : null,
+              "oppgaveType" : "PDL"
+            }
+        """.trimIndent()
+        assertTrue(validateSedMottattListenerLoggingMessage(check))
+        assertTrue(validateSedMottattListenerLoggingMessage("Opprett oppgave og lagret til s3"))
+
     }
 }
 
