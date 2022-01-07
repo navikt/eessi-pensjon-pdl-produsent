@@ -32,7 +32,7 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.concurrent.CountDownLatch
+import java.util.concurrent.*
 import javax.annotation.PostConstruct
 
 @Service
@@ -91,12 +91,23 @@ class SedListener(
 
         logger.debug(hendelse)
 
+        logger.debug("Profile: $profile")
+
         //Forsøker med denne en gang til 258088L
         try {
-            val sedHendelse = SedHendelseModel.fromJson(hendelse)
+//            val sedHendelse = SedHendelseModel.fromJson(hendelse)
+            val sedHendelseTemp = SedHendelseModel.fromJson(hendelse)
+
+            val sedHendelse = if (profile != "prod" && profile != "integrationtest") {
+                sedHendelseTemp.copy(avsenderLand = "SE", avsenderNavn = "SE:test")
+            } else {
+                sedHendelseTemp
+            }
+
             if (GyldigeHendelser.mottatt(sedHendelse)) {
                 val bucType = sedHendelse.bucType!!
                 logger.info("*** Starter pdl endringsmelding prosess for BucType: $bucType, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
+
 
                 val buc = hentBuc(sedHendelse)
                 val rinasaknr = buc.id
