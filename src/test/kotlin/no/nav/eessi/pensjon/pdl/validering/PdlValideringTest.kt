@@ -57,11 +57,13 @@ internal class PdlValideringTest {
         )
 
         val identifisertPerson = listOf(IdentifisertPerson(
-            Fodselsnummer.fra("11067122781"), listOf(
+            Fodselsnummer.fra("11067122781"),
+            listOf(
                 UtenlandskIdentifikasjonsnummer(
                     "321654687", "DE", false, null, metadata
                 )
-            )
+            ),
+            "32165498765"
         ))
 
         assertTrue(pdlValidering.finnesIdentifisertePersoner(identifisertPerson))

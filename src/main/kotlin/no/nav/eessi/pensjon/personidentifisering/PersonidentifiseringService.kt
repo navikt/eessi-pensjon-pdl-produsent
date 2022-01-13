@@ -8,6 +8,7 @@ import no.nav.eessi.pensjon.json.toJson
 import no.nav.eessi.pensjon.personidentifisering.relasjoner.RelasjonsHandler
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
+import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.PersonUtenlandskIdent
 import no.nav.eessi.pensjon.services.kodeverk.KodeverkClient
@@ -68,7 +69,8 @@ class PersonidentifiseringService(private val personService: PersonService, priv
 
         return IdentifisertPerson(
             fodselsnummer,
-            person.utenlandskIdentifikasjonsnummer
+            person.utenlandskIdentifikasjonsnummer,
+            person.identer.first { it.gruppe == IdentGruppe.AKTORID }.ident
         ).also { logger.debug("Følgende populert Person: $it") }
     }
 

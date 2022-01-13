@@ -5,7 +5,8 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnum
 
 data class IdentifisertPerson(
     val fnr: Fodselsnummer?,
-    val uidFraPdl: List<UtenlandskIdentifikasjonsnummer> = emptyList()
+    val uidFraPdl: List<UtenlandskIdentifikasjonsnummer> = emptyList(),
+    val aktoerId: String
 )
 
 data class UtenlandskPin(

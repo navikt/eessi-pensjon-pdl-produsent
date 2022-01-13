@@ -42,10 +42,10 @@ class OppgaveHandler(private val aivenOppgaveKafkaTemplate: KafkaTemplate<String
         }
 
         return oppgaveForUid.measure {
-            return@measure if (lagringsService.kanHendelsenOpprettes(hendelseModel)) {
+//            return@measure if (lagringsService.kanHendelsenOpprettes(hendelseModel)) {
 
                 val melding = OppgaveMelding(
-                    aktoerId = null,
+                    aktoerId = identifisertePerson.aktoerId,
                     filnavn = null,
                     sedType = null,
                     tildeltEnhetsnr = Enhet.ID_OG_FORDELING,
@@ -55,13 +55,13 @@ class OppgaveHandler(private val aivenOppgaveKafkaTemplate: KafkaTemplate<String
                 )
 
                 opprettOppgaveMeldingPaaKafkaTopic(melding)
-                lagringsService.lagreHendelseMedSakId(hendelseModel)
-                logger.info("Opprett oppgave og lagret til s3")
+//                lagringsService.lagreHendelseMedSakId(hendelseModel)
+//                logger.info("Opprett oppgave og lagret til s3")
                 true
-            } else {
-                logger.info("Finnes fra før, gjør ingenting. .. ")
-                false
-            }
+//            } else {
+//                logger.info("Finnes fra før, gjør ingenting. .. ")
+//                false
+//            }
         }
     }
 

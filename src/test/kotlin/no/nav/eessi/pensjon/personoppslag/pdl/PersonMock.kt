@@ -84,7 +84,7 @@ object PersonMock {
 
         val identer = listOfNotNull(
             fnr?.let { IdentInformasjon(ident = it, gruppe = IdentGruppe.FOLKEREGISTERIDENT) }
-        )
+        , IdentInformasjon("65466565", IdentGruppe.AKTORID))
 
         val metadata = createMetadata()
 
