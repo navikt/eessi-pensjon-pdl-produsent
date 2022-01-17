@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component
 class PdlValidering(private val kodeverkClient: KodeverkClient) {
 
     private val logger = LoggerFactory.getLogger(PdlValidering::class.java)
-    private val validering = LandspesifikkValidering()
+    private val validering = LandspesifikkValidering
 
     fun finnesIdentifisertePersoner(
         identifisertPersoner:List<IdentifisertPerson>,

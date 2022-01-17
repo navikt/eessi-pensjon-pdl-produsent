@@ -11,7 +11,7 @@ import org.junit.jupiter.params.provider.CsvSource
  */
 internal class LandspesifikkValideringTest {
 
-    private val valdidering = LandspesifikkValidering()
+    private val valdidering = LandspesifikkValidering
 
     @ParameterizedTest
     @CsvSource(
@@ -55,7 +55,7 @@ internal class LandspesifikkValideringTest {
         "SVN, 1301771234567, true",
         "SVN, 1301771234567%, false",
         "SWE, 770113-1234, true",
-        "SWE, 770113+1234, true",
+        //"SWE, 770113+1234, true" + tegn benyttes for 100år ++ ,
         "SWE, 7701131+234, false",
         "DEU, 56 120157 F 016, true",
         "DEU, 02 140477 T 039, true",
@@ -72,7 +72,6 @@ internal class LandspesifikkValideringTest {
         "GBR, ZX 91-6777M, false",
         "GBR, ZXS, false", //format og lengde
         "GBR, ZX, false" //length
-
     )
 /**
  * Regler for andre land vi kommuniserer med
