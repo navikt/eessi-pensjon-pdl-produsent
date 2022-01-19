@@ -67,6 +67,7 @@ class BucTilEnhetHandlerCreator {
                 BucType.P_BUC_10 -> Pbuc10()
                 BucType.H_BUC_07 -> Hbuc07()
                 BucType.R_BUC_02 -> Rbuc02()
+                else -> DefaultBucTilEnhetHandler()
             }
         }
     }
