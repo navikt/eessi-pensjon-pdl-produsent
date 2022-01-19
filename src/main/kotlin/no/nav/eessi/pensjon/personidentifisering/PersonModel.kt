@@ -6,7 +6,10 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnum
 data class IdentifisertPerson(
     val fnr: Fodselsnummer?,
     val uidFraPdl: List<UtenlandskIdentifikasjonsnummer> = emptyList(),
-    val aktoerId: String
+    val aktoerId: String,
+    val landkode: String?,
+    val geografiskTilknytning: String?,
+    val harAdressebeskyttelse: Boolean
 )
 
 data class UtenlandskPin(

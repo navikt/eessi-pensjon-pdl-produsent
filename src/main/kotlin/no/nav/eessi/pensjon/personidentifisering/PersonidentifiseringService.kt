@@ -52,7 +52,7 @@ class PersonidentifiseringService(private val personService: PersonService, priv
                 ?.let { person ->
                     populerIdentifisertPerson(
                         person,
-                        fodselsnummer,
+                        fodselsnummer
                     )
                 }
         } catch (ex: Exception) {
@@ -70,7 +70,10 @@ class PersonidentifiseringService(private val personService: PersonService, priv
         return IdentifisertPerson(
             fodselsnummer,
             person.utenlandskIdentifikasjonsnummer,
-            person.identer.first { it.gruppe == IdentGruppe.AKTORID }.ident
+            person.identer.first { it.gruppe == IdentGruppe.AKTORID }.ident,
+            "",
+            "",
+            false
         ).also { logger.debug("Følgende populert Person: $it") }
     }
 
