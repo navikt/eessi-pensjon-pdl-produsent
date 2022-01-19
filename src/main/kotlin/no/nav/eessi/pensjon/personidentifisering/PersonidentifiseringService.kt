@@ -75,14 +75,14 @@ class PersonidentifiseringService(private val personService: PersonService, priv
             person.utenlandskIdentifikasjonsnummer,
             person.identer.first { it.gruppe == IdentGruppe.AKTORID }.ident,
             hentLandkode(person),
-            person.geografiskTilknytning,
+            person.geografiskTilknytning?.gtKommune ?: person.geografiskTilknytning?.gtBydel,
             finnesPersonMedAdressebeskyttelse(fodselsnummer),
             personRelasjon = SEDPersonRelasjon(fodselsnummer, Relasjon.FORSIKRET, null, null, null, fodselsnummer.getBirthDate(), "")
         ).also { logger.debug("Følgende populert Person: $it") }
     }
 
     fun finnesPersonMedAdressebeskyttelse(fodselsnummer: Fodselsnummer): Boolean {
-        val fnr = listOf(fodselsnummer!!.value)
+        val fnr = listOf(fodselsnummer.value)
         val gradering = listOf(AdressebeskyttelseGradering.STRENGT_FORTROLIG_UTLAND, AdressebeskyttelseGradering.STRENGT_FORTROLIG)
         return personService.harAdressebeskyttelse(fnr, gradering)
     }
