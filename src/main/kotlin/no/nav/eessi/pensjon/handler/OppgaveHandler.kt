@@ -75,7 +75,7 @@ class OppgaveHandler(
         return oppgaveruting.route(OppgaveRoutingRequest.fra(
             identifisertePerson,
             identifisertePerson.fnr!!.getBirthDate(),
-            null,
+            identifisertePerson.personRelasjon.saktype,
             hendelseModel,
             HendelseType.MOTTATT,
             null,

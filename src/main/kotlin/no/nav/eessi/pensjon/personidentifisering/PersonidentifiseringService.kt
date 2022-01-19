@@ -28,7 +28,9 @@ class PersonidentifiseringService(private val personService: PersonService, priv
         rinaDocumentId: String
     ): List<IdentifisertPerson> {
 
-        val potensiellePersonRelasjoner = seder.flatMap { (docitem, sed) -> RelasjonsHandler.hentRelasjoner(sed, rinaDocumentId, bucType) }
+        val sedIBUC = seder.map { (item, sed) -> Pair(item.id, sed) }
+        val potensiellePersonRelasjoner = RelasjonsHandler.hentRelasjoner(sedIBUC, bucType)
+//        val potensiellePersonRelasjoner = seder.flatMap { (docitem, sed) -> RelasjonsHandler.hentRelasjoner(sed, rinaDocumentId, bucType) }
 
         //slå opp PDL
         return hentIdentifisertePersoner(potensiellePersonRelasjoner, rinaDocumentId)
@@ -37,25 +39,25 @@ class PersonidentifiseringService(private val personService: PersonService, priv
 
 
     fun hentIdentifisertePersoner(
-        potensielleFnr: List<Fodselsnummer?>,
+        potensielleFnr: List<SEDPersonRelasjon?>,
         rinaDocumentId: String
     ): List<IdentifisertPerson> {
 
-        return potensielleFnr.filterNotNull().distinctBy { fnr -> fnr.value }.mapNotNull { identifiserPerson(it) }
+        return potensielleFnr.filterNotNull().distinctBy { relasjon -> relasjon.fnr?.value }.mapNotNull { identifiserPerson(it) }
 
     }
 
-    fun identifiserPerson(fodselsnummer: Fodselsnummer): IdentifisertPerson? {
-        logger.debug("Henter ut følgende personRelasjon: ${fodselsnummer.toJson()}")
+    fun identifiserPerson(relasjon: SEDPersonRelasjon): IdentifisertPerson? {
+        logger.debug("Henter ut følgende personRelasjon: ${relasjon.toJson()}")
 
         return try {
 //            personService.hentPersonUtenlandskIdent(NorskIdent(fodselsnummer.value)) utgåååååår
 
-            personService.hentPerson(NorskIdent(fodselsnummer.value))
+            personService.hentPerson(NorskIdent(relasjon.fnr!!.value))
                 ?.let { person ->
                     populerIdentifisertPerson(
                         person,
-                        fodselsnummer
+                        relasjon
                     )
                 }
         } catch (ex: Exception) {
@@ -66,18 +68,20 @@ class PersonidentifiseringService(private val personService: PersonService, priv
 
     private fun populerIdentifisertPerson(
         person: Person,
-        fodselsnummer: Fodselsnummer,
+        relasjon: SEDPersonRelasjon,
     ): IdentifisertPerson {
-        logger.debug("Populerer IdentifisertPerson med data fra PDL")
+        logger.debug("Populerer IdentifisertPerson med data fra PDL, person: $person")
+
 
         return IdentifisertPerson(
-            fodselsnummer,
+            relasjon.fnr,
             person.utenlandskIdentifikasjonsnummer,
             person.identer.first { it.gruppe == IdentGruppe.AKTORID }.ident,
             hentLandkode(person),
             person.geografiskTilknytning?.gtKommune ?: person.geografiskTilknytning?.gtBydel,
-            finnesPersonMedAdressebeskyttelse(fodselsnummer),
-            personRelasjon = SEDPersonRelasjon(fodselsnummer, Relasjon.FORSIKRET, null, null, null, fodselsnummer.getBirthDate(), "")
+            finnesPersonMedAdressebeskyttelse(relasjon.fnr!!),
+            null,
+            relasjon
         ).also { logger.debug("Følgende populert Person: $it") }
     }
 

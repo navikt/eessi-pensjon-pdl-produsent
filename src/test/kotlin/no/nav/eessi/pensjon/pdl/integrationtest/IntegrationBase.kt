@@ -12,6 +12,7 @@ import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.json.mapJsonToAny
 import no.nav.eessi.pensjon.json.typeRefs
+import no.nav.eessi.pensjon.klienter.norg2.Norg2Service
 import no.nav.eessi.pensjon.listeners.SedListener
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.security.sts.STSService
@@ -32,7 +33,7 @@ import org.springframework.kafka.test.EmbeddedKafkaBroker
 import org.springframework.kafka.test.utils.ContainerTestUtils
 import org.springframework.kafka.test.utils.KafkaTestUtils
 import java.util.*
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.*
 
 const val PDL_PRODUSENT_TOPIC_MOTTATT = "eessi-basis-sedMottatt-v1"
 
@@ -49,6 +50,9 @@ abstract class IntegrationBase {
 
     @MockkBean
     lateinit var stsService: STSService
+
+    @MockkBean
+    lateinit var norg2: Norg2Service
 
     @MockkBean
     lateinit var personService: PersonService
