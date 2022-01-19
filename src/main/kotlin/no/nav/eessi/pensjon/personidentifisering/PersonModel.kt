@@ -3,6 +3,7 @@ package no.nav.eessi.pensjon.personidentifisering
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.models.Saktype
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
+import no.nav.eessi.pensjon.personoppslag.pdl.model.GeografiskTilknytning
 import no.nav.eessi.pensjon.personoppslag.pdl.model.SokKriterier
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import java.time.LocalDate
@@ -12,7 +13,7 @@ data class IdentifisertPerson(
     val uidFraPdl: List<UtenlandskIdentifikasjonsnummer> = emptyList(),
     val aktoerId: String,
     val landkode: String?,
-    val geografiskTilknytning: String?,
+    val geografiskTilknytning: GeografiskTilknytning?,
     val harAdressebeskyttelse: Boolean,
     val personListe: List<IdentifisertPerson>? = null,
     val personRelasjon: SEDPersonRelasjon
