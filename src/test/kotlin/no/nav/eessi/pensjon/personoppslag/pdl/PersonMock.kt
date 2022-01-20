@@ -27,7 +27,8 @@ object PersonMock {
         fornavn: String = "Test",
         etternavn: String = "Testesen",
         aktoerId: AktoerId? = null,
-        geo: String? = "0301"
+        geo: String? = "0301",
+        uid: List<UtenlandskIdentifikasjonsnummer> = emptyList()
     ): Person {
 
         val foedselsdato = fnr?.let { Fodselsnummer.fra(it)?.getBirthDate() }
@@ -71,7 +72,10 @@ object PersonMock {
             kjoenn = Kjoenn(KjoennType.KVINNE, null, metadata),
             doedsfall = null,
             forelderBarnRelasjon = emptyList(),
-            sivilstand = emptyList()
+            sivilstand = emptyList(),
+            kontaktadresse = null,
+            kontaktinformasjonForDoedsbo = null,
+            utenlandskIdentifikasjonsnummer = uid
         )
     }
 

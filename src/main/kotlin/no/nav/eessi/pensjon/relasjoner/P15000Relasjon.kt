@@ -1,16 +1,14 @@
 package no.nav.eessi.pensjon.personidentifisering.relasjoner
 
+import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.sed.P15000
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.models.Saktype
-import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
+import no.nav.eessi.pensjon.personidentifisering.SEDPersonRelasjon
 
-class P15000Ident() : AbstractIdent() {
+class P15000Relasjon(private val sed: SED, private val bucType: BucType, private val rinaDocumentId: String) : GjenlevendeHvisFinnes( sed, bucType,rinaDocumentId) {
 
-    private  val gjenlevende: Gjenlevende = Gjenlevende()
-    private val forsikret : Forsikret = Forsikret()
-
-    override fun hentRelasjoner(sed: SED): List<Fodselsnummer?> {
+    override fun hentRelasjoner(): List<SEDPersonRelasjon> {
         val sedKravString = sed.nav?.krav?.type
         val saktype = if (sedKravString == null) null else mapKravtypeTilSaktype(sedKravString)
 
@@ -18,11 +16,12 @@ class P15000Ident() : AbstractIdent() {
 
         return if (saktype == Saktype.GJENLEV) {
             logger.debug("legger til gjenlevende: ($saktype)")
-            listOf(gjenlevende.hentRelasjonGjenlevendeFnrHvisFinnes((sed as P15000).p15000Pensjon?.gjenlevende, sed.type))
+            hentRelasjonGjenlevendeFnrHvisFinnes((sed as P15000).p15000Pensjon?.gjenlevende, saktype)
         } else {
             logger.debug("legger til forsikret: ($saktype)")
-            listOf(forsikret.hentForsikretPerson(sed))
+            hentForsikretPerson(saktype)
         }
+
     }
 
     private fun mapKravtypeTilSaktype(krav: String?): Saktype {
@@ -32,4 +31,6 @@ class P15000Ident() : AbstractIdent() {
             else -> Saktype.ALDER
         }
     }
+
+
 }

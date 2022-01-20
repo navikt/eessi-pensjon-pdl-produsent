@@ -1,11 +1,12 @@
 package no.nav.eessi.pensjon.pdl.integrationtest
 
-import io.mockk.every
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
+import no.nav.eessi.pensjon.models.Enhet
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonMock
-import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
+import no.nav.eessi.pensjon.personoppslag.pdl.model.AktoerId
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -29,12 +30,14 @@ import kotlin.test.assertTrue
 @Disabled //disabler grunnet kafka problemer i Integrasjonstestene
 class SedMottattIntegrationtest : IntegrationBase() {
 
-    @Test
-    fun `Gitt en sed hendelse med dansk uid i sed som også finnes i pdl så skal vi acke og avslutte på en pen måte`() {
+    val fnr = "11067122781"
 
-        val fnr = "11067122781"
-        val personMock =  PersonMock.createBrukerWithUid(
+    override fun getMockNorg2enhet() = Enhet.ID_OG_FORDELING
+
+    override fun getMockPerson(): Person? {
+        return PersonMock.createWith(
             fnr = fnr,
+            aktoerId = AktoerId("1231231231"),
             uid = listOf(UtenlandskIdentifikasjonsnummer(
                 identifikasjonsnummer = "130177-1234",
                 utstederland = "DNK",
@@ -42,11 +45,14 @@ class SedMottattIntegrationtest : IntegrationBase() {
                 metadata = PersonMock.createMetadata()
             ))
         )
+    }
+
+    @Test
+    fun `Gitt en sed hendelse med dansk uid i sed som også finnes i pdl så skal vi acke og avslutte på en pen måte`() {
 
         val listOverSeder = listOf(mockForenkletSed("eb938171a4cb4e658b3a6c011962d204", SedType.P2100, SedStatus.RECEIVED))
         val mockBuc = mockBuc("147729", BucType.P_BUC_02, listOverSeder)
 
-        every { personService.hentPersonUtenlandskIdent(NorskIdent(fnr)) } returns personMock
         CustomMockServer()
             .mockSTSToken()
             .medSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", "src/test/resources/eux/sed/P2100-PinDK-NAV.json")
@@ -69,6 +75,7 @@ class SedMottattIntegrationtest : IntegrationBase() {
             VerificationTimes.exactly(0)
         )
     }
+
 
 //    @Test
 //    fun `Gitt en sed hendelse med dansk uid som ikke finnes i pdl skal det opprettes det en endringsmelding til person-mottak`() {

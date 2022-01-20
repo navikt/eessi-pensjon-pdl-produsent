@@ -1,11 +1,11 @@
 package no.nav.eessi.pensjon.handler
 
 import no.nav.eessi.pensjon.eux.model.SedType
-import no.nav.eessi.pensjon.json.mapJsonToAny
-import no.nav.eessi.pensjon.json.toJson
-import no.nav.eessi.pensjon.json.typeRefs
 import no.nav.eessi.pensjon.models.Enhet
 import no.nav.eessi.pensjon.models.HendelseType
+import no.nav.eessi.pensjon.utils.mapJsonToAny
+import no.nav.eessi.pensjon.utils.toJson
+import no.nav.eessi.pensjon.utils.typeRefs
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 

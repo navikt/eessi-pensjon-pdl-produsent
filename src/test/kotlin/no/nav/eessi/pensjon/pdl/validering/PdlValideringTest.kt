@@ -3,6 +3,8 @@ package no.nav.eessi.pensjon.pdl.validering
 import io.mockk.mockk
 import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
+import no.nav.eessi.pensjon.personidentifisering.Relasjon
+import no.nav.eessi.pensjon.personidentifisering.SEDPersonRelasjon
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endring
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
@@ -63,7 +65,13 @@ internal class PdlValideringTest {
                     "321654687", "DE", false, null, metadata
                 )
             ),
-            "32165498765"
+            "32165498765",
+            "NO",
+            "0328",
+            false,
+            null,
+            SEDPersonRelasjon(Fodselsnummer.fra("11067122781"), Relasjon.FORSIKRET, rinaDocumentId =  "3123123")
+
         ))
 
         assertTrue(pdlValidering.finnesIdentifisertePersoner(identifisertPerson))

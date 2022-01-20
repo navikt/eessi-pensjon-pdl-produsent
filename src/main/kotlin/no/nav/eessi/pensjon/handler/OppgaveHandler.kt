@@ -2,13 +2,16 @@ package no.nav.eessi.pensjon.handler
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.eessi.pensjon.eux.UtenlandskId
-import no.nav.eessi.pensjon.json.toJson
+import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.lagring.LagringsService
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.Enhet
 import no.nav.eessi.pensjon.models.HendelseType
 import no.nav.eessi.pensjon.models.SedHendelseModel
+import no.nav.eessi.pensjon.oppgaverouting.OppgaveRoutingRequest
+import no.nav.eessi.pensjon.oppgaverouting.OppgaveRoutingService
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
+import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import org.springframework.beans.factory.annotation.Autowired
@@ -18,10 +21,12 @@ import org.springframework.stereotype.Service
 import javax.annotation.PostConstruct
 
 @Service
-class OppgaveHandler(private val aivenOppgaveKafkaTemplate: KafkaTemplate<String, String>,
-                     private val lagringsService: LagringsService,
-                     @Value("\${namespace}") var nameSpace: String,
-                     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper(SimpleMeterRegistry()) ) {
+class OppgaveHandler(
+    private val aivenOppgaveKafkaTemplate: KafkaTemplate<String, String>,
+    private val lagringsService: LagringsService,
+    private val oppgaveruting: OppgaveRoutingService,
+    @Value("\${namespace}") var nameSpace: String,
+    @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper(SimpleMeterRegistry()) ) {
 
     private val logger = LoggerFactory.getLogger(OppgaveHandler::class.java)
     private val X_REQUEST_ID = "x_request_id"
@@ -43,12 +48,13 @@ class OppgaveHandler(private val aivenOppgaveKafkaTemplate: KafkaTemplate<String
 
         return oppgaveForUid.measure {
 //            return@measure if (lagringsService.kanHendelsenOpprettes(hendelseModel)) {
-
+//            oppgaveruting.route(OppgaveRoutingRequest.fra(identifisertePerson, null, hendelseModel))
+            BucType.P_BUC_06
                 val melding = OppgaveMelding(
                     aktoerId = identifisertePerson.aktoerId,
                     filnavn = null,
                     sedType = null,
-                    tildeltEnhetsnr = Enhet.ID_OG_FORDELING,
+                    tildeltEnhetsnr = opprettOppgaveRuting(hendelseModel, utenlandskIdSed, identifisertePerson),
                     rinaSakId = hendelseModel.rinaSakId,
                     hendelseType = HendelseType.MOTTATT,
                     oppgaveType = OppgaveType.PDL
@@ -63,6 +69,18 @@ class OppgaveHandler(private val aivenOppgaveKafkaTemplate: KafkaTemplate<String
 //                false
 //            }
         }
+    }
+
+    private fun opprettOppgaveRuting(hendelseModel: SedHendelseModel, utenlandskIdSed: UtenlandskId, identifisertePerson : IdentifisertPerson) : Enhet {
+        return oppgaveruting.route(OppgaveRoutingRequest.fra(
+            identifisertePerson,
+            identifisertePerson.fnr!!.getBirthDate(),
+            identifisertePerson.personRelasjon.saktype,
+            hendelseModel,
+            HendelseType.MOTTATT,
+            null,
+            identifisertePerson.harAdressebeskyttelse
+        ))
     }
 
     private fun opprettOppgaveMeldingPaaKafkaTopic(melding: OppgaveMelding) {

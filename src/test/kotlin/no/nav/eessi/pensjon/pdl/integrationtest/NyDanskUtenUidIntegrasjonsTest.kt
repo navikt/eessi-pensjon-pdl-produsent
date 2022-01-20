@@ -1,11 +1,12 @@
 package no.nav.eessi.pensjon.pdl.integrationtest
 
-import io.mockk.every
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
+import no.nav.eessi.pensjon.models.Enhet
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonMock
-import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
+import no.nav.eessi.pensjon.personoppslag.pdl.model.AktoerId
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
@@ -25,14 +26,20 @@ import kotlin.test.assertTrue
 @Disabled // disabler grunnet kafka problemer i Integrasjonstestene
 class NyDanskUtenUidIntegrasjonsTest : IntegrationBase() {
 
-    @Test
-    fun `Gitt en sed hendelse med uten dansk uid som ikke finnes i pdl skal det ack med logg Ingen utenlandske IDer funnet i BUC`() {
+    val fnr = "29087021082"
 
-        val fnr = "29087021082"
-        val personMock = PersonMock.createBrukerWithUid(
+    override fun getMockNorg2enhet() = Enhet.ID_OG_FORDELING
+
+    override fun getMockPerson(): Person {
+        return PersonMock.createWith(
             fnr = fnr,
+            aktoerId = AktoerId("1231231231"),
             uid = emptyList()
         )
+    }
+
+    @Test
+    fun `Gitt en sed hendelse med uten dansk uid som ikke finnes i pdl skal det ack med logg Ingen utenlandske IDer funnet i BUC`() {
 
         val listOverSeder = listOf(mockForenkletSed("eb938171a4cb4e658b3a6c011962d204", SedType.P15000, SedStatus.RECEIVED))
         val mockBuc = mockBuc("147729", BucType.P_BUC_10, listOverSeder)
@@ -40,7 +47,6 @@ class NyDanskUtenUidIntegrasjonsTest : IntegrationBase() {
         val mockPin = mockPin(fnr, "NO")
         val mockSed = mockSedUtenPensjon(sedType = SedType.P15000, pin = listOf(mockPin))
 
-        every { personService.hentPersonUtenlandskIdent(NorskIdent(fnr)) } returns personMock
         CustomMockServer()
             .mockSTSToken()
             .medMockSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", mockSed)
@@ -56,5 +62,6 @@ class NyDanskUtenUidIntegrasjonsTest : IntegrationBase() {
 
         assertTrue(validateSedMottattListenerLoggingMessage("Ingen utenlandske IDer funnet i BUC"))
     }
+
 }
 
