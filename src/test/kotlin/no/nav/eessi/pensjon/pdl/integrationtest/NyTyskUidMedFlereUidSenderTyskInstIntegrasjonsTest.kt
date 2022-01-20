@@ -1,11 +1,12 @@
 package no.nav.eessi.pensjon.pdl.integrationtest
 
-import io.mockk.every
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
+import no.nav.eessi.pensjon.models.Enhet
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonMock
-import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
+import no.nav.eessi.pensjon.personoppslag.pdl.model.AktoerId
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockserver.model.HttpRequest
@@ -27,19 +28,24 @@ import kotlin.test.assertTrue
 @Disabled // Disabled grunnet ambigous kafka
 class NyTyskUidMedFlereUidSenderTyskInstIntegrasjonsTest : IntegrationBase() {
 
-    @Test
-    fun `Gitt en sed-hendelse fra Tyskland med flere uid i sed så skal det stoppes av valideringen`() {
+    val fnr = "29087021082"
 
-        val fnr = "29087021082"
-        val personMock =  PersonMock.createBrukerWithUid(
+    override fun getMockNorg2enhet() = Enhet.ID_OG_FORDELING
+
+    override fun getMockPerson(): Person {
+        return PersonMock.createWith(
             fnr = fnr,
+            aktoerId = AktoerId("1231231231"),
             uid = emptyList()
         )
+    }
+
+    @Test
+    fun `Gitt en sed-hendelse fra Tyskland med flere uid i sed så skal det stoppes av valideringen`() {
 
         val listOverSeder = listOf(mockForenkletSed("eb938171a4cb4e658b3a6c011962d204", SedType.P8000, SedStatus.RECEIVED))
         val mockBuc = mockBuc("147729", BucType.P_BUC_02, listOverSeder)
 
-        every { personService.hentPersonUtenlandskIdent(NorskIdent(fnr)) } returns personMock
         CustomMockServer()
             .mockSTSToken()
             .medSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", "src/test/resources/eux/sed/P8000-TyskOgFinskPIN.json")
@@ -61,4 +67,5 @@ class NyTyskUidMedFlereUidSenderTyskInstIntegrasjonsTest : IntegrationBase() {
             VerificationTimes.exactly(0)
         )
     }
+
 }

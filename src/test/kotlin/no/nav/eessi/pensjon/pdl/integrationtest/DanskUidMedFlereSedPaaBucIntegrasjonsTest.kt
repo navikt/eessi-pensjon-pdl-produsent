@@ -1,11 +1,12 @@
 package no.nav.eessi.pensjon.pdl.integrationtest
 
-import io.mockk.every
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
+import no.nav.eessi.pensjon.models.Enhet
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonMock
-import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
+import no.nav.eessi.pensjon.personoppslag.pdl.model.AktoerId
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockserver.model.HttpRequest
@@ -27,14 +28,22 @@ import kotlin.test.assertTrue
 @Disabled // disabler grunnet kafka problemer i Integrasjonstestene
 class DanskUidMedFlereSedPaaBucIntegrasjonsTest : IntegrationBase() {
 
-    @Test
-    fun `Gitt en hendelse med flere sed i buc og en dansk uid som ikke finnes i pdl skal det opprettes det en endringsmelding til person-mottak`() {
+    val fnr = "11067122781"
 
-        val fnr = "11067122781"
-        val personMock = PersonMock.createBrukerWithUid(
+    override fun getMockNorg2enhet(): Enhet {
+        return Enhet.NFP_UTLAND_OSLO
+    }
+
+    override fun getMockPerson(): Person {
+        return PersonMock.createWith(
             fnr = fnr,
+            aktoerId = AktoerId("1231231231"),
             uid = emptyList()
         )
+    }
+
+    @Test
+    fun `Gitt en hendelse med flere sed i buc og en dansk uid som ikke finnes i pdl skal det opprettes det en endringsmelding til person-mottak`() {
 
         val listOverSeder = listOf(
             mockForenkletSed("eb938171a4cb4e658b3a6c011962d204", SedType.P2100, SedStatus.RECEIVED),
@@ -44,7 +53,6 @@ class DanskUidMedFlereSedPaaBucIntegrasjonsTest : IntegrationBase() {
         )
         val mockBuc = mockBuc("147729", BucType.P_BUC_02, listOverSeder)
 
-        every { personService.hentPersonUtenlandskIdent(NorskIdent(fnr)) } returns personMock
         CustomMockServer()
             .mockSTSToken()
             .medSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", "src/test/resources/eux/sed/P2100-PinDK-NAV.json")
@@ -92,5 +100,6 @@ class DanskUidMedFlereSedPaaBucIntegrasjonsTest : IntegrationBase() {
             VerificationTimes.exactly(1)
         )
     }
+
 }
 

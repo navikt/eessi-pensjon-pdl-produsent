@@ -1,7 +1,7 @@
 package no.nav.eessi.pensjon.pdl
 
-import no.nav.eessi.pensjon.json.toJson
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
+import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value

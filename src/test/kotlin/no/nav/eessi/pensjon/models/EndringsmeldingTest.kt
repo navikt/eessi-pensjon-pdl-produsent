@@ -1,11 +1,10 @@
 package no.nav.eessi.pensjon.models
 
-import no.nav.eessi.pensjon.json.mapAnyToJson
-import org.junit.jupiter.api.Assertions.*
+import no.nav.eessi.pensjon.utils.mapAnyToJson
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class EndringsmeldingTest {
-
 
     @Test
     fun mapEndringMledingTilJson() {

@@ -10,13 +10,17 @@ import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
-import no.nav.eessi.pensjon.json.mapJsonToAny
-import no.nav.eessi.pensjon.json.typeRefs
 import no.nav.eessi.pensjon.klienter.norg2.Norg2Service
 import no.nav.eessi.pensjon.listeners.SedListener
+import no.nav.eessi.pensjon.models.Enhet
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
+import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
+import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import no.nav.eessi.pensjon.security.sts.STSService
+import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
+import no.nav.eessi.pensjon.utils.typeRefs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -33,7 +37,7 @@ import org.springframework.kafka.test.EmbeddedKafkaBroker
 import org.springframework.kafka.test.utils.ContainerTestUtils
 import org.springframework.kafka.test.utils.KafkaTestUtils
 import java.util.*
-import java.util.concurrent.*
+import java.util.concurrent.TimeUnit
 
 const val PDL_PRODUSENT_TOPIC_MOTTATT = "eessi-basis-sedMottatt-v1"
 
@@ -62,6 +66,10 @@ abstract class IntegrationBase {
 
     var mockServer: ClientAndServer
 
+    abstract fun getMockNorg2enhet() : Enhet
+
+    abstract fun getMockPerson() : Person?
+
     init {
         randomFrom().apply {
             System.setProperty("mockserverport", "" + this)
@@ -72,6 +80,10 @@ abstract class IntegrationBase {
     @BeforeEach
     fun setup() {
         every { stsService.getSystemOidcToken() } returns "a nice little token?"
+        every { norg2.hentArbeidsfordelingEnhet(any()) } returns getMockNorg2enhet()
+        every { personService.harAdressebeskyttelse(any(), any()) } returns false
+        if (getMockPerson() != null) every { personService.hentPerson(NorskIdent(getMockPerson()!!.identer.first { it.gruppe == IdentGruppe.FOLKEREGISTERIDENT }.ident)) } returns getMockPerson()!!
+
         listAppender.start()
         deugLogger.addAppender(listAppender)
     }

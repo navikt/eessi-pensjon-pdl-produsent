@@ -3,6 +3,8 @@ package no.nav.eessi.pensjon.pdl.integrationtest
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
+import no.nav.eessi.pensjon.models.Enhet
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
@@ -21,6 +23,11 @@ import kotlin.test.assertTrue
 
 @Disabled // disabler grunnet kafka problemer i Integrasjonstestene
 class UtenIdentIntegrasjonsTest : IntegrationBase() {
+
+    override fun getMockNorg2enhet() = Enhet.ID_OG_FORDELING
+
+    override fun getMockPerson(): Person? = null
+
 
     @Test
     fun `Gitt en sed hendelse med uten ident ack med logg Ingen identifiserte FNR funnet, Acket melding`() {
