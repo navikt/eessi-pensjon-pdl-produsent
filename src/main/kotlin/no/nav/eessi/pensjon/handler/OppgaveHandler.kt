@@ -2,7 +2,6 @@ package no.nav.eessi.pensjon.handler
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.eessi.pensjon.eux.UtenlandskId
-import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.lagring.LagringsService
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.Enhet
@@ -47,31 +46,29 @@ class OppgaveHandler(
         }
 
         return oppgaveForUid.measure {
-//            return@measure if (lagringsService.kanHendelsenOpprettes(hendelseModel)) {
-//            oppgaveruting.route(OppgaveRoutingRequest.fra(identifisertePerson, null, hendelseModel))
-            BucType.P_BUC_06
+            return@measure if (lagringsService.kanHendelsenOpprettes(hendelseModel)) {
                 val melding = OppgaveMelding(
                     aktoerId = identifisertePerson.aktoerId,
                     filnavn = null,
                     sedType = null,
-                    tildeltEnhetsnr = opprettOppgaveRuting(hendelseModel, utenlandskIdSed, identifisertePerson),
+                    tildeltEnhetsnr = opprettOppgaveRuting(hendelseModel, identifisertePerson),
                     rinaSakId = hendelseModel.rinaSakId,
                     hendelseType = HendelseType.MOTTATT,
                     oppgaveType = OppgaveType.PDL
                 )
 
                 opprettOppgaveMeldingPaaKafkaTopic(melding)
-//                lagringsService.lagreHendelseMedSakId(hendelseModel)
-//                logger.info("Opprett oppgave og lagret til s3")
+                lagringsService.lagreHendelseMedSakId(hendelseModel)
+                logger.info("Opprett oppgave og lagret til s3")
                 true
-//            } else {
-//                logger.info("Finnes fra før, gjør ingenting. .. ")
-//                false
-//            }
+            } else {
+                logger.info("Finnes fra før, gjør ingenting. .. ")
+                false
+            }
         }
     }
 
-    private fun opprettOppgaveRuting(hendelseModel: SedHendelseModel, utenlandskIdSed: UtenlandskId, identifisertePerson : IdentifisertPerson) : Enhet {
+    private fun opprettOppgaveRuting(hendelseModel: SedHendelseModel, identifisertePerson : IdentifisertPerson) : Enhet {
         return oppgaveruting.route(OppgaveRoutingRequest.fra(
             identifisertePerson,
             identifisertePerson.fnr!!.getBirthDate(),
