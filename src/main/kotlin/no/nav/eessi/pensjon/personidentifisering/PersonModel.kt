@@ -15,7 +15,8 @@ data class IdentifisertPerson(
     val geografiskTilknytning: String?,
     val harAdressebeskyttelse: Boolean,
     val personListe: List<IdentifisertPerson>? = null,
-    val personRelasjon: SEDPersonRelasjon
+    val personRelasjon: SEDPersonRelasjon,
+    val erDoed: Boolean = false
 ) {
     fun flereEnnEnPerson() = false
 

@@ -70,7 +70,8 @@ internal class PdlValideringTest {
             "0328",
             false,
             null,
-            SEDPersonRelasjon(Fodselsnummer.fra("11067122781"), Relasjon.FORSIKRET, rinaDocumentId =  "3123123")
+            SEDPersonRelasjon(Fodselsnummer.fra("11067122781"), Relasjon.FORSIKRET, rinaDocumentId =  "3123123"),
+            false
 
         ))
 

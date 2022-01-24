@@ -32,7 +32,7 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.concurrent.*
+import java.util.concurrent.CountDownLatch
 import javax.annotation.PostConstruct
 
 @Service
@@ -97,7 +97,6 @@ class SedListener(
         try {
 //            val sedHendelse = SedHendelseModel.fromJson(hendelse)
             val sedHendelseTemp = SedHendelseModel.fromJson(hendelse)
-
             val sedHendelse = if (profile != "prod" && profile != "integrationtest") {
                 sedHendelseTemp.copy(avsenderLand = "SE", avsenderNavn = "SE:test")
             } else {
@@ -214,6 +213,13 @@ class SedListener(
             return false
         }
 
+        if (identifisertePersoner.first().erDoed) {
+            acknowledgment.acknowledge()
+            logger.info("Identifisert person registrert med doedsfall, kan ikke opprette endringsmelding. Acket melding")
+            countEnthet("Identifisert person registrert med doedsfall")
+            return false
+        }
+
         if (utenlandskeIder.size > 1) {
             acknowledgment.acknowledge()
             logger.info("Antall utenlandske IDer er flere enn en")
@@ -230,7 +236,7 @@ class SedListener(
 
         if (sedHendelse.avsenderLand == null || pdlValidering.erUidLandAnnetEnnAvsenderLand(utenlandskeIder.first(), sedHendelse.avsenderLand)) {
             acknowledgment.acknowledge()
-            logger.error("Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer")
+            logger.info("Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer")
             countEnthet("Avsenderland mangler eller avsenderland er ikke det samme som uidland")
             return false
         }

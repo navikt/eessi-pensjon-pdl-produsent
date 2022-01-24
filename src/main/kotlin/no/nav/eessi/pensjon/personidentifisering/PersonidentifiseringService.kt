@@ -30,7 +30,6 @@ class PersonidentifiseringService(private val personService: PersonService, priv
 
         val sedIBUC = seder.map { (item, sed) -> Pair(item.id, sed) }
         val potensiellePersonRelasjoner = RelasjonsHandler.hentRelasjoner(sedIBUC, bucType)
-//        val potensiellePersonRelasjoner = seder.flatMap { (docitem, sed) -> RelasjonsHandler.hentRelasjoner(sed, rinaDocumentId, bucType) }
 
         //slå opp PDL
         return hentIdentifisertePersoner(potensiellePersonRelasjoner, rinaDocumentId)
@@ -51,8 +50,6 @@ class PersonidentifiseringService(private val personService: PersonService, priv
         logger.debug("Henter ut følgende personRelasjon: ${relasjon.toJson()}")
 
         return try {
-//            personService.hentPersonUtenlandskIdent(NorskIdent(fodselsnummer.value)) utgåååååår
-
             personService.hentPerson(NorskIdent(relasjon.fnr!!.value))
                 ?.let { person ->
                     populerIdentifisertPerson(
@@ -81,7 +78,8 @@ class PersonidentifiseringService(private val personService: PersonService, priv
             person.geografiskTilknytning?.gtKommune ?: person.geografiskTilknytning?.gtBydel,
             finnesPersonMedAdressebeskyttelse(relasjon.fnr!!),
             null,
-            relasjon
+            relasjon,
+            person.erDoed()
         ).also { logger.debug("Følgende populert Person: $it") }
     }
 
