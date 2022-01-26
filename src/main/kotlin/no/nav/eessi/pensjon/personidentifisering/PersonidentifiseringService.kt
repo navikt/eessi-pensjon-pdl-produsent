@@ -42,7 +42,10 @@ class PersonidentifiseringService(private val personService: PersonService, priv
         rinaDocumentId: String
     ): List<IdentifisertPerson> {
 
-        return potensielleFnr.filterNotNull().distinctBy { relasjon -> relasjon.fnr?.value }.mapNotNull { identifiserPerson(it) }
+        return potensielleFnr
+            .filterNotNull()
+            .distinctBy { relasjon -> relasjon.fnr?.value }
+            .mapNotNull { relasjon -> relasjon.fnr?.let { identifiserPerson(relasjon) } }
 
     }
 
