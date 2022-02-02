@@ -4,7 +4,6 @@ import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.models.Enhet
-import no.nav.eessi.pensjon.personoppslag.FodselsnummerGenerator
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonMock
 import no.nav.eessi.pensjon.personoppslag.pdl.model.AktoerId
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
@@ -28,7 +27,7 @@ import kotlin.test.assertTrue
 
 class DanskUidSomErFordkjelligFraPdlOppgaveOpprettesIntegrasjonsTest : IntegrationBase() {
 
-    val fnr = FodselsnummerGenerator.generateFnrForTest(62)
+    val fnr = "11067122781"
 
     override fun getMockNorg2enhet(): Enhet {
         return Enhet.PENSJON_UTLAND

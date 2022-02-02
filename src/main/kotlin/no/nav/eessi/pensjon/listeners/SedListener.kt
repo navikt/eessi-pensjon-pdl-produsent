@@ -144,7 +144,7 @@ class SedListener(
 
                 if (filtrerUidSomIkkeFinnesIPdl) {
                     logger.info("Ingen filtrerte personer funnet Acket sedMottatt: ${cr.offset()}")
-                    countEnthet("Ingen filtrerte personer funnet")
+                    countEnhet("Ingen filtrerte personer funnet")
                     acknowledgment.acknowledge()
                     return
                 }
@@ -157,7 +157,7 @@ class SedListener(
                     logger.info("Det finnes allerede en annen uid fra samme land, opprette oppgave")
                     acknowledgment.acknowledge()
                     val result = oppgaveHandler.opprettOppgaveForUid(sedHendelse, utenlandskeIderFraSed.first(), identifisertePersoner.first())
-                    if (result) countEnthet("Det finnes allerede en annen uid fra samme land (Oppgave)")
+                    if (result) countEnhet("Det finnes allerede en annen uid fra samme land (Oppgave)")
                     return
                 }
 
@@ -166,7 +166,7 @@ class SedListener(
                 //validering av uid korrekt format
                 if (!pdlValidering.erPersonValidertPaaLand(utenlandskeIderFraSed.first())) {
                     logger.info("Ingen validerte identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
-                    countEnthet("Ingen validerte identifiserte personer funnet")
+                    countEnhet("Ingen validerte identifiserte personer funnet")
                     acknowledgment.acknowledge()
                     return
                 }
@@ -175,7 +175,7 @@ class SedListener(
                     lagEndringsMelding(
                         utenlandskeIderFraSed.first(), identifisertePersoner.first().fnr!!.value, avsender
                     )
-                    countEnthet("Innsending av endringsmelding")
+                    countEnhet("Innsending av endringsmelding")
                 }
 
             }
@@ -185,7 +185,7 @@ class SedListener(
 
         } catch (ex: Exception) {
             logger.error("Noe gikk galt under behandling av $hendelsesType SED-hendelse:\n $hendelse \n", ex)
-            countEnthet("Noe gikk galt under behandling av $hendelsesType")
+            countEnhet("Noe gikk galt under behandling av $hendelsesType")
             acknowledgment.acknowledge()
         }
     }
@@ -201,42 +201,42 @@ class SedListener(
         if (!pdlValidering.finnesIdentifisertePersoner(identifisertePersoner)) {
             acknowledgment.acknowledge()
             logger.info("Ingen identifiserte FNR funnet, Acket melding")
-            countEnthet("Ingen identifiserte FNR funnet")
+            countEnhet("Ingen identifiserte FNR funnet")
             return false
         }
 
         if (identifisertePersoner.size > 1) {
             acknowledgment.acknowledge()
             logger.info("Antall identifiserte FNR er fler enn en, Acket melding")
-            countEnthet("Antall identifiserte FNR er fler enn en")
+            countEnhet("Antall identifiserte FNR er fler enn en")
             return false
         }
 
         if (identifisertePersoner.first().erDoed) {
             acknowledgment.acknowledge()
             logger.info("Identifisert person registrert med doedsfall, kan ikke opprette endringsmelding. Acket melding")
-            countEnthet("Identifisert person registrert med doedsfall")
+            countEnhet("Identifisert person registrert med doedsfall")
             return false
         }
 
         if (utenlandskeIder.size > 1) {
             acknowledgment.acknowledge()
             logger.info("Antall utenlandske IDer er flere enn en")
-            countEnthet("Antall utenlandske IDer er flere enn en")
+            countEnhet("Antall utenlandske IDer er flere enn en")
             return false
         }
 
         if (utenlandskeIder.isEmpty()) {
             acknowledgment.acknowledge()
             logger.info("Ingen utenlandske IDer funnet i BUC")
-            countEnthet("Ingen utenlandske IDer funnet i BUC")
+            countEnhet("Ingen utenlandske IDer funnet i BUC")
             return false
         }
 
         if (sedHendelse.avsenderLand == null || pdlValidering.erUidLandAnnetEnnAvsenderLand(utenlandskeIder.first(), sedHendelse.avsenderLand)) {
             acknowledgment.acknowledge()
             logger.info("Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer")
-            countEnthet("Avsenderland mangler eller avsenderland er ikke det samme som uidland")
+            countEnhet("Avsenderland mangler eller avsenderland er ikke det samme som uidland")
             return false
         }
         return true
@@ -284,7 +284,7 @@ class SedListener(
         logger.debug("*".repeat(20))
     }
 
-    fun countEnthet(melding: String) {
+    fun countEnhet(melding: String) {
         try {
             Metrics.counter("PDLmeldingSteg",   "melding", melding).increment()
         } catch (e: Exception) {

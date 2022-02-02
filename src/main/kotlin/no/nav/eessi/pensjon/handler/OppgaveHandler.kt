@@ -40,11 +40,6 @@ class OppgaveHandler(
     }
 
     fun opprettOppgaveForUid(hendelseModel: SedHendelseModel, utenlandskIdSed: UtenlandskId, identifisertePerson : IdentifisertPerson): Boolean {
-        if(nameSpace == "p") {
-            logger.warn("OppgaveHandler ikke klar for PROD ennå")
-            return false
-        }
-
         return oppgaveForUid.measure {
             return@measure if (lagringsService.kanHendelsenOpprettes(hendelseModel)) {
                 val melding = OppgaveMelding(
@@ -62,7 +57,7 @@ class OppgaveHandler(
                 logger.info("Opprett oppgave og lagret til s3")
                 true
             } else {
-                logger.info("Finnes fra før, gjør ingenting. .. ")
+                logger.info("Hendelse finnes fra før i bucket. Oppgave blir derfor ikke opprettet")
                 false
             }
         }
