@@ -20,8 +20,6 @@ import javax.annotation.PostConstruct
 class Norg2Klient(private val norg2OidcRestTemplate: RestTemplate,
                   @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper(SimpleMeterRegistry())) {
 
-    constructor(): this(RestTemplate())
-
     private val logger = LoggerFactory.getLogger(Norg2Klient::class.java)
 
     private lateinit var hentArbeidsfordeling: MetricsHelper.Metric
