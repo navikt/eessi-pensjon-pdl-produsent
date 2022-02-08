@@ -82,7 +82,6 @@ object LandspesifikkValidering {
     private fun frankrike(uid: String): Boolean = uid.checkDigitsLength(13) && uid.length == 18  && uid.substring(1,2) == " " && uid.substring(4,5) == " " && uid.substring(7,8) == " " && uid.substring(10,11) == " "  && uid.substring(14,15) == " "
     private fun spania(uid: String): Boolean = uid.isLettersOrDigit() && uid.length == 10
     private fun storbritannia(uid: String): Boolean = uid.replace(" ","") .isLettersOrDigit() && erHvertredjeBokstavBlank(uid)  && uid.length > 10
-
 }
 
 enum class GyldigeLand(val landkode: String) {
