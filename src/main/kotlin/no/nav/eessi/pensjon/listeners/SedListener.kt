@@ -32,7 +32,7 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.concurrent.*
+import java.util.concurrent.CountDownLatch
 import javax.annotation.PostConstruct
 
 @Service
@@ -71,7 +71,6 @@ class SedListener(
         topics = ["\${kafka.sedMottatt.topic}"],
         groupId = "\${kafka.sedMottatt.groupid}"
     )
-
     fun consumeSedMottatt(hendelse: String, cr: ConsumerRecord<String, String>, acknowledgment: Acknowledgment) {
         MDC.putCloseable("x_request_id", UUID.randomUUID().toString()).use {
             consumeIncomingSed.measure {
@@ -88,20 +87,11 @@ class SedListener(
         hendelsesType: HendelseType
     ) {
         logger.info("$hendelsesType hendelse i partisjon: ${cr.partition()}, med offset: ${cr.offset()}")
-
         logger.debug(hendelse)
-
         logger.debug("Profile: $profile")
 
-        //Forsøker med denne en gang til 258088L
         try {
-//            val sedHendelse = SedHendelseModel.fromJson(hendelse)
-            val sedHendelseTemp = SedHendelseModel.fromJson(hendelse)
-            val sedHendelse = if (profile != "prod" && profile != "integrationtest") {
-                sedHendelseTemp.copy(avsenderLand = "SE", avsenderNavn = "SE:test")
-            } else {
-                sedHendelseTemp
-            }
+            val sedHendelse = sedHendelseMapping(hendelse)
 
             if (GyldigeHendelser.mottatt(sedHendelse)) {
                 val bucType = sedHendelse.bucType!!
@@ -289,6 +279,17 @@ class SedListener(
             Metrics.counter("PDLmeldingSteg",   "melding", melding).increment()
         } catch (e: Exception) {
             logger.warn("Metrics feilet på enhet: $melding")
+        }
+    }
+
+    fun sedHendelseMapping(hendelse: String): SedHendelseModel {
+        val sedHendelseTemp = SedHendelseModel.fromJson(hendelse)
+
+        //støtte avsenderland SE i testmiljø Q1 og Q2
+        return if (profile != "prod" && profile != "integrationtest") {
+            sedHendelseTemp.copy(avsenderLand = "SE", avsenderNavn = "SE:test")
+        } else {
+            sedHendelseTemp
         }
     }
 
