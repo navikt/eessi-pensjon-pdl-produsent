@@ -131,27 +131,13 @@ class SedListener(
                     identifisertePersoner.first().uidFraPdl,
                     utenlandskeIderFraSed.first()
                 )
-
+                //sjekk om PDLuid er identisk SEDuid (true så finnes de og er identiske)
                 if (filtrerUidSomIkkeFinnesIPdl) {
-                    logger.info("Ingen filtrerte personer funnet Acket sedMottatt: ${cr.offset()}")
-                    countEnhet("Ingen filtrerte personer funnet")
+                    logger.info("PDLuid er idenisk med SEDuid Acket sedMottatt: ${cr.offset()}")
+                    countEnhet("PDLuid er idenisk med SEDuid")
                     acknowledgment.acknowledge()
                     return
                 }
-
-                if (pdlFiltrering.skalOppgaveOpprettes(
-                        identifisertePersoner.first().uidFraPdl,
-                        utenlandskeIderFraSed.first()
-                    )
-                ) {
-                    logger.info("Det finnes allerede en annen uid fra samme land, opprette oppgave")
-                    acknowledgment.acknowledge()
-                    val result = oppgaveHandler.opprettOppgaveForUid(sedHendelse, utenlandskeIderFraSed.first(), identifisertePersoner.first())
-                    if (result) countEnhet("Det finnes allerede en annen uid fra samme land (Oppgave)")
-                    return
-                }
-
-                logger.debug("Validerer uid fra sed: $filtrerUidSomIkkeFinnesIPdl")
 
                 //validering av uid korrekt format
                 if (!pdlValidering.erPersonValidertPaaLand(utenlandskeIderFraSed.first())) {
@@ -161,6 +147,25 @@ class SedListener(
                     return
                 }
 
+                //sjekk om det skal opprtte en oppgave
+                if (pdlFiltrering.skalOppgaveOpprettes(
+                        identifisertePersoner.first().uidFraPdl,
+                        utenlandskeIderFraSed.first()
+                    )
+                ) {
+                    //ytterligere sjekk om f.eks SWE fnr i PDL faktisk er identisk med sedUID (hvis så ikke opprett oppgave bare avslutt)
+                    if (pdlFiltrering.sjekkYterligerePaaPDLuidMotSedUid(identifisertePersoner.first().uidFraPdl, utenlandskeIderFraSed.first())) {
+                        logger.info("Det finnes allerede en annen uid fra samme land, opprette oppgave")
+                        val result = oppgaveHandler.opprettOppgaveForUid(sedHendelse, utenlandskeIderFraSed.first(), identifisertePersoner.first())
+                        if (result) countEnhet("Det finnes allerede en annen uid fra samme land (Oppgave)")
+                    } else {
+                        logger.info("Oppretter ikke oppgave, Det som finnes i PDL er faktisk likt det som finnes i SED, avslutter")
+                    }
+                    acknowledgment.acknowledge()
+                    return
+                }
+
+                //Utfører faktisk innsending av endringsmelding til PDL (ny UID)
                 sedHendelse.avsenderNavn?.let { avsender ->
                     lagEndringsMelding(
                         utenlandskeIderFraSed.first(), identifisertePersoner.first().fnr!!.value, avsender

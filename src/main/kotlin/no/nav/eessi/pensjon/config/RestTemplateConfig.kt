@@ -64,12 +64,9 @@ class RestTemplateConfig(
             .rootUri(kodeverkUrl)
             .errorHandler(DefaultResponseErrorHandler())
             .additionalInterceptors(
-                RequestIdHeaderInterceptor(),
-                RequestResponseLoggerInterceptor()
+                RequestIdHeaderInterceptor()
             )
-            .build().apply {
-                requestFactory = BufferingClientHttpRequestFactory(SimpleClientHttpRequestFactory())
-            }
+            .build()
     }
 
 

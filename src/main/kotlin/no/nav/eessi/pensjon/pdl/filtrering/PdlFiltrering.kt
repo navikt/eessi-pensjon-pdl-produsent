@@ -12,6 +12,7 @@ class PdlFiltrering(private val kodeverk: KodeverkClient) {
 
     private val logger = LoggerFactory.getLogger(PdlFiltrering::class.java)
 
+
     /**
      * Sjekk om uid i Sed finnes i PDL
      *
@@ -23,7 +24,6 @@ class PdlFiltrering(private val kodeverk: KodeverkClient) {
         utenlandskeIdPDL: List<UtenlandskIdentifikasjonsnummer>,
         utenlandskIdSed: UtenlandskId
     ): Boolean {
-
         utenlandskeIdPDL.forEach { utenlandskIdIPDL ->
             val landkodeFraPdl = kodeverk.finnLandkode(utenlandskIdIPDL.utstederland)
             if (utenlandskIdSed.land == landkodeFraPdl && utenlandskIdSed.id == utenlandskIdIPDL.identifikasjonsnummer) {
@@ -41,6 +41,18 @@ class PdlFiltrering(private val kodeverk: KodeverkClient) {
      *
      */
     fun skalOppgaveOpprettes(utenlandskeIdPDL: List<UtenlandskIdentifikasjonsnummer>, utenlandskIdSed: UtenlandskId): Boolean {
+        utenlandskeIdPDL.forEach { utenlandskIdIPDL ->
+            val landkodeFraPdl = kodeverk.finnLandkode(utenlandskIdIPDL.utstederland)
+            if (utenlandskIdSed.land == landkodeFraPdl && utenlandskIdSed.id != utenlandskIdIPDL.identifikasjonsnummer) {
+                return true
+            }
+        }
+        return false
+    }
+
+    //                return erFaktiskPDLuidLikSedUid(utenlandskIdIPDL.identifikasjonsnummer, utenlandskIdSed.id, utenlandskIdIPDL.utstederland)
+
+    fun sjekkYterligerePaaPDLuidMotSedUid(utenlandskeIdPDL: List<UtenlandskIdentifikasjonsnummer>, utenlandskIdSed: UtenlandskId): Boolean {
         utenlandskeIdPDL.forEach { utenlandskIdIPDL ->
             val landkodeFraPdl = kodeverk.finnLandkode(utenlandskIdIPDL.utstederland)
             if (utenlandskIdSed.land == landkodeFraPdl && utenlandskIdSed.id != utenlandskIdIPDL.identifikasjonsnummer) {
@@ -63,11 +75,8 @@ class PdlFiltrering(private val kodeverk: KodeverkClient) {
     fun sjekkForSverigeIdFraPDL(pdlUid: String, sedUid: String) : Boolean {
         val pdluidTrimmedAndReplaced = pdlUid.trim().replace(" ","").removeRange(0,2)
         val seduidReplaced = sedUid.replace("-","")
-        logger.debug("PDLchk: $pdluidTrimmedAndReplaced, SEDchk: $seduidReplaced")
-        logger.info("validering Oppgave SE: ${(pdluidTrimmedAndReplaced == seduidReplaced)} (true er ikke Oppgave)")
+        logger.debug("validering Oppgave SE: ${(pdluidTrimmedAndReplaced == seduidReplaced)} (true er ikke Oppgave)")
         return pdluidTrimmedAndReplaced == seduidReplaced
-
-
     }
 
 }
