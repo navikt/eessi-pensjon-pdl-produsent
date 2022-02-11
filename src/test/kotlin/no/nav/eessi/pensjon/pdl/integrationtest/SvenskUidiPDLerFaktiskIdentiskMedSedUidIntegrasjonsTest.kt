@@ -46,7 +46,7 @@ class SvenskUidiPDLerFaktiskIdentiskMedSedUidIntegrasjonsTest: IntegrationBase()
     }
 
     @Test
-    fun `Gitt PDLuid som sjekked med SEDuid er faktisk identisk oppgave opprettes ikke avslutter hendelse `() {
+    fun `Gitt PDLuid som sjekke med SEDuid er faktisk identisk oppgave opprettes ikke avslutter hendelse `() {
 //        "195402021234, 540202-1234, true",
         val listOverSeder = listOf(mockForenkletSed("eb938171a4cb4e658b3a6c011962d204", SedType.P15000, SedStatus.RECEIVED))
         val mockBuc = mockBuc("147729", BucType.P_BUC_10, listOverSeder)

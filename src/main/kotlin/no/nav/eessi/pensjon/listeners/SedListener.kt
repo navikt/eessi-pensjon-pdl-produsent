@@ -31,7 +31,7 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.concurrent.*
+import java.util.concurrent.CountDownLatch
 import javax.annotation.PostConstruct
 
 @Service
@@ -154,6 +154,7 @@ class SedListener(
                         if (result) countEnhet("Det finnes allerede en annen uid fra samme land (Oppgave)")
                     } else {
                         logger.info("Oppretter ikke oppgave, Det som finnes i PDL er faktisk likt det som finnes i SED, avslutter")
+                        countEnhet("PDLuid er identisk med SEDuid")
                     }
                     acknowledgment.acknowledge()
                     return
