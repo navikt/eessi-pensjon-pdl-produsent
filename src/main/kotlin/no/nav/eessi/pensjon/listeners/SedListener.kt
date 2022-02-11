@@ -12,7 +12,6 @@ import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.handler.OppgaveHandler
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.Endringsmelding
-import no.nav.eessi.pensjon.models.HendelseType
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelseModel
@@ -32,7 +31,7 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.concurrent.CountDownLatch
+import java.util.concurrent.*
 import javax.annotation.PostConstruct
 
 @Service
@@ -52,17 +51,13 @@ class SedListener(
     private val logger = LoggerFactory.getLogger(SedListener::class.java)
 
     private val latch = CountDownLatch(1)
-    private val sendtLatch = CountDownLatch( 1)
     private lateinit var consumeIncomingSed: MetricsHelper.Metric
-    private lateinit var consumeOutgoingSed: MetricsHelper.Metric
 
     fun getLatch() = latch
-    fun getSendtLatch() = sendtLatch
 
     @PostConstruct
     fun initMetrics() {
         consumeIncomingSed = metricsHelper.init("consumeIncomingSed")
-        consumeOutgoingSed = metricsHelper.init("consumeOutgoingSed")
     }
 
     @KafkaListener(
@@ -74,7 +69,7 @@ class SedListener(
     fun consumeSedMottatt(hendelse: String, cr: ConsumerRecord<String, String>, acknowledgment: Acknowledgment) {
         MDC.putCloseable("x_request_id", UUID.randomUUID().toString()).use {
             consumeIncomingSed.measure {
-                consumeHendelse(cr, hendelse, acknowledgment, HendelseType.MOTTATT)
+                consumeHendelse(cr, hendelse, acknowledgment)
                 latch.countDown()
             }
         }
@@ -83,10 +78,9 @@ class SedListener(
     private fun consumeHendelse(
         cr: ConsumerRecord<String, String>,
         hendelse: String,
-        acknowledgment: Acknowledgment,
-        hendelsesType: HendelseType
+        acknowledgment: Acknowledgment
     ) {
-        logger.info("$hendelsesType hendelse i partisjon: ${cr.partition()}, med offset: ${cr.offset()}")
+//        logger.info("$hendelsesType hendelse i partisjon: ${cr.partition()}, med offset: ${cr.offset()}")
         logger.debug(hendelse)
         logger.debug("Profile: $profile")
 
@@ -133,8 +127,8 @@ class SedListener(
                 )
                 //sjekk om PDLuid er identisk SEDuid (true så finnes de og er identiske)
                 if (filtrerUidSomIkkeFinnesIPdl) {
-                    logger.info("PDLuid er idenisk med SEDuid Acket sedMottatt: ${cr.offset()}")
-                    countEnhet("PDLuid er idenisk med SEDuid")
+                    logger.info("PDLuid er identisk med SEDuid Acket sedMottatt: ${cr.offset()}")
+                    countEnhet("PDLuid er identisk med SEDuid")
                     acknowledgment.acknowledge()
                     return
                 }
@@ -179,8 +173,8 @@ class SedListener(
             logger.info("Acket sedMottatt melding med offset: ${cr.offset()} i partisjon ${cr.partition()}")
 
         } catch (ex: Exception) {
-            logger.error("Noe gikk galt under behandling av $hendelsesType SED-hendelse:\n $hendelse \n", ex)
-            countEnhet("Noe gikk galt under behandling av $hendelsesType")
+            logger.error("Noe gikk galt under behandling av SED-hendelse:\n $hendelse \n", ex)
+            countEnhet("Noe gikk galt under behandling av SED-hendelse")
             acknowledgment.acknowledge()
         }
     }
@@ -267,12 +261,12 @@ class SedListener(
     }
 
     fun loggingAvForenkledSed(alledocs : List<ForenkletSED> , list: List<Pair<ForenkletSED, SED>>) {
-        logger.debug("Ufiltert Sed i buc")
+        logger.debug("Ufiltrert Sed i buc")
         logger.debug("Antall Sed i buc: ${alledocs.size }")
         logger.debug("Antall Sed mottatt i buc: ${alledocs.filter { doc -> doc.status == SedStatus.RECEIVED }.size }")
         logger.debug("Antall Sed sendt i buc: ${alledocs.filter { doc -> doc.status == SedStatus.SENT }.size }")
         logger.debug("*".repeat(20))
-        logger.debug("Filtrert gyldige Sed i buc: ${alledocs.size }")
+        logger.debug("Filtrerte gyldige Sed i buc: ${alledocs.size }")
         logger.debug("Antall Sed i buc: ${list.filter { (doc, _) -> doc.harGyldigStatus() }.size }")
         logger.debug("Antall Sed mottatt i buc: ${list.filter { (doc, _) -> doc.status == SedStatus.RECEIVED }.size }")
         logger.debug("Antall Sed sendt i buc: ${list.filter { (doc, _) -> doc.status == SedStatus.SENT }.size }")

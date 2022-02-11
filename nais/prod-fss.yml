@@ -31,8 +31,6 @@ spec:
       value: https://app.adeo.no/norg2
     - name: KAFKA_SEDMOTTATT_TOPIC
       value: eessi-basis-sedMottatt-v1
-    - name: KAFKA_SEDSENDT_TOPIC
-      value: eessi-basis-sedSendt-v1
     - name: KAFKA_OPPGAVE_TOPIC
       value: eessipensjon.privat-oppgave
     - name: KODEVERK_REST_API_URL

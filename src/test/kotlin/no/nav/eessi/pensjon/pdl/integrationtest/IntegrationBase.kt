@@ -37,7 +37,7 @@ import org.springframework.kafka.test.EmbeddedKafkaBroker
 import org.springframework.kafka.test.utils.ContainerTestUtils
 import org.springframework.kafka.test.utils.KafkaTestUtils
 import java.util.*
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.*
 
 const val PDL_PRODUSENT_TOPIC_MOTTATT = "eessi-basis-sedMottatt-v1"
 
@@ -120,7 +120,6 @@ abstract class IntegrationBase {
 
         fun waitForlatch(listener: SedListener) {
             listener.getLatch().await(30, TimeUnit.SECONDS)
-            listener.getSendtLatch().await(30, TimeUnit.SECONDS)
         }
     }
 

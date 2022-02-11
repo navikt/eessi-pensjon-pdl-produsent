@@ -7,7 +7,6 @@ import no.nav.eessi.pensjon.models.Enhet
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonMock
 import no.nav.eessi.pensjon.personoppslag.pdl.model.AktoerId
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockserver.model.HttpRequest
 import org.mockserver.verify.VerificationTimes
@@ -25,7 +24,7 @@ import kotlin.test.assertTrue
     brokerProperties = ["log.dir=/tmp/embedded-kafka-NyTyskUidMedFlereUidSenderTyskInstIntegrasjonsTest"]
 )
 
-@Disabled // Disabled grunnet ambigous kafka
+//@Disabled // Disabled grunnet ambigous kafka
 class NyTyskUidMedFlereUidSenderTyskInstIntegrasjonsTest : IntegrationBase() {
 
     val fnr = "29087021082"
