@@ -8,9 +8,6 @@ kafka:
   sedMottatt:
     topic: ${KAFKA_SEDMOTTATT_TOPIC}
     groupid: eessi-pensjon-pdl-produsent-group
-  sedSendt:
-    topic: ${KAFKA_SEDSENDT_TOPIC}
-    groupid: eessi-pensjon-pdl-produsent-group
   security.protocol: ssl
 
 kodeverk:
