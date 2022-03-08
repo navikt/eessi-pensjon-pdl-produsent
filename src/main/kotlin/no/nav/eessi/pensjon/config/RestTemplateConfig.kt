@@ -1,103 +1,92 @@
 package no.nav.eessi.pensjon.config
 
+import com.nimbusds.jwt.JWTClaimsSet
+import io.micrometer.core.instrument.MeterRegistry
 import no.nav.eessi.pensjon.logging.RequestIdHeaderInterceptor
-import no.nav.eessi.pensjon.logging.RequestResponseLoggerInterceptor
-import no.nav.eessi.pensjon.personoppslag.pdl.PdlTokenCallBack
-import no.nav.eessi.pensjon.security.sts.STSService
-import no.nav.eessi.pensjon.security.sts.UsernameToOidcInterceptor
+import no.nav.eessi.pensjon.metrics.RequestCountInterceptor
+import no.nav.security.token.support.client.core.ClientProperties
+import no.nav.security.token.support.client.core.oauth2.OAuth2AccessTokenService
+import no.nav.security.token.support.client.spring.ClientConfigurationProperties
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpRequest
-import org.springframework.http.client.BufferingClientHttpRequestFactory
 import org.springframework.http.client.ClientHttpRequestExecution
 import org.springframework.http.client.ClientHttpRequestInterceptor
-import org.springframework.http.client.ClientHttpResponse
-import org.springframework.http.client.SimpleClientHttpRequestFactory
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.web.client.DefaultResponseErrorHandler
 import org.springframework.web.client.RestTemplate
-import java.time.Duration
+import java.util.*
+
 
 @Configuration
+@Profile("prod", "test")
 class RestTemplateConfig(
-    private val securityTokenExchangeService: STSService,
-    @param:Value("\${norg2_url}") val norg2Url: String,
-    @param:Value("\${kodeverk_rest_api_url}") val kodeverkUrl: String,
-    @param:Value("\${PDL_PERSON_MOTTAK_URL}") val pdlInnsendingUrl: String,
-    @param:Value("\${EUX_RINA_API_V1_URL}") val euxUrl: String) {
+    private val clientConfigurationProperties: ClientConfigurationProperties,
+    private val oAuth2AccessTokenService: OAuth2AccessTokenService?,
+    private val meterRegistry: MeterRegistry,
+    ) {
+
+    private val logger = LoggerFactory.getLogger(RestTemplateConfig::class.java)
+
+
+    @Value("\${EUX_RINA_API_V1_URL}")
+    lateinit var euxUrl: String
+
+    @Value("\${EESSI_PEN_ONPREM_PROXY_URL}")
+    lateinit var proxyUrl: String
+
+
 
     @Bean
-    fun euxUsernameOidcRestTemplate(templateBuilder: RestTemplateBuilder): RestTemplate {
-        return templateBuilder
-            .rootUri(euxUrl)
+    fun euxOAuthRestTemplate(restTemplateBuilder: RestTemplateBuilder): RestTemplate? {
+        return opprettRestTemplate(euxUrl, "eux-credentials")
+    }
+
+    @Bean
+    fun proxyOAuthRestTemplate(restTemplateBuilder: RestTemplateBuilder): RestTemplate? {
+        return opprettRestTemplate(proxyUrl, "proxy-credentials")
+    }
+
+    private fun opprettRestTemplate(url: String, oAuthKey: String) : RestTemplate {
+        return RestTemplateBuilder()
+            .rootUri(url)
             .errorHandler(DefaultResponseErrorHandler())
-            .setReadTimeout(Duration.ofSeconds(120))
-            .setConnectTimeout(Duration.ofSeconds(120))
             .additionalInterceptors(
                 RequestIdHeaderInterceptor(),
-                RequestResponseLoggerInterceptor(),
-                UsernameToOidcInterceptor(securityTokenExchangeService))
-            .build().apply {
-                requestFactory = BufferingClientHttpRequestFactory(SimpleClientHttpRequestFactory())
-            }
-    }
-
-    @Bean
-    fun norg2OidcRestTemplate(templateBuilder: RestTemplateBuilder): RestTemplate {
-        return templateBuilder
-                .rootUri(norg2Url)
-                .errorHandler(DefaultResponseErrorHandler())
-                .additionalInterceptors(
-                        RequestIdHeaderInterceptor(),
-                        RequestResponseLoggerInterceptor(),
-                        UsernameToOidcInterceptor(securityTokenExchangeService))
-                .build().apply {
-                    requestFactory = BufferingClientHttpRequestFactory(SimpleClientHttpRequestFactory())
-                }
-    }
-
-    @Bean
-    fun kodeRestTemplate(templateBuilder: RestTemplateBuilder): RestTemplate {
-        return templateBuilder
-            .rootUri(kodeverkUrl)
-            .errorHandler(DefaultResponseErrorHandler())
-            .additionalInterceptors(
-                RequestIdHeaderInterceptor()
+              //  RequestResponseLoggerInterceptor(),
+                RequestCountInterceptor(meterRegistry),
+                bearerTokenInterceptor(clientProperties(oAuthKey), oAuth2AccessTokenService!!)
             )
-            .build()
-    }
-
-
-    @Bean
-    fun personMottakUsernameOidcRestTemplate(templateBuilder: RestTemplateBuilder, pdlTokenComponent: PdlTokenCallBack): RestTemplate {
-        return templateBuilder
-            .rootUri(pdlInnsendingUrl)
-            .errorHandler(DefaultResponseErrorHandler())
-            .setReadTimeout(Duration.ofSeconds(120))
-            .setConnectTimeout(Duration.ofSeconds(120))
-            .additionalInterceptors(
-                RequestIdHeaderInterceptor(),
-                RequestResponseLoggerInterceptor(),
-                UsernameToOidcInterceptor(securityTokenExchangeService),
-                PdlInterceptor(pdlTokenComponent))
             .build().apply {
-                requestFactory = BufferingClientHttpRequestFactory(SimpleClientHttpRequestFactory())
+                requestFactory = HttpComponentsClientHttpRequestFactory()
             }
     }
 
-    internal class PdlInterceptor(private val pdlTokens: PdlTokenCallBack) : ClientHttpRequestInterceptor {
-        private val logger = LoggerFactory.getLogger(PdlInterceptor::class.java)
-        override fun intercept(request: HttpRequest, body: ByteArray, execution: ClientHttpRequestExecution): ClientHttpResponse {
-            val token = pdlTokens.callBack()
-            logger.debug("tokenIntercetorRequest: userToken: ${token.isUserToken}")
-            // [System]
-            request.headers["Nav-Consumer-Token"] = "Bearer ${token.systemToken}"
-            return execution.execute(request, body)
+
+    private fun clientProperties(oAuthKey: String): ClientProperties {
+        val clientProperties =
+            Optional.ofNullable(clientConfigurationProperties.registration[oAuthKey])
+                .orElseThrow { RuntimeException("could not find oauth2 client config for example-onbehalfof") }
+        return clientProperties
+    }
+
+    private fun bearerTokenInterceptor(
+        clientProperties: ClientProperties,
+        oAuth2AccessTokenService: OAuth2AccessTokenService
+    ): ClientHttpRequestInterceptor? {
+        return ClientHttpRequestInterceptor { request: HttpRequest, body: ByteArray?, execution: ClientHttpRequestExecution ->
+            val response = oAuth2AccessTokenService.getAccessToken(clientProperties)
+            request.headers.setBearerAuth(response.accessToken)
+            val tokenChunks = response.accessToken.split(".")
+            val tokenBody =  tokenChunks[1]
+            logger.info("subject: " + JWTClaimsSet.parse(Base64.getDecoder().decode(tokenBody).decodeToString()).subject)
+            execution.execute(request, body!!)
         }
     }
-
 
 }
 
