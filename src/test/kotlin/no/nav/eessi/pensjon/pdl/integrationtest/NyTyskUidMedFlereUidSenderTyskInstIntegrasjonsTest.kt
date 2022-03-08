@@ -1,5 +1,6 @@
 package no.nav.eessi.pensjon.pdl.integrationtest
 
+import no.nav.eessi.pensjon.EessiPensjonApplicationTest
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
@@ -16,7 +17,7 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import kotlin.test.assertTrue
 
-@SpringBootTest( classes = [KafkaTestConfig::class], properties = ["spring.main.allow-bean-definition-overriding=true"])
+@SpringBootTest( classes = [KafkaTestConfig::class, EessiPensjonApplicationTest::class], properties = ["spring.main.allow-bean-definition-overriding=true"])
 @ActiveProfiles("integrationtest")
 @DirtiesContext
 @EmbeddedKafka(

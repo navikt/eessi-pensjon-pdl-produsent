@@ -1,11 +1,7 @@
 package no.nav.eessi.pensjon.pdl.integrationtest
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider
-import com.amazonaws.auth.AnonymousAWSCredentials
-import com.amazonaws.client.builder.AwsClientBuilder
-import com.amazonaws.services.s3.AmazonS3ClientBuilder
-import io.findify.s3mock.S3Mock
-import no.nav.eessi.pensjon.s3.S3StorageService
+import io.mockk.mockk
+import no.nav.eessi.pensjon.gcp.GcpStorageService
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
@@ -15,13 +11,8 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory
-import org.springframework.kafka.core.ConsumerFactory
-import org.springframework.kafka.core.DefaultKafkaConsumerFactory
-import org.springframework.kafka.core.DefaultKafkaProducerFactory
-import org.springframework.kafka.core.KafkaTemplate
-import org.springframework.kafka.core.ProducerFactory
+import org.springframework.kafka.core.*
 import org.springframework.kafka.listener.ContainerProperties
-import java.net.ServerSocket
 import java.time.Duration
 
 @TestConfiguration
@@ -89,29 +80,8 @@ class KafkaTestConfig(
     }
 
     @Bean
-    fun s3StorageService(): S3StorageService {
-        return initMockS3()
+    fun s3StorageService(): GcpStorageService {
+        return mockk()
     }
 
-    private fun initMockS3(): S3StorageService {
-        val s3Port = ServerSocket(0).use { it.localPort }
-
-        val s3api = S3Mock.Builder().withPort(s3Port).withInMemoryBackend().build()
-        s3api.start()
-        val endpoint = AwsClientBuilder.EndpointConfiguration("http://localhost:$s3Port", "us-east-1")
-
-        val s3MockClient = AmazonS3ClientBuilder.standard()
-            .withPathStyleAccessEnabled(true)
-            .withCredentials(AWSStaticCredentialsProvider(AnonymousAWSCredentials()))
-            .withEndpointConfiguration(endpoint)
-            .build()
-
-        s3MockClient.createBucket("eessipensjon")
-        //return s3MockClient
-        val storageService = S3StorageService(s3MockClient)
-        storageService.bucketname = "eessipensjon"
-        storageService.env = "q1"
-        storageService.init()
-        return storageService
-    }
 }

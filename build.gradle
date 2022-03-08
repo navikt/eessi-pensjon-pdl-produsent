@@ -10,10 +10,11 @@ buildscript {
 		mockserverVersion = '5.11.2'
 		epMetricsVersion = '0.4.12'
 		epLoggingVersion = '1.0.15'
-		epSecurityStsVersion = '0.0.21'
-		epPersonoppslagVersion = '8.2.8'
-		epEuxVersion = '1.1.60'
+		epPersonoppslagVersion = '9.0.7'
+		epEuxVersion = '1.1.61'
 		microMeterVersion='1.8.1'
+		gcpStorageVersion = "2.0.1"
+
 	}
 	repositories {
 		mavenCentral()
@@ -73,10 +74,6 @@ dependencies {
 	}
 	testImplementation 'org.springframework.kafka:spring-kafka-test'
 
-	//aws and s3
-	implementation 'com.amazonaws:aws-java-sdk-s3:1.12.129'
-	testImplementation("io.findify:s3mock_2.13:0.2.6")
-
 	//mock - test
 	testImplementation("org.jetbrains.kotlin:kotlin-test:${kotlinVersion}") {
 		exclude module: 'kotlin-test-js'
@@ -98,9 +95,10 @@ dependencies {
 	// Eessi pensjon biblioteker
 	implementation("no.nav.eessi.pensjon:ep-metrics:${epMetricsVersion}")
 	implementation("no.nav.eessi.pensjon:ep-logging:${epLoggingVersion}")
-	implementation("no.nav.eessi.pensjon:ep-security-sts:${epSecurityStsVersion}")
 	implementation("no.nav.eessi.pensjon:ep-personoppslag:${epPersonoppslagVersion}")
-	implementation("no.nav.eessi.pensjon:ep-eux:${epEuxVersion}")
+	implementation("no.nav.eessi.pensjon:ep-eux:${epEuxVersion}"){
+		exclude module: 'ep-security-sts'
+	}
 
 	// Logging
 	implementation("net.logstash.logback:logstash-logback-encoder:${logstashLogbackVersion}")
@@ -112,6 +110,16 @@ dependencies {
 	implementation("no.nav.security:token-validation-spring:${oidcTokenSupportVersion}")
 	implementation("no.nav.security:token-validation-jaxrs:${oidcTokenSupportVersion}")
 	implementation("no.nav.security:token-validation-test-support:${oidcTokenSupportVersion}")
+
+
+	//GCP
+	implementation("com.google.cloud:google-cloud-storage:$gcpStorageVersion")
+	implementation(platform("com.google.cloud:libraries-bom:23.0.0"))
+
+	//testcontainers
+	testImplementation("org.testcontainers:junit-jupiter:1.14.3")
+	testImplementation "org.testcontainers:testcontainers:1.16.3"
+
 
 }
 
