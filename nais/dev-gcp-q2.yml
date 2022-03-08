@@ -25,6 +25,10 @@ spec:
       value: https://pdl-api.prod-fss-pub.nais.io/graphql
     - name: EUX_RINA_API_V1_URL
       value: https://eux-rina-api.prod-fss-pub.nais.io/cpi
+    - name: SECURITY_TOKEN_SERVICE_OPENID_CONFIGURATION_URL
+      value: https://security-token-service.nais.preprod.local/rest/v1/sts/.well-known/openid-configuration
+    - name: SECURITYTOKENSERVICE_URL
+      value: https://sts-q2.preprod.local/SecurityTokenServiceProvider/
     - name: AZURE_APP_EUX_CLIENT_ID
       value: prod-fss.eessibasis.eux-rina-api
     - name: AZURE_APP_PDL_CLIENT_ID
@@ -33,6 +37,11 @@ spec:
       value: eessi-basis-sedSendt-v1
     - name: KAFKA_SEDMOTTATT_TOPIC
       value: eessi-basis-sedMottatt-v1
+    - name: NORG2_URL
+      value: https://eessi-pensjon-onprem-proxy-q2.dev-fss-pub.nais.io/api/v1/arbeidsfordeling
+    - name: KODEVERK_URL
+      value: https://eessi-pensjon-onprem-proxy-q2.dev-fss-pub.nais.io/
+
   image: {{ image }}
   ingresses:
     - https://eessi-pensjon-pdl-produsent.nais.adeo.no

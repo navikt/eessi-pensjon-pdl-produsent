@@ -1,6 +1,6 @@
 package no.nav.eessi.pensjon.pdl.integrationtest
 
-import no.nav.eessi.pensjon.EessiPensjonApplicationTest
+import no.nav.eessi.pensjon.EessiPensjonApplication
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
@@ -16,16 +16,13 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import kotlin.test.assertTrue
 
-@SpringBootTest( classes = [KafkaTestConfig::class, EessiPensjonApplicationTest::class], properties = ["SPRING_PROFILES_ACTIVE", "integrationtest"])
+@SpringBootTest( classes = [IntegrationBase.TestConfig::class, KafkaTestConfig::class, EessiPensjonApplication::class], value = ["SPRING_PROFILES_ACTIVE", "integrationtest"])
 @ActiveProfiles("integrationtest")
 @DirtiesContext
 @EmbeddedKafka(
     topics = [PDL_PRODUSENT_TOPIC_MOTTATT],
     brokerProperties = ["log.dir=/tmp/embedded-kafka-NyDanskUtenUidIntegrasjonsTest"]
 )
-
-
-
 class DanskUidSomErFordkjelligFraPdlOppgaveOpprettesIntegrasjonsTest : IntegrationBase() {
 
     val fnr = "11067122781"

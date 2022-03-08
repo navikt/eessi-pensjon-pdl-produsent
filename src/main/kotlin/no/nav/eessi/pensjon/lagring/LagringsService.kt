@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
 @Service
-class LagringsService (private val s3StorageService: GcpStorageService) {
+class LagringsService (private val gcpStorageService: GcpStorageService) {
 
     private val logger = LoggerFactory.getLogger(LagringsService::class.java)
 
@@ -17,7 +17,7 @@ class LagringsService (private val s3StorageService: GcpStorageService) {
             val jsondata = hendelse.rinaSakId
 
             logger.debug("Lagrer hendelse: $path, data: $jsondata")
-            s3StorageService.lagre(path, jsondata)
+            gcpStorageService.lagre(path, jsondata)
         } catch (ex: Exception) {
             logger.error("Feiler ved lagring av data: $path")
         }
@@ -30,7 +30,7 @@ class LagringsService (private val s3StorageService: GcpStorageService) {
         logger.info("Henter rinaSakId: ${hendelse.rinaSakId} from $path")
 
         return try {
-            val rinaSakId = s3StorageService.hent(path)
+            val rinaSakId = gcpStorageService.hent(path)
 
             logger.debug("Henter hendelse fra: $path, data: $rinaSakId")
             rinaSakId

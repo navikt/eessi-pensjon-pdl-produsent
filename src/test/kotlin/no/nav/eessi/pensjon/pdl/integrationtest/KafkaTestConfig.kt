@@ -2,6 +2,9 @@ package no.nav.eessi.pensjon.pdl.integrationtest
 
 import io.mockk.mockk
 import no.nav.eessi.pensjon.gcp.GcpStorageService
+import no.nav.eessi.pensjon.personoppslag.pdl.PdlToken
+import no.nav.eessi.pensjon.personoppslag.pdl.PdlTokenCallBack
+import no.nav.eessi.pensjon.personoppslag.pdl.PdlTokenImp
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
@@ -10,9 +13,17 @@ import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Primary
+import org.springframework.core.Ordered
+import org.springframework.core.annotation.Order
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory
-import org.springframework.kafka.core.*
+import org.springframework.kafka.core.ConsumerFactory
+import org.springframework.kafka.core.DefaultKafkaConsumerFactory
+import org.springframework.kafka.core.DefaultKafkaProducerFactory
+import org.springframework.kafka.core.KafkaTemplate
+import org.springframework.kafka.core.ProducerFactory
 import org.springframework.kafka.listener.ContainerProperties
+import org.springframework.web.client.RestTemplate
 import java.time.Duration
 
 @TestConfiguration
@@ -67,6 +78,21 @@ class KafkaTestConfig(
     }
 
     @Bean
+    fun personMottakUsernameOidcRestTemplate(): RestTemplate {
+        return mockk()
+    }
+
+    @Bean
+    fun kodeverkRestTemplate(): RestTemplate {
+        return mockk()
+    }
+
+    @Bean
+    fun norg2OidcRestTemplate(): RestTemplate {
+        return mockk()
+    }
+
+    @Bean
     fun aivenKafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, String>? {
         val factory = ConcurrentKafkaListenerContainerFactory<String, String>()
         factory.consumerFactory = kafkaConsumerFactory()
@@ -79,9 +105,19 @@ class KafkaTestConfig(
         configMap[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = "PLAINTEXT"
     }
 
-    @Bean
-    fun s3StorageService(): GcpStorageService {
-        return mockk()
+    @Bean("pdlTokenComponent")
+    @Primary
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    fun pdlTokenComponent(): PdlTokenCallBack {
+        return object : PdlTokenCallBack {
+            override fun callBack(): PdlToken {
+                return PdlTokenImp(systemToken = "Dummytoken", userToken = "DummyToken", isUserToken = false)
+            }
+        }
     }
 
+    @Bean
+    fun gcpStorageService(): GcpStorageService {
+        return mockk()
+    }
 }
