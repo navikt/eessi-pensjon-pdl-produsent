@@ -50,8 +50,6 @@ class PdlFiltrering(private val kodeverk: KodeverkClient) {
         return false
     }
 
-    //                return erFaktiskPDLuidLikSedUid(utenlandskIdIPDL.identifikasjonsnummer, utenlandskIdSed.id, utenlandskIdIPDL.utstederland)
-
     fun sjekkYterligerePaaPDLuidMotSedUid(utenlandskeIdPDL: List<UtenlandskIdentifikasjonsnummer>, utenlandskIdSed: UtenlandskId): Boolean {
         utenlandskeIdPDL.forEach { utenlandskIdIPDL ->
             val landkodeFraPdl = kodeverk.finnLandkode(utenlandskIdIPDL.utstederland)
