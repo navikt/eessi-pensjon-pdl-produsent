@@ -22,7 +22,7 @@ import kotlin.test.assertTrue
 @DirtiesContext
 @EmbeddedKafka(
     topics = [PDL_PRODUSENT_TOPIC_MOTTATT],
-    brokerProperties = ["log.dir=/tmp/embedded-kafka-NyDanskUidIntegrasjonsTest"]
+    brokerProperties = ["log.dir=build/kafka/embedded-kafka-NyDanskUidIntegrasjonsTest"]
 
 )
 

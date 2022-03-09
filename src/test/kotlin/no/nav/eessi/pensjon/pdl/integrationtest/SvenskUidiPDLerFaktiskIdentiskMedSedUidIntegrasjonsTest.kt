@@ -21,7 +21,7 @@ import kotlin.test.assertTrue
 @DirtiesContext
 @EmbeddedKafka(
     topics = [PDL_PRODUSENT_TOPIC_MOTTATT],
-    brokerProperties = ["log.dir=/tmp/SvenskUidiPDLerFaktiskIdentiskMedSed"]
+    brokerProperties = ["log.dir=build/kafka/SvenskUidiPDLerFaktiskIdentiskMedSed"]
 )
 class SvenskUidiPDLerFaktiskIdentiskMedSedUidIntegrasjonsTest: IntegrationBase()  {
     val fnr = "11067122781"
