@@ -78,7 +78,7 @@ class KafkaTestConfig(
     }
 
     @Bean
-    fun personMottakUsernameOidcRestTemplate(): RestTemplate {
+    fun personMottakRestTemplate(): RestTemplate {
         return mockk()
     }
 

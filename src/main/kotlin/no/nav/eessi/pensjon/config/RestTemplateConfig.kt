@@ -46,6 +46,11 @@ class RestTemplateConfig(
         return opprettRestTemplate(proxyUrl, "proxy-credentials")
     }
 
+    @Bean
+    fun personMottakRestTemplate(restTemplateBuilder: RestTemplateBuilder): RestTemplate? {
+        return opprettRestTemplate(proxyUrl, "proxy-credentials")
+    }
+
     private fun opprettRestTemplate(url: String, oAuthKey: String) : RestTemplate {
         return RestTemplateBuilder()
             .rootUri(url)
