@@ -17,7 +17,7 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import kotlin.test.assertTrue
 
-@SpringBootTest( classes = [KafkaTestConfig::class, EessiPensjonApplication::class], properties = ["spring.main.allow-bean-definition-overriding=true"])
+@SpringBootTest( classes = [KafkaTestConfig::class, IntegrationBase.TestConfig::class,  EessiPensjonApplication::class], properties = ["spring.main.allow-bean-definition-overriding=true"])
 @ActiveProfiles("integrationtest")
 @DirtiesContext
 @EmbeddedKafka(

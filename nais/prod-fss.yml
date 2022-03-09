@@ -21,10 +21,6 @@ spec:
       value: https://pdl-api.nais.adeo.no/graphql
     - name: PDL_PERSON_MOTTAK_URL
       value: https://person-mottak.nais.adeo.no
-    - name: SECURITY_TOKEN_SERVICE_OPENID_CONFIGURATION_URL
-      value: https://security-token-service.nais.adeo.no/rest/v1/sts/.well-known/openid-configuration
-    - name: SECURITYTOKENSERVICE_URL
-      value: https://sts.adeo.no/SecurityTokenServiceProvider/
     - name: OPPGAVE_OPPGAVER_URL
       value: https://oppgave.nais.adeo.no/api/v1/oppgaver
     - name: NORG2_URL

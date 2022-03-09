@@ -3,7 +3,6 @@ package no.nav.eessi.pensjon.services.kodeverk
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.eessi.pensjon.metrics.MetricsHelper
-import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -25,7 +24,7 @@ import javax.annotation.PostConstruct
 
 @Component
 @CacheConfig(cacheNames = ["kodeVerk"])
-class KodeverkClient(private val kodeverkRestTemplate: RestTemplate,
+class KodeverkClient(private val proxyOAuthRestTemplate: RestTemplate,
                      @Value("\${NAIS_APP_NAME}") private val appName: String,
                      @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper(SimpleMeterRegistry())
     ) {
@@ -38,9 +37,6 @@ class KodeverkClient(private val kodeverkRestTemplate: RestTemplate,
     fun initMetrics() {
         KodeverkHentLandKode = metricsHelper.init("KodeverkHentLandKode")
     }
-
-    fun hentAlleLandkoder() = hentLandKoder().toJson()
-    fun hentLandkoderAlpha2() = hentLandKoder().map { it.landkode2 }
 
     @Cacheable
     fun hentLandKoder(): List<Landkode> {
@@ -78,7 +74,7 @@ class KodeverkClient(private val kodeverkRestTemplate: RestTemplate,
             headers["Nav-Call-Id"] = UUID.randomUUID().toString()
             val requestEntity = HttpEntity<String>(headers)
             logger.debug("Header: $requestEntity")
-            val response = kodeverkRestTemplate.exchange(
+            val response = proxyOAuthRestTemplate.exchange(
                     builder.toUriString(),
                     HttpMethod.GET,
                     requestEntity,

@@ -82,11 +82,6 @@ abstract class IntegrationBase {
 
     init {
         System.setProperty("mockserverport", "" + mockserverport)
-/*
-        randomFrom().apply {
-            System.setProperty("mockserverport", "" + this)
-        }
-*/
         mockServer = ClientAndServer.startClientAndServer(mockserverport)
 
     }
@@ -148,10 +143,6 @@ abstract class IntegrationBase {
         return KafkaMessageListenerContainer(consumerFactory, ContainerProperties(topicName)).apply {
             setupMessageListener(MessageListener<String, String> { record -> println("Konsumerer melding:  $record") })
         }
-    }
-
-    private fun randomFrom(from: Int = 1024, to: Int = 65535): Int {
-        return Random().nextInt(to - from) + from
     }
 
     fun validateSedMottattListenerLoggingMessage(keyword: String): Boolean {
