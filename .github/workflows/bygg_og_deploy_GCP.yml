@@ -1,4 +1,4 @@
-name: Bygg og deploy Q2
+name: Bygg og deploy Q2 - GCP
 
 on:
   push:
@@ -41,7 +41,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # DEPLOYER TIL NAIS Q2 team namespace
-      - name: 'Deploy to NAIS q2 team namespace'
+      - name: 'Deploy to NAIS GCP q2 team namespace'
         uses: nais/deploy/actions/deploy@v1
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
