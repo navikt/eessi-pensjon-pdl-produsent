@@ -1,7 +1,7 @@
 kind: Application
 apiVersion: nais.io/v1alpha1
 metadata:
-  name: eessi-pensjon-pdl-produsent
+  name: eessi-pensjon-pdl-produsent-q2
   namespace: eessipensjon
   labels:
     team: eessipensjon
