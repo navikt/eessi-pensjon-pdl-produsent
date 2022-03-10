@@ -16,7 +16,7 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import kotlin.test.assertTrue
 
-@SpringBootTest( classes = [IntegrationBase.TestConfig::class, KafkaTestConfig::class, EessiPensjonApplication::class], value = ["SPRING_PROFILES_ACTIVE", "integrationtest"])
+@SpringBootTest( classes = [IntegrationBase.TestConfig::class, KafkaTestConfig::class, EessiPensjonApplication::class])
 @ActiveProfiles("integrationtest")
 @DirtiesContext
 @EmbeddedKafka(
@@ -82,9 +82,6 @@ class DanskUidSomErFordkjelligFraPdlOppgaveOpprettesIntegrasjonsTest : Integrati
             }
         """.trimIndent()
         assertTrue(validateSedMottattListenerLoggingMessage(check))
-//        assertTrue(validateSedMottattListenerLoggingMessage("Opprett oppgave og lagret til s3"))
-
     }
-
 }
 

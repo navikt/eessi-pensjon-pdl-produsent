@@ -85,7 +85,7 @@ class SedListener(
         logger.debug("Profile: $profile")
 
         try {
-            val sedHendelse = SedHendelseModel.fromJson(hendelse)
+            val sedHendelse = sedHendelseMapping(hendelse)
 
             if (GyldigeHendelser.mottatt(sedHendelse)) {
                 val bucType = sedHendelse.bucType!!
@@ -279,6 +279,17 @@ class SedListener(
             Metrics.counter("PDLmeldingSteg",   "melding", melding).increment()
         } catch (e: Exception) {
             logger.warn("Metrics feilet på enhet: $melding")
+        }
+    }
+
+    fun sedHendelseMapping(hendelse: String): SedHendelseModel {
+        val sedHendelseTemp = SedHendelseModel.fromJson(hendelse)
+
+        //støtte avsenderland SE i testmiljø Q1 og Q2
+        return if (profile != "prod" && profile != "integrationtest") {
+            sedHendelseTemp.copy(avsenderLand = "SE", avsenderNavn = "SE:test")
+        } else {
+            sedHendelseTemp
         }
     }
 }
