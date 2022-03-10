@@ -61,7 +61,7 @@ spec:
 
   image: {{ image }}
   ingresses:
-    - https://eessi-pensjon-pdl-produsent-q2.nais.preprod.local
+    - https://eessi-pensjon-pdl-produsent-q2.dev.intern.nav.no
   liveness:
     path: /internal/isalive
     port: 8080
