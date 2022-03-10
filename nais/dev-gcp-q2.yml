@@ -50,7 +50,7 @@ spec:
 
   gcp:
     buckets:
-      - name: {{GCP_BUCKET_NAME}}
+      - name: eessi-pensjon-pdl-produsent-dev-q2
         retentionPeriodDays: 30
         lifecycleCondition:
           age: 7
