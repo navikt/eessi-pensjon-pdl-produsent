@@ -14,7 +14,7 @@ spec:
     accessPolicy:
       outbound:
         external:
-          - host: https://eessi-pensjon-pdl-produsent.intern.nav.no
+          - host: https://eessi-pensjon-pdl-produsent-q2.dev.intern.nav.no
   webproxy: true
   env:
     - name: SPRING_PROFILES_ACTIVE
