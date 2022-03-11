@@ -1,7 +1,5 @@
 package no.nav.eessi.pensjon.config
 
-import com.nimbusds.jwt.JWTClaimsSet
-import io.micrometer.core.instrument.MeterRegistry
 import no.nav.eessi.pensjon.logging.RequestIdHeaderInterceptor
 import no.nav.security.token.support.client.core.ClientProperties
 import no.nav.security.token.support.client.core.oauth2.OAuth2AccessTokenService
@@ -18,15 +16,13 @@ import org.springframework.http.client.ClientHttpRequestInterceptor
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.web.client.DefaultResponseErrorHandler
 import org.springframework.web.client.RestTemplate
-import java.util.*
 
 
 @Configuration
 @Profile("prod", "test")
 class RestTemplateConfig(
     private val clientConfigurationProperties: ClientConfigurationProperties,
-    private val oAuth2AccessTokenService: OAuth2AccessTokenService?,
-    private val meterRegistry: MeterRegistry) {
+    private val oAuth2AccessTokenService: OAuth2AccessTokenService?) {
 
     private val logger = LoggerFactory.getLogger(RestTemplateConfig::class.java)
 
@@ -37,19 +33,14 @@ class RestTemplateConfig(
     lateinit var proxyUrl: String
 
     @Bean
-    fun euxOAuthRestTemplate(restTemplateBuilder: RestTemplateBuilder): RestTemplate? {
-        return opprettRestTemplate(euxUrl, "eux-credentials")
-    }
+    fun euxOAuthRestTemplate(): RestTemplate = opprettRestTemplate(euxUrl, "eux-credentials")
 
     @Bean
-    fun proxyOAuthRestTemplate(restTemplateBuilder: RestTemplateBuilder): RestTemplate? {
-        return opprettRestTemplate(proxyUrl, "proxy-credentials")
-    }
+    fun proxyOAuthRestTemplate(): RestTemplate = opprettRestTemplate(proxyUrl, "proxy-credentials")
 
     @Bean
-    fun personMottakRestTemplate(restTemplateBuilder: RestTemplateBuilder): RestTemplate? {
-        return opprettRestTemplate(proxyUrl, "proxy-credentials")
-    }
+    fun personMottakRestTemplate(): RestTemplate = opprettRestTemplate(proxyUrl, "proxy-credentials")
+
 
     private fun opprettRestTemplate(url: String, oAuthKey: String) : RestTemplate {
         return RestTemplateBuilder()
@@ -64,13 +55,7 @@ class RestTemplateConfig(
             }
     }
 
-
-    private fun clientProperties(oAuthKey: String): ClientProperties {
-        val clientProperties =
-            Optional.ofNullable(clientConfigurationProperties.registration[oAuthKey])
-                .orElseThrow { RuntimeException("could not find oauth2 client config for example-onbehalfof") }
-        return clientProperties
-    }
+    private fun clientProperties(oAuthKey: String): ClientProperties = clientConfigurationProperties.registration[oAuthKey] ?: throw RuntimeException("could not find oauth2 client config for $oAuthKey")
 
     private fun bearerTokenInterceptor(
         clientProperties: ClientProperties,
@@ -79,9 +64,11 @@ class RestTemplateConfig(
         return ClientHttpRequestInterceptor { request: HttpRequest, body: ByteArray?, execution: ClientHttpRequestExecution ->
             val response = oAuth2AccessTokenService.getAccessToken(clientProperties)
             request.headers.setBearerAuth(response.accessToken)
+            /*
             val tokenChunks = response.accessToken.split(".")
             val tokenBody =  tokenChunks[1]
             logger.info("subject: " + JWTClaimsSet.parse(Base64.getDecoder().decode(tokenBody).decodeToString()).subject)
+            */
             execution.execute(request, body!!)
         }
     }
