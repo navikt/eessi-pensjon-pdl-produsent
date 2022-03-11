@@ -24,7 +24,7 @@ spec:
     - name: EESSI_PEN_ONPREM_PROXY_URL
       value: https://eessi-pensjon-onprem-proxy-q2.dev-fss-pub.nais.io
     - name: PDL_URL
-      value: https://pdl-api.dev-fss.nais.io/graphql
+      value: https://pdl-api.dev-fss-pub.nais.io/graphql
     - name: EUX_RINA_API_V1_URL
       value: https://eux-rina-api-eessibasis.dev-fss-pub.nais.io/cpi
     - name: AZURE_APP_EUX_CLIENT_ID
