@@ -1,12 +1,12 @@
 package no.nav.eessi.pensjon.lagring
 
+import no.nav.eessi.pensjon.gcp.GcpStorageService
 import no.nav.eessi.pensjon.models.SedHendelseModel
-import no.nav.eessi.pensjon.s3.S3StorageService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
 @Service
-class LagringsService (private val s3StorageService: S3StorageService) {
+class LagringsService (private val gcpStorageService: GcpStorageService) {
 
     private val logger = LoggerFactory.getLogger(LagringsService::class.java)
 
@@ -17,7 +17,7 @@ class LagringsService (private val s3StorageService: S3StorageService) {
             val jsondata = hendelse.rinaSakId
 
             logger.debug("Lagrer hendelse: $path, data: $jsondata")
-            s3StorageService.put(path, jsondata)
+            gcpStorageService.lagre(path, jsondata)
         } catch (ex: Exception) {
             logger.error("Feiler ved lagring av data: $path")
         }
@@ -30,7 +30,7 @@ class LagringsService (private val s3StorageService: S3StorageService) {
         logger.info("Henter rinaSakId: ${hendelse.rinaSakId} from $path")
 
         return try {
-            val rinaSakId = s3StorageService.get(path)
+            val rinaSakId = gcpStorageService.hent(path)
 
             logger.debug("Henter hendelse fra: $path, data: $rinaSakId")
             rinaSakId

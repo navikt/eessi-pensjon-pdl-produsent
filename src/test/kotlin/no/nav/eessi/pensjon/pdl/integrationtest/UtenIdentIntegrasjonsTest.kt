@@ -18,7 +18,7 @@ import kotlin.test.assertTrue
 @DirtiesContext
 @EmbeddedKafka(
     topics = [PDL_PRODUSENT_TOPIC_MOTTATT],
-    brokerProperties = ["log.dir=/tmp/embedded-kafka-UtenIdentIntegrasjonsTest"]
+    brokerProperties = ["log.dir=build/kafkaembedded-kafka-UtenIdentIntegrasjonsTest"]
 )
 
 @Disabled // disabler grunnet kafka problemer i Integrasjonstestene

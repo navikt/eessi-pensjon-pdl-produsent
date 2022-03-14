@@ -1,11 +1,10 @@
 package no.nav.eessi.pensjon.pdl.integrationtest
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider
-import com.amazonaws.auth.AnonymousAWSCredentials
-import com.amazonaws.client.builder.AwsClientBuilder
-import com.amazonaws.services.s3.AmazonS3ClientBuilder
-import io.findify.s3mock.S3Mock
-import no.nav.eessi.pensjon.s3.S3StorageService
+import io.mockk.mockk
+import no.nav.eessi.pensjon.gcp.GcpStorageService
+import no.nav.eessi.pensjon.personoppslag.pdl.PdlToken
+import no.nav.eessi.pensjon.personoppslag.pdl.PdlTokenCallBack
+import no.nav.eessi.pensjon.personoppslag.pdl.PdlTokenImp
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
@@ -14,6 +13,9 @@ import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Primary
+import org.springframework.core.Ordered
+import org.springframework.core.annotation.Order
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory
 import org.springframework.kafka.core.ConsumerFactory
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory
@@ -21,7 +23,7 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.core.ProducerFactory
 import org.springframework.kafka.listener.ContainerProperties
-import java.net.ServerSocket
+import org.springframework.web.client.RestTemplate
 import java.time.Duration
 
 @TestConfiguration
@@ -76,6 +78,21 @@ class KafkaTestConfig(
     }
 
     @Bean
+    fun personMottakRestTemplate(): RestTemplate {
+        return mockk()
+    }
+
+    @Bean
+    fun kodeverkRestTemplate(): RestTemplate {
+        return mockk()
+    }
+
+    @Bean
+    fun norg2OidcRestTemplate(): RestTemplate {
+        return mockk()
+    }
+
+    @Bean
     fun aivenKafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, String>? {
         val factory = ConcurrentKafkaListenerContainerFactory<String, String>()
         factory.consumerFactory = kafkaConsumerFactory()
@@ -88,30 +105,19 @@ class KafkaTestConfig(
         configMap[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = "PLAINTEXT"
     }
 
-    @Bean
-    fun s3StorageService(): S3StorageService {
-        return initMockS3()
+    @Bean("pdlTokenComponent")
+    @Primary
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    fun pdlTokenComponent(): PdlTokenCallBack {
+        return object : PdlTokenCallBack {
+            override fun callBack(): PdlToken {
+                return PdlTokenImp(systemToken = "Dummytoken", userToken = "DummyToken", isUserToken = false)
+            }
+        }
     }
 
-    private fun initMockS3(): S3StorageService {
-        val s3Port = ServerSocket(0).use { it.localPort }
-
-        val s3api = S3Mock.Builder().withPort(s3Port).withInMemoryBackend().build()
-        s3api.start()
-        val endpoint = AwsClientBuilder.EndpointConfiguration("http://localhost:$s3Port", "us-east-1")
-
-        val s3MockClient = AmazonS3ClientBuilder.standard()
-            .withPathStyleAccessEnabled(true)
-            .withCredentials(AWSStaticCredentialsProvider(AnonymousAWSCredentials()))
-            .withEndpointConfiguration(endpoint)
-            .build()
-
-        s3MockClient.createBucket("eessipensjon")
-        //return s3MockClient
-        val storageService = S3StorageService(s3MockClient)
-        storageService.bucketname = "eessipensjon"
-        storageService.env = "q1"
-        storageService.init()
-        return storageService
+    @Bean
+    fun gcpStorageService(): GcpStorageService {
+        return mockk()
     }
 }

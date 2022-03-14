@@ -17,16 +17,25 @@ import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
-import no.nav.eessi.pensjon.security.sts.STSService
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
 import no.nav.eessi.pensjon.utils.typeRefs
+import org.apache.http.conn.ssl.NoopHostnameVerifier
+import org.apache.http.impl.client.CloseableHttpClient
+import org.apache.http.impl.client.HttpClients
+import org.apache.http.ssl.SSLContexts
+import org.apache.http.ssl.TrustStrategy
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.mockserver.integration.ClientAndServer
+import org.mockserver.socket.PortFactory
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.TestConfiguration
+import org.springframework.boot.web.client.RestTemplateBuilder
+import org.springframework.context.annotation.Bean
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.core.ProducerFactory
@@ -36,10 +45,14 @@ import org.springframework.kafka.listener.MessageListener
 import org.springframework.kafka.test.EmbeddedKafkaBroker
 import org.springframework.kafka.test.utils.ContainerTestUtils
 import org.springframework.kafka.test.utils.KafkaTestUtils
+import org.springframework.web.client.RestTemplate
+import java.security.cert.X509Certificate
 import java.util.*
-import java.util.concurrent.*
+import java.util.concurrent.TimeUnit
+import javax.net.ssl.SSLContext
 
 const val PDL_PRODUSENT_TOPIC_MOTTATT = "eessi-basis-sedMottatt-v1"
+private var mockserverport = PortFactory.findFreePort()
 
 abstract class IntegrationBase {
 
@@ -51,9 +64,6 @@ abstract class IntegrationBase {
 
     @Autowired
     lateinit var producerFactory: ProducerFactory<String, String>
-
-    @MockkBean
-    lateinit var stsService: STSService
 
     @MockkBean
     lateinit var norg2: Norg2Service
@@ -71,15 +81,13 @@ abstract class IntegrationBase {
     abstract fun getMockPerson() : Person?
 
     init {
-        randomFrom().apply {
-            System.setProperty("mockserverport", "" + this)
-            mockServer = ClientAndServer.startClientAndServer(this)
-        }
+        System.setProperty("mockserverport", "" + mockserverport)
+        mockServer = ClientAndServer.startClientAndServer(mockserverport)
+
     }
 
     @BeforeEach
     fun setup() {
-        every { stsService.getSystemOidcToken() } returns "a nice little token?"
         every { norg2.hentArbeidsfordelingEnhet(any()) } returns getMockNorg2enhet()
         every { personService.harAdressebeskyttelse(any(), any()) } returns false
         if (getMockPerson() != null) every { personService.hentPerson(NorskIdent(getMockPerson()!!.identer.first { it.gruppe == IdentGruppe.FOLKEREGISTERIDENT }.ident)) } returns getMockPerson()!!
@@ -135,10 +143,6 @@ abstract class IntegrationBase {
         return KafkaMessageListenerContainer(consumerFactory, ContainerProperties(topicName)).apply {
             setupMessageListener(MessageListener<String, String> { record -> println("Konsumerer melding:  $record") })
         }
-    }
-
-    private fun randomFrom(from: Int = 1024, to: Int = 65535): Int {
-        return Random().nextInt(to - from) + from
     }
 
     fun validateSedMottattListenerLoggingMessage(keyword: String): Boolean {
@@ -234,6 +238,44 @@ abstract class IntegrationBase {
               "pensjon" : null
         }
         """.trimIndent()
+    }
+
+
+    @TestConfiguration
+    class TestConfig {
+
+        @Bean
+        fun euxOAuthRestTemplate(): RestTemplate? {
+            return opprettRestTemplate()
+        }
+
+        @Bean
+        fun proxyOAuthRestTemplate(): RestTemplate? {
+            return opprettRestTemplate()
+        }
+
+        @Bean
+        fun opprettRestTemplate(): RestTemplate {
+            val acceptingTrustStrategy = TrustStrategy { chain: Array<X509Certificate?>?, authType: String? -> true }
+
+            val sslContext: SSLContext = SSLContexts.custom()
+                .loadTrustMaterial(null, acceptingTrustStrategy)
+                .build()
+
+            val httpClient: CloseableHttpClient = HttpClients.custom()
+                .setSSLContext(sslContext)
+                .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
+                .build()
+
+            val customRequestFactory = HttpComponentsClientHttpRequestFactory()
+            customRequestFactory.httpClient = httpClient
+
+            return RestTemplateBuilder()
+                .rootUri("https://localhost:${mockserverport}")
+                .build().apply {
+                    requestFactory = customRequestFactory
+                }
+        }
     }
 
 }

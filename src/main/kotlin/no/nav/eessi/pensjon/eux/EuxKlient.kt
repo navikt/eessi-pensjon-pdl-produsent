@@ -12,7 +12,7 @@ import org.springframework.web.client.HttpStatusCodeException
 import org.springframework.web.client.RestTemplate
 
 @Component
-class EuxKlient(private val euxUsernameOidcRestTemplate: RestTemplate) {
+class EuxKlient(private val euxOAuthRestTemplate: RestTemplate) {
 
     private val logger: Logger by lazy { LoggerFactory.getLogger(EuxKlient::class.java) }
 
@@ -24,7 +24,7 @@ class EuxKlient(private val euxUsernameOidcRestTemplate: RestTemplate) {
     internal fun hentSedJson(rinaSakId: String, dokumentId: String): String? {
         logger.info("Henter SED for rinaSakId: $rinaSakId , dokumentId: $dokumentId")
 
-        return euxUsernameOidcRestTemplate.exchange(
+        return euxOAuthRestTemplate.exchange(
             "/buc/$rinaSakId/sed/$dokumentId",
                 HttpMethod.GET,
                 null,
@@ -39,7 +39,7 @@ class EuxKlient(private val euxUsernameOidcRestTemplate: RestTemplate) {
     internal fun hentBuc(rinaSakId: String): Buc? {
         logger.info("Henter BUC (RinaSakId: $rinaSakId)")
 
-        return euxUsernameOidcRestTemplate.getForObject(
+        return euxOAuthRestTemplate.getForObject(
             "/buc/$rinaSakId",
                 Buc::class.java)
     }

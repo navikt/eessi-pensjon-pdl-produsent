@@ -17,12 +17,12 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import kotlin.test.assertTrue
 
-@SpringBootTest( classes = [KafkaTestConfig::class], properties = ["spring.main.allow-bean-definition-overriding=true"])
+@SpringBootTest( classes = [KafkaTestConfig::class])
 @ActiveProfiles("integrationtest")
 @DirtiesContext
 @EmbeddedKafka(
     topics = [PDL_PRODUSENT_TOPIC_MOTTATT],
-    brokerProperties = ["log.dir=/tmp/embedded-kafka-NyTyskUidIntegrasjonsTest"]
+    brokerProperties = ["log.dir=build/kafka/embedded-kafka-NyTyskUidIntegrasjonsTest"]
 )
 
 @Disabled // disabler grunnet kafka problemer i Integrasjonstestene

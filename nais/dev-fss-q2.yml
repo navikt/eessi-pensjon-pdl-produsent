@@ -21,10 +21,6 @@ spec:
       value: https://pdl-api.dev-fss.nais.io/graphql
     - name: PDL_PERSON_MOTTAK_URL
       value: https://person-mottak.dev.intern.nav.no/
-    - name: SECURITY_TOKEN_SERVICE_OPENID_CONFIGURATION_URL
-      value: https://security-token-service.nais.preprod.local/rest/v1/sts/.well-known/openid-configuration
-    - name: SECURITYTOKENSERVICE_URL
-      value: https://sts-q2.preprod.local/SecurityTokenServiceProvider/
     - name: OPPGAVE_OPPGAVER_URL
       value: https://oppgave-q2.nais.preprod.local/api/v1/oppgaver
     - name: NORG2_URL

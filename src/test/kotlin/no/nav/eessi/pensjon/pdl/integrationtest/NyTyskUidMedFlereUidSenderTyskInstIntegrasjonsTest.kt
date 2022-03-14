@@ -1,5 +1,6 @@
 package no.nav.eessi.pensjon.pdl.integrationtest
 
+import no.nav.eessi.pensjon.EessiPensjonApplication
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
@@ -16,12 +17,12 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import kotlin.test.assertTrue
 
-@SpringBootTest( classes = [KafkaTestConfig::class], properties = ["spring.main.allow-bean-definition-overriding=true"])
+@SpringBootTest( classes = [KafkaTestConfig::class, IntegrationBase.TestConfig::class,  EessiPensjonApplication::class], properties = ["spring.main.allow-bean-definition-overriding=true"])
 @ActiveProfiles("integrationtest")
 @DirtiesContext
 @EmbeddedKafka(
     topics = [PDL_PRODUSENT_TOPIC_MOTTATT],
-    brokerProperties = ["log.dir=/tmp/embedded-kafka-NyTyskUidMedFlereUidSenderTyskInstIntegrasjonsTest"]
+    brokerProperties = ["log.dir=build/kafka/embedded-kafka-NyTyskUidMedFlereUidSenderTyskInstIntegrasjonsTest"]
 )
 
 //@Disabled // Disabled grunnet ambigous kafka

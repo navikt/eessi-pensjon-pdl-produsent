@@ -1,7 +1,7 @@
 kind: Application
 apiVersion: nais.io/v1alpha1
 metadata:
-  name: eessi-pensjon-pdl-produsent
+  name: eessi-pensjon-pdl-produsent-q2
   namespace: eessipensjon
   labels:
     team: eessipensjon
@@ -14,28 +14,54 @@ spec:
     accessPolicy:
       outbound:
         external:
-          - host: https://eessi-pensjon-pdl-produsent.intern.nav.no
+          - host: https://eessi-pensjon-pdl-produsent-q2.dev.intern.nav.no
   webproxy: true
   env:
     - name: SPRING_PROFILES_ACTIVE
-      value: prod
-    - name: KAFKA_BOOTSTRAP_SERVERS_URL
-      value: SASL_SSL://a01apvl00145.adeo.no:8443,SASL_SSL://a01apvl00146.adeo.no:8443,SASL_SSL://a01apvl00147.adeo.no:8443,SASL_SSL://a01apvl00149.adeo.no:8443
+      value: test
+    - name: ONPREM_KAFKA_BOOTSTRAP_SERVERS_URL
+      value: SSL://b27apvl00045.preprod.local:8443,SSL://b27apvl00046.preprod.local:8443,SSL://b27apvl00047.preprod.local:8443
+    - name: EESSI_PEN_ONPREM_PROXY_URL
+      value: https://eessi-pensjon-onprem-proxy-q2.dev-fss-pub.nais.io
     - name: PDL_URL
-      value: https://pdl-api.prod-fss-pub.nais.io/graphql
+      value: https://pdl-api.dev-fss-pub.nais.io/graphql
     - name: EUX_RINA_API_V1_URL
-      value: https://eux-rina-api.prod-fss-pub.nais.io/cpi
+      value: https://eux-rina-api-eessibasis.dev-fss-pub.nais.io/cpi
     - name: AZURE_APP_EUX_CLIENT_ID
-      value: prod-fss.eessibasis.eux-rina-api
+      value: dev-fss.eessibasis.eux-rina-api-q2
     - name: AZURE_APP_PDL_CLIENT_ID
-      value: prod-fss.pdl.pdl-api
-    - name: KAFKA_SEDSENDT_TOPIC
-      value: eessi-basis-sedSendt-v1
+      value: dev-fss.pdl.pdl-api
+    - name: AZURE_APP_PROXY_CLIENT_ID
+      value: dev-fss.eessipensjon.eessi-pensjon-onprem-proxy-q2
     - name: KAFKA_SEDMOTTATT_TOPIC
-      value: eessi-basis-sedMottatt-v1
+      value: eessi-basis-sedMottatt-v1-q2
+    - name: KAFKA_OPPGAVE_TOPIC
+      value: eessipensjon.privat-oppgave-q2
+    - name: NORG2_URL
+      value: https://eessi-pensjon-onprem-proxy-q2.dev-fss-pub.nais.io/api/v1/arbeidsfordeling
+    - name: KODEVERK_URL
+      value: https://eessi-pensjon-onprem-proxy-q2.dev-fss-pub.nais.io/
+    - name: GCP_BUCKET_NAME
+      value: eessi-pensjon-pdl-produsent-dev-q2
+    - name: NAMESPACE
+      value: q2
+  kafka:
+    pool: nav-dev
+
+  gcp:
+    buckets:
+      - name: eessi-pensjon-pdl-produsent-dev-q2
+        retentionPeriodDays: 30
+        lifecycleCondition:
+          age: 7
+          createdBefore: 2020-01-01
+          numNewerVersions: 2
+          withState: ANY
+        uniformBucketLevelAccess: true
+
   image: {{ image }}
   ingresses:
-    - https://eessi-pensjon-pdl-produsent.nais.adeo.no
+    - https://eessi-pensjon-pdl-produsent-q2.dev.intern.nav.no
   liveness:
     path: /internal/isalive
     port: 8080
