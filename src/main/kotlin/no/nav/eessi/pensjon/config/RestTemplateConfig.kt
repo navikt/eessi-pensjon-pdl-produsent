@@ -4,7 +4,6 @@ import no.nav.eessi.pensjon.logging.RequestIdHeaderInterceptor
 import no.nav.security.token.support.client.core.ClientProperties
 import no.nav.security.token.support.client.core.oauth2.OAuth2AccessTokenService
 import no.nav.security.token.support.client.spring.ClientConfigurationProperties
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.context.annotation.Bean
@@ -23,8 +22,6 @@ import org.springframework.web.client.RestTemplate
 class RestTemplateConfig(
     private val clientConfigurationProperties: ClientConfigurationProperties,
     private val oAuth2AccessTokenService: OAuth2AccessTokenService?) {
-
-    private val logger = LoggerFactory.getLogger(RestTemplateConfig::class.java)
 
     @Value("\${EUX_RINA_API_V1_URL}")
     lateinit var euxUrl: String
