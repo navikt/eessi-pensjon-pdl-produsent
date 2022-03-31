@@ -8,13 +8,12 @@ import org.mockserver.model.HttpStatusCode
 import org.springframework.http.HttpMethod
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.util.concurrent.CompletableFuture
 
 class CustomMockServer() {
-    private val serverPort = CompletableFuture.completedFuture(System.getProperty("mockserverport").toInt())
+    private val serverPort = System.getProperty("mockserverport").toInt()
 
     fun mockSTSToken() = apply {
-        MockServerClient(serverPort).`when`(
+        MockServerClient("localhost", serverPort).`when`(
             HttpRequest.request()
                 .withMethod(HttpMethod.GET.name)
                 .withQueryStringParameter("grant_type", "client_credentials")
@@ -28,7 +27,7 @@ class CustomMockServer() {
     }
 
     fun medSed(bucPath: String, sedLocation: String) = apply {
-        MockServerClient(serverPort).`when`(
+        MockServerClient("localhost", serverPort).`when`(
             HttpRequest.request()
                 .withMethod(HttpMethod.GET.name)
                 .withPath(bucPath)
@@ -42,7 +41,7 @@ class CustomMockServer() {
     }
 
     fun medMockSed(bucPath: String, mockSed: String) = apply {
-        MockServerClient(serverPort).`when`(
+        MockServerClient("localhost", serverPort).`when`(
             HttpRequest.request()
                 .withMethod(HttpMethod.GET.name)
                 .withPath(bucPath)
@@ -56,7 +55,7 @@ class CustomMockServer() {
     }
 
     fun medEndring() = apply {
-        MockServerClient(serverPort).`when`(
+        MockServerClient("localhost", serverPort).`when`(
             HttpRequest.request()
                 .withMethod(HttpMethod.POST.name)
                 .withPath("/api/v1/endringer")
@@ -70,7 +69,7 @@ class CustomMockServer() {
     }
 
     fun medbBuc(bucPath: String, bucLocation: String) = apply {
-        MockServerClient(serverPort).`when`(
+        MockServerClient("localhost", serverPort).`when`(
             HttpRequest.request()
                 .withMethod(HttpMethod.GET.name)
                 .withPath(bucPath)
@@ -84,7 +83,7 @@ class CustomMockServer() {
     }
 
     fun medMockBuc(bucPath: String, mockBuc: String) = apply {
-        MockServerClient(serverPort).`when`(
+        MockServerClient("localhost", serverPort).`when`(
             HttpRequest.request()
                 .withMethod(HttpMethod.GET.name)
                 .withPath(bucPath)
@@ -96,12 +95,12 @@ class CustomMockServer() {
                     .withBody(mockBuc)
             )
     }.also {
-        println("CustomMockServer Port: ${serverPort.get().toString()}")
+        println("CustomMockServer Port: $serverPort")
     }
 
     fun medKodeverk(kodeverkPath: String, kodeVerkLocation: String) = apply {
 
-        MockServerClient(serverPort).`when`(
+        MockServerClient("localhost", serverPort).`when`(
             HttpRequest.request()
                 .withMethod(HttpMethod.GET.name)
                 .withPath(kodeverkPath)
