@@ -30,7 +30,7 @@ class KafkaErrorHandler : ContainerAwareErrorHandler {
 
         logger.error("En feil oppstod under kafka konsumering av meldinger: \n ${hentMeldinger(records)} \n" +
                 "Stopper containeren ! Restart er nødvendig for å fortsette konsumering, $stacktrace")
-        stopper.handleRemaining(thrownException, records!!, consumer, container)
+        stopper.handleRemaining(thrownException, records?: emptyList(), consumer, container)
     }
 
     fun hentMeldinger(records: MutableList<ConsumerRecord<*, *>>?): String {
