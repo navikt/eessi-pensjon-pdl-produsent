@@ -50,8 +50,6 @@ class PersonidentifiseringService(private val personService: PersonService, priv
     }
 
     fun identifiserPerson(relasjon: SEDPersonRelasjon): IdentifisertPerson? {
-        logger.debug("Henter ut følgende personRelasjon: ${relasjon.toJson()}")
-
         return try {
             personService.hentPerson(NorskIdent(relasjon.fnr!!.value))
                 ?.let { person ->
