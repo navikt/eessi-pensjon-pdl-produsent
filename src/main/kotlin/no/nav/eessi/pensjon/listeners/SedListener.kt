@@ -61,7 +61,7 @@ class SedListener(
     }
 
     @KafkaListener(
-        containerFactory = "onpremKafkaListenerContainerFactory",
+        containerFactory = "sedKafkaListenerContainerFactory",
         idIsGroup = false,
         topics = ["\${kafka.sedMottatt.topic}"],
         groupId = "\${kafka.sedMottatt.groupid}"
