@@ -86,6 +86,7 @@ class KafkaConfig(
         configMap[ConsumerConfig.CLIENT_ID_CONFIG] = "eessi-pensjon-pdl-produsent"
         configMap[ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG] = aivenBootstrapServers
         configMap[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = false
+        configMap[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
         configMap[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 1
 
         return DefaultKafkaConsumerFactory(configMap, StringDeserializer(), StringDeserializer())
