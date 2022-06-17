@@ -35,7 +35,13 @@ kafka:
   sedMottatt:
     topic: ${KAFKA_SEDMOTTATT_TOPIC}
     groupid: eessi-pensjon-pdl-produsent-group
-  security.protocol: ssl
+  security.protocol: SSL
+  keystore.path: ${KAFKA_KEYSTORE_PATH:}
+  truststore.path: ${KAFKA_TRUSTSTORE_PATH:}
+  credstore.password: ${KAFKA_CREDSTORE_PASSWORD:}
+  brokers: ${KAFKA_BROKERS:localhost:9092}
+  onprem:
+    bootstrap.servers: ${ONPREM_KAFKA_BOOTSTRAP_SERVERS_URL}
 
 kodeverk:
   rest-api:

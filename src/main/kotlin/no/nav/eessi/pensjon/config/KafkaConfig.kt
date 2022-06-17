@@ -25,7 +25,7 @@ import java.time.Duration
 @EnableKafka
 @Profile("prod", "test")
 @Configuration
-class KafkaConfigProd(
+class KafkaConfig(
     @param:Value("\${kafka.keystore.path}") private val keystorePath: String,
     @param:Value("\${kafka.credstore.password}") private val credstorePassword: String,
     @param:Value("\${kafka.truststore.path}") private val truststorePath: String,
@@ -70,7 +70,8 @@ class KafkaConfigProd(
         return DefaultKafkaConsumerFactory(configMap, StringDeserializer(), StringDeserializer())
     }
 
-    @Bean
+    @Profile("prod")
+    @Bean("sedKafkaListenerContainerFactory")
     fun onpremKafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, String>? {
         val factory = ConcurrentKafkaListenerContainerFactory<String, String>()
         factory.consumerFactory = onpremKafkaConsumerFactory()
@@ -79,6 +80,28 @@ class KafkaConfigProd(
         return factory
     }
 
+    fun aivenKafkaConsumerFactory(): ConsumerFactory<String, String> {
+        val configMap: MutableMap<String, Any> = HashMap()
+        populerAivenCommonConfig(configMap)
+        configMap[ConsumerConfig.CLIENT_ID_CONFIG] = "eessi-pensjon-pdl-produsent"
+        configMap[ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG] = aivenBootstrapServers
+        configMap[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = false
+        configMap[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
+        configMap[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 1
+
+        return DefaultKafkaConsumerFactory(configMap, StringDeserializer(), StringDeserializer())
+    }
+
+    @Profile("test")
+    @Bean("sedKafkaListenerContainerFactory")
+    fun aivenKafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, String>? {
+        val factory = ConcurrentKafkaListenerContainerFactory<String, String>()
+        factory.consumerFactory = aivenKafkaConsumerFactory()
+        factory.containerProperties.ackMode = ContainerProperties.AckMode.MANUAL
+        //factory.containerProperties.authorizationExceptionRetryInterval =  Duration.ofSeconds(4L)
+        factory.containerProperties.setAuthExceptionRetryInterval(Duration.ofSeconds(4L))
+        return factory
+    }
 
     private fun populerAivenCommonConfig(configMap: MutableMap<String, Any>) {
         configMap[SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG] = keystorePath

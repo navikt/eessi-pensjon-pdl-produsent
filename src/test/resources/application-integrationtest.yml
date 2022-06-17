@@ -8,7 +8,6 @@ kafka:
   oppgave:
     topic: ${KAFKA_OPPGAVE_TOPIC}
     groupid: eessi-pensjon-pdl-produsent-group
-  security.protocol: ssl
 
 eessi.pensjon.pdlp.s3.bucket.name: 'eessipensjon'
 
