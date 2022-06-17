@@ -32,7 +32,7 @@ class KafkaTestConfig(
     @Value("\${KAFKA_OPPGAVE_TOPIC}") private val oppgaveTopic: String) {
 
     @Bean
-    fun aivenProducerFactory(): ProducerFactory<String, String> {
+    fun producerFactory(): ProducerFactory<String, String> {
         val configMap: MutableMap<String, Any> = HashMap()
         populerCommonConfig(configMap)
         configMap[ProducerConfig.CLIENT_ID_CONFIG] = "eessi-pensjon-pdl-produsent"
@@ -43,9 +43,9 @@ class KafkaTestConfig(
         return DefaultKafkaProducerFactory(configMap)
     }
 
-    @Bean("aivenOppgaveKafkaTemplate")
-    fun aivenOppgaveKafkaTemplate(): KafkaTemplate<String, String> {
-        val template = KafkaTemplate(aivenProducerFactory())
+    @Bean
+    fun oppgaveKafkaTemplate(): KafkaTemplate<String, String> {
+        val template = KafkaTemplate(producerFactory())
         template.defaultTopic = oppgaveTopic
         return template
     }
@@ -76,8 +76,8 @@ class KafkaTestConfig(
     }
 
     @Bean
-    fun aivenKafkaTemplate(): KafkaTemplate<String, String> {
-        return KafkaTemplate(aivenProducerFactory())
+    fun kafkaTemplate(): KafkaTemplate<String, String> {
+        return KafkaTemplate(producerFactory())
     }
 
     @Bean
@@ -96,7 +96,7 @@ class KafkaTestConfig(
     }
 
     @Bean
-    fun aivenKafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, String>? {
+    fun kafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, String>? {
         val factory = ConcurrentKafkaListenerContainerFactory<String, String>()
         factory.consumerFactory = kafkaConsumerFactory()
         factory.containerProperties.ackMode = ContainerProperties.AckMode.MANUAL
