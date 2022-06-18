@@ -21,7 +21,7 @@ import javax.annotation.PostConstruct
 
 @Service
 class OppgaveHandler(
-    private val aivenOppgaveKafkaTemplate: KafkaTemplate<String, String>,
+    private val oppgaveKafkaTemplate: KafkaTemplate<String, String>,
     private val lagringsService: LagringsService,
     private val oppgaveruting: OppgaveRoutingService,
     @Value("\${namespace}") var nameSpace: String,
@@ -80,8 +80,8 @@ class OppgaveHandler(
         val payload = melding.toJson()
 
         publiserOppgavemelding.measure {
-            logger.info("Opprette oppgave melding på kafka: ${aivenOppgaveKafkaTemplate.defaultTopic}  melding: $melding")
-            aivenOppgaveKafkaTemplate.sendDefault(key, payload).get()
+            logger.info("Opprette oppgave melding på kafka: ${oppgaveKafkaTemplate.defaultTopic}  melding: $melding")
+            oppgaveKafkaTemplate.sendDefault(key, payload).get()
         }
     }
 }
