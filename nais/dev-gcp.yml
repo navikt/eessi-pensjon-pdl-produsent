@@ -21,30 +21,30 @@ spec:
   env:
     - name: SPRING_PROFILES_ACTIVE
       value: test
-    - name: EESSI_PEN_ONPREM_PROXY_URL
-      value: https://eessi-pensjon-onprem-proxy-q2.dev-fss-pub.nais.io
-    - name: PDL_URL
-      value: https://pdl-api.dev-fss-pub.nais.io/graphql
+    - name: NAMESPACE
+      value: q2
     - name: EUX_RINA_API_V1_URL
       value: https://eux-rina-api-eessibasis.dev-fss-pub.nais.io/cpi
-    - name: AZURE_APP_EUX_CLIENT_ID
-      value: dev-fss.eessibasis.eux-rina-api-q2
-    - name: AZURE_APP_PDL_CLIENT_ID
-      value: dev-fss.pdl.pdl-api
-    - name: AZURE_APP_PROXY_CLIENT_ID
-      value: dev-fss.eessipensjon.eessi-pensjon-onprem-proxy-q2
+    - name: PDL_URL
+      value: https://pdl-api.dev-fss-pub.nais.io/graphql
+    - name: NORG2_URL
+      value: https://eessi-pensjon-onprem-proxy-q2.dev-fss-pub.nais.io/api/v1/arbeidsfordeling
     - name: KAFKA_SEDMOTTATT_TOPIC
       value: eessibasis.sedmottatt-v1-q2
     - name: KAFKA_OPPGAVE_TOPIC
       value: eessipensjon.privat-oppgave-q2
-    - name: NORG2_URL
-      value: https://eessi-pensjon-onprem-proxy-q2.dev-fss-pub.nais.io/api/v1/arbeidsfordeling
     - name: KODEVERK_URL
       value: https://eessi-pensjon-onprem-proxy-q2.dev-fss-pub.nais.io/
+    - name: EESSI_PEN_ONPREM_PROXY_URL
+      value: https://eessi-pensjon-onprem-proxy-q2.dev-fss-pub.nais.io
+    - name: AZURE_APP_EUX_CLIENT_ID
+      value: dev-fss.eessibasis.eux-rina-api-q2
+    - name: AZURE_APP_PROXY_CLIENT_ID
+      value: dev-fss.eessipensjon.eessi-pensjon-onprem-proxy-q2
+    - name: AZURE_APP_PDL_CLIENT_ID
+      value: dev-fss.pdl.pdl-api
     - name: GCP_BUCKET_NAME
       value: eessi-pensjon-pdl-produsent-dev-q2
-    - name: NAMESPACE
-      value: q2
 
   gcp:
     buckets:
@@ -56,7 +56,6 @@ spec:
           numNewerVersions: 2
           withState: ANY
         uniformBucketLevelAccess: true
-
   image: {{ image }}
   ingresses:
     - https://eessi-pensjon-pdl-produsent-q2.dev.intern.nav.no
