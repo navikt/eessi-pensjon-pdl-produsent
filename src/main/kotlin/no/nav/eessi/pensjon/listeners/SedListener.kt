@@ -31,7 +31,7 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.concurrent.CountDownLatch
+import java.util.concurrent.*
 import javax.annotation.PostConstruct
 
 @Service
@@ -284,7 +284,7 @@ class SedListener(
     fun sedHendelseMapping(hendelse: String): SedHendelseModel {
         val sedHendelseTemp = SedHendelseModel.fromJson(hendelse)
 
-        //støtte avsenderland SE i testmiljø Q1 og Q2
+        //støtte avsenderland SE i testmiljø Q2
         return if (profile != "prod" && profile != "integrationtest") {
             sedHendelseTemp.copy(avsenderLand = "SE", avsenderNavn = "SE:test")
         } else {
