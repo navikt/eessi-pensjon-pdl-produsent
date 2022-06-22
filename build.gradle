@@ -11,7 +11,7 @@ buildscript {
 		mockserverVersion = '5.13.1'
 		epMetricsVersion = '0.4.+'
 		epLoggingVersion = '1.+'
-		epPersonoppslagVersion = '9.+'
+		epPersonoppslagVersion = '10.0.0'
 		epEuxVersion = '1.+'
 		microMeterVersion='1.8.1'
 		gcpStorageVersion = '2.6.0'
