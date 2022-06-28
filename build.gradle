@@ -74,9 +74,7 @@ dependencies {
 	implementation("no.nav.eessi.pensjon:ep-metrics:${epMetricsVersion}")
 	implementation("no.nav.eessi.pensjon:ep-logging:${epLoggingVersion}")
 	implementation("no.nav.eessi.pensjon:ep-personoppslag:${epPersonoppslagVersion}")
-	implementation("no.nav.eessi.pensjon:ep-eux:${epEuxVersion}"){
-		exclude module: 'ep-security-sts'
-	}
+	implementation("no.nav.eessi.pensjon:ep-eux:${epEuxVersion}")
 
 	// Logging
 	implementation("net.logstash.logback:logstash-logback-encoder:${logstashLogbackVersion}")
