@@ -14,7 +14,7 @@ import no.nav.eessi.pensjon.services.kodeverk.KodeverkClient
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
-import kotlin.test.assertFalse
+import org.junit.jupiter.api.Assertions.assertFalse
 
 internal class PdlValideringTest {
     private val kodeverkClient = mockk<KodeverkClient>(relaxed = true)

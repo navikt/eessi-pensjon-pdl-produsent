@@ -13,7 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
-import kotlin.test.assertTrue
+import org.junit.jupiter.api.Assertions.assertTrue
 
 @SpringBootTest( classes = [KafkaTestConfig::class])
 @ActiveProfiles("integrationtest")
