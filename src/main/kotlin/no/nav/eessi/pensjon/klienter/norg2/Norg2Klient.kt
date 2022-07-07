@@ -1,6 +1,5 @@
 package no.nav.eessi.pensjon.klienter.norg2
 
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
@@ -18,7 +17,7 @@ import javax.annotation.PostConstruct
 
 @Component
 class Norg2Klient(private val proxyOAuthRestTemplate: RestTemplate,
-                  @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper(SimpleMeterRegistry())) {
+                  @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()) {
 
     private val logger = LoggerFactory.getLogger(Norg2Klient::class.java)
 

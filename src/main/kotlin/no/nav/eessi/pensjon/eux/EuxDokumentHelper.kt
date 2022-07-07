@@ -1,6 +1,5 @@
 package no.nav.eessi.pensjon.eux
 
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.eessi.pensjon.eux.model.buc.Buc
 import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
@@ -15,7 +14,7 @@ import javax.annotation.PostConstruct
 @Service
 class EuxDokumentHelper(
     private val euxKlient: EuxKlient,
-    @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper(SimpleMeterRegistry())
+    @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
 ) {
 
     private val logger = LoggerFactory.getLogger(EuxDokumentHelper::class.java)

@@ -2,34 +2,31 @@ buildscript {
 
 	ext {
 		kotlinVersion = '1.7.0'
-		springBootVersion = '2.6.6'
-		springBootTestVersion = '2.6.6'
+		springBootVersion = '2.7.1'
 		cxfVersion = '3.4.2'
 		jacksonVersion = '2.13.3'
 		oidcTokenSupportVersion = '1.3.9'
 		logstashLogbackVersion = '7.0.1'
 		pensjonInformasjonVersion = '9.4.10'
 		mockserverVersion = '5.13.2'
-		epMetricsVersion = '0.4.29'
+		epMetricsVersion = '0.5.0'
 		epLoggingVersion = '1.0.24'
-		epPersonoppslagVersion = '10.2.7'
+		epPersonoppslagVersion = '11.0.1'
 		epEuxVersion = '1.1.76'
-		microMeterVersion='1.8.1'
 		gcpStorageVersion = '2.6.0'
 	}
 	repositories {
 		mavenCentral()
 	}
-
-	dependencies {
-		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-		classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
-		classpath("org.jetbrains.kotlin:kotlin-allopen:${kotlinVersion}")
-		classpath("gradle.plugin.org.openrepose:gradle-jaxb-plugin:2.5.0")
-	}
 }
 
 plugins {
+	id "org.jetbrains.kotlin.jvm" version "${kotlinVersion}"
+	id "org.jetbrains.kotlin.plugin.spring" version "$kotlinVersion"
+	id "org.jetbrains.kotlin.plugin.allopen" version "${kotlinVersion}"
+	id 'org.springframework.boot' version "${springBootVersion}"
+	id "io.spring.dependency-management" version "1.0.11.RELEASE"
+	id "org.openrepose.gradle.plugins.jaxb" version "2.5.0"
 	id 'com.github.ben-manes.versions' version '0.42.0'
 	id "se.patrikerdes.use-latest-versions" version "0.2.18"
 	id "org.owasp.dependencycheck" version "7.1.1"
@@ -40,38 +37,32 @@ plugins {
 
 assert JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17): "Java 17 or newer is required"
 
-apply plugin: 'kotlin'
-apply plugin: 'kotlin-spring'
-apply plugin: 'org.springframework.boot'
-apply plugin: 'io.spring.dependency-management'
-apply plugin: 'org.openrepose.gradle.plugins.jaxb'
-
 group = 'no.nav.eessi.pensjon'
-
-//configurations {
-//	xsd
-//}
 
 dependencies {
 
-	// Spring-boot
-	implementation("org.springframework.boot:spring-boot-starter-aop:${springBootVersion}")
-	implementation("org.springframework.boot:spring-boot-starter-web:${springBootVersion}")
-	implementation("org.apache.httpcomponents:httpclient:4.5.13")
+	// Spring-boot BOM-fil spesifiserer versjoner for Spring Boot-avhengigheter
+	implementation(platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}"))
+	implementation("org.springframework.boot:spring-boot-starter-aop")
+	implementation("org.springframework.boot:spring-boot-starter-web")
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
+	implementation("org.springframework.boot:spring-boot-actuator")
 
-	implementation("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
-	implementation("org.springframework.boot:spring-boot-actuator:${springBootVersion}")
+	// Spring Framework BOM-fil overstyrer så vi får siste patch-versjon av Spring Framework
+	implementation(platform("org.springframework:spring-framework-bom:5.3.21"))
+
+	implementation("org.apache.httpcomponents:httpclient:4.5.13")
 
 	implementation('org.springframework.retry:spring-retry:1.3.2')
 
 	implementation "com.fasterxml.jackson.module:jackson-module-kotlin:${jacksonVersion}"
 	implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}"
 	implementation 'org.jetbrains.kotlin:kotlin-reflect'
-	implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+
 	implementation 'org.springframework.kafka:spring-kafka:2.8.4'
 
 	// Micrometer
-	implementation("io.micrometer:micrometer-registry-prometheus:$microMeterVersion")
+	implementation("io.micrometer:micrometer-registry-prometheus")
 
 	// Eessi pensjon biblioteker
 	implementation("no.nav.eessi.pensjon:ep-metrics:${epMetricsVersion}")
@@ -95,7 +86,7 @@ dependencies {
 	implementation("com.google.cloud:google-cloud-storage:$gcpStorageVersion")
 	implementation(platform("com.google.cloud:libraries-bom:25.1.0"))
 
-	testImplementation("org.springframework.boot:spring-boot-starter-test:${springBootTestVersion}") {
+	testImplementation("org.springframework.boot:spring-boot-starter-test") {
 		exclude module: 'junit'
 		exclude module: "mockito-core"
 		exclude module: "junit-vintage-engine"

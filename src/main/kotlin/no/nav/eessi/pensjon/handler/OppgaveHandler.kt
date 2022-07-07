@@ -1,6 +1,5 @@
 package no.nav.eessi.pensjon.handler
 
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.lagring.LagringsService
 import no.nav.eessi.pensjon.metrics.MetricsHelper
@@ -25,7 +24,7 @@ class OppgaveHandler(
     private val lagringsService: LagringsService,
     private val oppgaveruting: OppgaveRoutingService,
     @Value("\${namespace}") var nameSpace: String,
-    @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper(SimpleMeterRegistry()) ) {
+    @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest() ) {
 
     private val logger = LoggerFactory.getLogger(OppgaveHandler::class.java)
     private val X_REQUEST_ID = "x_request_id"

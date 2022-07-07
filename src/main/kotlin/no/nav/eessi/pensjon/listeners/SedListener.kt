@@ -1,7 +1,6 @@
 package no.nav.eessi.pensjon.listeners
 
 import io.micrometer.core.instrument.Metrics
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.eessi.pensjon.eux.EuxDokumentHelper
 import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.eux.UtenlandskPersonIdentifisering
@@ -45,7 +44,7 @@ class SedListener(
     private val kodeverkClient: KodeverkClient,
     private val oppgaveHandler: OppgaveHandler,
     @Value("\${SPRING_PROFILES_ACTIVE}") private val profile: String,
-    @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper(SimpleMeterRegistry())
+    @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
 ) {
 
     private val logger = LoggerFactory.getLogger(SedListener::class.java)
