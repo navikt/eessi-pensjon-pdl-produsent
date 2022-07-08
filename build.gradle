@@ -57,6 +57,8 @@ dependencies {
 
 	implementation "com.fasterxml.jackson.module:jackson-module-kotlin:${jacksonVersion}"
 	implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}"
+
+	implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
 	implementation 'org.jetbrains.kotlin:kotlin-reflect'
 
 	implementation 'org.springframework.kafka:spring-kafka:2.8.4'
