@@ -18,20 +18,16 @@ class UtenlandskPersonIdentifisering {
 
     fun hentAlleUtenlandskeIder(seder: List<Pair<ForenkletSED, SED>>): List<UtenlandskId> =
         seder
-            .filter {
-                    (forenkletSED, sed) ->
-                        logger.debug("sedType: ${forenkletSED.type}, SEDType: ${sed.type}, status: ${forenkletSED.status}")
-                        forenkletSED.status == SedStatus.RECEIVED
-            }.flatMap { (_, sed) -> filtrerAlleUtenlandskeIder(hentAllePersoner(sed)) }
+            .onEach { (forenkletSED, sed) -> logger.debug("sedType: ${forenkletSED.type}, SEDType: ${sed.type}, status: ${forenkletSED.status}") }
+            .filter { (forenkletSED, _) -> forenkletSED.status == SedStatus.RECEIVED }
+            .map { (_, sed ) -> sed }
+            .flatMap { hentAllePersoner(it) }
+            .filter { it?.pin != null }
+            .flatMap { it?.pin!! }
+            .filter { it.land != null && it.identifikator != null }
+            .filter { it.land != "NO" }
+            .map { UtenlandskId(it.identifikator!!, it.land!!) }
 
-
-    private fun filtrerAlleUtenlandskeIder(personer: List<Person?>): List<UtenlandskId> {
-        return personer.filter { person -> person?.pin != null }
-            .flatMap { person -> person?.pin!! }
-            .filter { pin -> pin.land != null && pin.identifikator != null }
-            .filter { pin -> pin.land != "NO" }
-            .map { pin -> UtenlandskId(pin.identifikator!!, pin.land!!) }
-    }
 
     internal fun hentAllePersoner(sed: SED): List<Person?> =
         listOf(
