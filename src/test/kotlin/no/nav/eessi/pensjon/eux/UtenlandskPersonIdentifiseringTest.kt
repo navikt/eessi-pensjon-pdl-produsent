@@ -16,7 +16,7 @@ internal class UtenlandskPersonIdentifiseringTest {
 
         val sed = SED.fromJsonToConcrete(javaClass.getResource("/eux/sed/P2100-PinDK-NAV.json")!!.readText())
 
-        val result = utenlandskPersonIdentifisering.hentAllePersoner(sed)
+        val result = sed.allePersoner()
         assertEquals(3, result.size)
 
     }
@@ -26,8 +26,8 @@ internal class UtenlandskPersonIdentifiseringTest {
 
         val s = SED(SedType.P2100)
 
-        println(utenlandskPersonIdentifisering.hentAllePersoner(s))
-        assertEquals(0, utenlandskPersonIdentifisering.hentAllePersoner(s).size)
+        println(s.allePersoner())
+        assertEquals(0, s.allePersoner().size)
     }
 
     @Test
@@ -48,7 +48,7 @@ internal class UtenlandskPersonIdentifiseringTest {
 
         val p7000Json = javaClass.getResource("/eux/sed/P7000-NAV.json")!!.readText()
         val p7000 = SED.fromJsonToConcrete(p7000Json)
-        val resultat = utenlandskPersonIdentifisering.hentAllePersoner(p7000)
+        val resultat = p7000.allePersoner()
 
         assertEquals(2, resultat.size)
 
@@ -58,7 +58,7 @@ internal class UtenlandskPersonIdentifiseringTest {
     fun `Gitt en P5000 med personer når vi henter personer fra sed så returneres alle spesifikke personer med pin`() {
 
         val p5000 = SED.fromJsonToConcrete(javaClass.getResource("/eux/sed/P7000-NAV.json")!!.readText())
-        assertEquals(2, utenlandskPersonIdentifisering.hentAllePersoner(p5000).size)
+        assertEquals(2, p5000.allePersoner().size)
 
     }
 
@@ -66,7 +66,7 @@ internal class UtenlandskPersonIdentifiseringTest {
     fun `Gitt en P15000 med personer når vi henter personer fra sed så returneres alle spesifikke personer med pin`() {
 
         val p15000 = SED.fromJsonToConcrete(javaClass.getResource("/eux/sed/P15000-NAV.json")!!.readText())
-        assertEquals(2, utenlandskPersonIdentifisering.hentAllePersoner(p15000).size)
+        assertEquals(2, p15000.allePersoner().size)
 
     }
 
@@ -74,7 +74,7 @@ internal class UtenlandskPersonIdentifiseringTest {
     fun `Gitt en P15000 med personer uten pin når vi henter personer fra sed så returneres tom liste`() {
 
         val p15000 = SED.fromJsonToConcrete(javaClass.getResource("/eux/sed/P15000-UtenPin-NAV.json")!!.readText())
-        assertEquals(0, utenlandskPersonIdentifisering.hentAllePersoner(p15000).size)
+        assertEquals(0, p15000.allePersoner().size)
 
     }
 
@@ -82,7 +82,7 @@ internal class UtenlandskPersonIdentifiseringTest {
     fun `Gitt en P2200 med personer inklusive barn når vi henter personer fra sed så returneres alle spesifikke personer med pin`() {
 
         val p2200 = SED.fromJsonToConcrete(javaClass.getResource("/eux/sed/P2200-MedFamilie-NAV.json")!!.readText())
-        assertEquals(5, utenlandskPersonIdentifisering.hentAllePersoner(p2200).size)
+        assertEquals(5, p2200.allePersoner().size)
 
     }
 
