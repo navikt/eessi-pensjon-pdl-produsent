@@ -75,7 +75,7 @@ class PersonidentifiseringService(private val personService: PersonService, priv
             relasjon.fnr,
             person.utenlandskIdentifikasjonsnummer,
             person.identer.first { it.gruppe == IdentGruppe.AKTORID }.ident,
-            hentLandkode(person),
+            person.landkode(),
             person.geografiskTilknytning?.gtKommune ?: person.geografiskTilknytning?.gtBydel,
             finnesPersonMedAdressebeskyttelse(relasjon.fnr!!),
             null,
@@ -89,55 +89,4 @@ class PersonidentifiseringService(private val personService: PersonService, priv
         val gradering = listOf(AdressebeskyttelseGradering.STRENGT_FORTROLIG_UTLAND, AdressebeskyttelseGradering.STRENGT_FORTROLIG)
         return personService.harAdressebeskyttelse(fnr, gradering)
     }
-
-    private fun hentLandkode(person: Person): String {
-        val landkodeOppholdKontakt = person.kontaktadresse?.utenlandskAdresseIFrittFormat?.landkode
-        val landkodeUtlandsAdresse = person.kontaktadresse?.utenlandskAdresse?.landkode
-        val landkodeOppholdsadresse = person.oppholdsadresse?.utenlandskAdresse?.landkode
-        val landkodeBostedsadresse = person.bostedsadresse?.utenlandskAdresse?.landkode
-        val geografiskLandkode = person.geografiskTilknytning?.gtLand
-        val landkodeBostedNorge = person.bostedsadresse?.vegadresse
-        val landkodeKontaktNorge = person.kontaktadresse?.postadresseIFrittFormat
-
-        logger.debug("Landkode og person: ${person.toJson()}")
-
-        return when {
-            landkodeOppholdKontakt != null -> {
-                logger.info("Velger landkode fra kontaktadresse.utenlandskAdresseIFrittFormat ")
-                landkodeOppholdKontakt
-            }
-            landkodeUtlandsAdresse != null -> {
-                logger.info("Velger landkode fra kontaktadresse.utenlandskAdresse")
-                landkodeUtlandsAdresse
-            }
-            landkodeOppholdsadresse != null -> {
-                logger.info("Velger landkode fra oppholdsadresse.utenlandskAdresse")
-                landkodeOppholdsadresse
-            }
-            landkodeBostedsadresse != null -> {
-                logger.info("Velger landkode fra bostedsadresse.utenlandskAdresse")
-                landkodeBostedsadresse
-            }
-            geografiskLandkode != null -> {
-                logger.info("Velger landkode fra geografiskTilknytning.gtLand")
-                geografiskLandkode
-            }
-            landkodeBostedNorge != null -> {
-                logger.info("Velger landkode NOR fordi  bostedsadresse.vegadresse ikke er tom")
-                "NOR"
-            }
-            landkodeKontaktNorge != null -> {
-                logger.info("Velger landkode NOR fordi  kontaktadresse.postadresseIFrittFormat ikke er tom")
-                "NOR"
-            }
-            else -> {
-                logger.info("Velger tom landkode siden ingen særregler for adresseutvelger inntraff")
-                ""
-            }
-        }
-    }
-
 }
-
-
-
