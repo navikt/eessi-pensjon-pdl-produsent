@@ -3,7 +3,7 @@ package no.nav.eessi.pensjon.pdl.validering
 import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
-import no.nav.eessi.pensjon.services.kodeverk.KodeverkClient
+import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 

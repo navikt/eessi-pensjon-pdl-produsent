@@ -2,7 +2,7 @@ package no.nav.eessi.pensjon.pdl.filtrering
 
 import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
-import no.nav.eessi.pensjon.services.kodeverk.KodeverkClient
+import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
