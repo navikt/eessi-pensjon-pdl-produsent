@@ -22,18 +22,16 @@ class UtenlandskPersonIdentifisering {
     private fun hentAlleUtenlandskeIder(doc: ForenkletSED, sed: SED): List<UtenlandskId> =
         filtrerAlleUtenlandskeIder(filterKunPaaSedStatus(doc, sed))
 
-    fun filterKunPaaSedStatus(forenkletSED: ForenkletSED, sed: SED) : List<Person?> {
+    private fun filterKunPaaSedStatus(forenkletSED: ForenkletSED, sed: SED): List<Person?> {
         logger.debug("sedType: ${forenkletSED.type}, SEDType: ${sed.type}, status: ${forenkletSED.status}")
-
-        return if (forenkletSED.status == SedStatus.RECEIVED)
+        return if (forenkletSED.status == SedStatus.RECEIVED) {
             hentAllePersoner(sed)
-        else {
-            logger.debug("Ikke ${SedStatus.RECEIVED}")
+        } else {
             emptyList()
         }
     }
 
-    fun filtrerAlleUtenlandskeIder(personer: List<Person?>): List<UtenlandskId> {
+    private fun filtrerAlleUtenlandskeIder(personer: List<Person?>): List<UtenlandskId> {
         return personer.filter { person -> person?.pin != null }
             .flatMap { person -> person?.pin!! }
             .filter { pin -> pin.land != null && pin.identifikator != null }
@@ -41,7 +39,7 @@ class UtenlandskPersonIdentifisering {
             .map { pin -> UtenlandskId(pin.identifikator!!, pin.land!!) }
     }
 
-    fun hentAllePersoner(sed: SED): List<Person?> =
+    internal fun hentAllePersoner(sed: SED): List<Person?> =
         listOf(
             sed.nav?.bruker?.person,
             sed.nav?.annenperson?.person,
