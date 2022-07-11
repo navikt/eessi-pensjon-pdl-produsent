@@ -17,19 +17,13 @@ import org.springframework.stereotype.Component
 class UtenlandskPersonIdentifisering {
 
     fun hentAlleUtenlandskeIder(seder: List<Pair<ForenkletSED, SED>>): List<UtenlandskId> =
-        seder.flatMap { (docitem, sed) -> hentAlleUtenlandskeIder(docitem, sed) }
+        seder
+            .filter {
+                    (forenkletSED, sed) ->
+                        logger.debug("sedType: ${forenkletSED.type}, SEDType: ${sed.type}, status: ${forenkletSED.status}")
+                        forenkletSED.status == SedStatus.RECEIVED
+            }.flatMap { (_, sed) -> filtrerAlleUtenlandskeIder(hentAllePersoner(sed)) }
 
-    private fun hentAlleUtenlandskeIder(doc: ForenkletSED, sed: SED): List<UtenlandskId> =
-        filtrerAlleUtenlandskeIder(filterKunPaaSedStatus(doc, sed))
-
-    private fun filterKunPaaSedStatus(forenkletSED: ForenkletSED, sed: SED): List<Person?> {
-        logger.debug("sedType: ${forenkletSED.type}, SEDType: ${sed.type}, status: ${forenkletSED.status}")
-        return if (forenkletSED.status == SedStatus.RECEIVED) {
-            hentAllePersoner(sed)
-        } else {
-            emptyList()
-        }
-    }
 
     private fun filtrerAlleUtenlandskeIder(personer: List<Person?>): List<UtenlandskId> {
         return personer.filter { person -> person?.pin != null }
