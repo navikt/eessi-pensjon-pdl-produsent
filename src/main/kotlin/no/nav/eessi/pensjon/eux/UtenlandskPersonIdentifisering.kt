@@ -21,29 +21,26 @@ import org.springframework.stereotype.Component
 @Component
 class UtenlandskPersonIdentifisering {
 
-    fun hentAllePersoner(sed: SED): List<Person?> {
-        var personer: List<Person?>  = mutableListOf()
-        personer = personer.plus(sed.nav?.bruker?.person)
-        personer = personer.plus(sed.nav?.annenperson?.person)
+    fun hentAllePersoner(sed: SED): List<Person?> =
+        listOf(
+            sed.nav?.bruker?.person,
+            sed.nav?.annenperson?.person,
+            sed.nav?.ektefelle?.person,
+            sed.nav?.verge?.person,
+            sed.nav?.ektefelle?.person,
+            sed.pensjon?.gjenlevende?.person
+        ).plus((sed.nav?.barn?.map { it.person } ?: emptyList())
+        ).plus(
+                when(sed.type) {
+                    SedType.P4000 -> hentP4000Personer((sed as P4000).p4000Pensjon)
+                    SedType.P5000 -> hentP5000Personer((sed as P5000).p5000Pensjon)
+                    SedType.P6000 -> hentP6000Personer((sed as P6000).p6000Pensjon)
+                    SedType.P7000 -> hentP7000Personer((sed as P7000).p7000Pensjon)
+                    SedType.P15000 -> hentP15000Personer((sed as P15000).p15000Pensjon)
+                    else -> null
+                }
+        ).filterNotNull().filter { it.pin != null }
 
-        sed.nav?.barn?.forEach { personer = personer.plus(it.person) }
-
-        personer = personer.plus(sed.nav?.ektefelle?.person)
-        personer = personer.plus(sed.nav?.verge?.person)
-        personer = personer.plus(sed.nav?.ektefelle?.person)
-        personer = personer.plus(sed.pensjon?.gjenlevende?.person)
-
-
-        when(sed.type) {
-            SedType.P4000 -> personer = personer.plus(hentP4000Personer((sed as P4000).p4000Pensjon))
-            SedType.P5000 -> personer = personer.plus(hentP5000Personer((sed as P5000).p5000Pensjon))
-            SedType.P6000 -> personer = personer.plus(hentP6000Personer((sed as P6000).p6000Pensjon))
-            SedType.P7000 -> personer = personer.plus(hentP7000Personer((sed as P7000).p7000Pensjon))
-            SedType.P15000 ->personer =  personer.plus(hentP15000Personer((sed as P15000).p15000Pensjon))
-            else -> {}
-        }
-        return personer.filterNotNull().filterNot { person -> person.pin == null }
-    }
 
     fun filterKunPaaSedStatus(forenkletSED: ForenkletSED, sed: SED) : List<Person?> {
         logger.debug("sedType: ${forenkletSED.type}, SEDType: ${sed.type}, status: ${forenkletSED.status}")
