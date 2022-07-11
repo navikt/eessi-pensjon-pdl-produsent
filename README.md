@@ -1,7 +1,11 @@
 # eessi-pensjon-pdl-produsent
 Oppdatering av personopplysninger fra SED til PDL
 
-test
+## Oppdatere avhengigheter
+
+Det er viktig at man holder avhengigheter oppdatert for å unngå sikkerhetshull.
+
+Se mer dokumentasjon rundt dette her: [Oppgradere avhengigheter](https://github.com/navikt/eessi-pensjon/blob/master/docs/dev/oppgradere_avhengigheter.md).
 
 ## SonarQube m/JaCoCo
 
