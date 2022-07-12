@@ -17,7 +17,7 @@ import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.sed.Status
 import no.nav.eessi.pensjon.eux.model.sed.TilbakekrevingBrukere
-import no.nav.eessi.pensjon.personidentifisering.Rolle
+import no.nav.eessi.pensjon.personidentifisering.helpers.Rolle
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 import no.nav.eessi.pensjon.personoppslag.pdl.model.SokKriterier
 import java.time.LocalDate
