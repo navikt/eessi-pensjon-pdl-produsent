@@ -18,7 +18,7 @@ ENV: 'q2'
 NAIS_APP_NAME: eessi-pensjon-pdl-produsent
 
 EUX_RINA_API_V1_URL: http://localhost:${mockserverport}
-PDL_URL: http://localhost:${mockserverport}
+PDL_URL: http://localhost:${mockserverport}/PDL
 PDL_PERSON_MOTTAK_URL: http://localhost:${mockserverport}
 securitytokenservice.url: http://someurl
 srvusername: someuser

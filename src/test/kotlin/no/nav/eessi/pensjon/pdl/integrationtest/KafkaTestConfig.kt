@@ -12,6 +12,7 @@ import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.TestConfiguration
+import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Primary
 import org.springframework.core.Ordered
@@ -82,7 +83,7 @@ class KafkaTestConfig(
 
     @Bean
     fun personMottakRestTemplate(): RestTemplate {
-        return mockk()
+        return mockedRestTemplate()
     }
 
     @Bean
@@ -93,6 +94,13 @@ class KafkaTestConfig(
     @Bean
     fun norg2OidcRestTemplate(): RestTemplate {
         return mockk()
+    }
+
+    private fun mockedRestTemplate(): RestTemplate {
+        val port = System.getProperty("mockserverport")
+        return RestTemplateBuilder()
+            .rootUri("http://localhost:${port}")
+            .build()
     }
 
     @Bean

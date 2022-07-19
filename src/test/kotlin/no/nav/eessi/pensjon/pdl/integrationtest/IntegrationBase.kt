@@ -28,6 +28,7 @@ import org.apache.http.ssl.TrustStrategy
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
+import org.mockserver.client.MockServerClient
 import org.mockserver.integration.ClientAndServer
 import org.mockserver.socket.PortFactory
 import org.slf4j.LoggerFactory
@@ -52,8 +53,6 @@ import java.util.concurrent.TimeUnit
 import javax.net.ssl.SSLContext
 
 const val PDL_PRODUSENT_TOPIC_MOTTATT = "eessi-basis-sedMottatt-v1"
-private var mockserverport = PortFactory.findFreePort()
-
 abstract class IntegrationBase {
 
     @Autowired(required = true)
@@ -74,64 +73,55 @@ abstract class IntegrationBase {
     private val deugLogger: Logger = LoggerFactory.getLogger("no.nav.eessi.pensjon") as Logger
     private val listAppender = ListAppender<ILoggingEvent>()
 
-    var mockServer: ClientAndServer
-
-    abstract fun getMockNorg2enhet() : Enhet
-
-    abstract fun getMockPerson() : Person?
+    lateinit var mockServer: ClientAndServer
+    lateinit var kafkaTemplate: KafkaTemplate<String, String>
+    lateinit var mottattContainer: KafkaMessageListenerContainer<String, String>
 
     init {
-        System.setProperty("mockserverport", "" + mockserverport)
-        mockServer = ClientAndServer.startClientAndServer(mockserverport)
-
+        if (System.getProperty("mockserverport") == null) {
+            mockServer = ClientAndServer(PortFactory.findFreePort())
+                .also {
+                    System.setProperty("mockserverport", it.localPort.toString())
+                }
+        }
     }
 
     @BeforeEach
     fun setup() {
-        every { norg2.hentArbeidsfordelingEnhet(any()) } returns getMockNorg2enhet()
         every { personService.harAdressebeskyttelse(any(), any()) } returns false
-        if (getMockPerson() != null) every { personService.hentPerson(NorskIdent(getMockPerson()!!.identer.first { it.gruppe == IdentGruppe.FOLKEREGISTERIDENT }.ident)) } returns getMockPerson()!!
 
         listAppender.start()
         deugLogger.addAppender(listAppender)
+        mottattContainer = initConsumer()
+        mottattContainer.start()
+        ContainerTestUtils.waitForAssignment(mottattContainer, embeddedKafka.partitionsPerTopic)
+        Thread.sleep(2000); // wait a bit for the container to start
+
+        kafkaTemplate =  KafkaTemplate(producerFactory).apply { defaultTopic = PDL_PRODUSENT_TOPIC_MOTTATT }
+
     }
 
     @AfterEach
     fun after() {
         println("****************************** after ********************************")
         listAppender.stop()
-        embeddedKafka.kafkaServers.forEach {
-            it.shutdown()
-        }
-        embeddedKafka.destroy()
-        mockServer.stop().also { print("mockServer -> HasStopped: ${mockServer.hasStopped()}") }
+        mottattContainer.stop()
+        MockServerClient("localhost", System.getProperty("mockserverport").toInt()).reset()
     }
 
-    fun initAndRunContainer(topic: String): TestResult {
-        val container = initConsumer(topic)
-        container.start()
-
-        ContainerTestUtils.waitForAssignment(container, embeddedKafka.partitionsPerTopic)
-        val template = KafkaTemplate(producerFactory).apply { defaultTopic = topic }
-        return TestResult(template, container).also {
-            println("*************************  INIT DONE *****************************")
-        }
-    }
-    data class TestResult(
-        val kafkaTemplate: KafkaTemplate<String, String>,
-        val topic: KafkaMessageListenerContainer<String, String>
-    ) {
-
-        fun sendMsgOnDefaultTopic(kafkaMsgFromPath: String) {
-            kafkaTemplate.sendDefault(kafkaMsgFromPath).get()
-        }
-
-        fun waitForlatch(listener: SedListener) {
-            listener.getLatch().await(30, TimeUnit.SECONDS)
-        }
+    fun sendMelding(messagePath: String) {
+        kafkaTemplate.sendDefault(javaClass.getResource(messagePath)!!.readText()).get(20L, TimeUnit.SECONDS)
+        sedListener.getLatch().await(20, TimeUnit.SECONDS)
+        Thread.sleep(5000)
     }
 
-    private fun initConsumer(topicName: String): KafkaMessageListenerContainer<String, String> {
+    fun sendMeldingString(message: String) {
+        kafkaTemplate.sendDefault(message).get(20L, TimeUnit.SECONDS)
+        sedListener.getLatch().await(20, TimeUnit.SECONDS)
+        Thread.sleep(5000)
+    }
+
+    private fun initConsumer(): KafkaMessageListenerContainer<String, String> {
         val consumerProperties = KafkaTestUtils.consumerProps(
             UUID.randomUUID().toString(),
             "false",
@@ -140,7 +130,7 @@ abstract class IntegrationBase {
         consumerProperties[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
         val consumerFactory = DefaultKafkaConsumerFactory<String, String>(consumerProperties)
 
-        return KafkaMessageListenerContainer(consumerFactory, ContainerProperties(topicName)).apply {
+        return KafkaMessageListenerContainer(consumerFactory, ContainerProperties(PDL_PRODUSENT_TOPIC_MOTTATT)).apply {
             setupMessageListener(MessageListener<String, String> { record -> println("Konsumerer melding:  $record") })
         }
     }
@@ -168,7 +158,7 @@ abstract class IntegrationBase {
         return ForenkletSED(id, type, status)
     }
 
-    fun mockHendlese(avsenderLand: String = "DK", avsenderNavn: String = "DK:D005", bucType: BucType = BucType.P_BUC_01, sedType: SedType = SedType.P2000, docId: String = "b12e06dda2c7474b9998c7139c841646"): String {
+    fun mockHendelse(avsenderLand: String = "DK", avsenderNavn: String = "DK:D005", bucType: BucType = BucType.P_BUC_01, sedType: SedType = SedType.P2000, docId: String = "b12e06dda2c7474b9998c7139c841646"): String {
         return """
             {
               "id": 1869,
@@ -269,9 +259,8 @@ abstract class IntegrationBase {
 
             val customRequestFactory = HttpComponentsClientHttpRequestFactory()
             customRequestFactory.httpClient = httpClient
-
             return RestTemplateBuilder()
-                .rootUri("https://localhost:${mockserverport}")
+                .rootUri("https://localhost:${System.getProperty("mockserverport")}")
                 .build().apply {
                     requestFactory = customRequestFactory
                 }
