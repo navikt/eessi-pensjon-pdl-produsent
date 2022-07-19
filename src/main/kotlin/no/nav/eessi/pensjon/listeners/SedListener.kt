@@ -119,12 +119,12 @@ class SedListener(
                 ) return
 
                 logger.debug("Validerer uid fra sed som ikke finnes i PDL: ${identifisertePersoner.size}")
-                val filtrerUidSomIkkeFinnesIPdl = pdlFiltrering.finnesUidFraSedIPDL(
+                val pdlInneholderAlleredeUID = pdlFiltrering.finnesUidFraSedIPDL(
                     identifisertePersoner.first().uidFraPdl,
                     utenlandskeIderFraSed.first()
                 )
                 //sjekk om PDLuid er identisk SEDuid (true så finnes de og er identiske)
-                if (filtrerUidSomIkkeFinnesIPdl) {
+                if (pdlInneholderAlleredeUID) {
                     logger.info("PDLuid er identisk med SEDuid Acket sedMottatt: ${cr.offset()}")
                     countEnhet("PDLuid er identisk med SEDuid")
                     acknowledgment.acknowledge()
