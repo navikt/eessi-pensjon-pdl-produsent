@@ -10,24 +10,24 @@ internal class GyldigeHendelserTest {
 
     @Test
     fun `Mottatt hendelse som IKKE er R_BUC_02, H_BUC_07, eller sektorkode P er ugyldig`() {
-        val hendelse = createDummy("", BucType.P_BUC_01)
+        val hendelse = createDummy(bucType = BucType.P_BUC_01)
 
         assertFalse(GyldigeHendelser.mottatt(hendelse))
     }
 
     @Test
     fun `Mottatt hendelse som mangler BucType`() {
-        val hendelse = createDummy("", null)
+        val hendelse = createDummy()
         assertFalse(GyldigeHendelser.mottatt(hendelse))
     }
 
     @Test
     fun `mottatt hendelse som mangler BucType`() {
-        val hendelse = createDummy("", null)
+        val hendelse = createDummy()
 
         assertFalse(GyldigeHendelser.mottatt(hendelse))
     }
 
-    private fun createDummy(sektor: String, bucType: BucType?) =
+    private fun createDummy(sektor: String = "", bucType: BucType? = null) =
             SedHendelseModel(sektorKode = sektor, bucType = bucType, rinaSakId = "12345", rinaDokumentId = "654634", rinaDokumentVersjon = "1")
 }
