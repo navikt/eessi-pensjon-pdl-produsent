@@ -8,7 +8,7 @@ import no.nav.eessi.pensjon.personidentifisering.Relasjon
 import no.nav.eessi.pensjon.personidentifisering.SEDPersonRelasjon
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 
-abstract class GjenlevendeHvisFinnes(private val sed: SED, private val bucType: BucType, private val rinaDocumentId: String) : AbstractRelasjon(sed, bucType, rinaDocumentId) {
+abstract class GjenlevendeHvisFinnes(private val sed: SED, bucType: BucType, private val rinaDocumentId: String) : AbstractRelasjon(sed, bucType, rinaDocumentId) {
 
     fun hentRelasjonGjenlevendeFnrHvisFinnes(gjenlevendeBruker: Bruker? = null) : List<SEDPersonRelasjon> {
         logger.info("Leter etter gyldig ident og relasjon(er) i SedType: ${sed.type}")
@@ -42,11 +42,8 @@ abstract class GjenlevendeHvisFinnes(private val sed: SED, private val bucType: 
         return emptyList()
     }
 
-    fun erGjenlevendeBarn(relasjon: String): Boolean {
+    private fun erGjenlevendeBarn(relasjon: String): Boolean {
         val gyldigeBarneRelasjoner = listOf("EGET_BARN", "06", "ADOPTIVBARN", "07", "FOSTERBARN", "08", "STEBARN", "09")
         return relasjon in gyldigeBarneRelasjoner
     }
-
-
-
 }
