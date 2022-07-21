@@ -47,7 +47,7 @@ class EuxDokumentHelper(
         return documents
             .filter(ForenkletSED::harGyldigStatus)
             .map { docitem -> Pair(docitem, hentSed(rinaSakId, docitem.id)) }
-            .onEach { (docitem, sed) ->  logger.debug("SED av type: ${docitem.type}, status: ${docitem.status}") }
+            .onEach { (docitem, _) ->  logger.debug("SED av type: ${docitem.type}, status: ${docitem.status}") }
 
     }
 
