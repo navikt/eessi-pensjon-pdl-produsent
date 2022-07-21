@@ -1,4 +1,4 @@
-package no.nav.eessi.pensjon.personidentifisering.helpers
+package no.nav.eessi.pensjon.personidentifisering
 
 import com.fasterxml.jackson.annotation.JsonValue
 

@@ -3,9 +3,9 @@ package no.nav.eessi.pensjon.personidentifisering.relasjoner
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.personidentifisering.Relasjon
+import no.nav.eessi.pensjon.personidentifisering.Rolle
 import no.nav.eessi.pensjon.personidentifisering.SEDPersonRelasjon
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
-import no.nav.eessi.pensjon.personidentifisering.helpers.Rolle
 
 /**
  * Generic Hjelpe Relasjon klassse for innhenting av ident fra øvrikge SED vi ikke har spesefikkt laget egne klasser for.

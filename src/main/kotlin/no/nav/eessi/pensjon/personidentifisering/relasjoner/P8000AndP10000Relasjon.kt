@@ -3,11 +3,11 @@ package no.nav.eessi.pensjon.personidentifisering.relasjoner
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.personidentifisering.Relasjon
+import no.nav.eessi.pensjon.personidentifisering.Rolle.BARN
+import no.nav.eessi.pensjon.personidentifisering.Rolle.ETTERLATTE
+import no.nav.eessi.pensjon.personidentifisering.Rolle.FORSORGER
 import no.nav.eessi.pensjon.personidentifisering.SEDPersonRelasjon
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
-import no.nav.eessi.pensjon.personidentifisering.helpers.Rolle.BARN
-import no.nav.eessi.pensjon.personidentifisering.helpers.Rolle.ETTERLATTE
-import no.nav.eessi.pensjon.personidentifisering.helpers.Rolle.FORSORGER
 
 
 class P8000AndP10000Relasjon(private val sed: SED, private val bucType: BucType, private val rinaDocumentId: String): AbstractRelasjon(sed, bucType, rinaDocumentId) {
