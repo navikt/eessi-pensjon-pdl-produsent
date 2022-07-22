@@ -5,9 +5,8 @@ import no.nav.eessi.pensjon.eux.model.sed.R005
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
 import no.nav.eessi.pensjon.utils.typeRefs
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
 internal class R005RelasjonTest : RelasjonTestBase(){
 
@@ -23,7 +22,7 @@ internal class R005RelasjonTest : RelasjonTestBase(){
         val actual = R005Relasjon(r005, BucType.R_BUC_02, "" +
                 "654sdfguhdfigh").hentRelasjoner()
 
-        Assertions.assertEquals(0, actual.size)
+        assertEquals(0, actual.size)
     }
 
     @Test

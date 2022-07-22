@@ -2,7 +2,6 @@ package no.nav.eessi.pensjon.pdl.integrationtest
 
 import org.mockserver.client.MockServerClient
 import org.mockserver.model.Header
-import org.mockserver.model.HttpRequest
 import org.mockserver.model.HttpRequest.request
 import org.mockserver.model.HttpResponse
 import org.mockserver.model.HttpStatusCode
@@ -60,7 +59,7 @@ class CustomMockServer() {
 
     fun medEndring() = apply {
         MockServerClient("localhost", serverPort).`when`(
-            HttpRequest.request()
+            request()
                 .withMethod(HttpMethod.POST.name)
                 .withPath("/api/v1/endringer")
         )

@@ -12,11 +12,7 @@ import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.klienter.norg2.Norg2Service
 import no.nav.eessi.pensjon.listeners.SedListener
-import no.nav.eessi.pensjon.models.Enhet
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
-import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
-import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
 import no.nav.eessi.pensjon.utils.typeRefs
@@ -95,7 +91,7 @@ abstract class IntegrationBase {
         mottattContainer = initConsumer()
         mottattContainer.start()
         ContainerTestUtils.waitForAssignment(mottattContainer, embeddedKafka.partitionsPerTopic)
-        Thread.sleep(2000); // wait a bit for the container to start
+        Thread.sleep(2000) // wait a bit for the container to start
 
         kafkaTemplate =  KafkaTemplate(producerFactory).apply { defaultTopic = PDL_PRODUSENT_TOPIC_MOTTATT }
 
