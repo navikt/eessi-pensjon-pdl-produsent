@@ -1,14 +1,7 @@
 package no.nav.eessi.pensjon.eux
 
-import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
-import no.nav.eessi.pensjon.eux.model.sed.P15000
-import no.nav.eessi.pensjon.eux.model.sed.P4000
-import no.nav.eessi.pensjon.eux.model.sed.P5000
-import no.nav.eessi.pensjon.eux.model.sed.P6000
-import no.nav.eessi.pensjon.eux.model.sed.P7000
-import no.nav.eessi.pensjon.eux.model.sed.Person
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.personidentifisering.relasjoner.logger
 import org.springframework.stereotype.Component
@@ -16,7 +9,7 @@ import org.springframework.stereotype.Component
 @Component
 class UtenlandskPersonIdentifisering {
 
-    fun hentAlleUtenlandskeIder(seder: List<Pair<ForenkletSED, SED>>): List<UtenlandskId> =
+    fun finnAlleUtenlandskeIDerIMottatteSed(seder: List<Pair<ForenkletSED, SED>>): List<UtenlandskId> =
         seder
             .onEach { (forenkletSED, sed) -> logger.debug("sedType: ${forenkletSED.type}, SEDType: ${sed.type}, status: ${forenkletSED.status}") }
             .filter { (forenkletSED, _) -> forenkletSED.status == SedStatus.RECEIVED }

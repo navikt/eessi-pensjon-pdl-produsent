@@ -34,48 +34,4 @@ internal class PdlValideringTest {
         val identifisertPerson = UtenlandskId("11067122781", "DE")
         assertFalse (pdlValidering.erUidLandAnnetEnnAvsenderLand(identifisertPerson, "DE"))
     }
-
-    @Test
-    fun `Gitt at vi ikke har en identifisert person så returnerer vi false `() {
-        assertFalse (pdlValidering.finnesIdentifisertePersoner(emptyList()))
-    }
-
-    @Test
-    fun `Gitt at vi har en identifisert person så returnerer vi true `() {
-
-        val metadata = Metadata(
-            listOf(
-                Endring(
-                    "kilde",
-                    LocalDateTime.now(),
-                    "ole",
-                    "system1",
-                    Endringstype.OPPRETT
-                )
-            ),
-            false,
-            "nav",
-            "1234"
-        )
-
-        val identifisertPerson = listOf(IdentifisertPerson(
-            Fodselsnummer.fra("11067122781"),
-            listOf(
-                UtenlandskIdentifikasjonsnummer(
-                    "321654687", "DE", false, null, metadata
-                )
-            ),
-            "32165498765",
-            "NO",
-            "0328",
-            false,
-            null,
-            SEDPersonRelasjon(Fodselsnummer.fra("11067122781"), Relasjon.FORSIKRET, rinaDocumentId =  "3123123"),
-            false
-
-        ))
-
-        assertTrue(pdlValidering.finnesIdentifisertePersoner(identifisertPerson))
-    }
-
 }
