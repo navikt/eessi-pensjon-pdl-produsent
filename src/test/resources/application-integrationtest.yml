@@ -1,17 +1,16 @@
 KAFKA_SEDMOTTATT_TOPIC: 'eessi-basis-sedMottatt-v1'
-KAFKA_SEDMOTTATT_GROUP: 'eessi-pensjon-pdl-produsent-group'
-KAFKA_SED_ADRESSE_TOPIC: 'eessi-basis-sedMottatt-v1'
-KAFKA_SED_ADRESSE_GROUP: 'eessi-pensjon-pdl-adresse-group'
+KAFKA_SEDMOTTATT_IDENT_GROUP: 'eessi-pensjon-pdl-produsent-group'
+KAFKA_SEDMOTTATT_ADRESSE_GROUP: 'eessi-pensjon-pdl-adresse-group'
 KAFKA_OPPGAVE_TOPIC: 'eessi-pensjon-oppgave-v1'
 KAFKA_OPPGAVE_GROUP: 'eessi-pensjon-pdl-produsent-group'
 
 kafka:
   sedMottatt:
     topic: ${KAFKA_SEDMOTTATT_TOPIC}
-    groupid: ${KAFKA_SEDMOTTATT_GROUP}
+    groupid: ${KAFKA_SEDMOTTATT_IDENT_GROUP}
   adresseSed:
-    topic: ${KAFKA_SED_ADRESSE_TOPIC}
-    groupid: ${KAFKA_SED_ADRESSE_GROUP}
+    topic: ${KAFKA_SEDMOTTATT_TOPIC}
+    groupid: ${KAFKA_SEDMOTTATT_ADRESSE_GROUP}
   oppgave:
     topic: ${KAFKA_OPPGAVE_TOPIC}
     groupid: ${$KAFKA_OPPGAVE_GROUP}
