@@ -29,8 +29,8 @@ class AdresseListener (
 
     @KafkaListener(
         containerFactory = "sedKafkaListenerContainerFactory",
-        topics = ["\${kafka.adresseSed.topic}"],
-        groupId = "\${kafka.adresseSed.groupid}"
+        topics = ["\${kafka.utenlandskAdresse.topic}"],
+        groupId = "\${kafka.utenlandskAdresse.groupid}"
     )
     fun consumeSedMottatt(hendelse: String, cr: ConsumerRecord<String, String>, acknowledgment: Acknowledgment) {
         MDC.putCloseable("x_request_id", UUID.randomUUID().toString()).use {
