@@ -51,7 +51,7 @@ class IdentFinnesIntegrationTest : IntegrationBase() {
             .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
 
         sendMelding("/eux/hendelser/P_BUC_01_P2000-avsenderDK.json")
-        assertTrue(validateSedMottattListenerLoggingMessage("PDLuid er identisk med SEDuid Acket sedMottatt"))
+        assertTrue(validateSedMottattListenerLoggingMessage("PDLuid er identisk med SEDuid. Acket sedMottatt"))
     }
 
     @Test

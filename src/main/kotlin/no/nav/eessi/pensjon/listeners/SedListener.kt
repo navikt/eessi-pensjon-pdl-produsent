@@ -18,7 +18,6 @@ import no.nav.eessi.pensjon.models.erGyldig
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.pdl.validering.PdlValidering
-import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
 import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -78,7 +77,7 @@ class SedListener(
         hendelse: String,
         acknowledgment: Acknowledgment
     ) {
-//        logger.info("$hendelsesType hendelse i partisjon: ${cr.partition()}, med offset: ${cr.offset()}")
+        logger.info("SedMottatt i partisjon: ${cr.partition()}, med offset: ${cr.offset()}")
         logger.debug(hendelse)
         logger.debug("Profile: $profile")
 
@@ -89,66 +88,76 @@ class SedListener(
                 val bucType = sedHendelse.bucType!!
                 logger.info("*** Starter pdl endringsmelding prosess for BucType: $bucType, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
 
+                val alleGyldigeSED = alleGyldigeSEDForBuc(sedHendelse.rinaSakId, dokumentHelper.hentBuc(sedHendelse.rinaSakId))
 
-                val buc = hentBuc(sedHendelse)
+                val utenlandskeIderFraSEDer = utenlandskPersonIdentifisering.finnAlleUtenlandskeIDerIMottatteSed(alleGyldigeSED)
 
-                val alleDocumenter = hentAlleDocumenter(buc)
+                val identifisertePersoner = personidentifiseringService.hentIdentifisertePersoner(alleGyldigeSED, bucType)
 
-                val alleGyldigeSED = hentAlleGyldigeSedFraBUC(sedHendelse, alleDocumenter)
+                if (identifisertePersoner.isEmpty()) {
+                    acknowledgment.acknowledge()
+                    logger.info("Ingen identifiserte FNR funnet, Acket melding")
+                    countEnhet("Ingen identifiserte FNR funnet")
+                    return
+                }
 
-                //trekk UT uident fra SED som kun er mottatt.
-                val utenlandskeIderFraSed = utenlandskPersonIdentifisering.hentAlleUtenlandskeIder(alleGyldigeSED)
-                //identifisere Person hent Person fra PDL valider Person
-                val identifisertePersoner = personidentifiseringService.hentIdentifisertPersoner(
-                    alleGyldigeSED,
-                    bucType,
-                    sedHendelse.sedType,
-                    sedHendelse.rinaDokumentId
-                )
+                if (identifisertePersoner.size > 1) {
+                    acknowledgment.acknowledge()
+                    logger.info("Antall identifiserte FNR er fler enn en, Acket melding")
+                    countEnhet("Antall identifiserte FNR er fler enn en")
+                    return
+                }
 
-                //litt logging
-                loggingAvForenkledSed(alleDocumenter, alleGyldigeSED)
+                if (identifisertePersoner.first().erDoed) {
+                    acknowledgment.acknowledge()
+                    logger.info("Identifisert person registrert med doedsfall, kan ikke opprette endringsmelding. Acket melding")
+                    countEnhet("Identifisert person registrert med doedsfall")
+                    return
+                }
 
-                if (!eridenterGyldige(
-                        pdlValidering,
-                        identifisertePersoner,
-                        acknowledgment,
-                        sedHendelse,
-                        utenlandskeIderFraSed
-                    )
-                ) return
+                if (utenlandskeIderFraSEDer.size > 1) {
+                    acknowledgment.acknowledge()
+                    logger.info("Antall utenlandske IDer er flere enn en")
+                    countEnhet("Antall utenlandske IDer er flere enn en")
+                    return
+                }
 
-                logger.debug("Validerer uid fra sed som ikke finnes i PDL: ${identifisertePersoner.size}")
-                val pdlInneholderAlleredeUID = pdlFiltrering.finnesUidFraSedIPDL(
-                    identifisertePersoner.first().uidFraPdl,
-                    utenlandskeIderFraSed.first()
-                )
-                //sjekk om PDLuid er identisk SEDuid (true så finnes de og er identiske)
-                if (pdlInneholderAlleredeUID) {
-                    logger.info("PDLuid er identisk med SEDuid Acket sedMottatt: ${cr.offset()}")
+                if (utenlandskeIderFraSEDer.isEmpty()) {
+                    acknowledgment.acknowledge()
+                    logger.info("Ingen utenlandske IDer funnet i BUC")
+                    countEnhet("Ingen utenlandske IDer funnet i BUC")
+                    return
+                }
+
+                if (sedHendelse.avsenderLand == null || pdlValidering.erUidLandAnnetEnnAvsenderLand(utenlandskeIderFraSEDer.first(), sedHendelse.avsenderLand)) {
+                    acknowledgment.acknowledge()
+                    logger.info("Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer")
+                    countEnhet("Avsenderland mangler eller avsenderland er ikke det samme som uidland")
+                    return
+                }
+
+                if (pdlFiltrering.finnesUidFraSedIPDL(identifisertePersoner.first().uidFraPdl, utenlandskeIderFraSEDer.first())) {
+                    logger.info("PDLuid er identisk med SEDuid. Acket sedMottatt: ${cr.offset()}")
                     countEnhet("PDLuid er identisk med SEDuid")
                     acknowledgment.acknowledge()
                     return
                 }
 
                 //validering av uid korrekt format
-                if (!pdlValidering.erPersonValidertPaaLand(utenlandskeIderFraSed.first())) {
-                    logger.info("Ingen validerte identifiserte personer funnet Acket sedMottatt: ${cr.offset()}")
+                if (!pdlValidering.erPersonValidertPaaLand(utenlandskeIderFraSEDer.first())) {
+                    logger.info("Ingen validerte identifiserte personer funnet. Acket sedMottatt: ${cr.offset()}")
                     countEnhet("Ingen validerte identifiserte personer funnet")
                     acknowledgment.acknowledge()
                     return
                 }
 
-                //sjekk om det skal opprtte en oppgave
-                if (pdlFiltrering.skalOppgaveOpprettes(
-                        identifisertePersoner.first().uidFraPdl,
-                        utenlandskeIderFraSed.first()
-                    )
-                ) {
+                if (pdlFiltrering.skalOppgaveOpprettes(identifisertePersoner.first().uidFraPdl, utenlandskeIderFraSEDer.first())) {
+                    // TODO: Denne koden er ikke lett å forstå - hva betyr returverdien?
                     //ytterligere sjekk om f.eks SWE fnr i PDL faktisk er identisk med sedUID (hvis så ikke opprett oppgave bare avslutt)
-                    if (pdlFiltrering.sjekkYterligerePaaPDLuidMotSedUid(identifisertePersoner.first().uidFraPdl, utenlandskeIderFraSed.first())) {
+                    if (pdlFiltrering.sjekkYterligerePaaPDLuidMotSedUid(identifisertePersoner.first().uidFraPdl, utenlandskeIderFraSEDer.first())) {
                         logger.info("Det finnes allerede en annen uid fra samme land, opprette oppgave")
-                        val result = oppgaveHandler.opprettOppgaveForUid(sedHendelse, utenlandskeIderFraSed.first(), identifisertePersoner.first())
+                        val result = oppgaveHandler.opprettOppgaveForUid(sedHendelse, utenlandskeIderFraSEDer.first(), identifisertePersoner.first())
+                        // TODO: Det er litt rart at det logges slik når det nettopp er opprettet en oppgave ...
                         if (result) countEnhet("Det finnes allerede en annen uid fra samme land (Oppgave)")
                     } else {
                         logger.info("Oppretter ikke oppgave, Det som finnes i PDL er faktisk likt det som finnes i SED, avslutter")
@@ -161,11 +170,12 @@ class SedListener(
                 //Utfører faktisk innsending av endringsmelding til PDL (ny UID)
                 sedHendelse.avsenderNavn?.let { avsender ->
                     lagEndringsMelding(
-                        utenlandskeIderFraSed.first(), identifisertePersoner.first().fnr!!.value, avsender
+                        utenlandskeIderFraSEDer.first(),
+                        identifisertePersoner.first().fnr!!.value,
+                        avsender
                     )
                     countEnhet("Innsending av endringsmelding")
                 }
-
             }
 
             acknowledgment.acknowledge()
@@ -178,68 +188,15 @@ class SedListener(
         }
     }
 
-    private fun eridenterGyldige(
-        pdlValidering: PdlValidering,
-        identifisertePersoner: List<IdentifisertPerson>,
-        acknowledgment: Acknowledgment,
-        sedHendelse: SedHendelseModel,
-        utenlandskeIder: List<UtenlandskId>
-    ): Boolean {
-
-        if (!pdlValidering.finnesIdentifisertePersoner(identifisertePersoner)) {
-            acknowledgment.acknowledge()
-            logger.info("Ingen identifiserte FNR funnet, Acket melding")
-            countEnhet("Ingen identifiserte FNR funnet")
-            return false
-        }
-
-        if (identifisertePersoner.size > 1) {
-            acknowledgment.acknowledge()
-            logger.info("Antall identifiserte FNR er fler enn en, Acket melding")
-            countEnhet("Antall identifiserte FNR er fler enn en")
-            return false
-        }
-
-        if (identifisertePersoner.first().erDoed) {
-            acknowledgment.acknowledge()
-            logger.info("Identifisert person registrert med doedsfall, kan ikke opprette endringsmelding. Acket melding")
-            countEnhet("Identifisert person registrert med doedsfall")
-            return false
-        }
-
-        if (utenlandskeIder.size > 1) {
-            acknowledgment.acknowledge()
-            logger.info("Antall utenlandske IDer er flere enn en")
-            countEnhet("Antall utenlandske IDer er flere enn en")
-            return false
-        }
-
-        if (utenlandskeIder.isEmpty()) {
-            acknowledgment.acknowledge()
-            logger.info("Ingen utenlandske IDer funnet i BUC")
-            countEnhet("Ingen utenlandske IDer funnet i BUC")
-            return false
-        }
-
-        if (sedHendelse.avsenderLand == null || pdlValidering.erUidLandAnnetEnnAvsenderLand(utenlandskeIder.first(), sedHendelse.avsenderLand)) {
-            acknowledgment.acknowledge()
-            logger.info("Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer")
-            countEnhet("Avsenderland mangler eller avsenderland er ikke det samme som uidland")
-            return false
-        }
-        return true
-    }
-
-    private fun hentBuc(sedHendelse: SedHendelseModel): Buc = dokumentHelper.hentBuc(sedHendelse.rinaSakId)
-
-    private fun hentAlleDocumenter(buc: Buc): List<ForenkletSED> = dokumentHelper.hentAlleDocumenter(buc)
-
-    private fun hentAlleGyldigeSedFraBUC(sedHendelse: SedHendelseModel, docs: List<ForenkletSED>): List<Pair<ForenkletSED, SED>> {
-        val alleGyldigDokuenter = docs
+    private fun alleGyldigeSEDForBuc(rinaSakId: String, buc: Buc): List<Pair<ForenkletSED, SED>> =
+        (buc.documents ?: emptyList())
+            .filter { it.id != null }
+            .map { ForenkletSED(it.id!!, it.type, SedStatus.fra(it.status)) }
+            .filter { it.harGyldigStatus() }
             .filter { it.type.erGyldig() }
             .also { logger.info("Fant ${it.size} dokumenter i BUC: $it") }
-        return dokumentHelper.hentAlleSedIBuc(sedHendelse.rinaSakId , alleGyldigDokuenter)
-    }
+            .map { forenkletSED -> Pair(forenkletSED, dokumentHelper.hentSed(rinaSakId, forenkletSED.id)) }
+            .onEach { (forenkletSED, _) -> logger.debug("SED av type: ${forenkletSED.type}, status: ${forenkletSED.status}") }
 
     fun lagEndringsMelding(utenlandskPin: UtenlandskId,
                            norskFnr: String,
@@ -257,19 +214,6 @@ class SedListener(
             )
         )
         personMottakKlient.opprettPersonopplysning(pdlEndringsOpplysninger)
-    }
-
-    fun loggingAvForenkledSed(alledocs : List<ForenkletSED> , list: List<Pair<ForenkletSED, SED>>) {
-        logger.debug("Ufiltrert Sed i buc")
-        logger.debug("Antall Sed i buc: ${alledocs.size }")
-        logger.debug("Antall Sed mottatt i buc: ${alledocs.filter { doc -> doc.status == SedStatus.RECEIVED }.size }")
-        logger.debug("Antall Sed sendt i buc: ${alledocs.filter { doc -> doc.status == SedStatus.SENT }.size }")
-        logger.debug("*".repeat(20))
-        logger.debug("Filtrerte gyldige Sed i buc: ${alledocs.size }")
-        logger.debug("Antall Sed i buc: ${list.filter { (doc, _) -> doc.harGyldigStatus() }.size }")
-        logger.debug("Antall Sed mottatt i buc: ${list.filter { (doc, _) -> doc.status == SedStatus.RECEIVED }.size }")
-        logger.debug("Antall Sed sendt i buc: ${list.filter { (doc, _) -> doc.status == SedStatus.SENT }.size }")
-        logger.debug("*".repeat(20))
     }
 
     fun countEnhet(melding: String) {
