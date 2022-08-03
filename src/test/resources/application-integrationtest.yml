@@ -2,7 +2,6 @@ KAFKA_SEDMOTTATT_TOPIC: 'eessi-basis-sedMottatt-v1'
 KAFKA_SEDMOTTATT_IDENT_GROUP: 'eessi-pensjon-pdl-produsent-group'
 KAFKA_SEDMOTTATT_ADRESSE_GROUP: 'eessi-pensjon-pdl-adresse-group'
 KAFKA_OPPGAVE_TOPIC: 'eessi-pensjon-oppgave-v1'
-KAFKA_OPPGAVE_GROUP: 'eessi-pensjon-pdl-produsent-group'
 
 kafka:
   sedMottatt:
@@ -13,7 +12,6 @@ kafka:
     groupid: ${KAFKA_SEDMOTTATT_ADRESSE_GROUP}
   oppgave:
     topic: ${KAFKA_OPPGAVE_TOPIC}
-    groupid: ${$KAFKA_OPPGAVE_GROUP}
 
 namespace: 'test'
 SPRING_PROFILES_ACTIVE: 'integrationtest'
