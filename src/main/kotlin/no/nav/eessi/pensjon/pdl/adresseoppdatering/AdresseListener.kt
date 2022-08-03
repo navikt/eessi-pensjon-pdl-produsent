@@ -1,7 +1,10 @@
 package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
+import no.nav.eessi.pensjon.eux.EuxDokumentHelper
+import no.nav.eessi.pensjon.listeners.GyldigeHendelser
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.SedHendelseModel
+import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
@@ -15,6 +18,8 @@ import javax.annotation.PostConstruct
 
 @Service
 class AdresseListener (
+    private val personidentifiseringService: PersonidentifiseringService,
+    private val dokumentHelper: EuxDokumentHelper,
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
 ) {
     val latch: CountDownLatch = CountDownLatch(1)
@@ -38,8 +43,15 @@ class AdresseListener (
                 logger.debug("sed-hendelse for vurdering av adressemelding mot PDL i partisjon: ${cr.partition()}, med offset: ${cr.offset()} ")
 
                 try {
-                    val hendelseJson = SedHendelseModel.fromJson(hendelse)
-                    logger.debug("Ser om sedHendelse allerede ligger i pdl med riktig adresse, rinaId: ${hendelseJson.rinaSakId}, bucType:${hendelseJson.bucType}, sedType:${hendelseJson.sedType}")
+                    val sedHendelse = SedHendelseModel.fromJson(hendelse)
+                    logger.info("Ser om sedHendelse allerede ligger i pdl med riktig adresse, rinaId: ${sedHendelse.rinaSakId}, bucType:${sedHendelse.bucType}, sedType:${sedHendelse.sedType}")
+
+                    if (GyldigeHendelser.mottatt(sedHendelse)) {
+                        val bucType = sedHendelse.bucType!!
+                        val alleGyldigeSED = dokumentHelper.alleGyldigeSEDForBuc(sedHendelse.rinaSakId, dokumentHelper.hentBuc(sedHendelse.rinaSakId))
+                        val identifisertePersoner = personidentifiseringService.hentIdentifisertePersoner(alleGyldigeSED, bucType)
+                        logger.info("Vi har funnet ${identifisertePersoner.size} personer fra PDL som har gyldige identer")
+                    }
 
                     //TODO: kall til service for innhenting av opplysninger fra PDL
 

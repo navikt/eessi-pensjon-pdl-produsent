@@ -4,7 +4,9 @@ import no.nav.eessi.pensjon.eux.model.buc.Buc
 import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.eux.model.sed.SED
+import no.nav.eessi.pensjon.listeners.GyldigeHendelser
 import no.nav.eessi.pensjon.metrics.MetricsHelper
+import no.nav.eessi.pensjon.models.erGyldig
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -15,7 +17,6 @@ class EuxDokumentHelper(
     private val euxKlient: EuxKlient,
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
 ) {
-
     private val logger = LoggerFactory.getLogger(EuxDokumentHelper::class.java)
 
     private lateinit var hentBuc: MetricsHelper.Metric
@@ -49,5 +50,15 @@ class EuxDokumentHelper(
         hentBuc.measure {
             euxKlient.hentBuc(rinaSakId) ?: throw RuntimeException("Ingen BUC")
         }
+
+    fun alleGyldigeSEDForBuc(rinaSakId: String, buc: Buc): List<Pair<ForenkletSED, SED>> =
+        (buc.documents ?: emptyList())
+            .filter { it.id != null }
+            .map { ForenkletSED(it.id!!, it.type, SedStatus.fra(it.status)) }
+            .filter { it.harGyldigStatus() }
+            .filter { it.type.erGyldig() }
+            .also { logger.info("Fant ${it.size} dokumenter i BUC: $it") }
+            .map { forenkletSED -> Pair(forenkletSED, hentSed(rinaSakId, forenkletSED.id)) }
+            .onEach { (forenkletSED, _) -> logger.debug("SED av type: ${forenkletSED.type}, status: ${forenkletSED.status}") }
 
 }
