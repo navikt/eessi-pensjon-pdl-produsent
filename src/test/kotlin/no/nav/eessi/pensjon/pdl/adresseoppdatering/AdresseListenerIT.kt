@@ -64,7 +64,7 @@ internal class AdresseListenerIT : IntegrationBase(){
     }
 
     @Test
-    fun `Gitt en sed hendelse som finnes i PDL, og adresse er lik så skal ikke PDL oppdateres`() {
+    fun `Gitt en sed der adresse allerede finnes i PDL, og adresse er lik så skal ikke PDL oppdateres`() {
 
         //given
         val listOverSeder = listOf(mockForenkletSed("eb938171a4cb4e658b3a6c011962d204", SedType.P2100, SedStatus.RECEIVED))
@@ -82,11 +82,13 @@ internal class AdresseListenerIT : IntegrationBase(){
         adresseListener.latch.await(20, TimeUnit.SECONDS)
         assertEquals(0, adresseListener.latch.count)
 
-        //TODO: sjekke at adresse er lik og at det ikke skjer en oppdatering
+        //TODO: sjekke at adresse er lik og at det skjer en oppdatering med ny timestamp (dobbeltsjekk dette)
     }
 
-    @Test
-    fun `Gitt en sed hendelse som finnes i PDL, og adresse er lik så skal PDL oppdaters med ny adresse` () {
-        //TODO
-    }
+
+
+
+
+
+
 }
