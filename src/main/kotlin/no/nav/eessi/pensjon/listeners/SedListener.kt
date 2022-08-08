@@ -7,7 +7,6 @@ import no.nav.eessi.pensjon.eux.UtenlandskPersonIdentifisering
 import no.nav.eessi.pensjon.handler.OppgaveHandler
 import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.metrics.MetricsHelper
-import no.nav.eessi.pensjon.models.Endringsmelding
 import no.nav.eessi.pensjon.models.EndringsmeldingUID
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
@@ -27,7 +26,7 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.concurrent.*
+import java.util.concurrent.CountDownLatch
 import javax.annotation.PostConstruct
 
 @Service
