@@ -29,7 +29,7 @@ class AdresseValidering {
         if (ugyldigFeltInfo.any { postKode.contains(it) }) {
             return false
         }
-        if (!postKode.matches(Regex("[a-zA-Z0-9]+"))) {
+        if (!postKode.matches(Regex("^([a-zA-Z0-9]+)(.*)\$"))) {
             return false
         }
         return true

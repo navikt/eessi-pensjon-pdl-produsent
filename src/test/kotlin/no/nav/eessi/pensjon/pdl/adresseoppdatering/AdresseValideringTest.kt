@@ -13,11 +13,6 @@ internal class AdresseValideringTest() {
 
 
     @Test
-    fun `Gitt en sed med adresse som finnes i PDL og adresse er lik saa skal PDL oppdateres med samme adresse med dato`() {
-        //TODO
-    }
-
-    @Test
     fun `Gitt en sed med en tysk bostedsadresse fra en institusjon i Tyskland og den ikke finnes i PDL saa skal PDL oppdateres med ny bostedsadresse`() {
         //TODO
     }
@@ -57,32 +52,10 @@ internal class AdresseValideringTest() {
         //TODO
     }
 
-    @Test
-    fun `Gitt en landkode saa maa denne ligge inne i vaart kodeverk`() {
-        //TODO
-    }
-
-    @Test
-    fun `Gitt en landkode saa maa denne konverteres til tre bokstavs landkode`() {
-        //TODO
-    }
 
     //    Bygning feltet kan ikke inneholde ordene: "postboks", "postb.",  "postbox", "po.box" og "p.b."
     //    ikke ord som "ukjent" "vet ikke", "nn"
     //    må inneholde minst 1 bokstav (kan ikke bestå av kun tegn eller siffer)
-    @Test
-    fun `Gitt en adresse der bygning inneholder ordet postboks saa er det ikke en gyldig adresse`() {
-
-    }
-
-    @Test
-    fun `Gitt en adresse der bygning inneholder ordet postb mm saa er det ikke en gyldig adresse`() {
-        //TODO
-    }
-
-    //  ValideringbySted:
-    //  ikke ord som "ukjent" "vet ikke", "nn"
-    //  må inneholde minst 1 bokstav (kan ikke bestå av kun tegn eller siffer)
 
     @Test
     fun `Gitt en adresse der validering av by eller sted gir false saa er det ikke en gyldig adresse`() {
@@ -131,7 +104,8 @@ internal class AdresseValideringTest() {
         assertTrue(AdresseValidering().erGyldigPostKode("1a"))
         assertTrue(AdresseValidering().erGyldigPostKode("a1"))
         assertTrue(AdresseValidering().erGyldigPostKode("a1sdkuryiev65"))
-
+        assertTrue(AdresseValidering().erGyldigPostKode("a1-1"))
+        assertTrue(AdresseValidering().erGyldigPostKode("a1-1 dfuigh 35"))
     }
 
 

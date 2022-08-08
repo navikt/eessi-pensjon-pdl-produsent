@@ -1,10 +1,12 @@
 package no.nav.eessi.pensjon.models
 
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
 import no.nav.eessi.pensjon.utils.mapAnyToJson
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class EndringsmeldingTest {
+internal class EndringsmeldingUIDTest {
 
     @Test
     fun mapEndringMledingTilJson() {
@@ -12,12 +14,14 @@ internal class EndringsmeldingTest {
         val pdlEndringsOpplysninger = PdlEndringOpplysning(
             listOf(
                 Personopplysninger(
+                    endringstype = Endringstype.OPPRETT,
                     ident = "12345678910",
-                    endringsmelding = Endringsmelding(
+                    endringsmelding = EndringsmeldingUID(
                         identifikasjonsnummer = "770113-123-12",
                         utstederland = "BEL",
                         kilde = "Belgian institution"
-                    )
+                    ),
+                    opplysningstype = Opplysningstype.UTENLANDSKIDENTIFIKASJONSNUMMER
                 )
             )
         )

@@ -1,10 +1,21 @@
 package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
 import no.nav.eessi.pensjon.eux.EuxDokumentHelper
+import no.nav.eessi.pensjon.eux.UtenlandskId
+import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.listeners.GyldigeHendelser
 import no.nav.eessi.pensjon.metrics.MetricsHelper
+import no.nav.eessi.pensjon.models.Endringsmelding
+import no.nav.eessi.pensjon.models.EndringsmeldingUID
+import no.nav.eessi.pensjon.models.EndringsmeldingUtAdresse
+import no.nav.eessi.pensjon.models.PdlEndringOpplysning
+import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelseModel
+import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Kontaktadresse
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
@@ -20,6 +31,8 @@ import javax.annotation.PostConstruct
 class AdresseListener (
     private val personidentifiseringService: PersonidentifiseringService,
     private val dokumentHelper: EuxDokumentHelper,
+    private val kodeverkClient: KodeverkClient,
+    private val personMottakKlient: PersonMottakKlient,
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
 ) {
     val latch: CountDownLatch = CountDownLatch(1)
@@ -51,6 +64,11 @@ class AdresseListener (
                         val alleGyldigeSED = dokumentHelper.alleGyldigeSEDForBuc(sedHendelse.rinaSakId, dokumentHelper.hentBuc(sedHendelse.rinaSakId))
                         val identifisertePersoner = personidentifiseringService.hentIdentifisertePersoner(alleGyldigeSED, bucType)
                         logger.info("Vi har funnet ${identifisertePersoner.size} personer fra PDL som har gyldige identer")
+
+
+                        //TODO: validering
+
+                        //TODO: send melding til personMottakKlient
                     }
 
                     //TODO: kall til service for innhenting av opplysninger fra PDL
@@ -63,5 +81,24 @@ class AdresseListener (
                 acknowledgment.acknowledge()
             }
         }
+    }
+
+    fun lagUtAdresseEndringsMelding(kontaktadresse: Kontaktadresse, norskFnr: String)  {
+        val pdlEndringsOpplysninger = PdlEndringOpplysning(
+            listOf(
+                Personopplysninger(
+                    endringstype = Endringstype.OPPRETT,
+                    ident = norskFnr,
+                    endringsmelding = EndringsmeldingUtAdresse(
+                        gyldigFraOgMed = kontaktadresse.gyldigFraOgMed,
+                        gylidgTilOgMed = kontaktadresse.gyldigTilOgMed,
+                        coAdressenavn = kontaktadresse.coAdressenavn,
+                        adresse = kontaktadresse.utenlandskAdresse
+                    ),
+                    opplysningstype = Opplysningstype.UTENLANDSKIDENTIFIKASJONSNUMMER
+                )
+            )
+        )
+        personMottakKlient.opprettPersonopplysning(pdlEndringsOpplysninger)
     }
 }

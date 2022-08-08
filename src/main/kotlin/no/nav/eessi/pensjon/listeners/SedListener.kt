@@ -8,6 +8,7 @@ import no.nav.eessi.pensjon.handler.OppgaveHandler
 import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.Endringsmelding
+import no.nav.eessi.pensjon.models.EndringsmeldingUID
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelseModel
@@ -15,6 +16,8 @@ import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.pdl.validering.PdlValidering
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
@@ -190,12 +193,14 @@ class SedListener(
         val pdlEndringsOpplysninger = PdlEndringOpplysning(
             listOf(
                 Personopplysninger(
+                    endringstype = Endringstype.OPPRETT,
                     ident = norskFnr,
-                    endringsmelding = Endringsmelding(
+                    endringsmelding = EndringsmeldingUID(
                         identifikasjonsnummer = utenlandskPin.id,
                         utstederland = kodeverkClient.finnLandkode(utenlandskPin.land) ?: throw RuntimeException("Feil ved landkode"),
                         kilde = kilde
-                    )
+                    ),
+                    opplysningstype = Opplysningstype.UTENLANDSKIDENTIFIKASJONSNUMMER
                 )
             )
         )
