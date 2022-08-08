@@ -33,9 +33,9 @@ internal class EndringsmeldingUIDTest {
                 "    \"opplysningstype\" : \"UTENLANDSKIDENTIFIKASJONSNUMMER\",\n" +
                 "    \"endringsmelding\" : {\n" +
                 "      \"@type\" : \"UTENLANDSKIDENTIFIKASJONSNUMMER\",\n" +
+                "      \"kilde\" : \"Belgian institution\",\n" +
                 "      \"identifikasjonsnummer\" : \"770113-123-12\",\n" +
-                "      \"utstederland\" : \"BEL\",\n" +
-                "      \"kilde\" : \"Belgian institution\"\n" +
+                "      \"utstederland\" : \"BEL\"\n" +
                 "    },\n" +
                 "    \"opplysningsId\" : null\n" +
                 "  } ]\n" +

@@ -1,9 +1,12 @@
 package no.nav.eessi.pensjon.models
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonTypeId
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
+import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
+import java.time.LocalDate
 
 data class PdlEndringOpplysning(
     val personopplysninger: List<Personopplysninger>
@@ -17,22 +20,23 @@ data class Personopplysninger(
     val opplysningsId: String? = null
 )
 
-/*abstract class Endringsmelding{
-    abstract val kilde: String
-}*/
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, visible = true)
+interface  Endringsmelding{
+    val kilde: String
+    val type: String
+}
+@JsonTypeInfo( use = JsonTypeInfo.Id.NAME, defaultImpl = EndringsmeldingUID::class )
 data class EndringsmeldingUID(
     @JsonTypeId
-    val type: String = Opplysningstype.UTENLANDSKIDENTIFIKASJONSNUMMER.name,
-    val kilde: String = "",
+    override val type: String = Opplysningstype.UTENLANDSKIDENTIFIKASJONSNUMMER.name,
+    override val  kilde: String = "",
     val identifikasjonsnummer: String,
-    val utstederland: String,
-)
+    val utstederland: String
+) : Endringsmelding
 
-/*@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, visible = true)
+@JsonTypeInfo( use = JsonTypeInfo.Id.NAME, defaultImpl = EndringsmeldingUtAdresse::class )
 data class EndringsmeldingUtAdresse(
     @JsonTypeId
-    val type: String = Opplysningstype.KONTAKTADRESSE.name,
+    override val type: String = Opplysningstype.KONTAKTADRESSE.name,
     override val kilde: String = "",
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val gyldigFraOgMed: LocalDate?,
@@ -40,5 +44,5 @@ data class EndringsmeldingUtAdresse(
     val gylidgTilOgMed: LocalDate?,
     val coAdressenavn: String?,
     val adresse: UtenlandskAdresse?
-)*/
+) : Endringsmelding
 
