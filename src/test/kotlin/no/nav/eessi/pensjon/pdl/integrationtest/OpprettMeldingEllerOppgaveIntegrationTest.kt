@@ -70,7 +70,7 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
         assertTrue(validateSedMottattListenerLoggingMessage("SED av type: P2100, status: RECEIVED"))
         assertTrue(validateSedMottattListenerLoggingMessage("SED av type: P5000, status: SENT"))
         assertTrue(validateSedMottattListenerLoggingMessage("SED av type: P7000, status: RECEIVED"))
-        assertTrue(validateSedMottattListenerLoggingMessage("Oppretter endringsmelding med nye personopplysninger fra avsenderLand:"))
+        assertTrue(validateSedMottattListenerLoggingMessage("Endringsmelding: OPPRETT, med nye personopplysninger"))
 
         val check = """
               "personopplysninger" : [ {
@@ -111,7 +111,7 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
 
         sendMelding("/eux/hendelser/P_BUC_01_P2000-avsenderDK.json")
 
-        assertTrue(validateSedMottattListenerLoggingMessage("Oppretter endringsmelding med nye personopplysninger fra avsenderLand:"))
+        assertTrue(validateSedMottattListenerLoggingMessage("Endringsmelding: OPPRETT, med nye personopplysninger"))
     }
 
     @Test

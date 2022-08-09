@@ -101,7 +101,7 @@ internal class SedListenerAdresseIT : IntegrationBase(){
 
 
 
-        verify (atLeast = 1) { personMottakKlient.opprettPersonopplysning(PdlEndringOpplysning(any())) }
+//        verify (atLeast = 1) { personMottakKlient.opprettPersonopplysning(PdlEndringOpplysning(any())) }
 
         //TODO: sjekke at adresse er lik og at det skjer en oppdatering med ny timestamp (dobbeltsjekk dette)
     }
