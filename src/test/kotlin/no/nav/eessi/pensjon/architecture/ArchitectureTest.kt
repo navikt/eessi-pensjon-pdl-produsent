@@ -51,9 +51,8 @@ internal class ArchitectureTest {
         val health = "Health"
         val eux = "EUX"
         val gcp = "GCP"
-        val listeners = "Listeners"
+        val pdlOppdatering = "PdlOppdatering"
         val klienter = "Klienter"
-        val filtering = "Filter"
         val validering = "Validering"
         val oppgaveRouting = "Oppgaverouting"
         val personidentifisering = "pdl.personidentifisering"
@@ -64,17 +63,16 @@ internal class ArchitectureTest {
                 .layer(health).definedBy("$rootDir.health")
                 .layer(eux).definedBy("$rootDir.handler")
                 .layer(gcp).definedBy("$rootDir.gcp")
-                .layer(listeners).definedBy("$rootDir.listeners")
+                .layer(pdlOppdatering).definedBy("$rootDir.pdl.oppdatering")
                 .layer(klienter).definedBy("$rootDir.klienter..")
                 .layer(oppgaveRouting).definedBy("$rootDir.oppgaverouting")
                 .layer(personidentifisering).definedBy("$rootDir.personidentifisering")
-                .layer(filtering).definedBy("$rootDir.pdl.filtrering")
                 .layer(validering).definedBy("$rootDir.pdl.validering")
                 //define rules
                 .whereLayer(config).mayNotBeAccessedByAnyLayer()
                 .whereLayer(health).mayNotBeAccessedByAnyLayer()
-                .whereLayer(listeners).mayNotBeAccessedByAnyLayer()
-                .whereLayer(klienter).mayOnlyBeAccessedByLayers(listeners, filtering, oppgaveRouting, validering)
+                .whereLayer(pdlOppdatering).mayNotBeAccessedByAnyLayer()
+                .whereLayer(klienter).mayOnlyBeAccessedByLayers(pdlOppdatering, oppgaveRouting, validering)
                 //Verify rules
                 .check(classesToAnalyze)
     }
