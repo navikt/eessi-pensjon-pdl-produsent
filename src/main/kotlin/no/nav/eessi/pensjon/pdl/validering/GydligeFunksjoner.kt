@@ -1,4 +1,4 @@
-package no.nav.eessi.pensjon.listeners
+package no.nav.eessi.pensjon.pdl.validering
 
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component

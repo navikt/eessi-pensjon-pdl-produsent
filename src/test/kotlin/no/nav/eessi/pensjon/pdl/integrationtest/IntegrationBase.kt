@@ -11,7 +11,7 @@ import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.klienter.norg2.Norg2Service
-import no.nav.eessi.pensjon.listeners.SedListener
+import no.nav.eessi.pensjon.pdl.oppdatering.SedListenerIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
@@ -52,7 +52,7 @@ const val PDL_PRODUSENT_TOPIC_MOTTATT = "eessi-basis-sedMottatt-v1"
 abstract class IntegrationBase {
 
     @Autowired(required = true)
-    lateinit var sedListener: SedListener
+    lateinit var sedListener: SedListenerIdent
 
     @Autowired
     lateinit var embeddedKafka: EmbeddedKafkaBroker

@@ -1,11 +1,11 @@
-package no.nav.eessi.pensjon.pdl.adresseoppdatering
+package no.nav.eessi.pensjon.pdl.oppdatering
 
 import no.nav.eessi.pensjon.eux.EuxDokumentHelper
 import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
-import no.nav.eessi.pensjon.listeners.GyldigeHendelser
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.SedHendelseModel
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
+import no.nav.eessi.pensjon.pdl.validering.GyldigeHendelser
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
@@ -19,7 +19,7 @@ import java.util.concurrent.CountDownLatch
 import javax.annotation.PostConstruct
 
 @Service
-class AdresseListener (
+class SedListenerAdresse (
     private val personidentifiseringService: PersonidentifiseringService,
     private val dokumentHelper: EuxDokumentHelper,
     private val kodeverkClient: KodeverkClient,
@@ -27,7 +27,7 @@ class AdresseListener (
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
 ) {
     val latch: CountDownLatch = CountDownLatch(1)
-    private val logger = LoggerFactory.getLogger(AdresseListener::class.java)
+    private val logger = LoggerFactory.getLogger(SedListenerAdresse::class.java)
 
     private lateinit var adresseMetric: MetricsHelper.Metric
 

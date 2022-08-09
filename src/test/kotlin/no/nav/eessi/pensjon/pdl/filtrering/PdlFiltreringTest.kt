@@ -3,18 +3,19 @@ package no.nav.eessi.pensjon.pdl.filtrering
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.eessi.pensjon.eux.UtenlandskId
+import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
+import no.nav.eessi.pensjon.pdl.validering.PdlFiltrering
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endring
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Metadata
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
-import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import java.time.LocalDateTime
-import org.junit.jupiter.api.Assertions.assertEquals
 
 internal class PdlFiltreringTest {
 

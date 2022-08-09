@@ -1,4 +1,4 @@
-package no.nav.eessi.pensjon.listeners
+package no.nav.eessi.pensjon.pdl.oppdatering
 
 import io.micrometer.core.instrument.Metrics
 import no.nav.eessi.pensjon.eux.EuxDokumentHelper
@@ -12,7 +12,8 @@ import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelseModel
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
-import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
+import no.nav.eessi.pensjon.pdl.validering.GyldigeHendelser
+import no.nav.eessi.pensjon.pdl.validering.PdlFiltrering
 import no.nav.eessi.pensjon.pdl.validering.PdlValidering
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
@@ -30,7 +31,7 @@ import java.util.concurrent.CountDownLatch
 import javax.annotation.PostConstruct
 
 @Service
-class SedListener(
+class SedListenerIdent(
     private val personidentifiseringService: PersonidentifiseringService,
     private val dokumentHelper: EuxDokumentHelper,
     private val personMottakKlient: PersonMottakKlient,
@@ -43,7 +44,7 @@ class SedListener(
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
 ) {
 
-    private val logger = LoggerFactory.getLogger(SedListener::class.java)
+    private val logger = LoggerFactory.getLogger(SedListenerIdent::class.java)
 
     private val latch = CountDownLatch(1)
     private lateinit var consumeIncomingSed: MetricsHelper.Metric

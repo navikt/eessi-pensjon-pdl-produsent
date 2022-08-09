@@ -1,8 +1,8 @@
-package no.nav.eessi.pensjon.pdl.filtrering
+package no.nav.eessi.pensjon.pdl.validering
 
 import no.nav.eessi.pensjon.eux.UtenlandskId
-import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
+import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
