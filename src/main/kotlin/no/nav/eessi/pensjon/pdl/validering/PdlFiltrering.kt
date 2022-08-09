@@ -1,7 +1,10 @@
 package no.nav.eessi.pensjon.pdl.validering
 
 import no.nav.eessi.pensjon.eux.UtenlandskId
+import no.nav.eessi.pensjon.eux.model.sed.Adresse
 import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Kontaktadresse
+import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -32,6 +35,37 @@ class PdlFiltrering(private val kodeverk: KodeverkClient) {
         }
         return false
     }
+
+    /**
+     * Sjekk om utenlansk adresse i Sed finnes i PDL
+     *
+     * Konverterer 2 bokstavsutlandkode til trebokstavsutlandskode
+     * Sjekker om 3-bokstavslandkode og adresse fra Sed finnes i PDL
+     *
+     */
+    //TODO fikse til riktig sjekk av adresse i sed mot pdl
+    fun finnesUtlAdresseFraSedIPDL(
+        utenlandskeAdrIPDL: List<UtenlandskAdresse?>,
+        utenlandskAdrISed: Adresse
+    ): Boolean {
+        utenlandskeAdrIPDL.forEach { utenlandskAdrIPDL ->
+            val adresse = utenlandskeAdrIPDL.first()
+            val landkodeFraPdl = utenlandskeAdrIPDL.first()?.landkode?.let { kodeverk.finnLandkode(it) }
+            if (utenlandskAdrIPDL != null) {
+                if (utenlandskAdrISed.gate == adresse?.adressenavnNummer &&
+                    utenlandskAdrISed.bygning == adresse?.bygningEtasjeLeilighet &&
+                    utenlandskAdrISed.by == utenlandskAdrIPDL.bySted &&
+                    utenlandskAdrISed.postkode == adresse?.postkode &&
+                    utenlandskAdrISed.region == adresse?.regionDistriktOmraade &&
+                    utenlandskAdrISed.land == landkodeFraPdl
+                ) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
 
     /**
      * Sjekk om uid i Sed finnes i PDL

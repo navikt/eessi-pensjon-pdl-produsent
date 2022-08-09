@@ -20,6 +20,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import no.nav.eessi.pensjon.utils.toJson
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -62,6 +63,30 @@ internal class SedListenerAdresseIT : IntegrationBase(){
         adresseListener.latch.await(5, TimeUnit.SECONDS)
         assertEquals(0, adresseListener.latch.count)
     }
+
+    @Test
+    fun `Gitt en sed som kommer fra et annet land enn Norge saa skal være en kadidat for endringsmelding`() {
+
+        val utlandskAdresse = UtenlandskAdresse(
+            adressenavnNummer = "654",
+            bySted = "Oslo",
+            bygningEtasjeLeilighet = null,
+            landkode = "IT",
+            postboksNummerNavn = "645",
+            postkode = "987",
+            regionDistriktOmraade = null
+        )
+
+        //given
+        val mockSedHendelse : SedHendelseModel = mockk(relaxed = true)
+        //when
+        kafkaTemplate.sendDefault(mockSedHendelse.toJson())
+
+
+
+        //assertFalse(utlandskAdresse.landkode == "NO")
+    }
+
 
     @Test
     fun `Gitt en sed der adresse allerede finnes i PDL, og adresse er lik så skal PDL oppdateres med ny dato`() {

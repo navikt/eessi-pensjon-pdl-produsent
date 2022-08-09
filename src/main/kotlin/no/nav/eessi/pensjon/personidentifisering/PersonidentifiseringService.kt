@@ -46,7 +46,8 @@ class PersonidentifiseringService(private val personService: PersonService) {
             finnesPersonMedAdressebeskyttelse(relasjon.fnr!!),
             null,
             relasjon,
-            person.erDoed()
+            person.erDoed(),
+            person.kontaktadresse!!
         ).also { logger.debug("Følgende populert Person: $it") }
     }
 

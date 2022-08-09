@@ -3,11 +3,13 @@ package no.nav.eessi.pensjon.pdl.filtrering
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.eessi.pensjon.eux.UtenlandskId
+import no.nav.eessi.pensjon.eux.model.sed.Adresse
 import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.pdl.validering.PdlFiltrering
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endring
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Metadata
+import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -185,6 +187,30 @@ internal class PdlFiltreringTest {
         assertEquals(validate, pdlFiltrering.sjekkYterligerePaaPDLuidMotSedUid (pdluid, seduid))
     }
 
+    @Test
+    fun `Gitt en utlandsadresse i SED saa sjekker vi om den finnes i PDL`(){
+        every { kodeverkClient.finnLandkode("SE") } returns "SWE"
+
+        val adresse = Adresse(
+            gate = "EddyRoad",
+            bygning = "EddyHouse",
+            by = "EddyCity",
+            postnummer = "111",
+            postkode = "666",
+            region = "Oslo",
+            land ="SWE",
+            kontaktpersonadresse = null,
+        )
+        val utenlandskAdresse = UtenlandskAdresse(
+            adressenavnNummer = adresse.gate,
+            landkode = "SE",
+            postkode = adresse.postkode,
+            bySted = adresse.by,
+            bygningEtasjeLeilighet  = adresse.bygning,
+            regionDistriktOmraade = adresse.region
+        )
+        assertTrue(pdlFiltrering.finnesUtlAdresseFraSedIPDL(listOf(utenlandskAdresse), adresse))
+    }
 
 
     private fun mockMeta() = Metadata(

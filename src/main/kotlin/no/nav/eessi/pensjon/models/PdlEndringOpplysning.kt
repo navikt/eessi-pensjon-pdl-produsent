@@ -16,7 +16,7 @@ data class Personopplysninger(
     val endringstype: Endringstype,
     val ident: String,
     val opplysningstype: Opplysningstype,
-    val endringsmelding: EndringsmeldingUID,
+    val endringsmelding: Endringsmelding,
     val opplysningsId: String? = null
 )
 
@@ -28,7 +28,7 @@ interface  Endringsmelding{
 data class EndringsmeldingUID(
     @JsonTypeId
     override val type: String = Opplysningstype.UTENLANDSKIDENTIFIKASJONSNUMMER.name,
-    override val  kilde: String = "",
+    override val kilde: String = "",
     val identifikasjonsnummer: String,
     val utstederland: String
 ) : Endringsmelding
@@ -45,4 +45,3 @@ data class EndringsmeldingUtAdresse(
     val coAdressenavn: String?,
     val adresse: UtenlandskAdresse?
 ) : Endringsmelding
-
