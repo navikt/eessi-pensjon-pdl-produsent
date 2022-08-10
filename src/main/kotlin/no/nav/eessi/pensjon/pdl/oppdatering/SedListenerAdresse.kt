@@ -66,19 +66,20 @@ class SedListenerAdresse (
                         val identifisertePersoner = personidentifiseringService.hentIdentifisertePersoner(alleGyldigeSED, bucType)
                         logger.info("Vi har funnet ${identifisertePersoner.size} personer fra PDL som har gyldige identer")
 
-//                        personidentifiseringService.finnesPersonMedAdressebeskyttelse()
-
-                        val adresseUtland = alleGyldigeSED.firstOrNull()?.second?.nav?.bruker?.adresse
                         val alleAdresser = alleGyldigeSED.filter { it.second.nav?.bruker?.adresse != null }
                             .map { it.second.nav?.bruker?.adresse }
                             .distinct()
 
-                        val adresserIkkeNorske = alleAdresser.filter { it?.land != "NO" }.firstOrNull()
+                        val adresserIkkeNorske = alleAdresser.filter { it?.land != "NO" }.also { logger.info("Utlandskadresse for validering: $it") }
 
+                        logger.info("Vi har funnet ${adresserIkkeNorske.size} som skal vurderes for validering")
+
+/*
                         if(adresserIkkeNorske != null) {
                             val listMedAdresserFraPdl = identifisertePersoner.map { it.kontaktAdresse?.utenlandskAdresse }
                             pdlFiltrering.finnesUtlAdresseFraSedIPDL(listMedAdresserFraPdl, adresserIkkeNorske)
                         }
+*/
 
                         //TODO: send melding til personMottakKlient
                     }
