@@ -76,7 +76,7 @@ class SedListenerAdresse (
                         val adresserIkkeNorske = alleAdresser.filter { it?.land != "NO" }.firstOrNull()
 
                         if(adresserIkkeNorske != null) {
-                            val listMedAdresserFraPdl = identifisertePersoner.map { it.kontaktAdresse.utenlandskAdresse }
+                            val listMedAdresserFraPdl = identifisertePersoner.map { it.kontaktAdresse?.utenlandskAdresse }
                             pdlFiltrering.finnesUtlAdresseFraSedIPDL(listMedAdresserFraPdl, adresserIkkeNorske)
                         }
 

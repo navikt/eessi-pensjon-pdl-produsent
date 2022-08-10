@@ -1,6 +1,7 @@
 package no.nav.eessi.pensjon.models
 
 import com.fasterxml.jackson.annotation.JsonFormat
+import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeId
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
@@ -20,6 +21,8 @@ data class Personopplysninger(
     val opplysningsId: String? = null
 )
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
+@JsonSubTypes(JsonSubTypes.Type(value = Opplysningstype::class))
 interface  Endringsmelding{
     val kilde: String
     val type: String

@@ -48,7 +48,7 @@ internal class EndringsmeldingUtAdresseTest() {
               }
             }
         """.trimIndent()
-        assertEquals(expected, model.toJson())
+        assertEquals(expected, model.toJson().also { println(it) })
         assertEquals(model, mapJsonToAny<EndringsmeldingUtAdresse>(model.toJson(), typeRefs()))
     }
 }

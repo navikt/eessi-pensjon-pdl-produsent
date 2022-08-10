@@ -18,7 +18,7 @@ data class IdentifisertPerson(
     val personListe: List<IdentifisertPerson>? = null,
     val personRelasjon: SEDPersonRelasjon,
     val erDoed: Boolean = false,
-    val kontaktAdresse: Kontaktadresse
+    val kontaktAdresse: Kontaktadresse?
 ) {
     fun flereEnnEnPerson() = false
 

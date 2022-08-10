@@ -34,8 +34,10 @@ class PersonidentifiseringService(private val personService: PersonService) {
             null
         }
 
-    private fun populerIdentifisertPerson(person: Person, relasjon: SEDPersonRelasjon, ): IdentifisertPerson {
+    private fun populerIdentifisertPerson(person: Person, relasjon: SEDPersonRelasjon): IdentifisertPerson {
         logger.debug("Populerer IdentifisertPerson med data fra PDL, person: $person")
+
+        var kontaktAdresse = person.kontaktadresse
 
         return IdentifisertPerson(
             relasjon.fnr,
@@ -47,7 +49,7 @@ class PersonidentifiseringService(private val personService: PersonService) {
             null,
             relasjon,
             person.erDoed(),
-            person.kontaktadresse!!
+            kontaktAdresse
         ).also { logger.debug("Følgende populert Person: $it") }
     }
 

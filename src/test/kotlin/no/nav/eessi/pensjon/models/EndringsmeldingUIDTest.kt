@@ -26,7 +26,7 @@ internal class EndringsmeldingUIDTest {
                 )
             )
         )
-        val json = mapAnyToJson(pdlEndringsOpplysninger)
+        val json = mapAnyToJson(pdlEndringsOpplysninger).also { print(it) }
         val expected = "{\n" +
                 "  \"personopplysninger\" : [ {\n" +
                 "    \"endringstype\" : \"OPPRETT\",\n" +
