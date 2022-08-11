@@ -5,6 +5,7 @@ import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.models.Enhet
+import no.nav.eessi.pensjon.pdl.oppdatering.SedListenerIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonMock
 import no.nav.eessi.pensjon.personoppslag.pdl.model.AktoerId
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
@@ -15,6 +16,8 @@ import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.springframework.beans.factory.annotation.Autowired
+import java.util.concurrent.TimeUnit
 
 @SpringBootTest( classes = [KafkaTestConfig::class, IntegrationBase.TestConfig::class])
 @ActiveProfiles("integrationtest")
@@ -23,7 +26,10 @@ import org.junit.jupiter.api.Assertions.assertTrue
     controlledShutdown = true,
     topics = [PDL_PRODUSENT_TOPIC_MOTTATT]
 )
-class IdentFinnesIntegrationTest : IntegrationBase() {
+class IdentFinnesIntegrationIT : IntegrationBase() {
+
+    @Autowired(required = true)
+    lateinit var sedListenerIdent: SedListenerIdent
 
     val fnr = "11067122781"
 
@@ -51,6 +57,7 @@ class IdentFinnesIntegrationTest : IntegrationBase() {
             .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
 
         sendMeldingString(javaClass.getResource("/eux/hendelser/P_BUC_01_P2000-avsenderDK.json").readText())
+        sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
         assertTrue(validateSedMottattListenerLoggingMessage("PDLuid er identisk med SEDuid. Acket sedMottatt"))
     }
 
@@ -85,6 +92,7 @@ class IdentFinnesIntegrationTest : IntegrationBase() {
 
         val hendelseJson = mockHendelse(avsenderLand = "SE", bucType = BucType.P_BUC_10, sedType = SedType.P15000, docId = "eb938171a4cb4e658b3a6c011962d204")
         sendMeldingString(hendelseJson)
+        sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
 
         assertTrue(validateSedMottattListenerLoggingMessage("Oppretter ikke oppgave, Det som finnes i PDL er faktisk likt det som finnes i SED, avslutter"))
     }

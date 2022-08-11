@@ -52,13 +52,6 @@ import javax.net.ssl.SSLContext
 const val PDL_PRODUSENT_TOPIC_MOTTATT = "eessi-basis-sedMottatt-v1"
 abstract class IntegrationBase {
 
-    @Autowired(required = true)
-    lateinit var sedListenerIdent: SedListenerIdent
-
-    @Autowired(required = true)
-    lateinit var sedListenerAdresse: SedListenerAdresse
-
-
     @Autowired
     lateinit var embeddedKafka: EmbeddedKafkaBroker
 
@@ -112,7 +105,6 @@ abstract class IntegrationBase {
 
     fun sendMeldingString(message: String) {
         kafkaTemplate.sendDefault(message).get(20L, TimeUnit.SECONDS)
-        sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
         Thread.sleep(5000)
     }
 

@@ -5,6 +5,7 @@ import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.models.Enhet
+import no.nav.eessi.pensjon.pdl.oppdatering.SedListenerIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonMock
 import no.nav.eessi.pensjon.personoppslag.pdl.model.AktoerId
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
@@ -13,10 +14,12 @@ import org.junit.jupiter.api.Test
 import org.mockserver.client.MockServerClient
 import org.mockserver.model.HttpRequest
 import org.mockserver.verify.VerificationTimes
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
+import java.util.concurrent.TimeUnit
 
 @SpringBootTest( classes = [KafkaTestConfig::class, IntegrationBase.TestConfig::class])
 @ActiveProfiles("integrationtest")
@@ -26,6 +29,9 @@ import org.springframework.test.context.ActiveProfiles
     topics = [PDL_PRODUSENT_TOPIC_MOTTATT]
 )
 class IdentManglerEllerFeilIntegrationTest : IntegrationBase() {
+
+    @Autowired
+    lateinit var sedListenerIdent: SedListenerIdent
 
     val fnr = "11067122781"
 
@@ -59,6 +65,8 @@ class IdentManglerEllerFeilIntegrationTest : IntegrationBase() {
                 docId = "eb938171a4cb4e658b3a6c011962d204"
             )
         )
+        sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
+
         assertTrue(validateSedMottattListenerLoggingMessage("Ingen utenlandske IDer funnet i BUC"))
     }
 
@@ -77,6 +85,8 @@ class IdentManglerEllerFeilIntegrationTest : IntegrationBase() {
             .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
 
         sendMeldingString(javaClass.getResource("/eux/hendelser/P_BUC_01_P2000-avsenderSE.json").readText())
+        sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
+
         assertTrue(validateSedMottattListenerLoggingMessage("Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer"))
 
         CustomMockServer().verifyRequest("/api/v1/endringer", 0)
@@ -103,6 +113,8 @@ class IdentManglerEllerFeilIntegrationTest : IntegrationBase() {
                 docId = "eb938171a4cb4e658b3a6c011962d204"
             )
         )
+        sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
+
         assertTrue(validateSedMottattListenerLoggingMessage("Ingen identifiserte FNR funnet, Acket melding"))
     }
 
@@ -121,6 +133,7 @@ class IdentManglerEllerFeilIntegrationTest : IntegrationBase() {
             .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
 
         sendMeldingString(javaClass.getResource("/eux/hendelser/P_BUC_01_P2000-avsenderDE.json").readText())
+        sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
 
         assertTrue(validateSedMottattListenerLoggingMessage("Antall utenlandske IDer er flere enn en"))
 
