@@ -2,7 +2,9 @@ package no.nav.eessi.pensjon.pdl.oppdatering
 
 import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.EuxKlient
+import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.eux.model.sed.Adresse
+import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.EndringsmeldingUtAdresse
@@ -70,7 +72,7 @@ class SedListenerAdresse (
 
             if (GyldigeHendelser.mottatt(sedHendelse)) {
 
-                val adresserUtland = hentAdresserKunUtland(sedHendelse)
+                val adresserUtland = hentAdresserKunUtland(euxService.alleGyldigeSEDForBuc(sedHendelse.rinaSakId))
 
                 logger.info("Vi har funnet ${adresserUtland.size} utenlandske adresser")
 
@@ -86,8 +88,11 @@ class SedListenerAdresse (
 
                 //Vi har adresser fra utland, og de er gyldige; starter validering
                 adresserUtland.firstOrNull()?.let { adresse ->
-                    val gyldigeSED = euxService.alleGyldigeSEDForBuc(sedHendelse.rinaSakId)
-                    val personerHentetFraPDL = pdlService.hentIdentifisertePersoner(gyldigeSED, sedHendelse.bucType!!)
+                    val personerHentetFraPDL = pdlService.hentIdentifisertePersoner(
+                        euxService.alleGyldigeSEDForBuc(
+                            sedHendelse.rinaSakId
+                        ), sedHendelse.bucType!!
+                    )
 
                     logger.info("Vi har funnet ${personerHentetFraPDL.size} personer fra PDL som har gyldige identer")
 
@@ -110,8 +115,8 @@ class SedListenerAdresse (
 
     }
 
-    private fun hentAdresserKunUtland(sedHendelse: SedHendelseModel): List<Adresse?> {
-        val alleAdresser = euxService.alleGyldigeSEDForBuc(sedHendelse.rinaSakId)
+    private fun hentAdresserKunUtland(sedHendelse: List<Pair<ForenkletSED, SED>>): List<Adresse?> {
+        val alleAdresser = sedHendelse
             .filter { it.second.nav?.bruker?.adresse != null }
             .map { it.second.nav?.bruker?.adresse }
             .distinct()

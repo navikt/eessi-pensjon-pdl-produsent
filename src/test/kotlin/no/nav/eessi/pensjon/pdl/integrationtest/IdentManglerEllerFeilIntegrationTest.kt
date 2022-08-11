@@ -76,7 +76,7 @@ class IdentManglerEllerFeilIntegrationTest : IntegrationBase() {
             .medMockBuc("/buc/147729", mockBuc)
             .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
 
-        sendMelding("/eux/hendelser/P_BUC_01_P2000-avsenderSE.json")
+        sendMeldingString(javaClass.getResource("/eux/hendelser/P_BUC_01_P2000-avsenderSE.json").readText())
         assertTrue(validateSedMottattListenerLoggingMessage("Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer"))
 
         CustomMockServer().verifyRequest("/api/v1/endringer", 0)
@@ -120,7 +120,7 @@ class IdentManglerEllerFeilIntegrationTest : IntegrationBase() {
             .medMockBuc("/buc/147729", mockBuc)
             .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
 
-        sendMelding("/eux/hendelser/P_BUC_01_P2000-avsenderDE.json")
+        sendMeldingString(javaClass.getResource("/eux/hendelser/P_BUC_01_P2000-avsenderDE.json").readText())
 
         assertTrue(validateSedMottattListenerLoggingMessage("Antall utenlandske IDer er flere enn en"))
 

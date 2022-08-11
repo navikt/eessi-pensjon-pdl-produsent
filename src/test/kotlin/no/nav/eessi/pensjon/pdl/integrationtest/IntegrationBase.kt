@@ -11,6 +11,7 @@ import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.klienter.norg2.Norg2Service
+import no.nav.eessi.pensjon.pdl.oppdatering.SedListenerAdresse
 import no.nav.eessi.pensjon.pdl.oppdatering.SedListenerIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.utils.mapJsonToAny
@@ -52,7 +53,11 @@ const val PDL_PRODUSENT_TOPIC_MOTTATT = "eessi-basis-sedMottatt-v1"
 abstract class IntegrationBase {
 
     @Autowired(required = true)
-    lateinit var sedListener: SedListenerIdent
+    lateinit var sedListenerIdent: SedListenerIdent
+
+    @Autowired(required = true)
+    lateinit var sedListenerAdresse: SedListenerAdresse
+
 
     @Autowired
     lateinit var embeddedKafka: EmbeddedKafkaBroker
@@ -105,15 +110,9 @@ abstract class IntegrationBase {
         MockServerClient("localhost", System.getProperty("mockserverport").toInt()).reset()
     }
 
-    fun sendMelding(messagePath: String) {
-        kafkaTemplate.sendDefault(javaClass.getResource(messagePath)!!.readText()).get(20L, TimeUnit.SECONDS)
-        sedListener.getLatch().await(20, TimeUnit.SECONDS)
-        Thread.sleep(5000)
-    }
-
     fun sendMeldingString(message: String) {
         kafkaTemplate.sendDefault(message).get(20L, TimeUnit.SECONDS)
-        sedListener.getLatch().await(20, TimeUnit.SECONDS)
+        sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
         Thread.sleep(5000)
     }
 

@@ -50,7 +50,7 @@ class IdentFinnesIntegrationTest : IntegrationBase() {
             .medMockBuc("/buc/147729", mockBuc)
             .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
 
-        sendMelding("/eux/hendelser/P_BUC_01_P2000-avsenderDK.json")
+        sendMeldingString(javaClass.getResource("/eux/hendelser/P_BUC_01_P2000-avsenderDK.json").readText())
         assertTrue(validateSedMottattListenerLoggingMessage("PDLuid er identisk med SEDuid. Acket sedMottatt"))
     }
 
