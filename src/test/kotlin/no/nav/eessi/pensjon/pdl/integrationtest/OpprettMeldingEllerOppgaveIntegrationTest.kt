@@ -51,7 +51,6 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
         every { personService.hentPerson(NorskIdent("28105424630")) } returns null
 
         CustomMockServer()
-            .mockSTSToken()
             .medSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", "src/test/resources/eux/sed/P2100-PinDK-NAV.json")
             .medSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d205", "src/test/resources/eux/sed/P5000-NAV.json")
             .medSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d504", "src/test/resources/eux/sed/P7000-NAV.json")
@@ -103,7 +102,6 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
         val mockBuc = mockBuc("147729", BucType.P_BUC_02, listOverSeder)
 
         CustomMockServer()
-            .mockSTSToken()
             .medEndring()
             .medSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", "src/test/resources/eux/sed/P2100-PinDK-NAV.json")
             .medMockBuc("/buc/147729", mockBuc)
@@ -138,7 +136,6 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
         val mockSed = mockSedUtenPensjon(sedType = SedType.P15000, pin = mockPin)
 
         CustomMockServer()
-            .mockSTSToken()
             .medMockSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", mockSed)
             .medMockBuc("/buc/147729", mockBuc)
             .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")

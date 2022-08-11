@@ -15,20 +15,6 @@ import java.nio.file.Paths
 class CustomMockServer() {
     private val serverPort = System.getProperty("mockserverport").toInt()
 
-    fun mockSTSToken() = apply {
-        MockServerClient("localhost", serverPort).`when`(
-            request()
-                .withMethod(HttpMethod.GET.name)
-                .withQueryStringParameter("grant_type", "client_credentials")
-        )
-            .respond(
-                HttpResponse.response()
-                    .withHeader(Header("Content-Type", "application/json; charset=utf-8"))
-                    .withStatusCode(HttpStatusCode.OK_200.code())
-                    .withBody(String(Files.readAllBytes(Paths.get("src/test/resources/STStoken.json"))))
-            )
-    }
-
     fun medSed(bucPath: String, sedLocation: String) = apply {
         MockServerClient("localhost", serverPort).`when`(
             request()

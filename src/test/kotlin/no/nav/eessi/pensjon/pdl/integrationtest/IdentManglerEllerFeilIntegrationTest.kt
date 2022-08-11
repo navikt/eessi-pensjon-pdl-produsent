@@ -53,7 +53,6 @@ class IdentManglerEllerFeilIntegrationTest : IntegrationBase() {
         val mockSed = mockSedUtenPensjon(sedType = SedType.P15000, pin = listOf(mockPin))
 
         CustomMockServer()
-            .mockSTSToken()
             .medMockSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", mockSed)
             .medMockBuc("/buc/147729", mockBuc)
             .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
@@ -79,7 +78,6 @@ class IdentManglerEllerFeilIntegrationTest : IntegrationBase() {
         val mockBuc = mockBuc("147729", BucType.P_BUC_02, listOverSeder)
 
         CustomMockServer()
-            .mockSTSToken()
             .medSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", "src/test/resources/eux/sed/P8000-TyskPIN.json")
             .medMockBuc("/buc/147729", mockBuc)
             .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
@@ -100,7 +98,6 @@ class IdentManglerEllerFeilIntegrationTest : IntegrationBase() {
         val mockBuc = mockBuc("147729", BucType.P_BUC_10, listOverSeder)
 
         CustomMockServer()
-            .mockSTSToken()
             .medSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", "src/test/resources/eux/sed/P15000-UtenPin-NAV.json")
             .medMockBuc("/buc/147729", mockBuc)
             .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
@@ -127,7 +124,6 @@ class IdentManglerEllerFeilIntegrationTest : IntegrationBase() {
         val mockBuc = mockBuc("147729", BucType.P_BUC_02, listOverSeder)
 
         CustomMockServer()
-            .mockSTSToken()
             .medSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", "src/test/resources/eux/sed/P8000-TyskOgFinskPIN.json")
             .medMockBuc("/buc/147729", mockBuc)
             .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
