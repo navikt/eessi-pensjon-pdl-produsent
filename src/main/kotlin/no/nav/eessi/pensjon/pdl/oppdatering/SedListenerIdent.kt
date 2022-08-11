@@ -1,7 +1,7 @@
 package no.nav.eessi.pensjon.pdl.oppdatering
 
 import io.micrometer.core.instrument.Metrics
-import no.nav.eessi.pensjon.eux.EuxDokumentHelper
+import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.eux.UtenlandskPersonIdentifisering
 import no.nav.eessi.pensjon.handler.OppgaveHandler
@@ -33,7 +33,7 @@ import javax.annotation.PostConstruct
 @Service
 class SedListenerIdent(
     private val personidentifiseringService: PersonidentifiseringService,
-    private val dokumentHelper: EuxDokumentHelper,
+    private val dokumentHelper: EuxService,
     private val personMottakKlient: PersonMottakKlient,
     private val utenlandskPersonIdentifisering: UtenlandskPersonIdentifisering,
     private val pdlFiltrering: PdlFiltrering,
@@ -86,7 +86,7 @@ class SedListenerIdent(
                 val bucType = sedHendelse.bucType!!
                 logger.info("*** Starter pdl endringsmelding prosess for BucType: $bucType, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
 
-                val alleGyldigeSED = dokumentHelper.alleGyldigeSEDForBuc(sedHendelse.rinaSakId, dokumentHelper.hentBuc(sedHendelse.rinaSakId))
+                val alleGyldigeSED = dokumentHelper.alleGyldigeSEDForBuc(sedHendelse.rinaSakId)
 
                 val utenlandskeIderFraSEDer = utenlandskPersonIdentifisering.finnAlleUtenlandskeIDerIMottatteSed(alleGyldigeSED)
 

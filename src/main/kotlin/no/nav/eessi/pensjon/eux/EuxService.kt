@@ -12,11 +12,11 @@ import org.springframework.stereotype.Service
 import javax.annotation.PostConstruct
 
 @Service
-class EuxDokumentHelper(
+class EuxService(
     private val euxKlient: EuxKlient,
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
 ) {
-    private val logger = LoggerFactory.getLogger(EuxDokumentHelper::class.java)
+    private val logger = LoggerFactory.getLogger(EuxService::class.java)
 
     private lateinit var hentBuc: MetricsHelper.Metric
     private lateinit var hentSed: MetricsHelper.Metric
@@ -50,8 +50,8 @@ class EuxDokumentHelper(
             euxKlient.hentBuc(rinaSakId) ?: throw RuntimeException("Ingen BUC")
         }
 
-    fun alleGyldigeSEDForBuc(rinaSakId: String, buc: Buc): List<Pair<ForenkletSED, SED>> =
-        (buc.documents ?: emptyList())
+    fun alleGyldigeSEDForBuc(rinaSakId: String): List<Pair<ForenkletSED, SED>> =
+        (hentBuc(rinaSakId).documents ?: emptyList())
             .filter { it.id != null }
             .map { ForenkletSED(it.id!!, it.type, SedStatus.fra(it.status)) }
             .filter { it.harGyldigStatus() }

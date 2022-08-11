@@ -2,7 +2,7 @@ package no.nav.eessi.pensjon.listeners
 
 import io.mockk.mockk
 import io.mockk.verify
-import no.nav.eessi.pensjon.eux.EuxDokumentHelper
+import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.UtenlandskPersonIdentifisering
 import no.nav.eessi.pensjon.handler.OppgaveHandler
 import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
@@ -23,7 +23,7 @@ internal class SedMottattListenerTest {
     private val acknowledgment = mockk<Acknowledgment>(relaxUnitFun = true)
     private val cr = mockk<ConsumerRecord<String, String>>(relaxed = true)
     private val personidentifiseringService = mockk<PersonidentifiseringService>(relaxed = true)
-    private val sedDokumentHelper = mockk<EuxDokumentHelper>(relaxed = true)
+    private val sedDokumentHelper = mockk<EuxService>(relaxed = true)
     private val personMottakKlient = mockk<PersonMottakKlient>(relaxed = true)
     private val utenlandskPersonIdentifisering = mockk<UtenlandskPersonIdentifisering>(relaxed = true)
     private val pdlFiltrering = mockk<PdlFiltrering>(relaxed = true)
