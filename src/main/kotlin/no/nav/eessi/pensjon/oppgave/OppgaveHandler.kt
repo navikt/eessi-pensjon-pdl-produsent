@@ -1,4 +1,4 @@
-package no.nav.eessi.pensjon.handler
+package no.nav.eessi.pensjon.oppgave
 
 import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.lagring.LagringsService

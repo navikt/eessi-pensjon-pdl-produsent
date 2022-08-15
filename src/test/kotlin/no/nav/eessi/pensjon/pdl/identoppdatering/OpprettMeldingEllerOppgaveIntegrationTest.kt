@@ -1,20 +1,20 @@
-package no.nav.eessi.pensjon.pdl.integrationtest
+package no.nav.eessi.pensjon.pdl.identoppdatering
 
 import io.mockk.every
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.models.Enhet
+import no.nav.eessi.pensjon.pdl.integrationtest.CustomMockServer
+import no.nav.eessi.pensjon.pdl.integrationtest.IntegrationBase
+import no.nav.eessi.pensjon.pdl.integrationtest.KafkaTestConfig
+import no.nav.eessi.pensjon.pdl.integrationtest.PDL_PRODUSENT_TOPIC_MOTTATT
 import no.nav.eessi.pensjon.personoppslag.pdl.model.PersonMock
 import no.nav.eessi.pensjon.personoppslag.pdl.model.AktoerId
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.mockserver.client.MockServerClient
-import org.mockserver.model.HttpRequest
-import org.mockserver.model.JsonBody
-import org.mockserver.verify.VerificationTimes
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.annotation.DirtiesContext

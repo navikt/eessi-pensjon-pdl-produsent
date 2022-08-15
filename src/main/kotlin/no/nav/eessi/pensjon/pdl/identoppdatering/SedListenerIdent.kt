@@ -1,10 +1,10 @@
-package no.nav.eessi.pensjon.pdl.oppdatering
+package no.nav.eessi.pensjon.pdl.identoppdatering
 
 import io.micrometer.core.instrument.Metrics
 import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.eux.UtenlandskPersonIdentifisering
-import no.nav.eessi.pensjon.handler.OppgaveHandler
+import no.nav.eessi.pensjon.oppgave.OppgaveHandler
 import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.EndringsmeldingUID
