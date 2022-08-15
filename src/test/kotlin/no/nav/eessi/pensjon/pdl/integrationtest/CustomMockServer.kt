@@ -1,5 +1,8 @@
 package no.nav.eessi.pensjon.pdl.integrationtest
 
+import no.nav.eessi.pensjon.eux.model.buc.BucType
+import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
+import no.nav.eessi.pensjon.utils.toJson
 import org.mockserver.client.MockServerClient
 import org.mockserver.model.Header
 import org.mockserver.model.HttpRequest.request
@@ -105,5 +108,19 @@ class CustomMockServer() {
                     .withBody(JsonBody.json(body)),
                 VerificationTimes.atMost(times)
             )
+    }
+
+    companion object {
+        fun mockBuc(bucId: String, bucType: BucType, docIder: List<ForenkletSED>): String {
+            return """
+            {
+              "id": "$bucId",
+              "processDefinitionName": "${bucType.name}",
+              "documents": ${docIder.toJson()}
+              
+            } 
+          
+        """.trimIndent()
+        }
     }
 }

@@ -3,6 +3,7 @@ package no.nav.eessi.pensjon.pdl.identoppdatering
 import io.mockk.every
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
+import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.models.Enhet
 import no.nav.eessi.pensjon.pdl.integrationtest.CustomMockServer
@@ -41,12 +42,12 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
         )
 
         val listOverSeder = listOf(
-            mockForenkletSed("eb938171a4cb4e658b3a6c011962d204", SedType.P2100, SedStatus.RECEIVED),
-            mockForenkletSed("eb938171a4cb4e658b3a6c011962d205", SedType.P5000, SedStatus.SENT),
-            mockForenkletSed("eb938171a4cb4e658b3a6c011962d504", SedType.P7000, SedStatus.RECEIVED),
-            mockForenkletSed("eb938171a4cb4e658b3a6c011962d205", SedType.H120, SedStatus.RECEIVED)
+            ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P2100, SedStatus.RECEIVED),
+            ForenkletSED("eb938171a4cb4e658b3a6c011962d205", SedType.P5000, SedStatus.SENT),
+            ForenkletSED("eb938171a4cb4e658b3a6c011962d504", SedType.P7000, SedStatus.RECEIVED),
+            ForenkletSED("eb938171a4cb4e658b3a6c011962d205", SedType.H120, SedStatus.RECEIVED)
         )
-        val mockBuc = mockBuc("147729", BucType.P_BUC_02, listOverSeder)
+        val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_02, listOverSeder)
 
         every { personService.hentPerson(NorskIdent("28105424630")) } returns null
 
@@ -66,10 +67,10 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
             )
         )
 
-        assertTrue(validateSedMottattListenerLoggingMessage("SED av type: P2100, status: RECEIVED"))
-        assertTrue(validateSedMottattListenerLoggingMessage("SED av type: P5000, status: SENT"))
-        assertTrue(validateSedMottattListenerLoggingMessage("SED av type: P7000, status: RECEIVED"))
-        assertTrue(validateSedMottattListenerLoggingMessage("Endringsmelding: OPPRETT, med nye personopplysninger"))
+        assertTrue(isMessageInlog("SED av type: P2100, status: RECEIVED"))
+        assertTrue(isMessageInlog("SED av type: P5000, status: SENT"))
+        assertTrue(isMessageInlog("SED av type: P7000, status: RECEIVED"))
+        assertTrue(isMessageInlog("Endringsmelding: OPPRETT, med nye personopplysninger"))
 
         val check = """
               "personopplysninger" : [ {
@@ -98,8 +99,8 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
             uid = emptyList()
         )
 
-        val listOverSeder = listOf(mockForenkletSed("eb938171a4cb4e658b3a6c011962d204", SedType.P2100, SedStatus.RECEIVED))
-        val mockBuc = mockBuc("147729", BucType.P_BUC_02, listOverSeder)
+        val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P2100, SedStatus.RECEIVED))
+        val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_02, listOverSeder)
 
         CustomMockServer()
             .medEndring()
@@ -109,7 +110,7 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
 
         sendMeldingString(javaClass.getResource("/eux/hendelser/P_BUC_01_P2000-avsenderDK.json").readText())
 
-        assertTrue(validateSedMottattListenerLoggingMessage("Endringsmelding: OPPRETT, med nye personopplysninger"))
+        assertTrue(isMessageInlog("Endringsmelding: OPPRETT, med nye personopplysninger"))
     }
 
     @Test
@@ -129,8 +130,8 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
             )
         )
 
-        val listOverSeder = listOf(mockForenkletSed("eb938171a4cb4e658b3a6c011962d204", SedType.P15000, SedStatus.RECEIVED))
-        val mockBuc = mockBuc("147729", BucType.P_BUC_10, listOverSeder)
+        val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P15000, SedStatus.RECEIVED))
+        val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_10, listOverSeder)
         val mockPin = listOf(mockPin(fnr, "NO"),
             mockPin("130177-5432", "DK"))
         val mockSed = mockSedUtenPensjon(sedType = SedType.P15000, pin = mockPin)
@@ -147,7 +148,7 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
                 docId = "eb938171a4cb4e658b3a6c011962d204"
             )
         )
-        assertTrue(validateSedMottattListenerLoggingMessage("Det finnes allerede en annen uid fra samme land, opprette oppgave"))
+        assertTrue(isMessageInlog("Det finnes allerede en annen uid fra samme land, opprette oppgave"))
         val check = """
             Opprette oppgave melding på kafka: eessi-pensjon-oppgave-v1  melding: {
               "sedType" : null,
@@ -160,7 +161,7 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
               "oppgaveType" : "PDL"
             }
         """.trimIndent()
-        assertTrue(validateSedMottattListenerLoggingMessage(check))
+        assertTrue(isMessageInlog(check))
     }
 }
 

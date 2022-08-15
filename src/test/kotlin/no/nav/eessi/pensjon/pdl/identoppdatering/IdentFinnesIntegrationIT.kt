@@ -3,6 +3,7 @@ package no.nav.eessi.pensjon.pdl.identoppdatering
 import io.mockk.every
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
+import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.models.Enhet
 import no.nav.eessi.pensjon.pdl.integrationtest.CustomMockServer
@@ -50,8 +51,8 @@ class IdentFinnesIntegrationIT : IntegrationBase() {
             ))
         )
 
-        val listOverSeder = listOf(mockForenkletSed("eb938171a4cb4e658b3a6c011962d204", SedType.P2100, SedStatus.RECEIVED))
-        val mockBuc = mockBuc("147729", BucType.P_BUC_02, listOverSeder)
+        val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P2100, SedStatus.RECEIVED))
+        val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_02, listOverSeder)
 
         CustomMockServer()
             .medSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", "src/test/resources/eux/sed/P2100-PinDK-NAV.json")
@@ -60,7 +61,7 @@ class IdentFinnesIntegrationIT : IntegrationBase() {
 
         sendMeldingString(javaClass.getResource("/eux/hendelser/P_BUC_01_P2000-avsenderDK.json").readText())
         sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
-        assertTrue(validateSedMottattListenerLoggingMessage("PDLuid er identisk med SEDuid. Acket sedMottatt"))
+        assertTrue(isMessageInlog("PDLuid er identisk med SEDuid. Acket sedMottatt"))
     }
 
     @Test
@@ -80,8 +81,8 @@ class IdentFinnesIntegrationIT : IntegrationBase() {
             )
         )
 
-        val listOverSeder = listOf(mockForenkletSed("eb938171a4cb4e658b3a6c011962d204", SedType.P15000, SedStatus.RECEIVED))
-        val mockBuc = mockBuc("147729", BucType.P_BUC_10, listOverSeder)
+        val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P15000, SedStatus.RECEIVED))
+        val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_10, listOverSeder)
         val mockPin = listOf(mockPin(fnr, "NO"),
             mockPin("540202-1234", "SE"))
         val mockSed = mockSedUtenPensjon(sedType = SedType.P15000, pin = mockPin)
@@ -95,7 +96,7 @@ class IdentFinnesIntegrationIT : IntegrationBase() {
         sendMeldingString(hendelseJson)
         sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
 
-        assertTrue(validateSedMottattListenerLoggingMessage("Oppretter ikke oppgave, Det som finnes i PDL er faktisk likt det som finnes i SED, avslutter"))
+        assertTrue(isMessageInlog("Oppretter ikke oppgave, Det som finnes i PDL er faktisk likt det som finnes i SED, avslutter"))
     }
 
 }
