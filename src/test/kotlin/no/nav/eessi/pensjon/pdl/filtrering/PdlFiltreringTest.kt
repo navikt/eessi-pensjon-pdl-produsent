@@ -5,7 +5,6 @@ import io.mockk.mockk
 import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.eux.model.sed.Adresse
 import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
-import no.nav.eessi.pensjon.pdl.validering.PdlFiltrering
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endring
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Metadata

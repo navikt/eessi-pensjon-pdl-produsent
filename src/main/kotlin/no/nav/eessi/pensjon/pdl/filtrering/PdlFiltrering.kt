@@ -1,14 +1,12 @@
-package no.nav.eessi.pensjon.pdl.validering
+package no.nav.eessi.pensjon.pdl.filtrering
 
 import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.eux.model.sed.Adresse
 import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Kontaktadresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-
 
 @Component
 class PdlFiltrering(private val kodeverk: KodeverkClient) {
