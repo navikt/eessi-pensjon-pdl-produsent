@@ -3,6 +3,7 @@ package no.nav.eessi.pensjon.pdl.identoppdatering
 import io.mockk.every
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
+import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.models.Enhet
 import no.nav.eessi.pensjon.pdl.integrationtest.CustomMockServer
@@ -46,7 +47,7 @@ class IdentManglerEllerFeilIntegrationTest : IntegrationBase() {
         every { norg2.hentArbeidsfordelingEnhet(any()) } returns Enhet.ID_OG_FORDELING
         every { personService.hentPerson(NorskIdent( fnr)) } returns mockedPerson
 
-        val listOverSeder = listOf(mockForenkletSed("eb938171a4cb4e658b3a6c011962d204", SedType.P15000, SedStatus.RECEIVED))
+        val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P15000, SedStatus.RECEIVED))
         val mockBuc = mockBuc("147729", BucType.P_BUC_10, listOverSeder)
 
         val mockPin = mockPin(fnr, "NO")
@@ -74,7 +75,7 @@ class IdentManglerEllerFeilIntegrationTest : IntegrationBase() {
         every { norg2.hentArbeidsfordelingEnhet(any()) } returns  Enhet.ID_OG_FORDELING
         every { personService.hentPerson(NorskIdent( "29087021082")) } returns mockedPerson
 
-        val listOverSeder = listOf(mockForenkletSed("eb938171a4cb4e658b3a6c011962d204", SedType.P8000, SedStatus.RECEIVED))
+        val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P8000, SedStatus.RECEIVED))
         val mockBuc = mockBuc("147729", BucType.P_BUC_02, listOverSeder)
 
         CustomMockServer()
@@ -94,7 +95,7 @@ class IdentManglerEllerFeilIntegrationTest : IntegrationBase() {
     fun `Gitt en sed hendelse med uten ident ack med logg Ingen identifiserte FNR funnet, Acket melding`() {
         every { norg2.hentArbeidsfordelingEnhet(any()) } returns Enhet.ID_OG_FORDELING
 
-        val listOverSeder = listOf(mockForenkletSed("eb938171a4cb4e658b3a6c011962d204", SedType.P15000, SedStatus.RECEIVED))
+        val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P15000, SedStatus.RECEIVED))
         val mockBuc = mockBuc("147729", BucType.P_BUC_10, listOverSeder)
 
         CustomMockServer()
@@ -120,7 +121,7 @@ class IdentManglerEllerFeilIntegrationTest : IntegrationBase() {
         every { norg2.hentArbeidsfordelingEnhet(any()) } returns Enhet.ID_OG_FORDELING
         every { personService.hentPerson(NorskIdent( "29087021082")) } returns mockedPerson
 
-        val listOverSeder = listOf(mockForenkletSed("eb938171a4cb4e658b3a6c011962d204", SedType.P8000, SedStatus.RECEIVED))
+        val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P8000, SedStatus.RECEIVED))
         val mockBuc = mockBuc("147729", BucType.P_BUC_02, listOverSeder)
 
         CustomMockServer()

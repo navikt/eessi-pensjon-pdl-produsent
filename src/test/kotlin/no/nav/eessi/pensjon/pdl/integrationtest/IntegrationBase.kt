@@ -139,10 +139,6 @@ abstract class IntegrationBase {
         """.trimIndent()
     }
 
-    fun mockForenkletSed(id: String, type: SedType, status: SedStatus) : ForenkletSED {
-        return ForenkletSED(id, type, status)
-    }
-
     fun mockHendelse(avsenderLand: String = "DK", avsenderNavn: String = "DK:D005", bucType: BucType = BucType.P_BUC_01, sedType: SedType = SedType.P2000, docId: String = "b12e06dda2c7474b9998c7139c841646"): String {
         return """
             {

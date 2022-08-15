@@ -3,6 +3,7 @@ package no.nav.eessi.pensjon.pdl.identoppdatering
 import io.mockk.every
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
+import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.models.Enhet
 import no.nav.eessi.pensjon.pdl.integrationtest.CustomMockServer
@@ -50,7 +51,7 @@ class IdentFinnesIntegrationIT : IntegrationBase() {
             ))
         )
 
-        val listOverSeder = listOf(mockForenkletSed("eb938171a4cb4e658b3a6c011962d204", SedType.P2100, SedStatus.RECEIVED))
+        val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P2100, SedStatus.RECEIVED))
         val mockBuc = mockBuc("147729", BucType.P_BUC_02, listOverSeder)
 
         CustomMockServer()
@@ -80,7 +81,7 @@ class IdentFinnesIntegrationIT : IntegrationBase() {
             )
         )
 
-        val listOverSeder = listOf(mockForenkletSed("eb938171a4cb4e658b3a6c011962d204", SedType.P15000, SedStatus.RECEIVED))
+        val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P15000, SedStatus.RECEIVED))
         val mockBuc = mockBuc("147729", BucType.P_BUC_10, listOverSeder)
         val mockPin = listOf(mockPin(fnr, "NO"),
             mockPin("540202-1234", "SE"))
