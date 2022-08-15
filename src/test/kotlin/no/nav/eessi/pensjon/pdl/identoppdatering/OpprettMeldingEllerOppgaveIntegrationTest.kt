@@ -1,6 +1,7 @@
 package no.nav.eessi.pensjon.pdl.identoppdatering
 
 import io.mockk.every
+import io.mockk.mockk
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
@@ -14,9 +15,12 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.PersonMock
 import no.nav.eessi.pensjon.personoppslag.pdl.model.AktoerId
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
+import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.kafka.support.Acknowledgment
 import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
@@ -30,7 +34,18 @@ import org.springframework.test.context.ActiveProfiles
 )
 class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
 
+    private val acknowledgment = mockk<Acknowledgment>(relaxUnitFun = true)
+    private val cr = mockk<ConsumerRecord<String, String>>(relaxed = true)
+
+    @Autowired
+    lateinit var sedListenerIdent: SedListenerIdent
+
     val fnr = "11067122781"
+
+    /* overstyrer for å droppe Kafka i denne testen */
+    override fun sendMeldingString(message: String) {
+        sedListenerIdent.consumeSedMottatt(message, cr, acknowledgment)
+    }
 
     @Test
     fun `Gitt en hendelse med flere sed i buc og en dansk uid som ikke finnes i pdl skal det opprettes det en endringsmelding til person-mottak`() {

@@ -99,7 +99,7 @@ abstract class IntegrationBase {
         MockServerClient("localhost", System.getProperty("mockserverport").toInt()).reset()
     }
 
-    fun sendMeldingString(message: String) {
+    open fun sendMeldingString(message: String) {
         kafkaTemplate.sendDefault(message).get(20L, TimeUnit.SECONDS)
         Thread.sleep(5000)
     }
