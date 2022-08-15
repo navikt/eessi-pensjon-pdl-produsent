@@ -208,7 +208,7 @@ internal class PdlFiltreringTest {
             bygningEtasjeLeilighet  = adresse.bygning,
             regionDistriktOmraade = adresse.region
         )
-        assertTrue(pdlFiltrering.finnesUtlAdresseFraSedIPDL(listOf(utenlandskAdresse), adresse))
+        assertTrue(pdlFiltrering.finnesUtlAdresseFraSedIPDL(utenlandskAdresse, adresse))
     }
 
 

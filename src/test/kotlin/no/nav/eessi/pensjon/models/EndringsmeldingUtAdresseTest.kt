@@ -24,7 +24,7 @@ internal class EndringsmeldingUtAdresseTest() {
     fun `Sjekk at serialisering virker for EndringsmeldingUtAdresse`() {
         val model = EndringsmeldingUtAdresse(
             gyldigFraOgMed = LocalDate.of(2000, 10, 1),
-            gylidgTilOgMed = LocalDate.of(2001, 11, 2),
+            gyldigTilOgMed = LocalDate.of(2001, 11, 2),
             coAdressenavn = "En eller annen vei",
             adresse = utenlandskAdresse,
             kilde = "TEST",

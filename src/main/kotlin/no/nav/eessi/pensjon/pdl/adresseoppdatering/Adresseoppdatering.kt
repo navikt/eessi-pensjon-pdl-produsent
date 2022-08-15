@@ -55,18 +55,13 @@ class Adresseoppdatering(
             )
 
             logger.info("Vi har funnet ${personerHentetFraPDL.size} personer fra PDL som har gyldige identer")
+            val person = personerHentetFraPDL.first()
 
-            val finnesIPDL = (pdlFiltrering.finnesUtlAdresseFraSedIPDL(
-                personerHentetFraPDL.map { it.kontaktAdresse?.utenlandskAdresse },
-                adresse
-            ))
-
-            if(finnesIPDL){
+            if (person.kontaktAdresse?.utenlandskAdresse != null &&
+                pdlFiltrering.finnesUtlAdresseFraSedIPDL(person.kontaktAdresse.utenlandskAdresse!!, adresse)) {
                 logger.info("Adresse finnes allerede i PDL, oppdaterer gyldig til og fra dato")
-                //TODO: send melding for korrigering til personMottakKlient
-
-            }
-            else{
+                lagUtAdresseEndringsMelding(person.kontaktAdresse, person.fnr.toString(), Endringstype.KORRIGER)
+            } else {
                 logger.info("Adresse finnes ikke i PDL, oppdaterer kontaktadresse")
                 //TODO: send melding for opprettelse til personMottakKlient
             }
@@ -85,19 +80,19 @@ class Adresseoppdatering(
         return alleAdresser.filter { it?.land != "NO" }
     }
 
-    fun lagUtAdresseEndringsMelding(kontaktadresse: Kontaktadresse, norskFnr: String)  {
+    fun lagUtAdresseEndringsMelding(kontaktadresse: Kontaktadresse, norskFnr: String, endringstype: Endringstype)  {
         val pdlEndringsOpplysninger = PdlEndringOpplysning(
             listOf(
                 Personopplysninger(
-                    endringstype = Endringstype.OPPRETT,
+                    endringstype = endringstype,
                     ident = norskFnr,
                     endringsmelding = EndringsmeldingUtAdresse(
                         gyldigFraOgMed = kontaktadresse.gyldigFraOgMed?.toLocalDate(),
-                        gylidgTilOgMed = kontaktadresse.gyldigTilOgMed?.toLocalDate(),
+                        gyldigTilOgMed = kontaktadresse.gyldigTilOgMed?.toLocalDate(),
                         coAdressenavn = kontaktadresse.coAdressenavn,
                         adresse = kontaktadresse.utenlandskAdresse
                     ),
-                    opplysningstype = Opplysningstype.UTENLANDSKIDENTIFIKASJONSNUMMER
+                    opplysningstype = Opplysningstype.KONTAKTADRESSE
                 )
             )
         )

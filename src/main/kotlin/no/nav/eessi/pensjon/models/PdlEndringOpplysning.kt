@@ -44,7 +44,7 @@ data class EndringsmeldingUtAdresse(
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val gyldigFraOgMed: LocalDate?,
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    val gylidgTilOgMed: LocalDate?,
+    val gyldigTilOgMed: LocalDate?,
     val coAdressenavn: String?,
     val adresse: UtenlandskAdresse?
 ) : Endringsmelding
