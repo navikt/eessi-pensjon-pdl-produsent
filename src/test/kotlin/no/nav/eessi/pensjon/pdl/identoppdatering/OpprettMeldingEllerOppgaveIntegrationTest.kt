@@ -67,10 +67,10 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
             )
         )
 
-        assertTrue(validateSedMottattListenerLoggingMessage("SED av type: P2100, status: RECEIVED"))
-        assertTrue(validateSedMottattListenerLoggingMessage("SED av type: P5000, status: SENT"))
-        assertTrue(validateSedMottattListenerLoggingMessage("SED av type: P7000, status: RECEIVED"))
-        assertTrue(validateSedMottattListenerLoggingMessage("Endringsmelding: OPPRETT, med nye personopplysninger"))
+        assertTrue(isMessageInlog("SED av type: P2100, status: RECEIVED"))
+        assertTrue(isMessageInlog("SED av type: P5000, status: SENT"))
+        assertTrue(isMessageInlog("SED av type: P7000, status: RECEIVED"))
+        assertTrue(isMessageInlog("Endringsmelding: OPPRETT, med nye personopplysninger"))
 
         val check = """
               "personopplysninger" : [ {
@@ -110,7 +110,7 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
 
         sendMeldingString(javaClass.getResource("/eux/hendelser/P_BUC_01_P2000-avsenderDK.json").readText())
 
-        assertTrue(validateSedMottattListenerLoggingMessage("Endringsmelding: OPPRETT, med nye personopplysninger"))
+        assertTrue(isMessageInlog("Endringsmelding: OPPRETT, med nye personopplysninger"))
     }
 
     @Test
@@ -148,7 +148,7 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
                 docId = "eb938171a4cb4e658b3a6c011962d204"
             )
         )
-        assertTrue(validateSedMottattListenerLoggingMessage("Det finnes allerede en annen uid fra samme land, opprette oppgave"))
+        assertTrue(isMessageInlog("Det finnes allerede en annen uid fra samme land, opprette oppgave"))
         val check = """
             Opprette oppgave melding på kafka: eessi-pensjon-oppgave-v1  melding: {
               "sedType" : null,
@@ -161,7 +161,7 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
               "oppgaveType" : "PDL"
             }
         """.trimIndent()
-        assertTrue(validateSedMottattListenerLoggingMessage(check))
+        assertTrue(isMessageInlog(check))
     }
 }
 

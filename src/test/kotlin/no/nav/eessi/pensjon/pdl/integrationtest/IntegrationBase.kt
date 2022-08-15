@@ -7,8 +7,6 @@ import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
-import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
-import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.klienter.norg2.Norg2Service
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
@@ -120,7 +118,7 @@ abstract class IntegrationBase {
         }
     }
 
-    fun validateSedMottattListenerLoggingMessage(keyword: String): Boolean {
+    fun isMessageInlog(keyword: String): Boolean {
         val logsList: List<ILoggingEvent> = listAppender.list
         return logsList.find { logMelding ->
             logMelding.message.contains(keyword)

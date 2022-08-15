@@ -67,7 +67,7 @@ class IdentManglerEllerFeilIntegrationTest : IntegrationBase() {
         )
         sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
 
-        assertTrue(validateSedMottattListenerLoggingMessage("Ingen utenlandske IDer funnet i BUC"))
+        assertTrue(isMessageInlog("Ingen utenlandske IDer funnet i BUC"))
     }
 
     @Test
@@ -86,7 +86,7 @@ class IdentManglerEllerFeilIntegrationTest : IntegrationBase() {
         sendMeldingString(javaClass.getResource("/eux/hendelser/P_BUC_01_P2000-avsenderSE.json").readText())
         sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
 
-        assertTrue(validateSedMottattListenerLoggingMessage("Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer"))
+        assertTrue(isMessageInlog("Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer"))
 
         CustomMockServer().verifyRequest("/api/v1/endringer", 0)
     }
@@ -113,7 +113,7 @@ class IdentManglerEllerFeilIntegrationTest : IntegrationBase() {
         )
         sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
 
-        assertTrue(validateSedMottattListenerLoggingMessage("Ingen identifiserte FNR funnet, Acket melding"))
+        assertTrue(isMessageInlog("Ingen identifiserte FNR funnet, Acket melding"))
     }
 
     @Test
@@ -132,7 +132,7 @@ class IdentManglerEllerFeilIntegrationTest : IntegrationBase() {
         sendMeldingString(javaClass.getResource("/eux/hendelser/P_BUC_01_P2000-avsenderDE.json").readText())
         sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
 
-        assertTrue(validateSedMottattListenerLoggingMessage("Antall utenlandske IDer er flere enn en"))
+        assertTrue(isMessageInlog("Antall utenlandske IDer er flere enn en"))
 
         CustomMockServer().verifyRequest("/api/v1/endringer", 0)
     }
