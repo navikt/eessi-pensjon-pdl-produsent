@@ -42,23 +42,18 @@ class PdlFiltrering(private val kodeverk: KodeverkClient) {
      *
      */
     //TODO fikse til riktig sjekk av adresse i sed mot pdl
-    fun finnesUtlAdresseFraSedIPDL(
-        utenlandskeAdrIPDL: List<UtenlandskAdresse?>,
-        utenlandskAdrISed: Adresse
-    ): Boolean {
+    fun finnesUtlAdresseFraSedIPDL(utenlandskeAdrIPDL: List<UtenlandskAdresse?>, utenlandskAdrISed: Adresse): Boolean {
         utenlandskeAdrIPDL.forEach { utenlandskAdrIPDL ->
             val adresse = utenlandskeAdrIPDL.first()
             val landkodeFraPdl = utenlandskeAdrIPDL.first()?.landkode?.let { kodeverk.finnLandkode(it) }
-            if (utenlandskAdrIPDL != null) {
-                if (utenlandskAdrISed.gate == adresse?.adressenavnNummer &&
-                    utenlandskAdrISed.bygning == adresse?.bygningEtasjeLeilighet &&
-                    utenlandskAdrISed.by == utenlandskAdrIPDL.bySted &&
-                    utenlandskAdrISed.postkode == adresse?.postkode &&
-                    utenlandskAdrISed.region == adresse?.regionDistriktOmraade &&
-                    utenlandskAdrISed.land == landkodeFraPdl
-                ) {
-                    return true
-                }
+            if (utenlandskAdrIPDL != null && utenlandskAdrISed.gate == adresse?.adressenavnNummer &&
+                utenlandskAdrISed.bygning == adresse?.bygningEtasjeLeilighet &&
+                utenlandskAdrISed.by == utenlandskAdrIPDL.bySted &&
+                utenlandskAdrISed.postkode == adresse?.postkode &&
+                utenlandskAdrISed.region == adresse?.regionDistriktOmraade &&
+                utenlandskAdrISed.land == landkodeFraPdl
+            ) {
+                return true
             }
         }
         return false

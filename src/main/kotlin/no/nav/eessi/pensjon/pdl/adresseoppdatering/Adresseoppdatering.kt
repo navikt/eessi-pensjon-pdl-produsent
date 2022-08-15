@@ -1,11 +1,9 @@
 package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
-import no.nav.eessi.pensjon.eux.EuxKlient
 import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.eux.model.sed.Adresse
 import no.nav.eessi.pensjon.eux.model.sed.SED
-import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.models.EndringsmeldingUtAdresse
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
@@ -58,15 +56,21 @@ class Adresseoppdatering(
 
             logger.info("Vi har funnet ${personerHentetFraPDL.size} personer fra PDL som har gyldige identer")
 
-            pdlFiltrering.finnesUtlAdresseFraSedIPDL(
+            val finnesIPDL = (pdlFiltrering.finnesUtlAdresseFraSedIPDL(
                 personerHentetFraPDL.map { it.kontaktAdresse?.utenlandskAdresse },
                 adresse
-            )
+            ))
+
+            if(finnesIPDL){
+                logger.info("Adresse finnes allerede i PDL, oppdaterer gyldig til og fra dato")
+                //TODO: send melding for korrigering til personMottakKlient
+
+            }
+            else{
+                logger.info("Adresse finnes ikke i PDL, oppdaterer kontaktadresse")
+                //TODO: send melding for opprettelse til personMottakKlient
+            }
         }
-
-        //TODO: send melding til personMottakKlient
-
-        //TODO: kall til service for innhenting av opplysninger fra PDL
         return true
     }
 
