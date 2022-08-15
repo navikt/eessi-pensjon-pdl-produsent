@@ -127,17 +127,6 @@ abstract class IntegrationBase {
         }?.message?.isNotEmpty() ?: false
     }
 
-    fun mockBuc(bucId: String, bucType: BucType, docIder: List<ForenkletSED>) : String {
-        return """
-            {
-              "id": "$bucId",
-              "processDefinitionName": "${bucType.name}",
-              "documents": ${docIder.toJson()}
-              
-            } 
-          
-        """.trimIndent()
-    }
 
     fun mockHendelse(avsenderLand: String = "DK", avsenderNavn: String = "DK:D005", bucType: BucType = BucType.P_BUC_01, sedType: SedType = SedType.P2000, docId: String = "b12e06dda2c7474b9998c7139c841646"): String {
         return """

@@ -48,7 +48,7 @@ class IdentManglerEllerFeilIntegrationTest : IntegrationBase() {
         every { personService.hentPerson(NorskIdent( fnr)) } returns mockedPerson
 
         val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P15000, SedStatus.RECEIVED))
-        val mockBuc = mockBuc("147729", BucType.P_BUC_10, listOverSeder)
+        val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_10, listOverSeder)
 
         val mockPin = mockPin(fnr, "NO")
         val mockSed = mockSedUtenPensjon(sedType = SedType.P15000, pin = listOf(mockPin))
@@ -76,7 +76,7 @@ class IdentManglerEllerFeilIntegrationTest : IntegrationBase() {
         every { personService.hentPerson(NorskIdent( "29087021082")) } returns mockedPerson
 
         val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P8000, SedStatus.RECEIVED))
-        val mockBuc = mockBuc("147729", BucType.P_BUC_02, listOverSeder)
+        val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_02, listOverSeder)
 
         CustomMockServer()
             .medSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", "src/test/resources/eux/sed/P8000-TyskPIN.json")
@@ -96,7 +96,7 @@ class IdentManglerEllerFeilIntegrationTest : IntegrationBase() {
         every { norg2.hentArbeidsfordelingEnhet(any()) } returns Enhet.ID_OG_FORDELING
 
         val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P15000, SedStatus.RECEIVED))
-        val mockBuc = mockBuc("147729", BucType.P_BUC_10, listOverSeder)
+        val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_10, listOverSeder)
 
         CustomMockServer()
             .medSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", "src/test/resources/eux/sed/P15000-UtenPin-NAV.json")
@@ -122,7 +122,7 @@ class IdentManglerEllerFeilIntegrationTest : IntegrationBase() {
         every { personService.hentPerson(NorskIdent( "29087021082")) } returns mockedPerson
 
         val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P8000, SedStatus.RECEIVED))
-        val mockBuc = mockBuc("147729", BucType.P_BUC_02, listOverSeder)
+        val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_02, listOverSeder)
 
         CustomMockServer()
             .medSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", "src/test/resources/eux/sed/P8000-TyskOgFinskPIN.json")

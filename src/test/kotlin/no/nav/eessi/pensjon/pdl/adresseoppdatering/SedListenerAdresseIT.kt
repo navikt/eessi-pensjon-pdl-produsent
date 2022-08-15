@@ -105,7 +105,7 @@ internal class SedListenerAdresseIT : IntegrationBase(){
         )
         //given
         val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P2100, SedStatus.RECEIVED))
-        val mockBuc = mockBuc("147729", BucType.P_BUC_10, listOverSeder)
+        val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_10, listOverSeder)
         CustomMockServer()
             .medSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", "src/test/resources/eux/sed/P2100-PinDK-NAV.json")
             .medMockBuc("/buc/147729", mockBuc)

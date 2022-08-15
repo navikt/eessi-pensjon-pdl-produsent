@@ -52,7 +52,7 @@ class IdentFinnesIntegrationIT : IntegrationBase() {
         )
 
         val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P2100, SedStatus.RECEIVED))
-        val mockBuc = mockBuc("147729", BucType.P_BUC_02, listOverSeder)
+        val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_02, listOverSeder)
 
         CustomMockServer()
             .medSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", "src/test/resources/eux/sed/P2100-PinDK-NAV.json")
@@ -82,7 +82,7 @@ class IdentFinnesIntegrationIT : IntegrationBase() {
         )
 
         val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P15000, SedStatus.RECEIVED))
-        val mockBuc = mockBuc("147729", BucType.P_BUC_10, listOverSeder)
+        val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_10, listOverSeder)
         val mockPin = listOf(mockPin(fnr, "NO"),
             mockPin("540202-1234", "SE"))
         val mockSed = mockSedUtenPensjon(sedType = SedType.P15000, pin = mockPin)

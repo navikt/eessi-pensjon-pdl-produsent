@@ -47,7 +47,7 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
             ForenkletSED("eb938171a4cb4e658b3a6c011962d504", SedType.P7000, SedStatus.RECEIVED),
             ForenkletSED("eb938171a4cb4e658b3a6c011962d205", SedType.H120, SedStatus.RECEIVED)
         )
-        val mockBuc = mockBuc("147729", BucType.P_BUC_02, listOverSeder)
+        val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_02, listOverSeder)
 
         every { personService.hentPerson(NorskIdent("28105424630")) } returns null
 
@@ -100,7 +100,7 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
         )
 
         val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P2100, SedStatus.RECEIVED))
-        val mockBuc = mockBuc("147729", BucType.P_BUC_02, listOverSeder)
+        val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_02, listOverSeder)
 
         CustomMockServer()
             .medEndring()
@@ -131,7 +131,7 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
         )
 
         val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P15000, SedStatus.RECEIVED))
-        val mockBuc = mockBuc("147729", BucType.P_BUC_10, listOverSeder)
+        val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_10, listOverSeder)
         val mockPin = listOf(mockPin(fnr, "NO"),
             mockPin("130177-5432", "DK"))
         val mockSed = mockSedUtenPensjon(sedType = SedType.P15000, pin = mockPin)
