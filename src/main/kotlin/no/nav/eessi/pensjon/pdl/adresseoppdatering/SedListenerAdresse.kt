@@ -59,60 +59,63 @@ class SedListenerAdresse (
             adresseMetric.measure {
                 logger.debug("sed-hendelse for vurdering av adressemelding mot PDL i partisjon: ${cr.partition()}, med offset: ${cr.offset()} ")
 
-                adresserOppdateringMedAck(hendelse, acknowledgment)
+                try {
+                    val sedHendelse = SedHendelseModel.fromJson(hendelse)
+                    if (oppdaterUtenlandskKontaktadresse(sedHendelse)) {
+                        // Gjorde oppdatering
+                    } else {
+                        // Gjorde ikke oppdatering?
+                    }
+
+                } catch (ex: Exception) {
+                    logger.error("Noe gikk galt under behandling av SED-hendelse for adresse:\n $hendelse \n", ex)
+                }
+                acknowledgment.acknowledge()
                 latch.countDown()
             }
         }
     }
 
-    private fun adresserOppdateringMedAck(hendelse: String, acknowledgment: Acknowledgment) {
-        try {
-            val sedHendelse = SedHendelseModel.fromJson(hendelse)
-            logger.info("Ser om sedHendelse allerede ligger i pdl med riktig adresse, rinaId: ${sedHendelse.rinaSakId}, bucType:${sedHendelse.bucType}, sedType:${sedHendelse.sedType}")
+    fun oppdaterUtenlandskKontaktadresse(sedHendelse: SedHendelseModel): Boolean {
+        logger.info("Ser om sedHendelse allerede ligger i pdl med riktig adresse, rinaId: ${sedHendelse.rinaSakId}, bucType:${sedHendelse.bucType}, sedType:${sedHendelse.sedType}")
 
-            if (GyldigeHendelser.mottatt(sedHendelse)) {
+        if (GyldigeHendelser.mottatt(sedHendelse)) {
 
-                val adresserUtland = hentAdresserKunUtland(euxService.alleGyldigeSEDForBuc(sedHendelse.rinaSakId))
+            val adresserUtland = hentAdresserKunUtland(euxService.alleGyldigeSEDForBuc(sedHendelse.rinaSakId))
 
-                logger.info("Vi har funnet ${adresserUtland.size} utenlandske adresser")
+            logger.info("Vi har funnet ${adresserUtland.size} utenlandske adresser")
 
-                if(adresserUtland.isEmpty()){
-                    logger.info("Ingen andresser fra utland, avslutter validering")
-                    return
-                }
-
-                if(adresserUtland.size  > 1){
-                    logger.error("Vi har flere enn en adresse, avslutter")
-                    return
-                }
-
-                //Vi har adresser fra utland, og de er gyldige; starter validering
-                adresserUtland.firstOrNull()?.let { adresse ->
-                    val personerHentetFraPDL = pdlService.hentIdentifisertePersoner(
-                        euxService.alleGyldigeSEDForBuc(
-                            sedHendelse.rinaSakId
-                        ), sedHendelse.bucType!!
-                    )
-
-                    logger.info("Vi har funnet ${personerHentetFraPDL.size} personer fra PDL som har gyldige identer")
-
-                    pdlFiltrering.finnesUtlAdresseFraSedIPDL(
-                        personerHentetFraPDL.map { it.kontaktAdresse?.utenlandskAdresse },
-                        adresse
-                    )
-                }
-
-                //TODO: send melding til personMottakKlient
+            if (adresserUtland.isEmpty()) {
+                logger.info("Ingen andresser fra utland, avslutter validering")
+                return false
             }
 
-            //TODO: kall til service for innhenting av opplysninger fra PDL
+            if (adresserUtland.size > 1) {
+                logger.error("Vi har flere enn en adresse, avslutter")
+                return false
+            }
 
+            //Vi har adresser fra utland, og de er gyldige; starter validering
+            adresserUtland.firstOrNull()?.let { adresse ->
+                val personerHentetFraPDL = pdlService.hentIdentifisertePersoner(
+                    euxService.alleGyldigeSEDForBuc(
+                        sedHendelse.rinaSakId
+                    ), sedHendelse.bucType!!
+                )
 
-        } catch (ex: Exception) {
-            logger.error("Noe gikk galt under behandling av SED-hendelse for adresse:\n $hendelse \n", ex)
+                logger.info("Vi har funnet ${personerHentetFraPDL.size} personer fra PDL som har gyldige identer")
+
+                pdlFiltrering.finnesUtlAdresseFraSedIPDL(
+                    personerHentetFraPDL.map { it.kontaktAdresse?.utenlandskAdresse },
+                    adresse
+                )
+            }
+
+            //TODO: send melding til personMottakKlient
         }
-        acknowledgment.acknowledge()
 
+        //TODO: kall til service for innhenting av opplysninger fra PDL
+        return true
     }
 
     private fun hentAdresserKunUtland(sedHendelse: List<Pair<ForenkletSED, SED>>): List<Adresse?> {
