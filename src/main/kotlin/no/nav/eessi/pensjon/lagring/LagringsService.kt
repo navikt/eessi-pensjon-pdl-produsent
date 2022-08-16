@@ -1,7 +1,7 @@
 package no.nav.eessi.pensjon.lagring
 
 import no.nav.eessi.pensjon.gcp.GcpStorageService
-import no.nav.eessi.pensjon.models.SedHendelseModel
+import no.nav.eessi.pensjon.models.SedHendelse
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
@@ -10,7 +10,7 @@ class LagringsService (private val gcpStorageService: GcpStorageService) {
 
     private val logger = LoggerFactory.getLogger(LagringsService::class.java)
 
-    fun lagreHendelseMedSakId(hendelse: SedHendelseModel) {
+    fun lagreHendelseMedSakId(hendelse: SedHendelse) {
         val path = hentPathMedSakId(hendelse)
 
         try {
@@ -23,9 +23,9 @@ class LagringsService (private val gcpStorageService: GcpStorageService) {
         }
     }
 
-    fun kanHendelsenOpprettes(hendelseModel: SedHendelseModel) = hentHendelse(hendelseModel) == null
+    fun kanHendelsenOpprettes(sedHendelse: SedHendelse) = hentHendelse(sedHendelse) == null
 
-    fun hentHendelse(hendelse: SedHendelseModel): String? {
+    fun hentHendelse(hendelse: SedHendelse): String? {
         val path = hentPathMedSakId(hendelse)
         logger.info("Henter rinaSakId: ${hendelse.rinaSakId} from $path")
 
@@ -41,7 +41,7 @@ class LagringsService (private val gcpStorageService: GcpStorageService) {
         }
     }
 
-    fun hentPathMedSakId(hendelse: SedHendelseModel): String {
+    fun hentPathMedSakId(hendelse: SedHendelse): String {
         val path = "rinaSakId-${hendelse.rinaSakId}.json"
         logger.info("Hendelsespath: $path")
         return path

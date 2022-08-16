@@ -7,7 +7,7 @@ import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.typeRefs
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class SedHendelseModel(
+data class SedHendelse(
         val id: Long? = 0,
         val sedId: String? = null,
         val sektorKode: String,
@@ -24,6 +24,6 @@ data class SedHendelseModel(
         val sedType: SedType? = null
 ) {
     companion object {
-        fun fromJson(json: String): SedHendelseModel = mapJsonToAny(json, typeRefs())
+        fun fromJson(json: String): SedHendelse = mapJsonToAny(json, typeRefs())
     }
 }

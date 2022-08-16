@@ -1,8 +1,7 @@
 package no.nav.eessi.pensjon.pdl.validering
 
 import no.nav.eessi.pensjon.eux.model.buc.BucType
-import no.nav.eessi.pensjon.models.SedHendelseModel
-import no.nav.eessi.pensjon.pdl.validering.GyldigeHendelser
+import no.nav.eessi.pensjon.models.SedHendelse
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
 
@@ -30,5 +29,5 @@ internal class GyldigeHendelserTest {
     }
 
     private fun createDummy(sektor: String = "", bucType: BucType? = null) =
-            SedHendelseModel(sektorKode = sektor, bucType = bucType, rinaSakId = "12345", rinaDokumentId = "654634", rinaDokumentVersjon = "1")
+            SedHendelse(sektorKode = sektor, bucType = bucType, rinaSakId = "12345", rinaDokumentId = "654634", rinaDokumentVersjon = "1")
 }

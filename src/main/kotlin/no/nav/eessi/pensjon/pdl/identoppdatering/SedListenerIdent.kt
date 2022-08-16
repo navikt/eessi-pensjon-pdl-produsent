@@ -10,7 +10,7 @@ import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.EndringsmeldingUID
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
-import no.nav.eessi.pensjon.models.SedHendelseModel
+import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.validering.GyldigeHendelser
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
@@ -215,8 +215,8 @@ class SedListenerIdent(
         }
     }
 
-    fun sedHendelseMapping(hendelse: String): SedHendelseModel {
-        val sedHendelseTemp = SedHendelseModel.fromJson(hendelse)
+    fun sedHendelseMapping(hendelse: String): SedHendelse {
+        val sedHendelseTemp = SedHendelse.fromJson(hendelse)
 
         //støtte avsenderland SE i testmiljø Q2
         return if (profile != "prod" && profile != "integrationtest") {

@@ -8,14 +8,14 @@ import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
 
-internal class SedHendelseModelSerdeTest {
+internal class SedHendelseSerDeTest {
 
     @Test
     fun `Sjekk at serialisering virker`() {
-        val model = SedHendelseModel(rinaSakId = "123456", rinaDokumentId = "1234", sektorKode = "R", bucType = BucType.R_BUC_02, rinaDokumentVersjon = "1")
+        val model = SedHendelse(rinaSakId = "123456", rinaDokumentId = "1234", sektorKode = "R", bucType = BucType.R_BUC_02, rinaDokumentVersjon = "1")
         val serialized = model.toJson()
 
-        val result = SedHendelseModel.fromJson(serialized)
+        val result = SedHendelse.fromJson(serialized)
 
         assertEquals(model, result)
     }
@@ -39,7 +39,7 @@ internal class SedHendelseModelSerdeTest {
             "sedType" : null
         }""".trimMargin()
 
-        val model = SedHendelseModel.fromJson(json)
+        val model = SedHendelse.fromJson(json)
 
         val result = model.toJson()
         JSONAssert.assertEquals(json, result, JSONCompareMode.LENIENT)
@@ -65,7 +65,7 @@ internal class SedHendelseModelSerdeTest {
             "navBruker" : null
         }""".trimMargin()
 
-        val model = SedHendelseModel.fromJson(json)
+        val model = SedHendelse.fromJson(json)
 
         assertEquals("R", model.sektorKode)
         assertNull(model.bucType)
@@ -91,7 +91,7 @@ internal class SedHendelseModelSerdeTest {
             "navBruker" : "22117320034"
         }""".trimMargin()
 
-        val model = SedHendelseModel.fromJson(json)
+        val model = SedHendelse.fromJson(json)
 
         assertEquals("123456", model.rinaSakId)
     }

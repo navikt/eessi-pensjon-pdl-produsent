@@ -1,7 +1,7 @@
 package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
 import no.nav.eessi.pensjon.metrics.MetricsHelper
-import no.nav.eessi.pensjon.models.SedHendelseModel
+import no.nav.eessi.pensjon.models.SedHendelse
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
@@ -41,7 +41,7 @@ class SedListenerAdresse(
                 logger.debug("sed-hendelse for vurdering av adressemelding mot PDL i partisjon: ${cr.partition()}, med offset: ${cr.offset()} ")
 
                 try {
-                    val sedHendelse = SedHendelseModel.fromJson(hendelse)
+                    val sedHendelse = SedHendelse.fromJson(hendelse)
                     if (adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse)) {
                         // Gjorde oppdatering
                     } else {

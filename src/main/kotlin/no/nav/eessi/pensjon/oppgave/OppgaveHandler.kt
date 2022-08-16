@@ -5,7 +5,7 @@ import no.nav.eessi.pensjon.lagring.LagringsService
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.Enhet
 import no.nav.eessi.pensjon.models.HendelseType
-import no.nav.eessi.pensjon.models.SedHendelseModel
+import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.oppgaverouting.OppgaveRoutingRequest
 import no.nav.eessi.pensjon.oppgaverouting.OppgaveRoutingService
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
@@ -38,21 +38,21 @@ class OppgaveHandler(
         oppgaveForUid = metricsHelper.init("OppgaveForUid")
     }
 
-    fun opprettOppgaveForUid(hendelseModel: SedHendelseModel, utenlandskIdSed: UtenlandskId, identifisertePerson : IdentifisertPerson): Boolean {
+    fun opprettOppgaveForUid(sedHendelse: SedHendelse, utenlandskIdSed: UtenlandskId, identifisertePerson : IdentifisertPerson): Boolean {
         return oppgaveForUid.measure {
-            return@measure if (lagringsService.kanHendelsenOpprettes(hendelseModel)) {
+            return@measure if (lagringsService.kanHendelsenOpprettes(sedHendelse)) {
                 val melding = OppgaveMelding(
                     aktoerId = identifisertePerson.aktoerId,
                     filnavn = null,
                     sedType = null,
-                    tildeltEnhetsnr = opprettOppgaveRuting(hendelseModel, identifisertePerson),
-                    rinaSakId = hendelseModel.rinaSakId,
+                    tildeltEnhetsnr = opprettOppgaveRuting(sedHendelse, identifisertePerson),
+                    rinaSakId = sedHendelse.rinaSakId,
                     hendelseType = HendelseType.MOTTATT,
                     oppgaveType = OppgaveType.PDL
                 )
 
                 opprettOppgaveMeldingPaaKafkaTopic(melding)
-                lagringsService.lagreHendelseMedSakId(hendelseModel)
+                lagringsService.lagreHendelseMedSakId(sedHendelse)
                 logger.info("Opprett oppgave og lagret til s3")
                 true
             } else {
@@ -62,12 +62,12 @@ class OppgaveHandler(
         }
     }
 
-    private fun opprettOppgaveRuting(hendelseModel: SedHendelseModel, identifisertePerson : IdentifisertPerson) : Enhet {
+    private fun opprettOppgaveRuting(sedHendelse: SedHendelse, identifisertePerson : IdentifisertPerson) : Enhet {
         return oppgaveruting.route(OppgaveRoutingRequest.fra(
             identifisertePerson,
             identifisertePerson.fnr!!.getBirthDate(),
             identifisertePerson.personRelasjon.saktype,
-            hendelseModel,
+            sedHendelse,
             HendelseType.MOTTATT,
             null,
             identifisertePerson.harAdressebeskyttelse

@@ -10,7 +10,7 @@ import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.models.EndringsmeldingUtAdresse
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
-import no.nav.eessi.pensjon.models.SedHendelseModel
+import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
@@ -38,7 +38,7 @@ internal class AdresseoppdateringTest {
 
     @Test
     fun `Gitt SED uten utenlandsadresse, ingen oppdatering`() {
-        val mockSedHendelse: SedHendelseModel = mockk(relaxed = true)
+        val mockSedHendelse: SedHendelse = mockk(relaxed = true)
         val adresseoppdatering = Adresseoppdatering(mockk(), mockk(), mockk(), mockk())
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(mockSedHendelse)
         assertFalse(result)
@@ -68,7 +68,7 @@ internal class AdresseoppdateringTest {
 
         val adresseoppdatering = Adresseoppdatering(pdlService, euxService, personMottakKlient, pdlFiltrering)
 
-        val sedHendelse = SedHendelseModel.fromJson(
+        val sedHendelse = SedHendelse.fromJson(
             """{
                 "id" : 0,
                 

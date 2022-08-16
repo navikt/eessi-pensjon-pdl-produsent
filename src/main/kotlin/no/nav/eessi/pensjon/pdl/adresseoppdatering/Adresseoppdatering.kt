@@ -7,7 +7,7 @@ import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.models.EndringsmeldingUtAdresse
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
-import no.nav.eessi.pensjon.models.SedHendelseModel
+import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.pdl.validering.GyldigeHendelser
@@ -28,7 +28,7 @@ class Adresseoppdatering(
 ) {
     private val logger = LoggerFactory.getLogger(Adresseoppdatering::class.java)
 
-    fun oppdaterUtenlandskKontaktadresse(sedHendelse: SedHendelseModel): Boolean {
+    fun oppdaterUtenlandskKontaktadresse(sedHendelse: SedHendelse): Boolean {
         logger.info("Ser om sedHendelse allerede ligger i pdl med riktig adresse, rinaId: ${sedHendelse.rinaSakId}, bucType:${sedHendelse.bucType}, sedType:${sedHendelse.sedType}")
 
         if (!GyldigeHendelser.mottatt(sedHendelse)) return false

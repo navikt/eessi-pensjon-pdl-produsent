@@ -5,7 +5,7 @@ import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.models.HendelseType
 import no.nav.eessi.pensjon.models.SakInformasjon
 import no.nav.eessi.pensjon.models.Saktype
-import no.nav.eessi.pensjon.models.SedHendelseModel
+import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import java.time.LocalDate
 
@@ -30,7 +30,7 @@ class OppgaveRoutingRequest(
             identifisertPerson: IdentifisertPerson?,
             fdato: LocalDate,
             saktype: Saktype?,
-            sedHendelseModel: SedHendelseModel,
+            sedHendelseModel: SedHendelse,
             hendelseType: HendelseType,
             sakInformasjon: SakInformasjon?,
             harAdressebeskyttelse: Boolean = false
