@@ -1,5 +1,8 @@
 package no.nav.eessi.pensjon.pdl.integrationtest
 
+import no.nav.eessi.pensjon.eux.model.buc.BucType
+import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
+import no.nav.eessi.pensjon.utils.toJson
 import org.mockserver.client.MockServerClient
 import org.mockserver.model.Header
 import org.mockserver.model.HttpRequest.request
@@ -14,20 +17,6 @@ import java.nio.file.Paths
 
 class CustomMockServer() {
     private val serverPort = System.getProperty("mockserverport").toInt()
-
-    fun mockSTSToken() = apply {
-        MockServerClient("localhost", serverPort).`when`(
-            request()
-                .withMethod(HttpMethod.GET.name)
-                .withQueryStringParameter("grant_type", "client_credentials")
-        )
-            .respond(
-                HttpResponse.response()
-                    .withHeader(Header("Content-Type", "application/json; charset=utf-8"))
-                    .withStatusCode(HttpStatusCode.OK_200.code())
-                    .withBody(String(Files.readAllBytes(Paths.get("src/test/resources/STStoken.json"))))
-            )
-    }
 
     fun medSed(bucPath: String, sedLocation: String) = apply {
         MockServerClient("localhost", serverPort).`when`(
@@ -119,5 +108,19 @@ class CustomMockServer() {
                     .withBody(JsonBody.json(body)),
                 VerificationTimes.atMost(times)
             )
+    }
+
+    companion object {
+        fun mockBuc(bucId: String, bucType: BucType, docIder: List<ForenkletSED>): String {
+            return """
+            {
+              "id": "$bucId",
+              "processDefinitionName": "${bucType.name}",
+              "documents": ${docIder.toJson()}
+              
+            } 
+          
+        """.trimIndent()
+        }
     }
 }

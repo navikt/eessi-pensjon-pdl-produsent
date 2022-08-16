@@ -1,25 +1,23 @@
-package no.nav.eessi.pensjon.listeners
+package no.nav.eessi.pensjon.pdl.identoppdatering
 
 import io.micrometer.core.instrument.Metrics
-import no.nav.eessi.pensjon.eux.EuxDokumentHelper
+import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.eux.UtenlandskPersonIdentifisering
-import no.nav.eessi.pensjon.eux.model.buc.Buc
-import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
-import no.nav.eessi.pensjon.eux.model.document.SedStatus
-import no.nav.eessi.pensjon.eux.model.sed.SED
-import no.nav.eessi.pensjon.handler.OppgaveHandler
+import no.nav.eessi.pensjon.oppgave.OppgaveHandler
+import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.metrics.MetricsHelper
-import no.nav.eessi.pensjon.models.Endringsmelding
+import no.nav.eessi.pensjon.models.EndringsmeldingUID
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelseModel
-import no.nav.eessi.pensjon.models.erGyldig
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
+import no.nav.eessi.pensjon.pdl.validering.GyldigeHendelser
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.pdl.validering.PdlValidering
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
-import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
@@ -29,13 +27,13 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.concurrent.*
+import java.util.concurrent.CountDownLatch
 import javax.annotation.PostConstruct
 
 @Service
-class SedListener(
+class SedListenerIdent(
     private val personidentifiseringService: PersonidentifiseringService,
-    private val dokumentHelper: EuxDokumentHelper,
+    private val dokumentHelper: EuxService,
     private val personMottakKlient: PersonMottakKlient,
     private val utenlandskPersonIdentifisering: UtenlandskPersonIdentifisering,
     private val pdlFiltrering: PdlFiltrering,
@@ -46,7 +44,7 @@ class SedListener(
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
 ) {
 
-    private val logger = LoggerFactory.getLogger(SedListener::class.java)
+    private val logger = LoggerFactory.getLogger(SedListenerIdent::class.java)
 
     private val latch = CountDownLatch(1)
     private lateinit var consumeIncomingSed: MetricsHelper.Metric
@@ -88,7 +86,7 @@ class SedListener(
                 val bucType = sedHendelse.bucType!!
                 logger.info("*** Starter pdl endringsmelding prosess for BucType: $bucType, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
 
-                val alleGyldigeSED = alleGyldigeSEDForBuc(sedHendelse.rinaSakId, dokumentHelper.hentBuc(sedHendelse.rinaSakId))
+                val alleGyldigeSED = dokumentHelper.alleGyldigeSEDForBuc(sedHendelse.rinaSakId)
 
                 val utenlandskeIderFraSEDer = utenlandskPersonIdentifisering.finnAlleUtenlandskeIDerIMottatteSed(alleGyldigeSED)
 
@@ -188,15 +186,6 @@ class SedListener(
         }
     }
 
-    private fun alleGyldigeSEDForBuc(rinaSakId: String, buc: Buc): List<Pair<ForenkletSED, SED>> =
-        (buc.documents ?: emptyList())
-            .filter { it.id != null }
-            .map { ForenkletSED(it.id!!, it.type, SedStatus.fra(it.status)) }
-            .filter { it.harGyldigStatus() }
-            .filter { it.type.erGyldig() }
-            .also { logger.info("Fant ${it.size} dokumenter i BUC: $it") }
-            .map { forenkletSED -> Pair(forenkletSED, dokumentHelper.hentSed(rinaSakId, forenkletSED.id)) }
-            .onEach { (forenkletSED, _) -> logger.debug("SED av type: ${forenkletSED.type}, status: ${forenkletSED.status}") }
 
     fun lagEndringsMelding(utenlandskPin: UtenlandskId,
                            norskFnr: String,
@@ -204,12 +193,14 @@ class SedListener(
         val pdlEndringsOpplysninger = PdlEndringOpplysning(
             listOf(
                 Personopplysninger(
+                    endringstype = Endringstype.OPPRETT,
                     ident = norskFnr,
-                    endringsmelding = Endringsmelding(
+                    endringsmelding = EndringsmeldingUID(
                         identifikasjonsnummer = utenlandskPin.id,
                         utstederland = kodeverkClient.finnLandkode(utenlandskPin.land) ?: throw RuntimeException("Feil ved landkode"),
                         kilde = kilde
-                    )
+                    ),
+                    opplysningstype = Opplysningstype.UTENLANDSKIDENTIFIKASJONSNUMMER
                 )
             )
         )

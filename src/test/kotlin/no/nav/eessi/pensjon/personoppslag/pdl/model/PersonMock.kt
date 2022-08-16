@@ -1,23 +1,6 @@
-package no.nav.eessi.pensjon.personoppslag.pdl
+package no.nav.eessi.pensjon.personoppslag.pdl.model
 
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
-import no.nav.eessi.pensjon.personoppslag.pdl.model.AdressebeskyttelseGradering
-import no.nav.eessi.pensjon.personoppslag.pdl.model.AktoerId
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Endring
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Foedsel
-import no.nav.eessi.pensjon.personoppslag.pdl.model.GeografiskTilknytning
-import no.nav.eessi.pensjon.personoppslag.pdl.model.GtType
-import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
-import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentInformasjon
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Kjoenn
-import no.nav.eessi.pensjon.personoppslag.pdl.model.KjoennType
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Metadata
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Navn
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
-import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
-import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Vegadresse
 import java.time.LocalDateTime
 
 object PersonMock {
@@ -58,7 +41,7 @@ object PersonMock {
             identer = identer,
             navn = Navn(fornavn, null, etternavn, metadata = metadata),
             adressebeskyttelse = listOf(AdressebeskyttelseGradering.UGRADERT),
-            bostedsadresse = no.nav.eessi.pensjon.personoppslag.pdl.model.Bostedsadresse(
+            bostedsadresse = Bostedsadresse(
                 gyldigFraOgMed = LocalDateTime.now(),
                 gyldigTilOgMed = LocalDateTime.now(),
                 vegadresse = Vegadresse("Oppoverbakken", "66", null, "1920"),
@@ -84,7 +67,7 @@ object PersonMock {
         fornavn: String = "Fornavn",
         etternavn: String = "Etternavn",
         uid: List<UtenlandskIdentifikasjonsnummer> = emptyList(),
-    ): no.nav.eessi.pensjon.personoppslag.pdl.model.PersonUtenlandskIdent {
+    ): PersonUtenlandskIdent {
 
         val identer = listOfNotNull(
             fnr?.let { IdentInformasjon(ident = it, gruppe = IdentGruppe.FOLKEREGISTERIDENT) }
@@ -92,7 +75,7 @@ object PersonMock {
 
         val metadata = createMetadata()
 
-        return no.nav.eessi.pensjon.personoppslag.pdl.model.PersonUtenlandskIdent(
+        return PersonUtenlandskIdent(
             identer = identer,
             navn = Navn(
                 fornavn = fornavn, etternavn = etternavn, metadata = metadata

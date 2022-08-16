@@ -7,11 +7,8 @@ import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
-import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
-import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.klienter.norg2.Norg2Service
-import no.nav.eessi.pensjon.listeners.SedListener
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
@@ -50,9 +47,6 @@ import javax.net.ssl.SSLContext
 
 const val PDL_PRODUSENT_TOPIC_MOTTATT = "eessi-basis-sedMottatt-v1"
 abstract class IntegrationBase {
-
-    @Autowired(required = true)
-    lateinit var sedListener: SedListener
 
     @Autowired
     lateinit var embeddedKafka: EmbeddedKafkaBroker
@@ -105,15 +99,8 @@ abstract class IntegrationBase {
         MockServerClient("localhost", System.getProperty("mockserverport").toInt()).reset()
     }
 
-    fun sendMelding(messagePath: String) {
-        kafkaTemplate.sendDefault(javaClass.getResource(messagePath)!!.readText()).get(20L, TimeUnit.SECONDS)
-        sedListener.getLatch().await(20, TimeUnit.SECONDS)
-        Thread.sleep(5000)
-    }
-
-    fun sendMeldingString(message: String) {
+    open fun sendMeldingString(message: String) {
         kafkaTemplate.sendDefault(message).get(20L, TimeUnit.SECONDS)
-        sedListener.getLatch().await(20, TimeUnit.SECONDS)
         Thread.sleep(5000)
     }
 
@@ -131,28 +118,13 @@ abstract class IntegrationBase {
         }
     }
 
-    fun validateSedMottattListenerLoggingMessage(keyword: String): Boolean {
+    fun isMessageInlog(keyword: String): Boolean {
         val logsList: List<ILoggingEvent> = listAppender.list
         return logsList.find { logMelding ->
             logMelding.message.contains(keyword)
         }?.message?.isNotEmpty() ?: false
     }
 
-    fun mockBuc(bucId: String, bucType: BucType, docIder: List<ForenkletSED>) : String {
-        return """
-            {
-              "id": "$bucId",
-              "processDefinitionName": "${bucType.name}",
-              "documents": ${docIder.toJson()}
-              
-            } 
-          
-        """.trimIndent()
-    }
-
-    fun mockForenkletSed(id: String, type: SedType, status: SedStatus) : ForenkletSED {
-        return ForenkletSED(id, type, status)
-    }
 
     fun mockHendelse(avsenderLand: String = "DK", avsenderNavn: String = "DK:D005", bucType: BucType = BucType.P_BUC_01, sedType: SedType = SedType.P2000, docId: String = "b12e06dda2c7474b9998c7139c841646"): String {
         return """

@@ -1,15 +1,15 @@
-package no.nav.eessi.pensjon.listeners
+package no.nav.eessi.pensjon.pdl.identoppdatering
 
 import io.mockk.mockk
 import io.mockk.verify
-import no.nav.eessi.pensjon.eux.EuxDokumentHelper
+import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.UtenlandskPersonIdentifisering
-import no.nav.eessi.pensjon.handler.OppgaveHandler
+import no.nav.eessi.pensjon.oppgave.OppgaveHandler
+import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.pdl.validering.PdlValidering
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
-import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -22,7 +22,7 @@ internal class SedMottattListenerTest {
     private val acknowledgment = mockk<Acknowledgment>(relaxUnitFun = true)
     private val cr = mockk<ConsumerRecord<String, String>>(relaxed = true)
     private val personidentifiseringService = mockk<PersonidentifiseringService>(relaxed = true)
-    private val sedDokumentHelper = mockk<EuxDokumentHelper>(relaxed = true)
+    private val sedDokumentHelper = mockk<EuxService>(relaxed = true)
     private val personMottakKlient = mockk<PersonMottakKlient>(relaxed = true)
     private val utenlandskPersonIdentifisering = mockk<UtenlandskPersonIdentifisering>(relaxed = true)
     private val pdlFiltrering = mockk<PdlFiltrering>(relaxed = true)
@@ -30,7 +30,7 @@ internal class SedMottattListenerTest {
     private val kodeverkClient = mockk<KodeverkClient>(relaxed = true)
     private val oppgaveHandler = mockk<OppgaveHandler>(relaxed = true)
 
-    private val sedListener = SedListener(
+    private val sedListener = SedListenerIdent(
         personidentifiseringService,
         sedDokumentHelper,
         personMottakKlient,

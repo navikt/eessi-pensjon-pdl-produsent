@@ -3,6 +3,7 @@ package no.nav.eessi.pensjon.personidentifisering
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.models.Saktype
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Kontaktadresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.SokKriterier
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import java.time.LocalDate
@@ -16,7 +17,8 @@ data class IdentifisertPerson(
     val harAdressebeskyttelse: Boolean,
     val personListe: List<IdentifisertPerson>? = null,
     val personRelasjon: SEDPersonRelasjon,
-    val erDoed: Boolean = false
+    val erDoed: Boolean = false,
+    val kontaktAdresse: Kontaktadresse?
 ) {
     fun flereEnnEnPerson() = false
 

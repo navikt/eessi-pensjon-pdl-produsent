@@ -3,18 +3,20 @@ package no.nav.eessi.pensjon.pdl.filtrering
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.eessi.pensjon.eux.UtenlandskId
+import no.nav.eessi.pensjon.eux.model.sed.Adresse
+import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endring
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Metadata
+import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
-import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import java.time.LocalDateTime
-import org.junit.jupiter.api.Assertions.assertEquals
 
 internal class PdlFiltreringTest {
 
@@ -184,6 +186,29 @@ internal class PdlFiltreringTest {
         assertEquals(validate, pdlFiltrering.sjekkYterligerePaaPDLuidMotSedUid (pdluid, seduid))
     }
 
+    @Test
+    fun `Gitt en utlandsadresse i SED saa sjekker vi om den finnes i PDL`(){
+        every { kodeverkClient.finnLandkode("SE") } returns "SWE"
+
+        val adresse = Adresse(
+            gate = "EddyRoad",
+            bygning = "EddyHouse",
+            by = "EddyCity",
+            postnummer = "111",
+            region = "Oslo",
+            land ="SWE",
+            kontaktpersonadresse = null,
+        )
+        val utenlandskAdresse = UtenlandskAdresse(
+            adressenavnNummer = adresse.gate,
+            landkode = "SE",
+            postkode = adresse.postnummer,
+            bySted = adresse.by,
+            bygningEtasjeLeilighet  = adresse.bygning,
+            regionDistriktOmraade = adresse.region
+        )
+        assertTrue(pdlFiltrering.finnesUtlAdresseFraSedIPDL(utenlandskAdresse, adresse))
+    }
 
 
     private fun mockMeta() = Metadata(

@@ -1,7 +1,8 @@
-package no.nav.eessi.pensjon.listeners
+package no.nav.eessi.pensjon.pdl.validering
 
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.models.SedHendelseModel
+import no.nav.eessi.pensjon.pdl.validering.GyldigeHendelser
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
 
