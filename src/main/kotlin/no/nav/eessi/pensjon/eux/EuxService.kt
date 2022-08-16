@@ -50,12 +50,12 @@ class EuxService(
             euxKlient.hentBuc(rinaSakId) ?: throw RuntimeException("Ingen BUC")
         }
 
-    fun alleGyldigeSEDForBuc(rinaSakId: String): List<Pair<ForenkletSED, SED>> =
+    fun alleGyldigeSEDForBuc(rinaSakId: String): List<Pair<ForenkletSED, SED>> = // TODO Hvorfor henter vi "alle"?
         (hentBuc(rinaSakId).documents ?: emptyList())
             .filter { it.id != null }
             .map { ForenkletSED(it.id!!, it.type, SedStatus.fra(it.status)) }
-            .filter { it.harGyldigStatus() }
-            .filter { it.type.erGyldig() }
+            .filter { it.harGyldigStatus() }  // TODO "Gyldig" ? - skal vi ikke bare vurdere innkomne?
+            .filter { it.type.erGyldig() } // TODO - logikken her er kopiert fra Journalføring(?) - er det rett?
             .also { logger.info("Fant ${it.size} dokumenter i BUC: $it") }
             .map { forenkletSED -> Pair(forenkletSED, hentSed(rinaSakId, forenkletSED.id)) }
             .onEach { (forenkletSED, _) -> logger.debug("SED av type: ${forenkletSED.type}, status: ${forenkletSED.status}") }
