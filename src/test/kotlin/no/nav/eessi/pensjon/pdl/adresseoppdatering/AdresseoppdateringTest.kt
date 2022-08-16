@@ -5,6 +5,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.model.sed.Adresse
+import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.models.EndringsmeldingUtAdresse
@@ -16,10 +17,16 @@ import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
+import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
+import no.nav.eessi.pensjon.personoppslag.pdl.model.AdressebeskyttelseGradering
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
+import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
+import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentInformasjon
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Kontaktadresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.KontaktadresseType
+import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -28,7 +35,7 @@ import java.time.LocalDateTime
 
 internal class AdresseoppdateringTest {
 
-    var pdlService: PersonidentifiseringService = mockk()
+    var personService: PersonService = mockk()
     var euxService: EuxService = mockk(relaxed = true)
     var kodeverkClient: KodeverkClient = mockk(relaxed = true)
 
@@ -57,16 +64,16 @@ internal class AdresseoppdateringTest {
             kontaktpersonadresse = null,
         )
         every { mockedSed.nav?.bruker?.adresse } returns adresseFraSED
+        every { mockedSed.nav?.bruker?.person?.pin } returns listOf(PinItem(land = "NO", identifikator = "11067122781"))
         every { euxService.alleGyldigeSEDForBuc(eq("123456")) } returns listOf(Pair(mockk(), mockedSed))
 
-        val identifisertPerson: IdentifisertPerson = identifisertPerson()
-        every { pdlService.hentIdentifisertePersoner(any(), any()) } returns listOf(identifisertPerson)
+        every { personService.hentPerson(NorskIdent("11067122781")) } returns personFraPDL()
 
         every { kodeverkClient.finnLandkode("SE") } returns "SWE"
 
         every { personMottakKlient.opprettPersonopplysning(any()) } returns true
 
-        val adresseoppdatering = Adresseoppdatering(pdlService, euxService, personMottakKlient, pdlFiltrering)
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, personMottakKlient, pdlFiltrering)
 
         val sedHendelse = SedHendelse.fromJson(
             """{
@@ -89,7 +96,6 @@ internal class AdresseoppdateringTest {
 
         assertTrue(result)
 
-        verify(atLeast = 1) { pdlService.hentIdentifisertePersoner(any(), any()) }
         verify(atLeast = 1) {  personMottakKlient.opprettPersonopplysning(eq(PdlEndringOpplysning(listOf(
             Personopplysninger(
                 endringstype = Endringstype.KORRIGER,
@@ -114,6 +120,49 @@ internal class AdresseoppdateringTest {
             )
         ))))
         }
+    }
+
+    private fun personFraPDL() = Person(
+        identer = listOf(IdentInformasjon("11067122781", IdentGruppe.FOLKEREGISTERIDENT)),
+        navn = null,
+        adressebeskyttelse = listOf(AdressebeskyttelseGradering.UGRADERT),
+        bostedsadresse = null,
+        oppholdsadresse = null,
+        statsborgerskap = listOf(),
+        foedsel = null,
+        geografiskTilknytning = null,
+        kjoenn = null,
+        doedsfall = null,
+        forelderBarnRelasjon = listOf(),
+        sivilstand = listOf(),
+        kontaktadresse = Kontaktadresse(
+            coAdressenavn = "c/o Anund",
+            folkeregistermetadata = null,
+            gyldigFraOgMed = LocalDateTime.now().minusDays(5),
+            gyldigTilOgMed = LocalDateTime.now().plusDays(5),
+            metadata = mockk(),
+            type = KontaktadresseType.Utland,
+            utenlandskAdresse = UtenlandskAdresse(
+                adressenavnNummer = "EddyRoad",
+                bySted = "EddyCity",
+                bygningEtasjeLeilighet = "EddyHouse",
+                landkode = "SE",
+                postkode = "111",
+                regionDistriktOmraade = "Stockholm"
+            )
+        ),
+        kontaktinformasjonForDoedsbo = null,
+        utenlandskIdentifikasjonsnummer = listOf()
+    )
+
+    @Test
+    fun `Gitt person med adressebeskyttelse så XXX`() {
+        // given
+
+        // when
+
+        // then
+
     }
 
     private fun identifisertPerson(): IdentifisertPerson {

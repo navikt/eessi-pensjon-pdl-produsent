@@ -1,7 +1,6 @@
 package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
 import no.nav.eessi.pensjon.eux.EuxService
-import no.nav.eessi.pensjon.eux.model.sed.Adresse
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.models.EndringsmeldingUtAdresse
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
@@ -11,8 +10,10 @@ import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
+import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Kontaktadresse
+import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -20,7 +21,7 @@ import java.time.LocalDate
 
 @Service
 class Adresseoppdatering(
-    private val pdlService: PersonidentifiseringService,
+    private val personService: PersonService,
     private val euxService: EuxService,
     private val personMottakKlient: PersonMottakKlient,
     private val pdlFiltrering: PdlFiltrering
@@ -35,28 +36,40 @@ class Adresseoppdatering(
             return false
         }
 
-        val sederFraBuc = euxService.alleGyldigeSEDForBuc(sedHendelse.rinaSakId) // TODO Hvorfor henter vi flere SED'er?
+        val sed = euxService.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId)
 
-        val adresserUtland = brukersAdresserUtenforNorge(sederFraBuc.map { it.second })
-        if (adresserUtland.isEmpty()) {
+        val bruker = sed.nav?.bruker
+
+        val brukersAdresseIUtlandetFraSED = bruker?.adresse?.let { if (it.land != "NO") it else null }
+
+        if (brukersAdresseIUtlandetFraSED == null) {
+            logger.info("Bruker har ikke utenlandsk adresse i SED")
             return false
         }
-        if (adresserUtland.size > 1) {
-            logger.warn("Vi fant flere enn én utenlandsk adresse, avslutter")
+
+        val norskPin = bruker.person?.pin?.firstOrNull { it.land == "NO" }
+
+        if (norskPin == null) {
+            // TODO Håndtere brukere med ikke-norske identer
+            logger.info("Bruker har ikke norsk pin i SED")
             return false
         }
-        val adresseUtlandFraSed = adresserUtland.first()!!
 
-        // TODO La oss finne aktuelle personer før vi slår dem opp i PDL
-        val personerHentetFraPDL = pdlService.hentIdentifisertePersoner(sederFraBuc, sedHendelse.bucType!!)
+        val personFraPDL = personService.hentPerson(NorskIdent(norskPin.identifikator!!))
 
-        logger.info("Vi har funnet ${personerHentetFraPDL.size} personer fra PDL som har gyldige identer")
-        val person = personerHentetFraPDL.first()
+        if (personFraPDL == null) {
+            logger.info("Bruker ikke funnet i PDL")
+            return false
+        }
 
-        if (person.kontaktAdresse?.utenlandskAdresse != null &&
-            pdlFiltrering.finnesUtlAdresseFraSedIPDL(person.kontaktAdresse.utenlandskAdresse!!, adresseUtlandFraSed)) {
+        logger.info("Vi har funnet en person fra PDL med samme norsk identifikator som bruker i SED")
+
+
+        if (personFraPDL.kontaktadresse?.utenlandskAdresse != null &&
+            pdlFiltrering.finnesUtlAdresseFraSedIPDL(personFraPDL.kontaktadresse!!.utenlandskAdresse!!, brukersAdresseIUtlandetFraSED)
+        ) {
             logger.info("Adresse finnes allerede i PDL, oppdaterer gyldig til og fra dato")
-            lagUtAdresseEndringsMelding(person.kontaktAdresse, person.fnr.toString(), Endringstype.KORRIGER)
+            lagUtAdresseEndringsMelding(personFraPDL.kontaktadresse!!, norskPin.identifikator!!, Endringstype.KORRIGER)
             return true
         } else {
             logger.info("Adresse ikke funnet i PDL, kandidat for (fremtidig) oppdatering")
@@ -65,14 +78,6 @@ class Adresseoppdatering(
             //TODO: send melding for opprettelse til personMottakKlient
         }
     }
-
-    private fun brukersAdresserUtenforNorge(sedList: List<SED>) =
-        sedList
-            .filter { it.nav?.bruker?.adresse != null }
-            .map { it.nav?.bruker?.adresse }
-            .filter { it?.land != "NO" }
-            .distinct()
-            .also { logger.info("Vi har funnet ${it.size} utenlandske adresser som skal vurderes") }
 
     fun lagUtAdresseEndringsMelding(kontaktadresse: Kontaktadresse, norskFnr: String, endringstype: Endringstype)  {
         val pdlEndringsOpplysninger = PdlEndringOpplysning(
