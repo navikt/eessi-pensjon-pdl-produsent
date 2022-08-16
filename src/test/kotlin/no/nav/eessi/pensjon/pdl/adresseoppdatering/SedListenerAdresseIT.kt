@@ -35,103 +35,18 @@ import java.util.concurrent.TimeUnit
     controlledShutdown = true,
     topics = ["eessi-basis-sedMottatt-v1"]
 )
-internal class SedListenerAdresseIT : IntegrationBase(){
-    val fnr = "11067122781"
+class SedListenerAdresseIT : IntegrationBase() {
 
     @Autowired
     lateinit var adresseListener: SedListenerAdresse
 
-    @Autowired
-    var personMottakKlient: PersonMottakKlient = mockk()
-
-    val mockedPerson = PersonMock.createWith(
-        fnr = fnr,
-        aktoerId = AktoerId("1231231231"),
-        uid = emptyList()
-    )
-
     @Test
     fun `Gitt en sed hendelse som kommer på riktig topic og group_id så skal den konsumeres av adresseListener`() {
-        //given
-        val mockSedHendelse : SedHendelseModel = mockk(relaxed = true)
-        //when
+        val mockSedHendelse: SedHendelseModel = mockk(relaxed = true)
+
         kafkaTemplate.sendDefault(mockSedHendelse.toJson())
-        //then
+
         adresseListener.latch.await(5, TimeUnit.SECONDS)
         assertEquals(0, adresseListener.latch.count)
     }
-
-    @Test
-    fun `Gitt en sed som kommer fra et annet land enn Norge saa skal være en kadidat for endringsmelding`() {
-
-        val utlandskAdresse = UtenlandskAdresse(
-            adressenavnNummer = "654",
-            bySted = "Oslo",
-            bygningEtasjeLeilighet = null,
-            landkode = "IT",
-            postboksNummerNavn = "645",
-            postkode = "987",
-            regionDistriktOmraade = null
-        )
-
-        //given
-        val mockSedHendelse : SedHendelseModel = mockk(relaxed = true)
-        //when
-        kafkaTemplate.sendDefault(mockSedHendelse.toJson())
-
-
-
-        //assertFalse(utlandskAdresse.landkode == "NO")
-    }
-
-
-    @Test
-    fun `Gitt en sed der adresse allerede finnes i PDL, og adresse er lik så skal PDL oppdateres med ny dato`() {
-
-        val uAdresse = Bostedsadresse(
-            LocalDateTime.now(),
-            LocalDateTime.now(),
-            null,
-            UtenlandskAdresse(
-                adressenavnNummer = "654",
-                bySted = "Oslo",
-                bygningEtasjeLeilighet = null,
-                landkode = "NO",
-                postboksNummerNavn = "645",
-                postkode = "987",
-                regionDistriktOmraade = null
-            ),
-            metadata = mockk()
-        )
-        //given
-        val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P2100, SedStatus.RECEIVED))
-        val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_10, listOverSeder)
-        CustomMockServer()
-            .medSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", "src/test/resources/eux/sed/P2100-PinDK-NAV.json")
-            .medMockBuc("/buc/147729", mockBuc)
-
-        every { personService.hentPerson(NorskIdent( "11067122781")) } returns mockedPerson
-        // dersom sed sin boadresse er den samme som boadressen i PDL så skal vi sende adressen med ny dato som en adresseendringsmelding til PDL
-
-        //when
-        kafkaTemplate.sendDefault(javaClass.getResource("/eux/hendelser/P_BUC_01_P2000.json").readText())
-
-
-        //then
-        adresseListener.latch.await(20, TimeUnit.SECONDS)
-        assertEquals(0, adresseListener.latch.count)
-
-
-
-//        verify (atLeast = 1) { personMottakKlient.opprettPersonopplysning(PdlEndringOpplysning(any())) }
-
-        //TODO: sjekke at adresse er lik og at det skjer en oppdatering med ny timestamp (dobbeltsjekk dette)
-    }
-
-
-
-
-
-
-
 }

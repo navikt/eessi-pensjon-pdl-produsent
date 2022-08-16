@@ -195,7 +195,6 @@ internal class PdlFiltreringTest {
             bygning = "EddyHouse",
             by = "EddyCity",
             postnummer = "111",
-            postkode = "666",
             region = "Oslo",
             land ="SWE",
             kontaktpersonadresse = null,
@@ -203,7 +202,7 @@ internal class PdlFiltreringTest {
         val utenlandskAdresse = UtenlandskAdresse(
             adressenavnNummer = adresse.gate,
             landkode = "SE",
-            postkode = adresse.postkode,
+            postkode = adresse.postnummer,
             bySted = adresse.by,
             bygningEtasjeLeilighet  = adresse.bygning,
             regionDistriktOmraade = adresse.region

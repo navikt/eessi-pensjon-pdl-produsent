@@ -43,10 +43,10 @@ class PdlFiltrering(private val kodeverk: KodeverkClient) {
      */
     //TODO fikse til riktig sjekk av adresse i sed mot pdl
     fun finnesUtlAdresseFraSedIPDL(utenlandskeAdrIPDL: UtenlandskAdresse, utenlandskAdrISed: Adresse): Boolean {
-        return utenlandskAdrISed.gate == utenlandskeAdrIPDL.adressenavnNummer &&
+        return (utenlandskAdrISed.gate == utenlandskeAdrIPDL.adressenavnNummer || utenlandskAdrISed.gate == utenlandskeAdrIPDL.postboksNummerNavn) &&
             utenlandskAdrISed.bygning == utenlandskeAdrIPDL.bygningEtasjeLeilighet &&
             utenlandskAdrISed.by == utenlandskeAdrIPDL.bySted &&
-            utenlandskAdrISed.postkode == utenlandskeAdrIPDL.postkode &&
+            utenlandskAdrISed.postnummer == utenlandskeAdrIPDL.postkode &&
             utenlandskAdrISed.region == utenlandskeAdrIPDL.regionDistriktOmraade &&
             utenlandskAdrISed.land == utenlandskeAdrIPDL.landkode.let { kodeverk.finnLandkode(it) }
     }

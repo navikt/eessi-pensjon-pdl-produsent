@@ -17,6 +17,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.Kontaktadresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.time.LocalDate
 
 @Service
 class Adresseoppdatering(
@@ -61,12 +62,15 @@ class Adresseoppdatering(
                 pdlFiltrering.finnesUtlAdresseFraSedIPDL(person.kontaktAdresse.utenlandskAdresse!!, adresse)) {
                 logger.info("Adresse finnes allerede i PDL, oppdaterer gyldig til og fra dato")
                 lagUtAdresseEndringsMelding(person.kontaktAdresse, person.fnr.toString(), Endringstype.KORRIGER)
+                return true
             } else {
-                logger.info("Adresse finnes ikke i PDL, oppdaterer kontaktadresse")
+                logger.info("Adresse ikke funnet i PDL, kandidat for (fremtidig) oppdatering")
+                return false
+                //logger.info("Adresse finnes ikke i PDL, oppdaterer kontaktadresse")
                 //TODO: send melding for opprettelse til personMottakKlient
             }
         }
-        return true
+        return false
     }
 
     private fun hentAdresserKunUtland(sedHendelse: List<Pair<ForenkletSED, SED>>): List<Adresse?> {
@@ -87,8 +91,9 @@ class Adresseoppdatering(
                     endringstype = endringstype,
                     ident = norskFnr,
                     endringsmelding = EndringsmeldingUtAdresse(
-                        gyldigFraOgMed = kontaktadresse.gyldigFraOgMed?.toLocalDate(),
-                        gyldigTilOgMed = kontaktadresse.gyldigTilOgMed?.toLocalDate(),
+                        kilde = "EESSI",
+                        gyldigFraOgMed = LocalDate.now(),
+                        gyldigTilOgMed = LocalDate.now().plusYears(1),
                         coAdressenavn = kontaktadresse.coAdressenavn,
                         adresse = kontaktadresse.utenlandskAdresse
                     ),

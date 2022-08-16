@@ -35,7 +35,7 @@ internal class EndringsmeldingUtAdresseTest() {
               "@type" : "KONTAKTADRESSE",
               "kilde" : "TEST",
               "gyldigFraOgMed" : "2000-10-01",
-              "gylidgTilOgMed" : "2001-11-02",
+              "gyldigTilOgMed" : "2001-11-02",
               "coAdressenavn" : "En eller annen vei",
               "adresse" : {
                 "adressenavnNummer" : "234234",
