@@ -12,9 +12,9 @@ import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
-import no.nav.eessi.pensjon.pdl.validering.GyldigeHendelser
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.pdl.validering.PdlValidering
+import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
@@ -82,7 +82,7 @@ class SedListenerIdent(
         try {
             val sedHendelse = sedHendelseMapping(hendelse)
 
-            if (GyldigeHendelser.mottatt(sedHendelse)) {
+            if (erRelevantForEESSIPensjon(sedHendelse)) {
                 val bucType = sedHendelse.bucType!!
                 logger.info("*** Starter pdl endringsmelding prosess for BucType: $bucType, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
 

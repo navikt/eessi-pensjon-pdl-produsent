@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
-class PersonidentifiseringService(private val personService: PersonService) {
+class PersonidentifiseringService(private val personService: PersonService) { // TODO Det er rart at denne vet noe om SED'er
 
     private val logger = LoggerFactory.getLogger(PersonidentifiseringService::class.java)
 

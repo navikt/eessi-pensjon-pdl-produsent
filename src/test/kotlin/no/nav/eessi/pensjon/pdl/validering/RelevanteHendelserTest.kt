@@ -5,27 +5,24 @@ import no.nav.eessi.pensjon.models.SedHendelse
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
 
-internal class GyldigeHendelserTest {
-
+internal class RelevanteHendelserTest {
 
     @Test
-    fun `Mottatt hendelse som IKKE er R_BUC_02, H_BUC_07, eller sektorkode P er ugyldig`() {
+    fun `Mottatt hendelse som IKKE er R_BUC_02, H_BUC_07, eller sektorkode P er er ikke relevant`() {
         val hendelse = createDummy(bucType = BucType.P_BUC_01)
-
-        assertFalse(GyldigeHendelser.mottatt(hendelse))
+        assertFalse(erRelevantForEESSIPensjon(hendelse))
     }
 
     @Test
-    fun `Mottatt hendelse som mangler BucType`() {
+    fun `Mottatt hendelse som mangler BucType er ikke relevant`() {
         val hendelse = createDummy()
-        assertFalse(GyldigeHendelser.mottatt(hendelse))
+        assertFalse(erRelevantForEESSIPensjon(hendelse))
     }
 
     @Test
-    fun `mottatt hendelse som mangler BucType`() {
+    fun `mottatt hendelse som mangler BucType er ikke relevant`() {
         val hendelse = createDummy()
-
-        assertFalse(GyldigeHendelser.mottatt(hendelse))
+        assertFalse(erRelevantForEESSIPensjon(hendelse))
     }
 
     private fun createDummy(sektor: String = "", bucType: BucType? = null) =

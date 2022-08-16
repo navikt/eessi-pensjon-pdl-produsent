@@ -10,7 +10,7 @@ import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
-import no.nav.eessi.pensjon.pdl.validering.GyldigeHendelser
+import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Kontaktadresse
@@ -31,7 +31,7 @@ class Adresseoppdatering(
     fun oppdaterUtenlandskKontaktadresse(sedHendelse: SedHendelse): Boolean {
         logger.info("Ser om sedHendelse allerede ligger i pdl med riktig adresse, rinaId: ${sedHendelse.rinaSakId}, bucType:${sedHendelse.bucType}, sedType:${sedHendelse.sedType}")
 
-        if (!GyldigeHendelser.mottatt(sedHendelse)) return false
+        if (!erRelevantForEESSIPensjon(sedHendelse)) return false
 
         val adresserUtland = hentAdresserKunUtland(euxService.alleGyldigeSEDForBuc(sedHendelse.rinaSakId))
 
