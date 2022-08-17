@@ -9,7 +9,7 @@ import org.springframework.kafka.listener.MessageListenerContainer
 import org.springframework.stereotype.Component
 
 
-@Profile("prod")
+@Profile("prod", "test")
 @Component
 class KafkaStoppingErrorHandler : CommonContainerStoppingErrorHandler() {
     private val logger = LoggerFactory.getLogger(KafkaStoppingErrorHandler::class.java)
