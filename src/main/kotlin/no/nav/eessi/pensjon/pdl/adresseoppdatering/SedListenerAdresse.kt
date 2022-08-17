@@ -49,13 +49,14 @@ class SedListenerAdresse(
                     } else {
                         // Gjorde ikke oppdatering?
                     }
+                    acknowledgment.acknowledge()
 
                 } catch (ex: Exception) {
                     logger.error("Noe gikk galt under behandling av SED-hendelse for adresse:\n $hendelse \n", ex)
+                    throw ex
                 }
-                acknowledgment.acknowledge()
-                latch.countDown()
             }
+            latch.countDown()
         }
     }
 
