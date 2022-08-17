@@ -9,6 +9,7 @@ import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Component
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.HttpStatusCodeException
+import org.springframework.web.client.ResourceAccessException
 import org.springframework.web.client.RestTemplate
 
 @Component
@@ -17,7 +18,7 @@ class EuxKlient(private val euxOAuthRestTemplate: RestTemplate) {
     private val logger: Logger by lazy { LoggerFactory.getLogger(EuxKlient::class.java) }
 
     @Retryable(
-        include = [HttpStatusCodeException::class],
+        include = [HttpStatusCodeException::class, ResourceAccessException::class],
         exclude = [HttpClientErrorException.NotFound::class],
         backoff = Backoff(delay = 30000L, maxDelay = 3600000L, multiplier = 3.0)
     )
@@ -33,7 +34,7 @@ class EuxKlient(private val euxOAuthRestTemplate: RestTemplate) {
     }
 
     @Retryable(
-        include = [HttpStatusCodeException::class],
+        include = [HttpStatusCodeException::class, ResourceAccessException::class],
         backoff = Backoff(delay = 30000L, maxDelay = 3600000L, multiplier = 3.0)
     )
     internal fun hentBuc(rinaSakId: String): Buc? {
