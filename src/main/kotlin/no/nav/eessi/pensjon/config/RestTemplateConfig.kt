@@ -1,7 +1,6 @@
 package no.nav.eessi.pensjon.config
 
 import no.nav.eessi.pensjon.logging.RequestIdHeaderInterceptor
-import no.nav.eessi.pensjon.logging.RequestResponseLoggerInterceptor
 import no.nav.security.token.support.client.core.ClientProperties
 import no.nav.security.token.support.client.core.oauth2.OAuth2AccessTokenService
 import no.nav.security.token.support.client.spring.ClientConfigurationProperties
@@ -46,7 +45,6 @@ class RestTemplateConfig(
             .errorHandler(DefaultResponseErrorHandler())
             .additionalInterceptors(
                 RequestIdHeaderInterceptor(),
-                RequestResponseLoggerInterceptor(),
                 bearerTokenInterceptor(clientProperties(oAuthKey), oAuth2AccessTokenService!!)
             )
             .build().apply {
