@@ -4,7 +4,10 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import no.nav.eessi.pensjon.eux.EuxService
+import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.sed.Adresse
+import no.nav.eessi.pensjon.eux.model.sed.Bruker
+import no.nav.eessi.pensjon.eux.model.sed.Nav
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
@@ -15,7 +18,6 @@ import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
-import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.AdressebeskyttelseGradering
@@ -53,19 +55,51 @@ internal class AdresseoppdateringTest {
 
     @Test
     fun `Gitt SED med gyldig utlandsadresse, og denne finnes i PDL, saa skal det sendes oppdatering`() {
-        val mockedSed: SED = mockk(relaxed = true)
-        val adresseFraSED = Adresse(
-            gate = "EddyRoad",
-            bygning = "EddyHouse",
-            by = "EddyCity",
-            postnummer = "111",
-            region = "Stockholm",
-            land ="SWE",
-            kontaktpersonadresse = null,
+        val sed = SED(
+            type = SedType.P2100,
+            sedGVer = null,
+            sedVer = null,
+            nav = Nav(
+                eessisak = null,
+                bruker = Bruker(
+                    mor = null,
+                    far = null,
+                    person = no.nav.eessi.pensjon.eux.model.sed.Person(
+                        pin = listOf(PinItem(
+                            identifikator = "11067122781",
+                            land = "NO"
+                        )),
+                        pinland = null,
+                        statsborgerskap = null,
+                        etternavn = null,
+                        etternavnvedfoedsel = null,
+                        fornavn = null,
+                        fornavnvedfoedsel = null,
+                        tidligerefornavn = null,
+                        tidligereetternavn = null,
+                        kjoenn = null,
+                        foedested = null,
+                        foedselsdato = null,
+                        sivilstand = null,
+                        relasjontilavdod = null,
+                        rolle = null
+                    ),
+                    adresse = Adresse(
+                        gate = "EddyRoad",
+                        bygning = "EddyHouse",
+                        by = "EddyCity",
+                        postnummer = "111",
+                        region = "Stockholm",
+                        land ="SWE",
+                        kontaktpersonadresse = null,
+                    ),
+                    arbeidsforhold = null,
+                    bank = null
+                )
+            )
         )
-        every { mockedSed.nav?.bruker?.adresse } returns adresseFraSED
-        every { mockedSed.nav?.bruker?.person?.pin } returns listOf(PinItem(land = "NO", identifikator = "11067122781"))
-        every { euxService.alleGyldigeSEDForBuc(eq("123456")) } returns listOf(Pair(mockk(), mockedSed))
+
+        every { euxService.hentSed(eq("123456"), eq("1234")) } returns sed
 
         every { personService.hentPerson(NorskIdent("11067122781")) } returns personFraPDL()
 
@@ -163,32 +197,5 @@ internal class AdresseoppdateringTest {
 
         // then
 
-    }
-
-    private fun identifisertPerson(): IdentifisertPerson {
-        return IdentifisertPerson(
-            fnr = Fodselsnummer.fra("11067122781"),
-            aktoerId = "",
-            landkode = null,
-            geografiskTilknytning = null,
-            harAdressebeskyttelse = false,
-            personRelasjon = mockk(),
-            kontaktAdresse = Kontaktadresse(
-                coAdressenavn = "c/o Anund",
-                folkeregistermetadata = null,
-                gyldigFraOgMed = LocalDateTime.now().minusDays(5),
-                gyldigTilOgMed = LocalDateTime.now().plusDays(5),
-                metadata = mockk(),
-                type = KontaktadresseType.Utland,
-                utenlandskAdresse = UtenlandskAdresse(
-                    adressenavnNummer = "EddyRoad",
-                    bySted = "EddyCity",
-                    bygningEtasjeLeilighet = "EddyHouse",
-                    landkode = "SE",
-                    postkode = "111",
-                    regionDistriktOmraade = "Stockholm"
-                )
-            )
-        )
     }
 }
