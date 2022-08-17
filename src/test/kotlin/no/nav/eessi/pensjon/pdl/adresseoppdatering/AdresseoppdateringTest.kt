@@ -8,6 +8,7 @@ import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.sed.Adresse
 import no.nav.eessi.pensjon.eux.model.sed.Bruker
 import no.nav.eessi.pensjon.eux.model.sed.Nav
+import no.nav.eessi.pensjon.eux.model.sed.Pensjon
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
@@ -96,7 +97,11 @@ internal class AdresseoppdateringTest {
                     arbeidsforhold = null,
                     bank = null
                 )
+            ),
+            pensjon = Pensjon(
+
             )
+
         )
 
         every { euxService.hentSed(eq("123456"), eq("1234")) } returns sed

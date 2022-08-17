@@ -41,6 +41,8 @@ class SedListenerAdresse(
                 logger.debug("sed-hendelse for vurdering av adressemelding mot PDL i partisjon: ${cr.partition()}, med offset: ${cr.offset()} ")
 
                 try {
+                    logger.debug("hendelse mottatt: $hendelse")
+
                     val sedHendelse = SedHendelse.fromJson(hendelse)
                     if (adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse)) {
                         // Gjorde oppdatering

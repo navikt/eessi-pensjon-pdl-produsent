@@ -36,6 +36,8 @@ class Adresseoppdatering(
 
         val sed = euxService.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId)
 
+        logger.debug("SED: $sed")
+
         val bruker = sed.nav?.bruker
 
         val brukersAdresseIUtlandetFraSED = bruker?.adresse?.let { if (it.land != "NO") it else null }
@@ -55,13 +57,14 @@ class Adresseoppdatering(
 
         val personFraPDL = personService.hentPerson(NorskIdent(norskPin.identifikator!!))
 
+        logger.debug("Person fra PDL: $personFraPDL")
+
         if (personFraPDL == null) {
             logger.info("Bruker ikke funnet i PDL")
             return false
         }
 
         logger.info("Vi har funnet en person fra PDL med samme norsk identifikator som bruker i SED")
-
 
         if (personFraPDL.kontaktadresse?.utenlandskAdresse != null &&
             pdlFiltrering.finnesUtlAdresseFraSedIPDL(personFraPDL.kontaktadresse!!.utenlandskAdresse!!, brukersAdresseIUtlandetFraSED)
