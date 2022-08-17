@@ -1,6 +1,5 @@
 package no.nav.eessi.pensjon.pdl
 
-import no.nav.eessi.pensjon.models.EndringsmeldingUID
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.Logger
@@ -18,11 +17,11 @@ class PersonMottakKlient(private val personMottakRestTemplate: RestTemplate) {
 
     private val logger: Logger by lazy { LoggerFactory.getLogger(PersonMottakKlient::class.java) }
 
-    internal fun opprettPersonopplysning(personopplysning: PdlEndringOpplysning): Boolean {
-        val personopplysning = personopplysning.personopplysninger.first()
-        logger.info("Endringsmelding: ${personopplysning.endringstype}, med nye personopplysninger: ${personopplysning.endringsmelding.toJson()}")
+    internal fun opprettPersonopplysning(endringer: PdlEndringOpplysning): Boolean {
+        val foersteEndring = endringer.personopplysninger.first()
+        logger.info("Endringsmelding: ${foersteEndring.endringstype}, med nye personopplysninger: ${foersteEndring.endringsmelding.toJson()}")
 
-        val httpEntity = HttpEntity(personopplysning.toJson(), createHeaders())
+        val httpEntity = HttpEntity(endringer.toJson(), createHeaders())
 
         val response = personMottakRestTemplate.exchange(
             "/api/v1/endringer",
