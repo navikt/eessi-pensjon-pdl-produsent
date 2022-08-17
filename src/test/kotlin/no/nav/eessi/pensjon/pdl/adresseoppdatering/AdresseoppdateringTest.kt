@@ -18,8 +18,6 @@ import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
-import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
-import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.AdressebeskyttelseGradering
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
@@ -32,6 +30,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -46,6 +45,11 @@ internal class AdresseoppdateringTest {
 
     private val personMottakKlient: PersonMottakKlient = mockk()
 
+    @BeforeEach
+    fun setup() {
+        every { kodeverkClient.finnLandkode("SE") } returns "SWE"
+    }
+
     @Test
     fun `Gitt SED uten utenlandsadresse, ingen oppdatering`() {
         val mockSedHendelse: SedHendelse = mockk(relaxed = true)
@@ -56,89 +60,63 @@ internal class AdresseoppdateringTest {
 
     @Test
     fun `Gitt SED med gyldig utlandsadresse, og denne finnes i PDL, saa skal det sendes oppdatering`() {
-        val sed = SED(
-            type = SedType.P2100,
-            sedGVer = null,
-            sedVer = null,
-            nav = Nav(
-                eessisak = null,
-                bruker = Bruker(
-                    mor = null,
-                    far = null,
-                    person = no.nav.eessi.pensjon.eux.model.sed.Person(
-                        pin = listOf(PinItem(
-                            identifikator = "11067122781",
-                            land = "NO"
-                        )),
-                        pinland = null,
-                        statsborgerskap = null,
-                        etternavn = null,
-                        etternavnvedfoedsel = null,
-                        fornavn = null,
-                        fornavnvedfoedsel = null,
-                        tidligerefornavn = null,
-                        tidligereetternavn = null,
-                        kjoenn = null,
-                        foedested = null,
-                        foedselsdato = null,
-                        sivilstand = null,
-                        relasjontilavdod = null,
-                        rolle = null
-                    ),
-                    adresse = Adresse(
+        every { euxService.hentSed(eq("123456"), eq("1234")) } returns
+                sed("11067122781",
+                    Adresse(
                         gate = "EddyRoad",
                         bygning = "EddyHouse",
                         by = "EddyCity",
                         postnummer = "111",
                         region = "Stockholm",
-                        land ="SWE",
+                        land = "SWE",
                         kontaktpersonadresse = null,
-                    ),
-                    arbeidsforhold = null,
-                    bank = null
+                    )
                 )
-            ),
-            pensjon = Pensjon(
-
+        every { personService.hentPerson(NorskIdent("11067122781")) } returns
+                personFraPDL(
+                    "11067122781",
+                    UtenlandskAdresse(
+                        adressenavnNummer = "EddyRoad",
+                        bySted = "EddyCity",
+                        bygningEtasjeLeilighet = "EddyHouse",
+                        landkode = "SE",
+                        postkode = "111",
+                        regionDistriktOmraade = "Stockholm"
+                    )
             )
 
-        )
-
-        every { euxService.hentSed(eq("123456"), eq("1234")) } returns sed
-
-        every { personService.hentPerson(NorskIdent("11067122781")) } returns personFraPDL()
-
-        every { kodeverkClient.finnLandkode("SE") } returns "SWE"
-
         every { personMottakKlient.opprettPersonopplysning(any()) } returns true
-
         val adresseoppdatering = Adresseoppdatering(personService, euxService, personMottakKlient, pdlFiltrering)
 
-        val sedHendelse = SedHendelse.fromJson(
-            """{
-                "id" : 0,
-                
-                "sektorKode" : "P",
-                "bucType" : "P_BUC_02",
-                "rinaSakId" : "123456",
-                "avsenderNavn" : null,
-                "avsenderLand" : null,
-                "mottakerNavn" : null,
-                "mottakerLand" : null,
-                "rinaDokumentId" : "1234",
-                "rinaDokumentVersjon" : "1",
-                "sedType" : "P2100",
-                "navBruker" : "22117320034"
-            }""".trimMargin()
-        )
-        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse)
+        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(
+            "P",
+            "P_BUC_02",
+            "123456",
+            "1234",
+            "P2100",
+            "11067122781"
+        ))
 
         assertTrue(result)
 
-        verify(atLeast = 1) {  personMottakKlient.opprettPersonopplysning(eq(PdlEndringOpplysning(listOf(
+        verify(atLeast = 1) { personMottakKlient.opprettPersonopplysning(eq(pdlEndringOpplysning(
+            "11067122781", UtenlandskAdresse(
+                adressenavnNummer = "EddyRoad",
+                bySted = "EddyCity",
+                bygningEtasjeLeilighet = "EddyHouse",
+                landkode = "SE",
+                postboksNummerNavn = null,
+                postkode = "111",
+                regionDistriktOmraade = "Stockholm"
+            )
+        ))) }
+    }
+
+    private fun pdlEndringOpplysning(id: String, pdlAdresse: UtenlandskAdresse) = PdlEndringOpplysning(
+        listOf(
             Personopplysninger(
                 endringstype = Endringstype.KORRIGER,
-                ident = "11067122781",
+                ident = id,
                 opplysningstype = Opplysningstype.KONTAKTADRESSE,
                 endringsmelding = EndringsmeldingUtAdresse(
                     type = Opplysningstype.KONTAKTADRESSE.name,
@@ -146,23 +124,81 @@ internal class AdresseoppdateringTest {
                     gyldigFraOgMed = LocalDate.now(),
                     gyldigTilOgMed = LocalDate.now().plusYears(1),
                     coAdressenavn = "c/o Anund",
-                    adresse = UtenlandskAdresse(
-                        adressenavnNummer = "EddyRoad",
-                        bySted = "EddyCity",
-                        bygningEtasjeLeilighet = "EddyHouse",
-                        landkode = "SE",
-                        postboksNummerNavn = null,
-                        postkode = "111",
-                        regionDistriktOmraade = "Stockholm"
-                    )
+                    adresse = pdlAdresse
                 )
             )
-        ))))
-        }
-    }
+        )
+    )
 
-    private fun personFraPDL() = Person(
-        identer = listOf(IdentInformasjon("11067122781", IdentGruppe.FOLKEREGISTERIDENT)),
+    private fun sedHendelse(
+        sektor: String,
+        bucType: String,
+        rinaSakId: String,
+        rinaDokumentId: String,
+        sedType: String,
+        id: String
+    ) = SedHendelse.fromJson(
+        """{
+                    "id" : 0,
+                    
+                    "sektorKode" : "$sektor",
+                    "bucType" : "$bucType",
+                    "rinaSakId" : "$rinaSakId",
+                    "avsenderNavn" : null,
+                    "avsenderLand" : null,
+                    "mottakerNavn" : null,
+                    "mottakerLand" : null,
+                    "rinaDokumentId" : "$rinaDokumentId",
+                    "rinaDokumentVersjon" : "1",
+                    "sedType" : "$sedType",
+                    "navBruker" : "$id"
+                }""".trimMargin()
+    )
+
+    private fun sed(id: String, brukersAdresse: Adresse) = SED(
+        type = SedType.P2100,
+        sedGVer = null,
+        sedVer = null,
+        nav = Nav(
+            eessisak = null,
+            bruker = Bruker(
+                mor = null,
+                far = null,
+                person = no.nav.eessi.pensjon.eux.model.sed.Person(
+                    pin = listOf(
+                        PinItem(
+                            identifikator = id,
+                            land = "NO"
+                        )
+                    ),
+                    pinland = null,
+                    statsborgerskap = null,
+                    etternavn = null,
+                    etternavnvedfoedsel = null,
+                    fornavn = null,
+                    fornavnvedfoedsel = null,
+                    tidligerefornavn = null,
+                    tidligereetternavn = null,
+                    kjoenn = null,
+                    foedested = null,
+                    foedselsdato = null,
+                    sivilstand = null,
+                    relasjontilavdod = null,
+                    rolle = null
+                ),
+                adresse = brukersAdresse,
+                arbeidsforhold = null,
+                bank = null
+            )
+        ),
+        pensjon = Pensjon(
+
+        )
+
+    )
+
+    private fun personFraPDL(id: String, utenlandskAdresse: UtenlandskAdresse) = Person(
+        identer = listOf(IdentInformasjon(id, IdentGruppe.FOLKEREGISTERIDENT)),
         navn = null,
         adressebeskyttelse = listOf(AdressebeskyttelseGradering.UGRADERT),
         bostedsadresse = null,
@@ -181,14 +217,7 @@ internal class AdresseoppdateringTest {
             gyldigTilOgMed = LocalDateTime.now().plusDays(5),
             metadata = mockk(),
             type = KontaktadresseType.Utland,
-            utenlandskAdresse = UtenlandskAdresse(
-                adressenavnNummer = "EddyRoad",
-                bySted = "EddyCity",
-                bygningEtasjeLeilighet = "EddyHouse",
-                landkode = "SE",
-                postkode = "111",
-                regionDistriktOmraade = "Stockholm"
-            )
+            utenlandskAdresse = utenlandskAdresse
         ),
         kontaktinformasjonForDoedsbo = null,
         utenlandskIdentifikasjonsnummer = listOf()
