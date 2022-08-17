@@ -10,7 +10,7 @@ import java.time.LocalDate
 
 internal class EndringsmeldingUtAdresseTest() {
 
-    private val utenlandskAdresse = UtenlandskAdresse(
+    private val utenlandskAdresse = EndringsmeldingUtenlandskAdresse(
         landkode = "NO",
         adressenavnNummer = "234234",
         postkode = "3443",
@@ -22,7 +22,7 @@ internal class EndringsmeldingUtAdresseTest() {
 
     @Test
     fun `Sjekk at serialisering virker for EndringsmeldingUtAdresse`() {
-        val model = EndringsmeldingUtAdresse(
+        val model = EndringsmeldingKontaktAdresse(
             gyldigFraOgMed = LocalDate.of(2000, 10, 1),
             gyldigTilOgMed = LocalDate.of(2001, 11, 2),
             coAdressenavn = "En eller annen vei",
@@ -38,6 +38,7 @@ internal class EndringsmeldingUtAdresseTest() {
               "gyldigTilOgMed" : "2001-11-02",
               "coAdressenavn" : "En eller annen vei",
               "adresse" : {
+                "@type" : "UTENLANDSK_ADRESSE",
                 "adressenavnNummer" : "234234",
                 "bySted" : "UTLANDBY",
                 "bygningEtasjeLeilighet" : "bygningtest",
@@ -49,7 +50,7 @@ internal class EndringsmeldingUtAdresseTest() {
             }
         """.trimIndent()
         assertEquals(expected, model.toJson().also { println(it) })
-        assertEquals(model, mapJsonToAny<EndringsmeldingUtAdresse>(model.toJson(), typeRefs()))
+        assertEquals(model, mapJsonToAny<EndringsmeldingKontaktAdresse>(model.toJson(), typeRefs()))
     }
 }
 

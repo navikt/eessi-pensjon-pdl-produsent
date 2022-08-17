@@ -12,7 +12,8 @@ import no.nav.eessi.pensjon.eux.model.sed.Pensjon
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
-import no.nav.eessi.pensjon.models.EndringsmeldingUtAdresse
+import no.nav.eessi.pensjon.models.EndringsmeldingKontaktAdresse
+import no.nav.eessi.pensjon.models.EndringsmeldingUtenlandskAdresse
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelse
@@ -100,7 +101,7 @@ internal class AdresseoppdateringTest {
         assertTrue(result)
 
         verify(atLeast = 1) { personMottakKlient.opprettPersonopplysning(eq(pdlEndringOpplysning(
-            "11067122781", UtenlandskAdresse(
+            "11067122781", EndringsmeldingUtenlandskAdresse(
                 adressenavnNummer = "EddyRoad",
                 bySted = "EddyCity",
                 bygningEtasjeLeilighet = "EddyHouse",
@@ -112,13 +113,13 @@ internal class AdresseoppdateringTest {
         ))) }
     }
 
-    private fun pdlEndringOpplysning(id: String, pdlAdresse: UtenlandskAdresse) = PdlEndringOpplysning(
+    private fun pdlEndringOpplysning(id: String, pdlAdresse: EndringsmeldingUtenlandskAdresse) = PdlEndringOpplysning(
         listOf(
             Personopplysninger(
                 endringstype = Endringstype.KORRIGER,
                 ident = id,
                 opplysningstype = Opplysningstype.KONTAKTADRESSE,
-                endringsmelding = EndringsmeldingUtAdresse(
+                endringsmelding = EndringsmeldingKontaktAdresse(
                     type = Opplysningstype.KONTAKTADRESSE.name,
                     kilde = "EESSI",  //TODO Finne ut om det er noe mer som skal fylles ut her
                     gyldigFraOgMed = LocalDate.now(),

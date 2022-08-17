@@ -1,7 +1,8 @@
 package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
 import no.nav.eessi.pensjon.eux.EuxService
-import no.nav.eessi.pensjon.models.EndringsmeldingUtAdresse
+import no.nav.eessi.pensjon.models.EndringsmeldingKontaktAdresse
+import no.nav.eessi.pensjon.models.EndringsmeldingUtenlandskAdresse
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelse
@@ -86,12 +87,20 @@ class Adresseoppdatering(
                 Personopplysninger(
                     endringstype = endringstype,
                     ident = norskFnr,
-                    endringsmelding = EndringsmeldingUtAdresse(
+                    endringsmelding = EndringsmeldingKontaktAdresse(
                         kilde = "EESSI",
                         gyldigFraOgMed = LocalDate.now(),
                         gyldigTilOgMed = LocalDate.now().plusYears(1),
                         coAdressenavn = kontaktadresse.coAdressenavn,
-                        adresse = kontaktadresse.utenlandskAdresse
+                        adresse = EndringsmeldingUtenlandskAdresse(
+                            adressenavnNummer = kontaktadresse.utenlandskAdresse!!.adressenavnNummer,
+                            bygningEtasjeLeilighet = kontaktadresse.utenlandskAdresse!!.bygningEtasjeLeilighet,
+                            bySted = kontaktadresse.utenlandskAdresse!!.bySted,
+                            landkode = kontaktadresse.utenlandskAdresse!!.landkode,
+                            postboksNummerNavn = kontaktadresse.utenlandskAdresse!!.postboksNummerNavn,
+                            postkode = kontaktadresse.utenlandskAdresse!!.postkode,
+                            regionDistriktOmraade = kontaktadresse.utenlandskAdresse!!.regionDistriktOmraade
+                        )
                     ),
                     opplysningstype = Opplysningstype.KONTAKTADRESSE
                 )

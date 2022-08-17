@@ -36,8 +36,8 @@ data class EndringsmeldingUID(
     val utstederland: String
 ) : Endringsmelding
 
-@JsonTypeInfo( use = JsonTypeInfo.Id.NAME, defaultImpl = EndringsmeldingUtAdresse::class )
-data class EndringsmeldingUtAdresse(
+@JsonTypeInfo( use = JsonTypeInfo.Id.NAME, defaultImpl = EndringsmeldingKontaktAdresse::class )
+data class EndringsmeldingKontaktAdresse(
     @JsonTypeId
     override val type: String = Opplysningstype.KONTAKTADRESSE.name,
     override val kilde: String = "",
@@ -46,5 +46,19 @@ data class EndringsmeldingUtAdresse(
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val gyldigTilOgMed: LocalDate?,
     val coAdressenavn: String?,
-    val adresse: UtenlandskAdresse?
+    val adresse: EndringsmeldingUtenlandskAdresse?
 ) : Endringsmelding
+
+@JsonTypeInfo( use = JsonTypeInfo.Id.NAME, defaultImpl = EndringsmeldingUtenlandskAdresse::class )
+data class EndringsmeldingUtenlandskAdresse(
+    @JsonTypeId
+    val type: String = "UTENLANDSK_ADRESSE",
+    val adressenavnNummer: String? = null,
+    val bySted: String? = null,
+    val bygningEtasjeLeilighet: String? = null,
+    val landkode: String,
+    val postboksNummerNavn: String? = null,
+    val postkode: String? = null,
+    val regionDistriktOmraade: String? = null
+)
+
