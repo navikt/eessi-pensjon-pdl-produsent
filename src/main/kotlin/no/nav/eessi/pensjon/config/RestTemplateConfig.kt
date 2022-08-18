@@ -1,6 +1,7 @@
 package no.nav.eessi.pensjon.config
 
 import no.nav.eessi.pensjon.logging.RequestIdHeaderInterceptor
+import no.nav.eessi.pensjon.logging.RequestResponseLoggerInterceptor
 import no.nav.security.token.support.client.core.ClientProperties
 import no.nav.security.token.support.client.core.oauth2.OAuth2AccessTokenService
 import no.nav.security.token.support.client.spring.ClientConfigurationProperties
@@ -10,9 +11,10 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpRequest
+import org.springframework.http.client.BufferingClientHttpRequestFactory
 import org.springframework.http.client.ClientHttpRequestExecution
 import org.springframework.http.client.ClientHttpRequestInterceptor
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
+import org.springframework.http.client.SimpleClientHttpRequestFactory
 import org.springframework.web.client.DefaultResponseErrorHandler
 import org.springframework.web.client.RestTemplate
 
@@ -45,10 +47,14 @@ class RestTemplateConfig(
             .errorHandler(DefaultResponseErrorHandler())
             .additionalInterceptors(
                 RequestIdHeaderInterceptor(),
+                RequestResponseLoggerInterceptor(),
                 bearerTokenInterceptor(clientProperties(oAuthKey), oAuth2AccessTokenService!!)
             )
             .build().apply {
-                requestFactory = HttpComponentsClientHttpRequestFactory()
+                requestFactory = BufferingClientHttpRequestFactory(
+                    SimpleClientHttpRequestFactory()
+                    .apply { setOutputStreaming(false) }
+                )
             }
     }
 
