@@ -14,7 +14,7 @@ import java.util.*
 import java.util.concurrent.CountDownLatch
 import javax.annotation.PostConstruct
 
-@Profile("!prod") // Feature toggle
+@Profile("!prod") // Feature toggle -- OBS! IKKE ENDRE UTEN Å HA TENKT PÅ OM KAFKA SKAL KONSUMERE FRA START!
 @Service
 class SedListenerAdresse(
     private val adresseoppdatering: Adresseoppdatering,
