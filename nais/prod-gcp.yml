@@ -27,6 +27,8 @@ spec:
       value: https://eux-rina-api.prod-fss-pub.nais.io/cpi
     - name: PDL_URL
       value: https://pdl-api.prod-fss-pub.nais.io/graphql
+    - name: PDL_MOTTAK_URL
+      value: https://pdl-mottak.prod-fss-pub.nais.io
     - name: NORG2_URL
       value: https://eessi-pensjon-onprem-proxy.prod-fss-pub.nais.io/api/v1/arbeidsfordeling
     - name: KAFKA_SEDMOTTATT_TOPIC
@@ -43,6 +45,8 @@ spec:
       value: prod-fss.eessipensjon.eessi-pensjon-onprem-proxy
     - name: AZURE_APP_PDL_CLIENT_ID
       value: prod-fss.pdl.pdl-api
+    - name: AZURE_APP_PDL_MOTTAK_CLIENT_ID
+      value: prod-fss.pdl.pdl-mottak
     - name: GCP_BUCKET_NAME
       value: eessi-pensjon-pdl-produsent-prod
 
