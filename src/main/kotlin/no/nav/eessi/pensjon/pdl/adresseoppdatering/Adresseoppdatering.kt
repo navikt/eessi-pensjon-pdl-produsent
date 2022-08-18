@@ -102,7 +102,8 @@ class Adresseoppdatering(
                             regionDistriktOmraade = kontaktadresse.utenlandskAdresse!!.regionDistriktOmraade
                         )
                     ),
-                    opplysningstype = Opplysningstype.KONTAKTADRESSE
+                    opplysningstype = Opplysningstype.KONTAKTADRESSE,
+                    opplysningsId = kontaktadresse.metadata.opplysningsId
                 )
             )
         )

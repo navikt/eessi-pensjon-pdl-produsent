@@ -26,6 +26,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentInformasjon
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Kontaktadresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.KontaktadresseType
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Metadata
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
@@ -83,8 +84,9 @@ internal class AdresseoppdateringTest {
                         landkode = "SE",
                         postkode = "111",
                         regionDistriktOmraade = "Stockholm"
-                    )
-            )
+                    ),
+                    "OpplysningsId"
+                )
 
         every { personMottakKlient.opprettPersonopplysning(any()) } returns true
         val adresseoppdatering = Adresseoppdatering(personService, euxService, personMottakKlient, pdlFiltrering)
@@ -109,16 +111,17 @@ internal class AdresseoppdateringTest {
                 postboksNummerNavn = null,
                 postkode = "111",
                 regionDistriktOmraade = "Stockholm"
-            )
+            ), "OpplysningsId"
         ))) }
     }
 
-    private fun pdlEndringOpplysning(id: String, pdlAdresse: EndringsmeldingUtenlandskAdresse) = PdlEndringOpplysning(
+    private fun pdlEndringOpplysning(id: String, pdlAdresse: EndringsmeldingUtenlandskAdresse, opplysningsId: String) = PdlEndringOpplysning(
         listOf(
             Personopplysninger(
                 endringstype = Endringstype.KORRIGER,
                 ident = id,
                 opplysningstype = Opplysningstype.KONTAKTADRESSE,
+                opplysningsId = opplysningsId,
                 endringsmelding = EndringsmeldingKontaktAdresse(
                     type = Opplysningstype.KONTAKTADRESSE.name,
                     kilde = "EESSI",  //TODO Finne ut om det er noe mer som skal fylles ut her
@@ -198,7 +201,7 @@ internal class AdresseoppdateringTest {
 
     )
 
-    private fun personFraPDL(id: String, utenlandskAdresse: UtenlandskAdresse) = Person(
+    private fun personFraPDL(id: String, utenlandskAdresse: UtenlandskAdresse, opplysningsId: String) = Person(
         identer = listOf(IdentInformasjon(id, IdentGruppe.FOLKEREGISTERIDENT)),
         navn = null,
         adressebeskyttelse = listOf(AdressebeskyttelseGradering.UGRADERT),
@@ -216,7 +219,12 @@ internal class AdresseoppdateringTest {
             folkeregistermetadata = null,
             gyldigFraOgMed = LocalDateTime.now().minusDays(5),
             gyldigTilOgMed = LocalDateTime.now().plusDays(5),
-            metadata = mockk(),
+            metadata = Metadata(
+                endringer = emptyList(),
+                historisk = false,
+                master = "",
+                opplysningsId = opplysningsId
+            ),
             type = KontaktadresseType.Utland,
             utenlandskAdresse = utenlandskAdresse
         ),
