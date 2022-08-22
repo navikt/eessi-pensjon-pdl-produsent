@@ -48,6 +48,11 @@ class Adresseoppdatering(
             return false
         }
 
+        if (sedHendelse.avsenderNavn == null || sedHendelse.avsenderLand == null) {
+            logger.error("Mangler avsenderNavn eller avsenderLand i sedHendelse - avslutter adresseoppdatering: $sedHendelse")
+            return false
+        }
+
         val norskPin = bruker.person?.pin?.firstOrNull { it.land == "NO" }
 
         if (norskPin == null) {
@@ -75,7 +80,7 @@ class Adresseoppdatering(
                 kontaktadresse = personFraPDL.kontaktadresse!!,
                 norskFnr = norskPin.identifikator!!,
                 endringstype = Endringstype.KORRIGER,
-                kilde = sedHendelse.avsenderNavn ?: "EESSI"
+                kilde = sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")"
             )
             return true
         } else {

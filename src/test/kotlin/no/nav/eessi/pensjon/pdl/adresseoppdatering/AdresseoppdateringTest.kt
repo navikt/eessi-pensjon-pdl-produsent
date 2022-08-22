@@ -92,13 +92,13 @@ internal class AdresseoppdateringTest {
         val adresseoppdatering = Adresseoppdatering(personService, euxService, personMottakKlient, pdlFiltrering)
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(
-            "P",
-            "P_BUC_02",
-            "123456",
-            "1234",
-            "P2100",
-            "11067122781",
-            "Svensk institusjon"
+            sektor = "P",
+            bucType = "P_BUC_02",
+            rinaSakId = "123456",
+            avsenderNavn = "Svensk institusjon",
+            avsenderLand = "SE",
+            rinaDokumentId = "1234",
+            sedType = "P2100"
         ))
 
         assertTrue(result)
@@ -114,7 +114,7 @@ internal class AdresseoppdateringTest {
                 regionDistriktOmraade = "Stockholm"
             ),
             "OpplysningsId",
-            "Svensk institusjon"
+            "Svensk institusjon (SE)"
         ))) }
     }
 
@@ -141,10 +141,10 @@ internal class AdresseoppdateringTest {
         sektor: String,
         bucType: String,
         rinaSakId: String,
+        avsenderNavn: String?,
+        avsenderLand: String?,
         rinaDokumentId: String,
-        sedType: String,
-        id: String,
-        avsenderNavn: String?
+        sedType: String
     ) = SedHendelse.fromJson(
         """{
                     "id" : 0,
@@ -152,15 +152,13 @@ internal class AdresseoppdateringTest {
                     "sektorKode" : "$sektor",
                     "bucType" : "$bucType",
                     "rinaSakId" : "$rinaSakId",
-                    "avsenderNavn" : null,
-                    "avsenderLand" : null,
+                    "avsenderNavn" : ${if (avsenderNavn == null) "null" else "\"$avsenderNavn\""},
+                    "avsenderLand" : ${if (avsenderLand == null) "null" else "\"$avsenderLand\""},
                     "mottakerNavn" : null,
                     "mottakerLand" : null,
                     "rinaDokumentId" : "$rinaDokumentId",
                     "rinaDokumentVersjon" : "1",
-                    "sedType" : "$sedType",
-                    "navBruker" : "$id",
-                    "avsenderNavn" : ${if (avsenderNavn == null) "null" else "\"$avsenderNavn\""}
+                    "sedType" : "$sedType"
                 }""".trimMargin()
     )
 
