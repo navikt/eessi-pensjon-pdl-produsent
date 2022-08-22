@@ -128,7 +128,7 @@ internal class AdresseoppdateringTest {
                 endringsmelding = EndringsmeldingKontaktAdresse(
                     type = Opplysningstype.KONTAKTADRESSE.name,
                     kilde = kilde,
-                    gyldigFraOgMed = LocalDate.now(),
+                    gyldigFraOgMed = LocalDate.now(), // TODO er det rett å oppdatere denne datoen? Og hva om tilogmed-datoen er utløpt?
                     gyldigTilOgMed = LocalDate.now().plusYears(1),
                     coAdressenavn = "c/o Anund",
                     adresse = pdlAdresse
