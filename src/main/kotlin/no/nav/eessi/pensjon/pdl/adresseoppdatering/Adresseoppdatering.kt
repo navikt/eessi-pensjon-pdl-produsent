@@ -71,24 +71,28 @@ class Adresseoppdatering(
             pdlFiltrering.finnesUtlAdresseFraSedIPDL(personFraPDL.kontaktadresse!!.utenlandskAdresse!!, brukersAdresseIUtlandetFraSED)
         ) {
             logger.info("Adresse finnes allerede i PDL, oppdaterer gyldig til og fra dato")
-            lagUtAdresseEndringsMelding(personFraPDL.kontaktadresse!!, norskPin.identifikator!!, Endringstype.KORRIGER)
+            lagUtenlandskKontaktAdresseEndringsMelding(
+                kontaktadresse = personFraPDL.kontaktadresse!!,
+                norskFnr = norskPin.identifikator!!,
+                endringstype = Endringstype.KORRIGER,
+                kilde = sedHendelse.avsenderNavn ?: "EESSI"
+            )
             return true
         } else {
             logger.info("Adresse ikke funnet i PDL, kandidat for (fremtidig) oppdatering")
             return false
-            //logger.info("Adresse finnes ikke i PDL, oppdaterer kontaktadresse")
             //TODO: send melding for opprettelse til personMottakKlient
         }
     }
 
-    fun lagUtAdresseEndringsMelding(kontaktadresse: Kontaktadresse, norskFnr: String, endringstype: Endringstype)  {
+    fun lagUtenlandskKontaktAdresseEndringsMelding(kontaktadresse: Kontaktadresse, norskFnr: String, endringstype: Endringstype, kilde: String) {
         val pdlEndringsOpplysninger = PdlEndringOpplysning(
             listOf(
                 Personopplysninger(
                     endringstype = endringstype,
                     ident = norskFnr,
                     endringsmelding = EndringsmeldingKontaktAdresse(
-                        kilde = "EESSI",
+                        kilde = kilde,
                         gyldigFraOgMed = LocalDate.now(),
                         gyldigTilOgMed = LocalDate.now().plusYears(1),
                         coAdressenavn = kontaktadresse.coAdressenavn,
@@ -102,7 +106,8 @@ class Adresseoppdatering(
                             regionDistriktOmraade = kontaktadresse.utenlandskAdresse!!.regionDistriktOmraade
                         )
                     ),
-                    opplysningstype = Opplysningstype.KONTAKTADRESSE
+                    opplysningstype = Opplysningstype.KONTAKTADRESSE,
+                    opplysningsId = kontaktadresse.metadata.opplysningsId
                 )
             )
         )
