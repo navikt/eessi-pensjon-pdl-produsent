@@ -98,7 +98,7 @@ internal class AdresseoppdateringTest {
             "1234",
             "P2100",
             "11067122781",
-            "SE:Svensk institusjon"
+            "Svensk institusjon"
         ))
 
         assertTrue(result)
@@ -114,7 +114,7 @@ internal class AdresseoppdateringTest {
                 regionDistriktOmraade = "Stockholm"
             ),
             "OpplysningsId",
-            "SE:Svensk institusjon"
+            "Svensk institusjon"
         ))) }
     }
 
@@ -144,7 +144,7 @@ internal class AdresseoppdateringTest {
         rinaDokumentId: String,
         sedType: String,
         id: String,
-        avsenderId: String?
+        avsenderNavn: String?
     ) = SedHendelse.fromJson(
         """{
                     "id" : 0,
@@ -160,7 +160,7 @@ internal class AdresseoppdateringTest {
                     "rinaDokumentVersjon" : "1",
                     "sedType" : "$sedType",
                     "navBruker" : "$id",
-                    "avsenderId" : ${if (avsenderId == null) "null" else "\"$avsenderId\""}
+                    "avsenderNavn" : ${if (avsenderNavn == null) "null" else "\"$avsenderNavn\""}
                 }""".trimMargin()
     )
 

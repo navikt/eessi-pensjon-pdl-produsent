@@ -75,7 +75,7 @@ class Adresseoppdatering(
                 kontaktadresse = personFraPDL.kontaktadresse!!,
                 norskFnr = norskPin.identifikator!!,
                 endringstype = Endringstype.KORRIGER,
-                kilde = sedHendelse.avsenderId ?: "EESSI"
+                kilde = sedHendelse.avsenderNavn ?: "EESSI"
             )
             return true
         } else {
