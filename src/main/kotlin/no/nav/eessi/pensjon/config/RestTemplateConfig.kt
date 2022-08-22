@@ -31,14 +31,22 @@ class RestTemplateConfig(
     @Value("\${EESSI_PEN_ONPREM_PROXY_URL}")
     lateinit var proxyUrl: String
 
+    @Value("\${PDL_MOTTAK_URL}")
+    lateinit var pdlMottakUrl: String
+
     @Bean
     fun euxOAuthRestTemplate(): RestTemplate = opprettRestTemplate(euxUrl, "eux-credentials")
 
     @Bean
     fun proxyOAuthRestTemplate(): RestTemplate = opprettRestTemplate(proxyUrl, "proxy-credentials")
 
-    @Bean
-    fun personMottakRestTemplate(): RestTemplate = opprettRestTemplate(proxyUrl, "proxy-credentials")
+    @Profile("!prod")
+    @Bean("pdlMottakRestTemplate")
+    fun personMottakRestTemplateDirect(): RestTemplate = opprettRestTemplate(pdlMottakUrl, "pdl-mottak-credentials")
+
+    @Profile("prod")
+    @Bean("pdlMottakRestTemplate")
+    fun personMottakRestTemplateProxy(): RestTemplate = opprettRestTemplate(proxyUrl, "proxy-credentials")
 
 
     private fun opprettRestTemplate(url: String, oAuthKey: String) : RestTemplate {
