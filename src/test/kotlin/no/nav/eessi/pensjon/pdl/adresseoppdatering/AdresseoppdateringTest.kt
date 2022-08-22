@@ -97,7 +97,8 @@ internal class AdresseoppdateringTest {
             "123456",
             "1234",
             "P2100",
-            "11067122781"
+            "11067122781",
+            "SE:Svensk institusjon"
         ))
 
         assertTrue(result)
@@ -111,11 +112,13 @@ internal class AdresseoppdateringTest {
                 postboksNummerNavn = null,
                 postkode = "111",
                 regionDistriktOmraade = "Stockholm"
-            ), "OpplysningsId"
+            ),
+            "OpplysningsId",
+            "SE:Svensk institusjon"
         ))) }
     }
 
-    private fun pdlEndringOpplysning(id: String, pdlAdresse: EndringsmeldingUtenlandskAdresse, opplysningsId: String) = PdlEndringOpplysning(
+    private fun pdlEndringOpplysning(id: String, pdlAdresse: EndringsmeldingUtenlandskAdresse, opplysningsId: String, kilde: String) = PdlEndringOpplysning(
         listOf(
             Personopplysninger(
                 endringstype = Endringstype.KORRIGER,
@@ -124,7 +127,7 @@ internal class AdresseoppdateringTest {
                 opplysningsId = opplysningsId,
                 endringsmelding = EndringsmeldingKontaktAdresse(
                     type = Opplysningstype.KONTAKTADRESSE.name,
-                    kilde = "EESSI",  //TODO Finne ut om det er noe mer som skal fylles ut her
+                    kilde = kilde,
                     gyldigFraOgMed = LocalDate.now(),
                     gyldigTilOgMed = LocalDate.now().plusYears(1),
                     coAdressenavn = "c/o Anund",
@@ -140,7 +143,8 @@ internal class AdresseoppdateringTest {
         rinaSakId: String,
         rinaDokumentId: String,
         sedType: String,
-        id: String
+        id: String,
+        avsenderId: String?
     ) = SedHendelse.fromJson(
         """{
                     "id" : 0,
@@ -155,7 +159,8 @@ internal class AdresseoppdateringTest {
                     "rinaDokumentId" : "$rinaDokumentId",
                     "rinaDokumentVersjon" : "1",
                     "sedType" : "$sedType",
-                    "navBruker" : "$id"
+                    "navBruker" : "$id",
+                    "avsenderId" : ${if (avsenderId == null) "null" else "\"$avsenderId\""}
                 }""".trimMargin()
     )
 
@@ -195,10 +200,7 @@ internal class AdresseoppdateringTest {
                 bank = null
             )
         ),
-        pensjon = Pensjon(
-
-        )
-
+        pensjon = Pensjon()
     )
 
     private fun personFraPDL(id: String, utenlandskAdresse: UtenlandskAdresse, opplysningsId: String) = Person(
