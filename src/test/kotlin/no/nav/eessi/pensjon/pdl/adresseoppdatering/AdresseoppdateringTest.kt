@@ -61,6 +61,50 @@ internal class AdresseoppdateringTest {
     }
 
     @Test
+    fun `Gitt SED med adresse med ulik landkode fra avsender, ingen oppdatering`() {
+        every { euxService.hentSed(eq("123456"), eq("1234")) } returns
+                sed("11067122781",
+                    Adresse(
+                        gate = "EddyRoad",
+                        bygning = "EddyHouse",
+                        by = "EddyCity",
+                        postnummer = "111",
+                        region = "Stockholm",
+                        land = "SWE",
+                        kontaktpersonadresse = null,
+                    )
+                )
+        every { personService.hentPerson(NorskIdent("11067122781")) } returns
+                personFraPDL(
+                    "11067122781",
+                    UtenlandskAdresse(
+                        adressenavnNummer = "EddyRoad",
+                        bySted = "EddyCity",
+                        bygningEtasjeLeilighet = "EddyHouse",
+                        landkode = "SE",
+                        postkode = "111",
+                        regionDistriktOmraade = "Stockholm"
+                    ),
+                    "OpplysningsId"
+                )
+
+        every { personMottakKlient.opprettPersonopplysning(any()) } returns true
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, personMottakKlient, pdlFiltrering)
+
+        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(
+            sektor = "P",
+            bucType = "P_BUC_02",
+            rinaSakId = "123456",
+            avsenderNavn = "Republika Hrvatska",
+            avsenderLand = "HR",
+            rinaDokumentId = "1234",
+            sedType = "P2100"
+        ))
+        assertFalse(result)
+    }
+
+
+    @Test
     fun `Gitt SED med gyldig utlandsadresse, og denne finnes i PDL, saa skal det sendes oppdatering`() {
         every { euxService.hentSed(eq("123456"), eq("1234")) } returns
                 sed("11067122781",

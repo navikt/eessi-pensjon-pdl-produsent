@@ -1,6 +1,7 @@
 package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
 import no.nav.eessi.pensjon.eux.EuxService
+import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.models.EndringsmeldingKontaktAdresse
 import no.nav.eessi.pensjon.models.EndringsmeldingUtenlandskAdresse
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
@@ -72,6 +73,11 @@ class Adresseoppdatering(
 
         logger.info("Vi har funnet en person fra PDL med samme norsk identifikator som bruker i SED")
 
+        if (sedHendelse.avsenderLand != personFraPDL.kontaktadresse?.utenlandskAdresse?.landkode) {
+            logger.info("Adressens landkode er ulik landkode på avsenderland.")
+            return false
+        }
+
         if (personFraPDL.kontaktadresse?.utenlandskAdresse != null &&
             pdlFiltrering.finnesUtlAdresseFraSedIPDL(personFraPDL.kontaktadresse!!.utenlandskAdresse!!, brukersAdresseIUtlandetFraSED)
         ) {
@@ -118,4 +124,5 @@ class Adresseoppdatering(
         )
         personMottakKlient.opprettPersonopplysning(pdlEndringsOpplysninger)
     }
+
 }
