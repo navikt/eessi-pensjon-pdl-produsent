@@ -40,14 +40,8 @@ class RestTemplateConfig(
     @Bean
     fun proxyOAuthRestTemplate(): RestTemplate = opprettRestTemplate(proxyUrl, "proxy-credentials")
 
-    @Profile("!prod")
-    @Bean("personMottakRestTemplate")
-    fun personMottakRestTemplateDirect(): RestTemplate = opprettRestTemplate(pdlMottakUrl, "pdl-mottak-credentials")
-
-    @Profile("prod")
-    @Bean("personMottakRestTemplate")
-    fun personMottakRestTemplateProxy(): RestTemplate = opprettRestTemplate(proxyUrl, "proxy-credentials")
-
+    @Bean
+    fun personMottakRestTemplate(): RestTemplate = opprettRestTemplate(pdlMottakUrl, "pdl-mottak-credentials")
 
     private fun opprettRestTemplate(url: String, oAuthKey: String) : RestTemplate {
         return RestTemplateBuilder()
