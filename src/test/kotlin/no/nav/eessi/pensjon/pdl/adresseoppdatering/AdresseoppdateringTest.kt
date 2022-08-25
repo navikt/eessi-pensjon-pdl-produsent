@@ -49,6 +49,7 @@ internal class AdresseoppdateringTest {
 
     @BeforeEach
     fun setup() {
+        every { kodeverkClient.finnLandkode("SWE") } returns "SE"
         every { kodeverkClient.finnLandkode("SE") } returns "SWE"
     }
 
@@ -61,52 +62,6 @@ internal class AdresseoppdateringTest {
     }
 
     @Test
-    fun `Gitt SED med adresse med ulik landkode fra avsender, ingen oppdatering`() {
-        every { euxService.hentSed(eq("123456"), eq("1234")) } returns
-                sed("11067122781",
-                    Adresse(
-                        gate = "EddyRoad",
-                        bygning = "EddyHouse",
-                        by = "EddyCity",
-                        postnummer = "111",
-                        region = "Stockholm",
-                        land = "SWE",
-                        kontaktpersonadresse = null,
-                    )
-                )
-        every { personService.hentPerson(NorskIdent("11067122781")) } returns
-                personFraPDL(
-                    "11067122781",
-                    UtenlandskAdresse(
-                        adressenavnNummer = "EddyRoad",
-                        bySted = "EddyCity",
-                        bygningEtasjeLeilighet = "EddyHouse",
-                        landkode = "SE",
-                        postkode = "111",
-                        regionDistriktOmraade = "Stockholm"
-                    ),
-                    "OpplysningsId",
-                    LocalDateTime.now().minusDays(5),
-                    LocalDateTime.now().plusDays(5)
-                )
-
-        every { personMottakKlient.opprettPersonopplysning(any()) } returns true
-        val adresseoppdatering = Adresseoppdatering(personService, euxService, personMottakKlient, pdlFiltrering)
-
-        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(
-            sektor = "P",
-            bucType = "P_BUC_02",
-            rinaSakId = "123456",
-            avsenderNavn = "Republika Hrvatska",
-            avsenderLand = "HR",
-            rinaDokumentId = "1234",
-            sedType = "P2100"
-        ))
-        assertFalse(result)
-    }
-
-
-    @Test
     fun `Gitt SED med gyldig utlandsadresse, og denne finnes i PDL, saa skal det sendes oppdatering med nye datoer`() {
         every { euxService.hentSed(eq("123456"), eq("1234")) } returns
                 sed("11067122781",
@@ -116,7 +71,7 @@ internal class AdresseoppdateringTest {
                         by = "EddyCity",
                         postnummer = "111",
                         region = "Stockholm",
-                        land = "SWE",
+                        land = "SE",
                         kontaktpersonadresse = null,
                     )
                 )
@@ -129,7 +84,7 @@ internal class AdresseoppdateringTest {
                         bySted = "EddyCity",
                         postkode = "111",
                         regionDistriktOmraade = "Stockholm",
-                        landkode = "SE"
+                        landkode = "SWE"
                     ),
                     opplysningsId = "OpplysningsId",
                     gyldigFraOgMed = LocalDateTime.now().minusDays(5),
@@ -159,7 +114,7 @@ internal class AdresseoppdateringTest {
                 bySted = "EddyCity",
                 postkode = "111",
                 regionDistriktOmraade = "Stockholm",
-                landkode = "SE",
+                landkode = "SWE",
                 postboksNummerNavn = null // Dersom vi kan identifisere en postboksadresse så burde vi fylle det inn her
             ),
             opplysningsId = "OpplysningsId",
@@ -169,10 +124,35 @@ internal class AdresseoppdateringTest {
         ))) }
     }
 
+    @Test
+    fun `Gitt SED med adresse med ulik landkode fra avsender, ingen oppdatering`() {
+        every { euxService.hentSed(eq("123456"), eq("1234")) } returns
+                sed(brukersAdresse = adresse("SE"))
+
+        val adresseoppdatering = Adresseoppdatering(mockk(), euxService, mockk(), mockk())
+
+        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(
+            rinaSakId = "123456",
+            avsenderNavn = "Dansk institusjon",
+            avsenderLand = "DK",
+            rinaDokumentId = "1234"
+        ))
+        assertFalse(result)
+    }
 
     @Test
     fun `Gitt en Sed med lik adresse i pdl som har dagens dato som gyldig fom dato saa sendes ingen oppdatering`() {
         //TODO
+    }
+
+    @Test
+    fun `Gitt en sed med postboksadresse i gatefeltet som er lik postboksadresse i pdl saa oppdateres datoer`() {
+
+    }
+
+    @Test
+    fun `Gitt person med adressebeskyttelse så XXX`() {
+
     }
 
     private fun pdlEndringOpplysning(
@@ -202,13 +182,13 @@ internal class AdresseoppdateringTest {
     )
 
     private fun sedHendelse(
-        sektor: String,
-        bucType: String,
+        sektor: String = "P",
+        bucType: String = "P_BUC_02",
         rinaSakId: String,
-        avsenderNavn: String?,
-        avsenderLand: String?,
+        avsenderNavn: String? = null,
+        avsenderLand: String? = null,
         rinaDokumentId: String,
-        sedType: String
+        sedType: String = "P2100"
     ) = SedHendelse.fromJson(
         """{
                     "id" : 0,
@@ -226,7 +206,7 @@ internal class AdresseoppdateringTest {
                 }""".trimMargin()
     )
 
-    private fun sed(id: String, brukersAdresse: Adresse) = SED(
+    private fun sed(id: String = "65356", brukersAdresse: Adresse) = SED(
         type = SedType.P2100,
         sedGVer = null,
         sedVer = null,
@@ -265,12 +245,22 @@ internal class AdresseoppdateringTest {
         pensjon = Pensjon()
     )
 
+    private fun adresse(land: String) = Adresse(
+        gate = null,
+        bygning = null,
+        by = null,
+        postnummer = null,
+        region = null,
+        land = land,
+        kontaktpersonadresse = null,
+    )
+
     private fun personFraPDL(
         id: String,
         utenlandskAdresse: UtenlandskAdresse,
-        opplysningsId: String,
-        gyldigFraOgMed: LocalDateTime,
-        gyldigTilOgMed: LocalDateTime
+        opplysningsId: String = "DummyOpplysningsId",
+        gyldigFraOgMed: LocalDateTime = LocalDateTime.now().minusDays(10),
+        gyldigTilOgMed: LocalDateTime = LocalDateTime.now().plusDays(10)
     ) = Person(
         identer = listOf(IdentInformasjon(id, IdentGruppe.FOLKEREGISTERIDENT)),
         navn = null,
@@ -302,13 +292,4 @@ internal class AdresseoppdateringTest {
         utenlandskIdentifikasjonsnummer = listOf()
     )
 
-    @Test
-    fun `Gitt person med adressebeskyttelse så XXX`() {
-        // given
-
-        // when
-
-        // then
-
-    }
 }

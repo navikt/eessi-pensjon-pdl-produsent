@@ -54,6 +54,13 @@ class Adresseoppdatering(
             return false
         }
 
+        if(sedHendelse.avsenderId !in listOf("NO:NAVAT05", "NO:NAVAT07")) { // utelater sjekk av at avsenderland og adresseland er likt for preprod
+            if (sedHendelse.avsenderLand != sed.nav?.bruker?.adresse?.land) {
+                logger.info("Adressens landkode (${sed.nav?.bruker?.adresse?.land}) er ulik landkode på avsenderland (${sedHendelse.avsenderLand}).")
+                return false
+            }
+        }
+
         val norskPin = bruker.person?.pin?.firstOrNull { it.land == "NO" }
 
         if (norskPin == null) {
@@ -72,13 +79,6 @@ class Adresseoppdatering(
         }
 
         logger.info("Vi har funnet en person fra PDL med samme norsk identifikator som bruker i SED")
-
-        if(sedHendelse.avsenderId !in listOf("NO:NAVAT05", "NO:NAVAT07")) { // utelater sjekk av at avsenderland og adresseland er likt for preprod
-            if (sedHendelse.avsenderLand != personFraPDL.kontaktadresse?.utenlandskAdresse?.landkode) {
-                logger.info("Adressens landkode er ulik landkode på avsenderland.")
-                return false
-            }
-        }
 
         if (personFraPDL.kontaktadresse?.utenlandskAdresse != null &&
             pdlFiltrering.finnesUtlAdresseFraSedIPDL(personFraPDL.kontaktadresse!!.utenlandskAdresse!!, brukersAdresseIUtlandetFraSED)
