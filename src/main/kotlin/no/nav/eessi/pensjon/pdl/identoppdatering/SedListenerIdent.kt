@@ -40,7 +40,7 @@ class SedListenerIdent(
     private val pdlValidering: PdlValidering,
     private val kodeverkClient: KodeverkClient,
     private val oppgaveHandler: OppgaveHandler,
-    @Value("\${SPRING_PROFILES_ACTIVE}") private val profile: String,
+    @Value("\${SPRING_PROFILES_ACTIVE:}") private val profile: String,
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
 ) {
 
@@ -81,6 +81,12 @@ class SedListenerIdent(
 
         try {
             val sedHendelse = sedHendelseMapping(hendelse)
+
+            if (profile == "prod" && sedHendelse.avsenderId in listOf("NO:NAVAT05", "NO:NAVAT07")) {
+                logger.error("Avsender id er ${sedHendelse.avsenderId}. Dette er testdata i produksjon!!!\n$sedHendelse")
+                acknowledgment.acknowledge()
+                return
+            }
 
             if (erRelevantForEESSIPensjon(sedHendelse)) {
                 val bucType = sedHendelse.bucType!!

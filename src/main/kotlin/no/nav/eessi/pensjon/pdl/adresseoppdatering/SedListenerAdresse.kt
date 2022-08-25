@@ -6,6 +6,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
@@ -18,7 +19,8 @@ import javax.annotation.PostConstruct
 @Service
 class SedListenerAdresse(
     private val adresseoppdatering: Adresseoppdatering,
-    @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
+    @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest(),
+    @Value("\${SPRING_PROFILES_ACTIVE:}") private val profile: String
 ) {
     val latch: CountDownLatch = CountDownLatch(1)
     private val logger = LoggerFactory.getLogger(SedListenerAdresse::class.java)
@@ -44,6 +46,12 @@ class SedListenerAdresse(
                     logger.debug("hendelse mottatt: $hendelse")
 
                     val sedHendelse = SedHendelse.fromJson(hendelse)
+                    if (profile == "prod" && sedHendelse.avsenderId in listOf("NO:NAVAT05", "NO:NAVAT07")) {
+                        logger.error("Avsender id er ${sedHendelse.avsenderId}. Dette er testdata i produksjon!!!\n$sedHendelse")
+                        acknowledgment.acknowledge()
+                        return@measure
+                    }
+
                     if (adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse)) {
                         // Gjorde oppdatering
                     } else {
