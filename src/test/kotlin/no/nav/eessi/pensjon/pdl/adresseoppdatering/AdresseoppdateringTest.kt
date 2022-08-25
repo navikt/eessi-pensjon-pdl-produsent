@@ -85,7 +85,9 @@ internal class AdresseoppdateringTest {
                         postkode = "111",
                         regionDistriktOmraade = "Stockholm"
                     ),
-                    "OpplysningsId"
+                    "OpplysningsId",
+                    LocalDateTime.now().minusDays(5),
+                    LocalDateTime.now().plusDays(5)
                 )
 
         every { personMottakKlient.opprettPersonopplysning(any()) } returns true
@@ -105,7 +107,7 @@ internal class AdresseoppdateringTest {
 
 
     @Test
-    fun `Gitt SED med gyldig utlandsadresse, og denne finnes i PDL, saa skal det sendes oppdatering`() {
+    fun `Gitt SED med gyldig utlandsadresse, og denne finnes i PDL, saa skal det sendes oppdatering med nye datoer`() {
         every { euxService.hentSed(eq("123456"), eq("1234")) } returns
                 sed("11067122781",
                     Adresse(
@@ -120,8 +122,8 @@ internal class AdresseoppdateringTest {
                 )
         every { personService.hentPerson(NorskIdent("11067122781")) } returns
                 personFraPDL(
-                    "11067122781",
-                    UtenlandskAdresse(
+                    id = "11067122781",
+                    utenlandskAdresse = UtenlandskAdresse(
                         adressenavnNummer = "EddyRoad",
                         bySted = "EddyCity",
                         bygningEtasjeLeilighet = "EddyHouse",
@@ -129,7 +131,9 @@ internal class AdresseoppdateringTest {
                         postkode = "111",
                         regionDistriktOmraade = "Stockholm"
                     ),
-                    "OpplysningsId"
+                    opplysningsId = "OpplysningsId",
+                    gyldigFraOgMed = LocalDateTime.now().minusDays(5),
+                    gyldigTilOgMed = LocalDateTime.now().plusDays(5)
                 )
 
         every { personMottakKlient.opprettPersonopplysning(any()) } returns true
@@ -148,7 +152,8 @@ internal class AdresseoppdateringTest {
         assertTrue(result)
 
         verify(atLeast = 1) { personMottakKlient.opprettPersonopplysning(eq(pdlEndringOpplysning(
-            "11067122781", EndringsmeldingUtenlandskAdresse(
+            id = "11067122781",
+            pdlAdresse = EndringsmeldingUtenlandskAdresse(
                 adressenavnNummer = "EddyRoad",
                 bySted = "EddyCity",
                 bygningEtasjeLeilighet = "EddyHouse",
@@ -157,12 +162,27 @@ internal class AdresseoppdateringTest {
                 postkode = "111",
                 regionDistriktOmraade = "Stockholm"
             ),
-            "OpplysningsId",
-            "Svensk institusjon (SE)"
+            opplysningsId = "OpplysningsId",
+            kilde = "Svensk institusjon (SE)",
+            gyldigFraOgMed = LocalDate.now(),
+            gyldigTilOgMed = LocalDate.now().plusYears(1)
         ))) }
     }
 
-    private fun pdlEndringOpplysning(id: String, pdlAdresse: EndringsmeldingUtenlandskAdresse, opplysningsId: String, kilde: String) = PdlEndringOpplysning(
+
+    @Test
+    fun `Gitt en Sed med lik adresse i pdl som har dagens dato som gyldig fom dato saa sendes ingen oppdatering`() {
+        //TODO
+    }
+
+    private fun pdlEndringOpplysning(
+        id: String,
+        pdlAdresse: EndringsmeldingUtenlandskAdresse,
+        opplysningsId: String,
+        kilde: String,
+        gyldigFraOgMed: LocalDate,
+        gyldigTilOgMed: LocalDate
+    ) = PdlEndringOpplysning(
         listOf(
             Personopplysninger(
                 endringstype = Endringstype.KORRIGER,
@@ -172,8 +192,8 @@ internal class AdresseoppdateringTest {
                 endringsmelding = EndringsmeldingKontaktAdresse(
                     type = Opplysningstype.KONTAKTADRESSE.name,
                     kilde = kilde,
-                    gyldigFraOgMed = LocalDate.now(), // TODO er det rett å oppdatere denne datoen? Og hva om tilogmed-datoen er utløpt?
-                    gyldigTilOgMed = LocalDate.now().plusYears(1),
+                    gyldigFraOgMed = gyldigFraOgMed, // TODO er det rett å oppdatere denne datoen? Og hva om tilogmed-datoen er utløpt?
+                    gyldigTilOgMed = gyldigTilOgMed,
                     coAdressenavn = "c/o Anund",
                     adresse = pdlAdresse
                 )
@@ -245,7 +265,13 @@ internal class AdresseoppdateringTest {
         pensjon = Pensjon()
     )
 
-    private fun personFraPDL(id: String, utenlandskAdresse: UtenlandskAdresse, opplysningsId: String) = Person(
+    private fun personFraPDL(
+        id: String,
+        utenlandskAdresse: UtenlandskAdresse,
+        opplysningsId: String,
+        gyldigFraOgMed: LocalDateTime,
+        gyldigTilOgMed: LocalDateTime
+    ) = Person(
         identer = listOf(IdentInformasjon(id, IdentGruppe.FOLKEREGISTERIDENT)),
         navn = null,
         adressebeskyttelse = listOf(AdressebeskyttelseGradering.UGRADERT),
@@ -261,8 +287,8 @@ internal class AdresseoppdateringTest {
         kontaktadresse = Kontaktadresse(
             coAdressenavn = "c/o Anund",
             folkeregistermetadata = null,
-            gyldigFraOgMed = LocalDateTime.now().minusDays(5),
-            gyldigTilOgMed = LocalDateTime.now().plusDays(5),
+            gyldigFraOgMed = gyldigFraOgMed,
+            gyldigTilOgMed = gyldigTilOgMed,
             metadata = Metadata(
                 endringer = emptyList(),
                 historisk = false,
