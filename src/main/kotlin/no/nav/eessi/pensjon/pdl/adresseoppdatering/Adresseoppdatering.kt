@@ -73,9 +73,11 @@ class Adresseoppdatering(
 
         logger.info("Vi har funnet en person fra PDL med samme norsk identifikator som bruker i SED")
 
-        if (sedHendelse.avsenderLand != personFraPDL.kontaktadresse?.utenlandskAdresse?.landkode) {
-            logger.info("Adressens landkode er ulik landkode på avsenderland.")
-            return false
+        if(sedHendelse.avsenderId !in listOf("NO:NAVAT05", "NO:NAVAT07")) { // utelater sjekk av at avsenderland og adresseland er likt for preprod
+            if (sedHendelse.avsenderLand != personFraPDL.kontaktadresse?.utenlandskAdresse?.landkode) {
+                logger.info("Adressens landkode er ulik landkode på avsenderland.")
+                return false
+            }
         }
 
         if (personFraPDL.kontaktadresse?.utenlandskAdresse != null &&
