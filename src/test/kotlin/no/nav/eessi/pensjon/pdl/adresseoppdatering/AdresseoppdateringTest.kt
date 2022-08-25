@@ -64,28 +64,14 @@ internal class AdresseoppdateringTest {
     @Test
     fun `Gitt SED med gyldig utlandsadresse, og denne finnes i PDL, saa skal det sendes oppdatering med nye datoer`() {
         every { euxService.hentSed(eq("123456"), eq("1234")) } returns
-                sed("11067122781",
-                    Adresse(
-                        gate = "EddyRoad",
-                        bygning = "EddyHouse",
-                        by = "EddyCity",
-                        postnummer = "111",
-                        region = "Stockholm",
-                        land = "SE",
-                        kontaktpersonadresse = null,
-                    )
+                sed(
+                    id = "11067122781",
+                    brukersAdresse = eddyAdresseISed()
                 )
         every { personService.hentPerson(NorskIdent("11067122781")) } returns
                 personFraPDL(
                     id = "11067122781",
-                    utenlandskAdresse = UtenlandskAdresse(
-                        adressenavnNummer = "EddyRoad",
-                        bygningEtasjeLeilighet = "EddyHouse",
-                        bySted = "EddyCity",
-                        postkode = "111",
-                        regionDistriktOmraade = "Stockholm",
-                        landkode = "SWE"
-                    ),
+                    utenlandskAdresse = eddyAdresseFraPdl(),
                     opplysningsId = "OpplysningsId",
                     gyldigFraOgMed = LocalDateTime.now().minusDays(5),
                     gyldigTilOgMed = LocalDateTime.now().plusDays(5)
@@ -108,21 +94,42 @@ internal class AdresseoppdateringTest {
 
         verify(atLeast = 1) { personMottakKlient.opprettPersonopplysning(eq(pdlEndringOpplysning(
             id = "11067122781",
-            pdlAdresse = EndringsmeldingUtenlandskAdresse(
-                adressenavnNummer = "EddyRoad",
-                bygningEtasjeLeilighet = "EddyHouse",
-                bySted = "EddyCity",
-                postkode = "111",
-                regionDistriktOmraade = "Stockholm",
-                landkode = "SWE",
-                postboksNummerNavn = null // Dersom vi kan identifisere en postboksadresse så burde vi fylle det inn her
-            ),
+            pdlAdresse = eddyAdresseIEndringsmelding(),
             opplysningsId = "OpplysningsId",
             kilde = "Svensk institusjon (SE)",
             gyldigFraOgMed = LocalDate.now(),
             gyldigTilOgMed = LocalDate.now().plusYears(1)
         ))) }
     }
+
+    private fun eddyAdresseISed() = Adresse(
+        gate = "EddyRoad",
+        bygning = "EddyHouse",
+        by = "EddyCity",
+        postnummer = "111",
+        region = "Stockholm",
+        land = "SE",
+        kontaktpersonadresse = null,
+    )
+
+    private fun eddyAdresseFraPdl() = UtenlandskAdresse(
+        adressenavnNummer = "EddyRoad",
+        bygningEtasjeLeilighet = "EddyHouse",
+        bySted = "EddyCity",
+        postkode = "111",
+        regionDistriktOmraade = "Stockholm",
+        landkode = "SWE"
+    )
+
+    private fun eddyAdresseIEndringsmelding() = EndringsmeldingUtenlandskAdresse(
+        adressenavnNummer = "EddyRoad",
+        bygningEtasjeLeilighet = "EddyHouse",
+        bySted = "EddyCity",
+        postkode = "111",
+        regionDistriktOmraade = "Stockholm",
+        landkode = "SWE",
+        postboksNummerNavn = null // Dersom vi kan identifisere en postboksadresse så burde vi fylle det inn her
+    )
 
     @Test
     fun `Gitt SED med adresse med ulik landkode fra avsender, ingen oppdatering`() {
