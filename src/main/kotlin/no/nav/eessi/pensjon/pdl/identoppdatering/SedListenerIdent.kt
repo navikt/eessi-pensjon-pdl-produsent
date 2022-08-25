@@ -90,6 +90,30 @@ class SedListenerIdent(
 
                 val utenlandskeIderFraSEDer = utenlandskPersonIdentifisering.finnAlleUtenlandskeIDerIMottatteSed(alleGyldigeSED)
 
+                if (utenlandskeIderFraSEDer.size > 1) {
+                    acknowledgment.acknowledge()
+                    logger.info("Antall utenlandske IDer er flere enn en")
+                    countEnhet("Antall utenlandske IDer er flere enn en")
+                    return
+                }
+
+                if (utenlandskeIderFraSEDer.isEmpty()) {
+                    acknowledgment.acknowledge()
+                    logger.info("Ingen utenlandske IDer funnet i BUC")
+                    countEnhet("Ingen utenlandske IDer funnet i BUC")
+                    return
+                }
+
+                // Vi har utelukket at det er 0 eller flere enn 1
+                val utenlandskIdFraSed = utenlandskeIderFraSEDer.first()
+
+                if (sedHendelse.avsenderLand == null || pdlValidering.erUidLandAnnetEnnAvsenderLand(utenlandskIdFraSed, sedHendelse.avsenderLand)) {
+                    acknowledgment.acknowledge()
+                    logger.info("Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer")
+                    countEnhet("Avsenderland mangler eller avsenderland er ikke det samme som uidland")
+                    return
+                }
+
                 val identifisertePersoner = personidentifiseringService.hentIdentifisertePersoner(alleGyldigeSED, bucType)
 
                 if (identifisertePersoner.isEmpty()) {
@@ -106,35 +130,16 @@ class SedListenerIdent(
                     return
                 }
 
-                if (identifisertePersoner.first().erDoed) {
+                val identifisertPersonFraPDL = identifisertePersoner.first()
+
+                if (identifisertPersonFraPDL.erDoed) {
                     acknowledgment.acknowledge()
                     logger.info("Identifisert person registrert med doedsfall, kan ikke opprette endringsmelding. Acket melding")
                     countEnhet("Identifisert person registrert med doedsfall")
                     return
                 }
 
-                if (utenlandskeIderFraSEDer.size > 1) {
-                    acknowledgment.acknowledge()
-                    logger.info("Antall utenlandske IDer er flere enn en")
-                    countEnhet("Antall utenlandske IDer er flere enn en")
-                    return
-                }
-
-                if (utenlandskeIderFraSEDer.isEmpty()) {
-                    acknowledgment.acknowledge()
-                    logger.info("Ingen utenlandske IDer funnet i BUC")
-                    countEnhet("Ingen utenlandske IDer funnet i BUC")
-                    return
-                }
-
-                if (sedHendelse.avsenderLand == null || pdlValidering.erUidLandAnnetEnnAvsenderLand(utenlandskeIderFraSEDer.first(), sedHendelse.avsenderLand)) {
-                    acknowledgment.acknowledge()
-                    logger.info("Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer")
-                    countEnhet("Avsenderland mangler eller avsenderland er ikke det samme som uidland")
-                    return
-                }
-
-                if (pdlFiltrering.finnesUidFraSedIPDL(identifisertePersoner.first().uidFraPdl, utenlandskeIderFraSEDer.first())) {
+                if (pdlFiltrering.finnesUidFraSedIPDL(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) {
                     logger.info("PDLuid er identisk med SEDuid. Acket sedMottatt: ${cr.offset()}")
                     countEnhet("PDLuid er identisk med SEDuid")
                     acknowledgment.acknowledge()
@@ -142,19 +147,19 @@ class SedListenerIdent(
                 }
 
                 //validering av uid korrekt format
-                if (!pdlValidering.erPersonValidertPaaLand(utenlandskeIderFraSEDer.first())) {
+                if (!pdlValidering.erPersonValidertPaaLand(utenlandskIdFraSed)) {
                     logger.info("Ingen validerte identifiserte personer funnet. Acket sedMottatt: ${cr.offset()}")
                     countEnhet("Ingen validerte identifiserte personer funnet")
                     acknowledgment.acknowledge()
                     return
                 }
 
-                if (pdlFiltrering.skalOppgaveOpprettes(identifisertePersoner.first().uidFraPdl, utenlandskeIderFraSEDer.first())) {
+                if (pdlFiltrering.skalOppgaveOpprettes(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) {
                     // TODO: Denne koden er ikke lett å forstå - hva betyr returverdien?
                     //ytterligere sjekk om f.eks SWE fnr i PDL faktisk er identisk med sedUID (hvis så ikke opprett oppgave bare avslutt)
-                    if (pdlFiltrering.sjekkYterligerePaaPDLuidMotSedUid(identifisertePersoner.first().uidFraPdl, utenlandskeIderFraSEDer.first())) {
+                    if (pdlFiltrering.sjekkYterligerePaaPDLuidMotSedUid(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) {
                         logger.info("Det finnes allerede en annen uid fra samme land, opprette oppgave")
-                        val result = oppgaveHandler.opprettOppgaveForUid(sedHendelse, utenlandskeIderFraSEDer.first(), identifisertePersoner.first())
+                        val result = oppgaveHandler.opprettOppgaveForUid(sedHendelse, utenlandskIdFraSed, identifisertPersonFraPDL)
                         // TODO: Det er litt rart at det logges slik når det nettopp er opprettet en oppgave ...
                         if (result) countEnhet("Det finnes allerede en annen uid fra samme land (Oppgave)")
                     } else {
@@ -167,11 +172,7 @@ class SedListenerIdent(
 
                 //Utfører faktisk innsending av endringsmelding til PDL (ny UID)
                 sedHendelse.avsenderNavn?.let { avsender ->
-                    lagEndringsMelding(
-                        utenlandskeIderFraSEDer.first(),
-                        identifisertePersoner.first().fnr!!.value,
-                        avsender
-                    )
+                    lagEndringsMelding(utenlandskIdFraSed, identifisertPersonFraPDL.fnr!!.value, avsender)
                     countEnhet("Innsending av endringsmelding")
                 }
             }

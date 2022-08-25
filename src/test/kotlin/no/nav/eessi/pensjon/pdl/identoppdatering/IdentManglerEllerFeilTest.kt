@@ -103,7 +103,7 @@ class IdentManglerEllerFeilTest : IntegrationBase() {
     }
 
     @Test
-    fun `Gitt en sed hendelse med uten ident ack med logg Ingen identifiserte FNR funnet, Acket melding`() {
+    fun `Gitt en sed hendelse uten ident ack med logg Ingen utenlandske IDer funnet i BUC`() {
         every { norg2.hentArbeidsfordelingEnhet(any()) } returns Enhet.ID_OG_FORDELING
 
         val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P15000, SedStatus.RECEIVED))
@@ -124,7 +124,7 @@ class IdentManglerEllerFeilTest : IntegrationBase() {
         )
         sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
 
-        assertTrue(isMessageInlog("Ingen identifiserte FNR funnet, Acket melding"))
+        assertTrue(isMessageInlog("Ingen utenlandske IDer funnet i BUC"))
     }
 
     @Test
