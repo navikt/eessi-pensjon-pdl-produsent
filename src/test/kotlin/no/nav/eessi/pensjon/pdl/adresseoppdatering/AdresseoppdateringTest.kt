@@ -84,8 +84,8 @@ internal class AdresseoppdateringTest {
             sektor = "P",
             bucType = "P_BUC_02",
             rinaSakId = "123456",
-            avsenderNavn = "Svensk institusjon",
-            avsenderLand = "SE",
+            avsenderNavn = "Utenlandsk Institusjon",
+            avsenderLand = eddyAdresseLandkode(),
             rinaDokumentId = "1234",
             sedType = "P2100"
         ))
@@ -96,7 +96,7 @@ internal class AdresseoppdateringTest {
             id = "11067122781",
             pdlAdresse = eddyAdresseIEndringsmelding(),
             opplysningsId = "OpplysningsId",
-            kilde = "Svensk institusjon (SE)",
+            kilde = "Utenlandsk Institusjon (${eddyAdresseLandkode()})",
             gyldigFraOgMed = LocalDate.now(),
             gyldigTilOgMed = LocalDate.now().plusYears(1)
         ))) }
@@ -120,6 +120,8 @@ internal class AdresseoppdateringTest {
         regionDistriktOmraade = "Stockholm",
         landkode = "SWE"
     )
+
+    private fun eddyAdresseLandkode() = "SE"
 
     private fun eddyAdresseIEndringsmelding() = EndringsmeldingUtenlandskAdresse(
         adressenavnNummer = "EddyRoad",
@@ -149,7 +151,28 @@ internal class AdresseoppdateringTest {
 
     @Test
     fun `Gitt en Sed med lik adresse i pdl som har dagens dato som gyldig fom dato saa sendes ingen oppdatering`() {
-        //TODO
+        every { euxService.hentSed(eq("123456"), eq("1234")) } returns
+                sed("11067122781",
+                    eddyAdresseISed()
+                )
+        every { personService.hentPerson(NorskIdent("11067122781")) } returns
+                personFraPDL(
+                    id = "11067122781",
+                    utenlandskAdresse = eddyAdresseFraPdl(),
+                    gyldigFraOgMed = LocalDateTime.now()
+                )
+
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, personMottakKlient, pdlFiltrering)
+
+        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(
+            rinaSakId = "123456",
+            avsenderNavn = "Svensk institusjon",
+            avsenderLand = eddyAdresseLandkode(),
+            rinaDokumentId = "1234",
+        ))
+
+        assertFalse(result)
+
     }
 
     @Test

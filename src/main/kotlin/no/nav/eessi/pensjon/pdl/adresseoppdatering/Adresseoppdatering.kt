@@ -83,14 +83,19 @@ class Adresseoppdatering(
         if (personFraPDL.kontaktadresse?.utenlandskAdresse != null &&
             pdlFiltrering.finnesUtlAdresseFraSedIPDL(personFraPDL.kontaktadresse!!.utenlandskAdresse!!, brukersAdresseIUtlandetFraSED)
         ) {
-            logger.info("Adresse finnes allerede i PDL, oppdaterer gyldig til og fra dato")
-            lagUtenlandskKontaktAdresseEndringsMelding(
-                kontaktadresse = personFraPDL.kontaktadresse!!,
-                norskFnr = norskPin.identifikator!!,
-                endringstype = Endringstype.KORRIGER,
-                kilde = sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")"
-            )
-            return true
+            if (personFraPDL.kontaktadresse!!.gyldigFraOgMed?.toLocalDate() == LocalDate.now()) {
+                logger.info("Adresse finnes allerede i PDL med dagens dato som gyldig-fra-dato, dropper oppdatering")
+                return false
+            } else {
+                logger.info("Adresse finnes allerede i PDL, oppdaterer gyldig til og fra dato")
+                lagUtenlandskKontaktAdresseEndringsMelding(
+                    kontaktadresse = personFraPDL.kontaktadresse!!,
+                    norskFnr = norskPin.identifikator!!,
+                    endringstype = Endringstype.KORRIGER,
+                    kilde = sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")"
+                )
+                return true
+            }
         } else {
             logger.info("Adresse ikke funnet i PDL, kandidat for (fremtidig) oppdatering")
             return false
