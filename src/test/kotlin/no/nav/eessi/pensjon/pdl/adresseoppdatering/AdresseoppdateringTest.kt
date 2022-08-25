@@ -125,11 +125,11 @@ internal class AdresseoppdateringTest {
                     id = "11067122781",
                     utenlandskAdresse = UtenlandskAdresse(
                         adressenavnNummer = "EddyRoad",
-                        bySted = "EddyCity",
                         bygningEtasjeLeilighet = "EddyHouse",
-                        landkode = "SE",
+                        bySted = "EddyCity",
                         postkode = "111",
-                        regionDistriktOmraade = "Stockholm"
+                        regionDistriktOmraade = "Stockholm",
+                        landkode = "SE"
                     ),
                     opplysningsId = "OpplysningsId",
                     gyldigFraOgMed = LocalDateTime.now().minusDays(5),
@@ -155,12 +155,12 @@ internal class AdresseoppdateringTest {
             id = "11067122781",
             pdlAdresse = EndringsmeldingUtenlandskAdresse(
                 adressenavnNummer = "EddyRoad",
-                bySted = "EddyCity",
                 bygningEtasjeLeilighet = "EddyHouse",
-                landkode = "SE",
-                postboksNummerNavn = null,
+                bySted = "EddyCity",
                 postkode = "111",
-                regionDistriktOmraade = "Stockholm"
+                regionDistriktOmraade = "Stockholm",
+                landkode = "SE",
+                postboksNummerNavn = null // Dersom vi kan identifisere en postboksadresse så burde vi fylle det inn her
             ),
             opplysningsId = "OpplysningsId",
             kilde = "Svensk institusjon (SE)",
