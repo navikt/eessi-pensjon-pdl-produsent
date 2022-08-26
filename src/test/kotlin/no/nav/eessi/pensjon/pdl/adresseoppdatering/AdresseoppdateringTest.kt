@@ -37,6 +37,41 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
 
+private const val RINA_SAK_ID = "123456"
+private const val DOKUMENT_ID = "1234"
+private const val FNR = "11067122781"
+private const val EDDY_ADRESSE_LANDKODE = "SE"
+
+private val EDDY_ADRESSE_I_SED = Adresse(
+    gate = "EddyRoad",
+    bygning = "EddyHouse",
+    by = "EddyCity",
+    postnummer = "111",
+    region = "Stockholm",
+    land = EDDY_ADRESSE_LANDKODE,
+    kontaktpersonadresse = null,
+)
+
+private val EDDY_ADRESSE_FRA_PDL = UtenlandskAdresse(
+    adressenavnNummer = "EddyRoad",
+    bygningEtasjeLeilighet = "EddyHouse",
+    bySted = "EddyCity",
+    postkode = "111",
+    regionDistriktOmraade = "Stockholm",
+    landkode = "SWE"
+)
+
+private val EDDY_ADRESSE_I_ENDRINGSMELDING = EndringsmeldingUtenlandskAdresse(
+    adressenavnNummer = "EddyRoad",
+    bygningEtasjeLeilighet = "EddyHouse",
+    bySted = "EddyCity",
+    postkode = "111",
+    regionDistriktOmraade = "Stockholm",
+    landkode = "SWE",
+    postboksNummerNavn = null // Dersom vi kan identifisere en postboksadresse så burde vi fylle det inn her
+)
+
+
 internal class AdresseoppdateringTest {
 
     var personService: PersonService = mockk()
@@ -49,8 +84,8 @@ internal class AdresseoppdateringTest {
 
     @BeforeEach
     fun setup() {
-        every { kodeverkClient.finnLandkode("SWE") } returns "SE"
-        every { kodeverkClient.finnLandkode("SE") } returns "SWE"
+        every { kodeverkClient.finnLandkode("SWE") } returns EDDY_ADRESSE_LANDKODE
+        every { kodeverkClient.finnLandkode(EDDY_ADRESSE_LANDKODE) } returns "SWE"
     }
 
     @Test
@@ -63,15 +98,15 @@ internal class AdresseoppdateringTest {
 
     @Test
     fun `Gitt SED med gyldig utlandsadresse, og denne finnes i PDL, saa skal det sendes oppdatering med nye datoer`() {
-        every { euxService.hentSed(eq("123456"), eq("1234")) } returns
+        every { euxService.hentSed(eq(RINA_SAK_ID), eq(DOKUMENT_ID)) } returns
                 sed(
-                    id = "11067122781",
-                    brukersAdresse = eddyAdresseISed()
+                    id = FNR,
+                    brukersAdresse = EDDY_ADRESSE_I_SED
                 )
-        every { personService.hentPerson(NorskIdent("11067122781")) } returns
+        every { personService.hentPerson(NorskIdent(FNR)) } returns
                 personFraPDL(
-                    id = "11067122781",
-                    utenlandskAdresse = eddyAdresseFraPdl(),
+                    id = FNR,
+                    utenlandskAdresse = EDDY_ADRESSE_FRA_PDL,
                     opplysningsId = "OpplysningsId",
                     gyldigFraOgMed = LocalDateTime.now().minusDays(5),
                     gyldigTilOgMed = LocalDateTime.now().plusDays(5)
@@ -80,96 +115,69 @@ internal class AdresseoppdateringTest {
         every { personMottakKlient.opprettPersonopplysning(any()) } returns true
         val adresseoppdatering = Adresseoppdatering(personService, euxService, personMottakKlient, pdlFiltrering)
 
-        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(
-            sektor = "P",
-            bucType = "P_BUC_02",
-            rinaSakId = "123456",
-            avsenderNavn = "Utenlandsk Institusjon",
-            avsenderLand = eddyAdresseLandkode(),
-            rinaDokumentId = "1234",
-            sedType = "P2100"
-        ))
+        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(
+            sedHendelse(
+                sektor = "P",
+                bucType = "P_BUC_02",
+                rinaSakId = RINA_SAK_ID,
+                avsenderNavn = "Utenlandsk Institusjon",
+                avsenderLand = EDDY_ADRESSE_LANDKODE,
+                rinaDokumentId = DOKUMENT_ID,
+                sedType = "P2100"
+            ))
 
         assertTrue(result)
 
-        verify(atLeast = 1) { personMottakKlient.opprettPersonopplysning(eq(pdlEndringOpplysning(
-            id = "11067122781",
-            pdlAdresse = eddyAdresseIEndringsmelding(),
-            opplysningsId = "OpplysningsId",
-            kilde = "Utenlandsk Institusjon (${eddyAdresseLandkode()})",
-            gyldigFraOgMed = LocalDate.now(),
-            gyldigTilOgMed = LocalDate.now().plusYears(1)
-        ))) }
+        verify(atLeast = 1) { personMottakKlient.opprettPersonopplysning(eq(
+            pdlEndringOpplysning(
+                id = FNR,
+                pdlAdresse = EDDY_ADRESSE_I_ENDRINGSMELDING,
+                opplysningsId = "OpplysningsId",
+                kilde = "Utenlandsk Institusjon ($EDDY_ADRESSE_LANDKODE)",
+                gyldigFraOgMed = LocalDate.now(),
+                gyldigTilOgMed = LocalDate.now().plusYears(1)
+            ))) }
     }
-
-    private fun eddyAdresseISed() = Adresse(
-        gate = "EddyRoad",
-        bygning = "EddyHouse",
-        by = "EddyCity",
-        postnummer = "111",
-        region = "Stockholm",
-        land = "SE",
-        kontaktpersonadresse = null,
-    )
-
-    private fun eddyAdresseFraPdl() = UtenlandskAdresse(
-        adressenavnNummer = "EddyRoad",
-        bygningEtasjeLeilighet = "EddyHouse",
-        bySted = "EddyCity",
-        postkode = "111",
-        regionDistriktOmraade = "Stockholm",
-        landkode = "SWE"
-    )
-
-    private fun eddyAdresseLandkode() = "SE"
-
-    private fun eddyAdresseIEndringsmelding() = EndringsmeldingUtenlandskAdresse(
-        adressenavnNummer = "EddyRoad",
-        bygningEtasjeLeilighet = "EddyHouse",
-        bySted = "EddyCity",
-        postkode = "111",
-        regionDistriktOmraade = "Stockholm",
-        landkode = "SWE",
-        postboksNummerNavn = null // Dersom vi kan identifisere en postboksadresse så burde vi fylle det inn her
-    )
 
     @Test
     fun `Gitt SED med adresse med ulik landkode fra avsender, ingen oppdatering`() {
-        every { euxService.hentSed(eq("123456"), eq("1234")) } returns
-                sed(brukersAdresse = adresse("SE"))
+        every { euxService.hentSed(eq(RINA_SAK_ID), eq(DOKUMENT_ID)) } returns
+                sed(brukersAdresse = adresse(EDDY_ADRESSE_LANDKODE))
 
         val adresseoppdatering = Adresseoppdatering(mockk(), euxService, mockk(), mockk())
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(
-            rinaSakId = "123456",
+            rinaSakId = RINA_SAK_ID,
             avsenderNavn = "Dansk institusjon",
             avsenderLand = "DK",
-            rinaDokumentId = "1234"
+            rinaDokumentId = DOKUMENT_ID
         ))
         assertFalse(result)
     }
 
     @Test
     fun `Gitt en Sed med lik adresse i pdl som har dagens dato som gyldig fom dato saa sendes ingen oppdatering`() {
-        every { euxService.hentSed(eq("123456"), eq("1234")) } returns
-                sed("11067122781",
-                    eddyAdresseISed()
+        every { euxService.hentSed(eq(RINA_SAK_ID), eq(DOKUMENT_ID)) } returns
+                sed(
+                    FNR,
+                    EDDY_ADRESSE_I_SED
                 )
-        every { personService.hentPerson(NorskIdent("11067122781")) } returns
+        every { personService.hentPerson(NorskIdent(FNR)) } returns
                 personFraPDL(
-                    id = "11067122781",
-                    utenlandskAdresse = eddyAdresseFraPdl(),
+                    id = FNR,
+                    utenlandskAdresse = EDDY_ADRESSE_FRA_PDL,
                     gyldigFraOgMed = LocalDateTime.now()
                 )
 
         val adresseoppdatering = Adresseoppdatering(personService, euxService, personMottakKlient, pdlFiltrering)
 
-        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(
-            rinaSakId = "123456",
-            avsenderNavn = "Svensk institusjon",
-            avsenderLand = eddyAdresseLandkode(),
-            rinaDokumentId = "1234",
-        ))
+        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(
+            sedHendelse(
+                rinaSakId = RINA_SAK_ID,
+                avsenderNavn = "Svensk institusjon",
+                avsenderLand = EDDY_ADRESSE_LANDKODE,
+                rinaDokumentId = DOKUMENT_ID,
+            ))
 
         assertFalse(result)
 
