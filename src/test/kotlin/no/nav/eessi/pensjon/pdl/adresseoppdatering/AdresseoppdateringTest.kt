@@ -33,6 +33,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -207,7 +208,58 @@ internal class AdresseoppdateringTest {
 
     @Test
     fun `Gitt person med adressebeskyttelse så XXX`() {
+        every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns sed(brukersAdresse = EDDY_ADRESSE_I_SED)
 
+        every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns
+                personFraPDL(
+                    adressebeskyttelse = listOf(AdressebeskyttelseGradering.STRENGT_FORTROLIG)
+                )
+
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, personMottakKlient, pdlFiltrering)
+
+        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderLand = EDDY_ADRESSE_LANDKODE))
+
+        assertFalse(result)
+    }
+
+    @Test
+    fun `Gitt en sed med en tysk bostedsadresse fra en institusjon i Tyskland og den ikke finnes i PDL saa skal PDL oppdateres med ny bostedsadresse`() {
+        //TODO
+    }
+
+    @Test @Disabled
+    fun `Gitt en sed som inneholder en tysk bostedsadresse fra en institusjon i Tyskland og den ikke finnes i PDL saa skal PDL oppdateres med ny bostedsadresse og institusjonen skal registreres som kilde for adressen`() {
+        //TODO
+    }
+
+    @Test @Disabled
+    fun `Gitt en sed med en adresse for en avdod person saa skal adressen oppdateres i PDL som kontaktadresse`() {
+        //TODO
+    }
+
+    @Test @Disabled
+    fun `Gitt at en person har adressebeskyttelse fortrolig eller strengt fortrolig saa skal adressen ikke registreres`() {
+        //TODO
+    }
+
+    @Test @Disabled
+    fun `Gitt at en person har adressebeskyttelse fortrolig utland saa skal adressen registreres`() {
+        //TODO
+    }
+
+    @Test @Disabled
+    fun `Gitt en kontaktadresse som skal oppdateres i PDL saa skal dagens dato i gyldig form og dato ett aar frem i tid i gyldig tom dato`() {   //Gyldighetsperiode
+        //TODO
+    }
+
+    @Test @Disabled
+    fun `Gitt en adresse som skal valideres saa maa adressen inneholde minst landkode og ett annet felt`() {
+        //TODO
+    }
+
+    @Test @Disabled
+    fun `Gitt en adresse som skal valideres som mangler landkode saa skal ikke adressen registreres`() {
+        //TODO
     }
 
     private fun pdlEndringOpplysning(
@@ -241,7 +293,7 @@ internal class AdresseoppdateringTest {
         bucType: String = "P_BUC_02",
         rinaSakId: String = SOME_RINA_SAK_ID,
         avsenderNavn: String? = SOME_UTENLANDSK_INSTITUSJON,
-        avsenderLand: String? = null,
+        avsenderLand: String? = "IT",
         rinaDokumentId: String = SOME_DOKUMENT_ID,
         sedType: String = "P2100"
     ) = SedHendelse.fromJson(
@@ -261,7 +313,7 @@ internal class AdresseoppdateringTest {
                 }""".trimMargin()
     )
 
-    private fun sed(id: String = SOME_FNR, brukersAdresse: Adresse) = SED(
+    private fun sed(id: String = SOME_FNR, brukersAdresse: Adresse? = null) = SED(
         type = SedType.P2100,
         sedGVer = null,
         sedVer = null,
@@ -312,14 +364,15 @@ internal class AdresseoppdateringTest {
 
     private fun personFraPDL(
         id: String = SOME_FNR,
-        utenlandskAdresse: UtenlandskAdresse,
+        adressebeskyttelse: List<AdressebeskyttelseGradering> = listOf(),
+        utenlandskAdresse: UtenlandskAdresse? = null,
         opplysningsId: String = "DummyOpplysningsId",
         gyldigFraOgMed: LocalDateTime = LocalDateTime.now().minusDays(10),
         gyldigTilOgMed: LocalDateTime = LocalDateTime.now().plusDays(10)
     ) = Person(
         identer = listOf(IdentInformasjon(id, IdentGruppe.FOLKEREGISTERIDENT)),
         navn = null,
-        adressebeskyttelse = listOf(AdressebeskyttelseGradering.UGRADERT),
+        adressebeskyttelse = adressebeskyttelse,
         bostedsadresse = null,
         oppholdsadresse = null,
         statsborgerskap = listOf(),

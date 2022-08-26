@@ -78,6 +78,11 @@ class Adresseoppdatering(
             return false
         }
 
+        if (isAdressebeskyttet(personFraPDL.adressebeskyttelse)) {
+            logger.info("Ingen adresseoppdatering")
+            return false
+        }
+
         logger.info("Vi har funnet en person fra PDL med samme norsk identifikator som bruker i SED")
 
         if (personFraPDL.kontaktadresse?.utenlandskAdresse != null &&

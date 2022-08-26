@@ -12,49 +12,6 @@ import org.junit.jupiter.api.Test
  */
 
 internal class AdresseValideringTest() {
-
-
-    @Test
-    fun `Gitt en sed med en tysk bostedsadresse fra en institusjon i Tyskland og den ikke finnes i PDL saa skal PDL oppdateres med ny bostedsadresse`() {
-        //TODO
-    }
-
-    @Test
-    fun `Gitt en sed som inneholder en tysk bostedsadresse fra en institusjon i Tyskland og den ikke finnes i PDL saa skal PDL oppdateres med ny bostedsadresse og institusjonen skal registreres som kilde for adressen`() {
-        //TODO
-    }
-
-    @Test
-    fun `Gitt en sed med en adresse for en avdod person saa skal adressen oppdateres i PDL som kontaktadresse`() {
-        //TODO
-    }
-
-    @Test
-    fun `Gitt at en person har adressebeskyttelse fortrolig eller strengt fortrolig saa skal adressen ikke registreres`() {
-        //TODO
-    }
-
-    @Test
-    fun `Gitt at en person har adressebeskyttelse fortrolig utland saa skal adressen registreres`() {
-        //TODO
-    }
-
-    @Test
-    fun `Gitt en kontaktadresse som skal oppdateres i PDL saa skal dagens dato i gyldig form og dato ett aar frem i tid i gyldig tom dato`() {   //Gyldighetsperiode
-        //TODO
-    }
-
-    @Test
-    fun `Gitt en adresse som skal valideres saa maa adressen inneholde minst landkode og ett annet felt`() {
-        //TODO
-    }
-
-    @Test
-    fun `Gitt en adresse som skal valideres som mangler landkode saa skal ikke adressen registreres`() {
-        //TODO
-    }
-
-
     //    Bygning feltet kan ikke inneholde ordene: "postboks", "postb.",  "postbox", "po.box" og "p.b."
     //    ikke ord som "ukjent" "vet ikke", "nn"
     //    må inneholde minst 1 bokstav (kan ikke bestå av kun tegn eller siffer)
