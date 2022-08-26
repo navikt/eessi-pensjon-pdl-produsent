@@ -6,7 +6,6 @@ import no.nav.eessi.pensjon.models.EndringsmeldingUtenlandskAdresse
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelse
-import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
@@ -82,24 +81,27 @@ class Adresseoppdatering(
 
         logger.info("Vi har funnet en person fra PDL med samme norsk identifikator som bruker i SED")
 
-        if (personFraPDL.kontaktadresse?.utenlandskAdresse != null &&
-            pdlFiltrering.finnesUtlAdresseFraSedIPDL(personFraPDL.kontaktadresse!!.utenlandskAdresse!!, brukersAdresseIUtlandetFraSED)
+        if (personFraPDL.kontaktadresse?.utenlandskAdresse == null || !pdlFiltrering.finnesUtlAdresseFraSedIPDL(
+                personFraPDL.kontaktadresse!!.utenlandskAdresse!!,
+                brukersAdresseIUtlandetFraSED
+            )
         ) {
-            if (personFraPDL.kontaktadresse!!.gyldigFraOgMed?.toLocalDate() == LocalDate.now()) {
-                return NoUpdate("Adresse finnes allerede i PDL med dagens dato som gyldig-fra-dato, dropper oppdatering")
-            } else {
-                val pdlEndringsOpplysninger = pdlEndringOpplysning(
-                    endringstype = Endringstype.KORRIGER,
-                    norskFnr = norskPin.identifikator!!,
-                    kilde = sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")",
-                    kontaktadresse = personFraPDL.kontaktadresse!!
-                )
-                return Update("Adresse finnes allerede i PDL, oppdaterer gyldig til og fra dato", pdlEndringsOpplysninger)
-            }
-        } else {
             return NoUpdate("Adresse ikke funnet i PDL, kandidat for (fremtidig) oppdatering")
             //TODO: send melding for opprettelse til personMottakKlient
         }
+        if (personFraPDL.kontaktadresse!!.gyldigFraOgMed?.toLocalDate() == LocalDate.now()) {
+            return NoUpdate("Adresse finnes allerede i PDL med dagens dato som gyldig-fra-dato, dropper oppdatering")
+        }
+        return Update(
+            "Adresse finnes allerede i PDL, oppdaterer gyldig til og fra dato",
+            pdlEndringOpplysning(
+                endringstype = Endringstype.KORRIGER,
+                norskFnr = norskPin.identifikator!!,
+                kilde = sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")",
+                kontaktadresse = personFraPDL.kontaktadresse!!
+            )
+        )
+
     }
 
     fun pdlEndringOpplysning(
