@@ -109,7 +109,7 @@ internal class AdresseoppdateringTest {
                 )
 
         every { personMottakKlient.opprettPersonopplysning(any()) } returns true
-        val adresseoppdatering = Adresseoppdatering(personService, euxService, personMottakKlient, pdlFiltrering)
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering)
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(
             sedHendelse(
@@ -122,17 +122,20 @@ internal class AdresseoppdateringTest {
                 sedType = "P2100"
             ))
 
-        assertEquals(Update("Adresse finnes allerede i PDL, oppdaterer gyldig til og fra dato"), result)
+        assertEquals(
+            Update(
+                "Adresse finnes allerede i PDL, oppdaterer gyldig til og fra dato",
+                pdlEndringOpplysning(
+                    id = FNR,
+                    pdlAdresse = EDDY_ADRESSE_I_ENDRINGSMELDING,
+                    opplysningsId = "OpplysningsId",
+                    kilde = "Utenlandsk Institusjon ($EDDY_ADRESSE_LANDKODE)",
+                    gyldigFraOgMed = LocalDate.now(),
+                    gyldigTilOgMed = LocalDate.now().plusYears(1)
+                )
+            ), result
+        )
 
-        verify(atLeast = 1) { personMottakKlient.opprettPersonopplysning(eq(
-            pdlEndringOpplysning(
-                id = FNR,
-                pdlAdresse = EDDY_ADRESSE_I_ENDRINGSMELDING,
-                opplysningsId = "OpplysningsId",
-                kilde = "Utenlandsk Institusjon ($EDDY_ADRESSE_LANDKODE)",
-                gyldigFraOgMed = LocalDate.now(),
-                gyldigTilOgMed = LocalDate.now().plusYears(1)
-            ))) }
     }
 
     @Test
@@ -140,7 +143,7 @@ internal class AdresseoppdateringTest {
         every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns
                 sed(brukersAdresse = adresse(EDDY_ADRESSE_LANDKODE))
 
-        val adresseoppdatering = Adresseoppdatering(mockk(), euxService, mockk(), mockk())
+        val adresseoppdatering = Adresseoppdatering(mockk(), euxService, mockk())
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(
             avsenderNavn = "Dansk institusjon",
@@ -161,7 +164,7 @@ internal class AdresseoppdateringTest {
                     gyldigFraOgMed = LocalDateTime.now()
                 )
 
-        val adresseoppdatering = Adresseoppdatering(personService, euxService, personMottakKlient, pdlFiltrering)
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering)
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(
             sedHendelse(
@@ -184,19 +187,17 @@ internal class AdresseoppdateringTest {
                 )
 
         every { personMottakKlient.opprettPersonopplysning(any()) } returns true
-        val adresseoppdatering = Adresseoppdatering(personService, euxService, personMottakKlient, pdlFiltrering)
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering)
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderLand = EDDY_ADRESSE_LANDKODE))
 
-        assertEquals(Update("Adresse finnes allerede i PDL, oppdaterer gyldig til og fra dato"), result)
-
-        verify(atLeast = 1) { personMottakKlient.opprettPersonopplysning(eq(
+        assertEquals(Update("Adresse finnes allerede i PDL, oppdaterer gyldig til og fra dato",
             pdlEndringOpplysning(
-                pdlAdresse = EDDY_ADRESSE_I_ENDRINGSMELDING.copy(postboksNummerNavn = "Postboks 543", adressenavnNummer = null),
-                kilde = "$SOME_UTENLANDSK_INSTITUSJON ($EDDY_ADRESSE_LANDKODE)",
-                gyldigFraOgMed = LocalDate.now(),
-                gyldigTilOgMed = LocalDate.now().plusYears(1)
-            ))) }
+            pdlAdresse = EDDY_ADRESSE_I_ENDRINGSMELDING.copy(postboksNummerNavn = "Postboks 543", adressenavnNummer = null),
+            kilde = "$SOME_UTENLANDSK_INSTITUSJON ($EDDY_ADRESSE_LANDKODE)",
+            gyldigFraOgMed = LocalDate.now(),
+            gyldigTilOgMed = LocalDate.now().plusYears(1)
+        )), result)
 
     }
 
@@ -209,7 +210,7 @@ internal class AdresseoppdateringTest {
                     adressebeskyttelse = listOf(AdressebeskyttelseGradering.STRENGT_FORTROLIG)
                 )
 
-        val adresseoppdatering = Adresseoppdatering(personService, euxService, personMottakKlient, pdlFiltrering)
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering)
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderLand = EDDY_ADRESSE_LANDKODE))
 

@@ -1,7 +1,6 @@
 package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
 import no.nav.eessi.pensjon.eux.EuxService
-import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.models.EndringsmeldingKontaktAdresse
 import no.nav.eessi.pensjon.models.EndringsmeldingUtenlandskAdresse
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
@@ -21,7 +20,7 @@ import java.time.LocalDate
 
 sealed class Result
 
-data class Update(val description: String): Result()
+data class Update(val description: String, val pdlEndringsOpplysninger: PdlEndringOpplysning): Result()
 data class NoUpdate(val description: String): Result()
 data class Error(val description: String): Result()
 
@@ -29,7 +28,6 @@ data class Error(val description: String): Result()
 class Adresseoppdatering(
     private val personService: PersonService,
     private val euxService: EuxService,
-    private val personMottakKlient: PersonMottakKlient,
     private val pdlFiltrering: PdlFiltrering
 ) {
     private val logger = LoggerFactory.getLogger(Adresseoppdatering::class.java)
@@ -90,13 +88,13 @@ class Adresseoppdatering(
             if (personFraPDL.kontaktadresse!!.gyldigFraOgMed?.toLocalDate() == LocalDate.now()) {
                 return NoUpdate("Adresse finnes allerede i PDL med dagens dato som gyldig-fra-dato, dropper oppdatering")
             } else {
-                lagUtenlandskKontaktAdresseEndringsMelding(
-                    kontaktadresse = personFraPDL.kontaktadresse!!,
-                    norskFnr = norskPin.identifikator!!,
+                val pdlEndringsOpplysninger = pdlEndringOpplysning(
                     endringstype = Endringstype.KORRIGER,
-                    kilde = sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")"
+                    norskFnr = norskPin.identifikator!!,
+                    kilde = sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")",
+                    kontaktadresse = personFraPDL.kontaktadresse!!
                 )
-                return Update("Adresse finnes allerede i PDL, oppdaterer gyldig til og fra dato")
+                return Update("Adresse finnes allerede i PDL, oppdaterer gyldig til og fra dato", pdlEndringsOpplysninger)
             }
         } else {
             return NoUpdate("Adresse ikke funnet i PDL, kandidat for (fremtidig) oppdatering")
@@ -104,33 +102,35 @@ class Adresseoppdatering(
         }
     }
 
-    fun lagUtenlandskKontaktAdresseEndringsMelding(kontaktadresse: Kontaktadresse, norskFnr: String, endringstype: Endringstype, kilde: String) {
-        val pdlEndringsOpplysninger = PdlEndringOpplysning(
-            listOf(
-                Personopplysninger(
-                    endringstype = endringstype,
-                    ident = norskFnr,
-                    endringsmelding = EndringsmeldingKontaktAdresse(
-                        kilde = kilde,
-                        gyldigFraOgMed = LocalDate.now(),
-                        gyldigTilOgMed = LocalDate.now().plusYears(1),
-                        coAdressenavn = kontaktadresse.coAdressenavn,
-                        adresse = EndringsmeldingUtenlandskAdresse(
-                            adressenavnNummer = kontaktadresse.utenlandskAdresse!!.adressenavnNummer,
-                            bygningEtasjeLeilighet = kontaktadresse.utenlandskAdresse!!.bygningEtasjeLeilighet,
-                            bySted = kontaktadresse.utenlandskAdresse!!.bySted,
-                            landkode = kontaktadresse.utenlandskAdresse!!.landkode,
-                            postboksNummerNavn = kontaktadresse.utenlandskAdresse!!.postboksNummerNavn,
-                            postkode = kontaktadresse.utenlandskAdresse!!.postkode,
-                            regionDistriktOmraade = kontaktadresse.utenlandskAdresse!!.regionDistriktOmraade
-                        )
-                    ),
-                    opplysningstype = Opplysningstype.KONTAKTADRESSE,
-                    opplysningsId = kontaktadresse.metadata.opplysningsId
-                )
+    fun pdlEndringOpplysning(
+        endringstype: Endringstype,
+        norskFnr: String,
+        kilde: String,
+        kontaktadresse: Kontaktadresse
+    ) = PdlEndringOpplysning(
+        listOf(
+            Personopplysninger(
+                endringstype = endringstype,
+                ident = norskFnr,
+                endringsmelding = EndringsmeldingKontaktAdresse(
+                    kilde = kilde,
+                    gyldigFraOgMed = LocalDate.now(),
+                    gyldigTilOgMed = LocalDate.now().plusYears(1),
+                    coAdressenavn = kontaktadresse.coAdressenavn,
+                    adresse = EndringsmeldingUtenlandskAdresse(
+                        adressenavnNummer = kontaktadresse.utenlandskAdresse!!.adressenavnNummer,
+                        bygningEtasjeLeilighet = kontaktadresse.utenlandskAdresse!!.bygningEtasjeLeilighet,
+                        bySted = kontaktadresse.utenlandskAdresse!!.bySted,
+                        landkode = kontaktadresse.utenlandskAdresse!!.landkode,
+                        postboksNummerNavn = kontaktadresse.utenlandskAdresse!!.postboksNummerNavn,
+                        postkode = kontaktadresse.utenlandskAdresse!!.postkode,
+                        regionDistriktOmraade = kontaktadresse.utenlandskAdresse!!.regionDistriktOmraade
+                    )
+                ),
+                opplysningstype = Opplysningstype.KONTAKTADRESSE,
+                opplysningsId = kontaktadresse.metadata.opplysningsId
             )
         )
-        personMottakKlient.opprettPersonopplysning(pdlEndringsOpplysninger)
-    }
+    )
 
 }

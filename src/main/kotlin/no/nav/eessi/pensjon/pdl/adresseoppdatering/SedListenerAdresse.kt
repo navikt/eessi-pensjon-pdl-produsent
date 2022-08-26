@@ -2,6 +2,7 @@ package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.SedHendelse
+import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
@@ -19,6 +20,7 @@ import javax.annotation.PostConstruct
 @Service
 class SedListenerAdresse(
     private val adresseoppdatering: Adresseoppdatering,
+    private val personMottakKlient: PersonMottakKlient,
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest(),
     @Value("\${SPRING_PROFILES_ACTIVE:}") private val profile: String
 ) {
@@ -56,7 +58,10 @@ class SedListenerAdresse(
 
                     when(result) {
                         is NoUpdate -> logger.info(result.toString())
-                        is Update -> logger.info(result.toString())
+                        is Update ->  {
+                            personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
+                            logger.info(result.toString())
+                        }
                         is Error -> logger.error(result.toString())
                     }
 
