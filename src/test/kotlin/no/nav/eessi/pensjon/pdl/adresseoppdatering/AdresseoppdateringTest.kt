@@ -93,14 +93,6 @@ internal class AdresseoppdateringTest {
     }
 
     @Test
-    fun `Gitt SED uten utenlandsadresse, ingen oppdatering`() {
-        val mockSedHendelse: SedHendelse = mockk(relaxed = true)
-        val adresseoppdatering = Adresseoppdatering(mockk(), mockk(), mockk(), mockk())
-        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(mockSedHendelse)
-        assertFalse(result)
-    }
-
-    @Test
     fun `Gitt SED med gyldig utlandsadresse, og denne finnes i PDL, saa skal det sendes oppdatering med nye datoer`() {
         every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns
                 sed(
@@ -130,7 +122,7 @@ internal class AdresseoppdateringTest {
                 sedType = "P2100"
             ))
 
-        assertTrue(result)
+        assertEquals(Update("Adresse finnes allerede i PDL, oppdaterer gyldig til og fra dato"), result)
 
         verify(atLeast = 1) { personMottakKlient.opprettPersonopplysning(eq(
             pdlEndringOpplysning(
@@ -154,7 +146,8 @@ internal class AdresseoppdateringTest {
             avsenderNavn = "Dansk institusjon",
             avsenderLand = "DK",
         ))
-        assertFalse(result)
+
+        assertEquals(NoUpdate("Adressens landkode (${EDDY_ADRESSE_LANDKODE}) er ulik landkode på avsenderland (DK)."), result)
     }
 
     @Test
@@ -176,7 +169,8 @@ internal class AdresseoppdateringTest {
                 avsenderLand = EDDY_ADRESSE_LANDKODE,
             ))
 
-        assertFalse(result)
+        assertEquals(NoUpdate("Adresse finnes allerede i PDL med dagens dato som gyldig-fra-dato, dropper oppdatering"), result)
+
     }
 
     @Test
@@ -194,7 +188,7 @@ internal class AdresseoppdateringTest {
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderLand = EDDY_ADRESSE_LANDKODE))
 
-        assertTrue(result)
+        assertEquals(Update("Adresse finnes allerede i PDL, oppdaterer gyldig til og fra dato"), result)
 
         verify(atLeast = 1) { personMottakKlient.opprettPersonopplysning(eq(
             pdlEndringOpplysning(
@@ -207,7 +201,7 @@ internal class AdresseoppdateringTest {
     }
 
     @Test
-    fun `Gitt person med adressebeskyttelse så XXX`() {
+    fun `Gitt person med adressebeskyttelse s`() {
         every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns sed(brukersAdresse = EDDY_ADRESSE_I_SED)
 
         every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns
@@ -219,7 +213,8 @@ internal class AdresseoppdateringTest {
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderLand = EDDY_ADRESSE_LANDKODE))
 
-        assertFalse(result)
+        assertEquals(NoUpdate("Ingen adresseoppdatering"), result)
+
     }
 
     @Test

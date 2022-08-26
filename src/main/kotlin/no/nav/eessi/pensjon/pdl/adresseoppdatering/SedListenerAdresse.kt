@@ -52,11 +52,14 @@ class SedListenerAdresse(
                         return@measure
                     }
 
-                    if (adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse)) {
-                        // Gjorde oppdatering
-                    } else {
-                        // Gjorde ikke oppdatering?
+                    val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse)
+
+                    when(result) {
+                        is NoUpdate -> logger.info(result.toString())
+                        is Update -> logger.info(result.toString())
+                        is Error -> logger.error(result.toString())
                     }
+
                     acknowledgment.acknowledge()
 
                 } catch (ex: Exception) {

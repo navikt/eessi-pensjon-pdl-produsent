@@ -19,6 +19,12 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 
+sealed class Result
+
+data class Update(val description: String): Result()
+data class NoUpdate(val description: String): Result()
+data class Error(val description: String): Result()
+
 @Service
 class Adresseoppdatering(
     private val personService: PersonService,
@@ -28,12 +34,11 @@ class Adresseoppdatering(
 ) {
     private val logger = LoggerFactory.getLogger(Adresseoppdatering::class.java)
 
-    fun oppdaterUtenlandskKontaktadresse(sedHendelse: SedHendelse): Boolean {
+    fun oppdaterUtenlandskKontaktadresse(sedHendelse: SedHendelse): Result {
         logger.info("SED mottatt, rinaId: ${sedHendelse.rinaSakId}, bucType:${sedHendelse.bucType}, sedType:${sedHendelse.sedType}")
 
         if (!erRelevantForEESSIPensjon(sedHendelse)) {
-            logger.info("SED ikke relevant for EESSI Pensjon")
-            return false
+            return NoUpdate("SED ikke relevant for EESSI Pensjon")
         }
 
         val sed = euxService.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId)
@@ -45,19 +50,16 @@ class Adresseoppdatering(
         val brukersAdresseIUtlandetFraSED = bruker?.adresse?.let { if (it.land != "NO") it else null }
 
         if (brukersAdresseIUtlandetFraSED == null) {
-            logger.info("Bruker har ikke utenlandsk adresse i SED")
-            return false
+            return NoUpdate("Bruker har ikke utenlandsk adresse i SED")
         }
 
         if (sedHendelse.avsenderNavn == null || sedHendelse.avsenderLand == null) {
-            logger.error("Mangler avsenderNavn eller avsenderLand i sedHendelse - avslutter adresseoppdatering: $sedHendelse")
-            return false
+            return Error("Mangler avsenderNavn eller avsenderLand i sedHendelse - avslutter adresseoppdatering: $sedHendelse")
         }
 
         if(sedHendelse.avsenderId !in listOf("NO:NAVAT05", "NO:NAVAT07")) { // utelater sjekk av at avsenderland og adresseland er likt for preprod
             if (sedHendelse.avsenderLand != sed.nav?.bruker?.adresse?.land) {
-                logger.info("Adressens landkode (${sed.nav?.bruker?.adresse?.land}) er ulik landkode på avsenderland (${sedHendelse.avsenderLand}).")
-                return false
+                return NoUpdate("Adressens landkode (${sed.nav?.bruker?.adresse?.land}) er ulik landkode på avsenderland (${sedHendelse.avsenderLand}).")
             }
         }
 
@@ -65,8 +67,7 @@ class Adresseoppdatering(
 
         if (norskPin == null) {
             // TODO Håndtere brukere med ikke-norske identer
-            logger.info("Bruker har ikke norsk pin i SED")
-            return false
+            return NoUpdate("Bruker har ikke norsk pin i SED")
         }
 
         val personFraPDL = personService.hentPerson(NorskIdent(norskPin.identifikator!!))
@@ -74,13 +75,11 @@ class Adresseoppdatering(
         logger.debug("Person fra PDL: $personFraPDL")
 
         if (personFraPDL == null) {
-            logger.info("Bruker ikke funnet i PDL")
-            return false
+            return NoUpdate("Bruker ikke funnet i PDL")
         }
 
         if (isAdressebeskyttet(personFraPDL.adressebeskyttelse)) {
-            logger.info("Ingen adresseoppdatering")
-            return false
+            return NoUpdate("Ingen adresseoppdatering")
         }
 
         logger.info("Vi har funnet en person fra PDL med samme norsk identifikator som bruker i SED")
@@ -89,21 +88,18 @@ class Adresseoppdatering(
             pdlFiltrering.finnesUtlAdresseFraSedIPDL(personFraPDL.kontaktadresse!!.utenlandskAdresse!!, brukersAdresseIUtlandetFraSED)
         ) {
             if (personFraPDL.kontaktadresse!!.gyldigFraOgMed?.toLocalDate() == LocalDate.now()) {
-                logger.info("Adresse finnes allerede i PDL med dagens dato som gyldig-fra-dato, dropper oppdatering")
-                return false
+                return NoUpdate("Adresse finnes allerede i PDL med dagens dato som gyldig-fra-dato, dropper oppdatering")
             } else {
-                logger.info("Adresse finnes allerede i PDL, oppdaterer gyldig til og fra dato")
                 lagUtenlandskKontaktAdresseEndringsMelding(
                     kontaktadresse = personFraPDL.kontaktadresse!!,
                     norskFnr = norskPin.identifikator!!,
                     endringstype = Endringstype.KORRIGER,
                     kilde = sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")"
                 )
-                return true
+                return Update("Adresse finnes allerede i PDL, oppdaterer gyldig til og fra dato")
             }
         } else {
-            logger.info("Adresse ikke funnet i PDL, kandidat for (fremtidig) oppdatering")
-            return false
+            return NoUpdate("Adresse ikke funnet i PDL, kandidat for (fremtidig) oppdatering")
             //TODO: send melding for opprettelse til personMottakKlient
         }
     }
