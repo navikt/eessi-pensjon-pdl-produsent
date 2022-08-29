@@ -55,10 +55,8 @@ class Adresseoppdatering(
             return Error("Mangler avsenderNavn eller avsenderLand i sedHendelse - avslutter adresseoppdatering: $sedHendelse")
         }
 
-        if(!isSedHendelseFromPreprod(sedHendelse)) {
-            if (isAvsenderLandForskjelligFraAdressensLand(sedHendelse, sed)) {
-                return NoUpdate("Adressens landkode (${sed.nav?.bruker?.adresse?.land}) er ulik landkode på avsenderland (${sedHendelse.avsenderLand}).")
-            }
+        if(!isSedHendelseFromPreprod(sedHendelse) && isAvsenderLandForskjelligFraAdressensLand(sedHendelse, sed)) {
+            return NoUpdate("Adressens landkode (${sed.nav?.bruker?.adresse?.land}) er ulik landkode på avsenderland (${sedHendelse.avsenderLand}).")
         }
 
         if (!hasNorskPin(bruker)) {
