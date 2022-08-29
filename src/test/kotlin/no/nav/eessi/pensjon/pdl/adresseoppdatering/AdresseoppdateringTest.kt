@@ -57,8 +57,8 @@ internal class AdresseoppdateringTest {
 
     @BeforeEach
     fun setup() {
-        every { kodeverkClient.finnLandkode("SWE") } returns EDDY_ADRESSE_LANDKODE
-        every { kodeverkClient.finnLandkode(EDDY_ADRESSE_LANDKODE) } returns "SWE"
+        every { kodeverkClient.finnLandkode("SWE") } returns "SE"
+        every { kodeverkClient.finnLandkode("SE") } returns "SWE"
     }
 
     @Test
