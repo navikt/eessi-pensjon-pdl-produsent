@@ -60,14 +60,12 @@ class Adresseoppdatering(
             }
         }
 
-        val norskPin = bruker?.person?.pin?.firstOrNull { it.land == "NO" }
-
-        if (norskPin == null) {
+        if (!hasNorskPin(bruker)) {
             // TODO Håndtere brukere med ikke-norske identer
             return NoUpdate("Bruker har ikke norsk pin i SED")
         }
 
-        val personFraPDL = personService.hentPerson(NorskIdent(norskPin.identifikator!!))
+        val personFraPDL = personService.hentPerson(NorskIdent(norskPin(bruker)!!.identifikator!!))
 
         logger.debug("Person fra PDL: $personFraPDL")
 
@@ -83,7 +81,7 @@ class Adresseoppdatering(
 
         if (personFraPDL.kontaktadresse?.utenlandskAdresse == null || !pdlFiltrering.finnesUtlAdresseFraSedIPDL(
                 personFraPDL.kontaktadresse!!.utenlandskAdresse!!,
-                bruker.adresse!!
+                bruker!!.adresse!!
             )
         ) {
             return NoUpdate("Adresse ikke funnet i PDL, kandidat for (fremtidig) oppdatering")
@@ -96,13 +94,18 @@ class Adresseoppdatering(
             "Adresse finnes allerede i PDL, oppdaterer gyldig til og fra dato",
             pdlEndringOpplysning(
                 endringstype = Endringstype.KORRIGER,
-                norskFnr = norskPin.identifikator!!,
+                norskFnr = norskPin(bruker)!!.identifikator!!,
                 kilde = sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")",
                 kontaktadresse = personFraPDL.kontaktadresse!!
             )
         )
 
     }
+
+    private fun hasNorskPin(bruker: Bruker?) = norskPin(bruker) != null
+
+    private fun norskPin(bruker: Bruker?) =
+        bruker?.person?.pin?.firstOrNull { it.land == "NO" }
 
     private fun isAvsenderLandForskjelligFraAdressensLand(sedHendelse: SedHendelse, sed: SED) =
         sedHendelse.avsenderLand != sed.nav?.bruker?.adresse?.land
