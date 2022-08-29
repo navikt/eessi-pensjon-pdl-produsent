@@ -2,6 +2,7 @@ package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
 import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.model.sed.Bruker
+import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.models.EndringsmeldingKontaktAdresse
 import no.nav.eessi.pensjon.models.EndringsmeldingUtenlandskAdresse
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
@@ -54,7 +55,7 @@ class Adresseoppdatering(
         }
 
         if(!isSedHendelseFromPreprod(sedHendelse)) {
-            if (sedHendelse.avsenderLand != sed.nav?.bruker?.adresse?.land) {
+            if (isAvsenderLandForskjelligFraAdressensLand(sedHendelse, sed)) {
                 return NoUpdate("Adressens landkode (${sed.nav?.bruker?.adresse?.land}) er ulik landkode på avsenderland (${sedHendelse.avsenderLand}).")
             }
         }
@@ -102,6 +103,9 @@ class Adresseoppdatering(
         )
 
     }
+
+    private fun isAvsenderLandForskjelligFraAdressensLand(sedHendelse: SedHendelse, sed: SED) =
+        sedHendelse.avsenderLand != sed.nav?.bruker?.adresse?.land
 
     private fun isSedHendelseFromPreprod(sedHendelse: SedHendelse) =
         sedHendelse.avsenderId in listOf("NO:NAVAT05", "NO:NAVAT07")
