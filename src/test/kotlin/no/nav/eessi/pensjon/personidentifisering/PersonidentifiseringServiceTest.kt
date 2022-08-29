@@ -3,7 +3,7 @@ package no.nav.eessi.pensjon.personidentifisering
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.eessi.pensjon.eux.UtenlandskId
-import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
+import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endring

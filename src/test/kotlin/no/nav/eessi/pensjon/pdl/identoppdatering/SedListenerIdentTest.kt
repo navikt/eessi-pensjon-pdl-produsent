@@ -5,7 +5,7 @@ import io.mockk.verify
 import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.UtenlandskPersonIdentifisering
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
-import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
+import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.pdl.validering.PdlValidering

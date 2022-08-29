@@ -10,7 +10,7 @@ import no.nav.eessi.pensjon.eux.model.sed.Nav
 import no.nav.eessi.pensjon.eux.model.sed.Pensjon
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.eux.model.sed.SED
-import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
+import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.models.EndringsmeldingKontaktAdresse
 import no.nav.eessi.pensjon.models.EndringsmeldingUtenlandskAdresse
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning

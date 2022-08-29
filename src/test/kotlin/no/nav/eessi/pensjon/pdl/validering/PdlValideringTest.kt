@@ -2,18 +2,9 @@ package no.nav.eessi.pensjon.pdl.validering
 
 import io.mockk.mockk
 import no.nav.eessi.pensjon.eux.UtenlandskId
-import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
-import no.nav.eessi.pensjon.personidentifisering.Relasjon
-import no.nav.eessi.pensjon.personidentifisering.SEDPersonRelasjon
-import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Endring
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Metadata
-import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
-import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
+import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import java.time.LocalDateTime
 import org.junit.jupiter.api.Assertions.assertFalse
 
 internal class PdlValideringTest {

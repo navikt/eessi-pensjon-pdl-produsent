@@ -5,7 +5,7 @@ import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.eux.UtenlandskPersonIdentifisering
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
-import no.nav.eessi.pensjon.klienter.kodeverk.KodeverkClient
+import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.EndringsmeldingUID
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
