@@ -31,6 +31,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -250,7 +251,7 @@ internal class AdresseoppdateringTest {
     }
 
     @Test
-    fun `Gitt person med adressebeskyttelse så gjør vi ingen oppdatering`() {
+    fun `Gitt person med adressebeskyttelse (i Norge) så gjør vi ingen oppdatering`() {
         every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns sed(brukersAdresse = EDDY_ADRESSE_I_SED)
 
         every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns
@@ -266,23 +267,24 @@ internal class AdresseoppdateringTest {
 
     }
 
-    @Test @Disabled
-    fun `Gitt en sed som inneholder en tysk bostedsadresse fra en institusjon i Tyskland og den ikke finnes i PDL saa skal PDL oppdateres med ny bostedsadresse og institusjonen skal registreres som kilde for adressen`() {
-        //TODO
+    @Test
+    fun `Gitt at en person har adressebeskyttelse fortrolig utland saa skal adressen likevel registreres`() {
+        every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns sed(brukersAdresse = EDDY_ADRESSE_I_SED)
+
+        every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns
+                personFraPDL(
+                    adressebeskyttelse = listOf(AdressebeskyttelseGradering.STRENGT_FORTROLIG_UTLAND)
+                )
+
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering, sedTilPDLAdresse)
+
+        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderLand = EDDY_ADRESSE_LANDKODE))
+
+        assertTrue(result is Update)
     }
 
     @Test @Disabled
     fun `Gitt en sed med en adresse for en avdod person saa skal adressen oppdateres i PDL som kontaktadresse`() {
-        //TODO
-    }
-
-    @Test @Disabled
-    fun `Gitt at en person har adressebeskyttelse fortrolig eller strengt fortrolig saa skal adressen ikke registreres`() {
-        //TODO
-    }
-
-    @Test @Disabled
-    fun `Gitt at en person har adressebeskyttelse fortrolig utland saa skal adressen registreres`() {
         //TODO
     }
 
