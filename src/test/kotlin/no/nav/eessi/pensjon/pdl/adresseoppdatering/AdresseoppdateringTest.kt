@@ -45,37 +45,6 @@ private const val SOME_UTENLANDSK_INSTITUSJON = "Utenlandsk Institusjon"
 
 private const val FNR = "11067122781"
 
-private const val EDDY_ADRESSE_LANDKODE = "SE"
-
-private val EDDY_ADRESSE_I_SED = Adresse(
-    gate = "EddyRoad",
-    bygning = "EddyHouse",
-    by = "EddyCity",
-    postnummer = "111",
-    region = "Stockholm",
-    land = EDDY_ADRESSE_LANDKODE,
-    kontaktpersonadresse = null,
-)
-
-private val EDDY_ADRESSE_FRA_PDL = UtenlandskAdresse(
-    adressenavnNummer = "EddyRoad",
-    bygningEtasjeLeilighet = "EddyHouse",
-    bySted = "EddyCity",
-    postkode = "111",
-    regionDistriktOmraade = "Stockholm",
-    landkode = "SWE"
-)
-
-private val EDDY_ADRESSE_I_ENDRINGSMELDING = EndringsmeldingUtenlandskAdresse(
-    adressenavnNummer = "EddyRoad",
-    bygningEtasjeLeilighet = "EddyHouse",
-    bySted = "EddyCity",
-    postkode = "111",
-    regionDistriktOmraade = "Stockholm",
-    landkode = "SWE",
-    postboksNummerNavn = null // Dersom vi kan identifisere en postboksadresse så burde vi fylle det inn her
-)
-
 internal class AdresseoppdateringTest {
 
     var personService: PersonService = mockk()
@@ -137,6 +106,37 @@ internal class AdresseoppdateringTest {
         )
 
     }
+
+    private val EDDY_ADRESSE_LANDKODE = "SE"
+
+    private val EDDY_ADRESSE_I_SED = Adresse(
+        gate = "EddyRoad",
+        bygning = "EddyHouse",
+        by = "EddyCity",
+        postnummer = "111",
+        region = "Stockholm",
+        land = EDDY_ADRESSE_LANDKODE,
+        kontaktpersonadresse = null,
+    )
+
+    private val EDDY_ADRESSE_FRA_PDL = UtenlandskAdresse(
+        adressenavnNummer = "EddyRoad",
+        bygningEtasjeLeilighet = "EddyHouse",
+        bySted = "EddyCity",
+        postkode = "111",
+        regionDistriktOmraade = "Stockholm",
+        landkode = "SWE"
+    )
+
+    private val EDDY_ADRESSE_I_ENDRINGSMELDING = EndringsmeldingUtenlandskAdresse(
+        adressenavnNummer = "EddyRoad",
+        bygningEtasjeLeilighet = "EddyHouse",
+        bySted = "EddyCity",
+        postkode = "111",
+        regionDistriktOmraade = "Stockholm",
+        landkode = "SWE",
+        postboksNummerNavn = null // Dersom vi kan identifisere en postboksadresse så burde vi fylle det inn her
+    )
 
     @Test
     fun `Gitt SED med adresse med ulik landkode fra avsender, ingen oppdatering`() {
