@@ -202,7 +202,7 @@ internal class AdresseoppdateringTest {
     }
 
     @Test
-    fun `Gitt person med adressebeskyttelse s`() {
+    fun `Gitt person med adressebeskyttelse så gjør vi ingen oppdatering`() {
         every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns sed(brukersAdresse = EDDY_ADRESSE_I_SED)
 
         every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns
