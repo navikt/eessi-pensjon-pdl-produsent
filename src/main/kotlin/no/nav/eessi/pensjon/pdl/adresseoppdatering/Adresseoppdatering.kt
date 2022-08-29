@@ -1,6 +1,7 @@
 package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
 import no.nav.eessi.pensjon.eux.EuxService
+import no.nav.eessi.pensjon.eux.model.sed.Bruker
 import no.nav.eessi.pensjon.models.EndringsmeldingKontaktAdresse
 import no.nav.eessi.pensjon.models.EndringsmeldingUtenlandskAdresse
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
@@ -44,23 +45,21 @@ class Adresseoppdatering(
 
         val bruker = sed.nav?.bruker
 
-        val brukersAdresseIUtlandetFraSED = bruker?.adresse?.let { if (it.land != "NO") it else null }
-
-        if (brukersAdresseIUtlandetFraSED == null) {
+        if (!isBrukersAdresseISEDIUtlandet(bruker)) {
             return NoUpdate("Bruker har ikke utenlandsk adresse i SED")
         }
 
-        if (sedHendelse.avsenderNavn == null || sedHendelse.avsenderLand == null) {
+        if (isSedHendelseAvsenderNull(sedHendelse)) {
             return Error("Mangler avsenderNavn eller avsenderLand i sedHendelse - avslutter adresseoppdatering: $sedHendelse")
         }
 
-        if(sedHendelse.avsenderId !in listOf("NO:NAVAT05", "NO:NAVAT07")) { // utelater sjekk av at avsenderland og adresseland er likt for preprod
+        if(!isSedHendelseFromPreprod(sedHendelse)) {
             if (sedHendelse.avsenderLand != sed.nav?.bruker?.adresse?.land) {
                 return NoUpdate("Adressens landkode (${sed.nav?.bruker?.adresse?.land}) er ulik landkode på avsenderland (${sedHendelse.avsenderLand}).")
             }
         }
 
-        val norskPin = bruker.person?.pin?.firstOrNull { it.land == "NO" }
+        val norskPin = bruker?.person?.pin?.firstOrNull { it.land == "NO" }
 
         if (norskPin == null) {
             // TODO Håndtere brukere med ikke-norske identer
@@ -83,7 +82,7 @@ class Adresseoppdatering(
 
         if (personFraPDL.kontaktadresse?.utenlandskAdresse == null || !pdlFiltrering.finnesUtlAdresseFraSedIPDL(
                 personFraPDL.kontaktadresse!!.utenlandskAdresse!!,
-                brukersAdresseIUtlandetFraSED
+                bruker.adresse!!
             )
         ) {
             return NoUpdate("Adresse ikke funnet i PDL, kandidat for (fremtidig) oppdatering")
@@ -103,6 +102,15 @@ class Adresseoppdatering(
         )
 
     }
+
+    private fun isSedHendelseFromPreprod(sedHendelse: SedHendelse) =
+        sedHendelse.avsenderId in listOf("NO:NAVAT05", "NO:NAVAT07")
+
+    private fun isSedHendelseAvsenderNull(sedHendelse: SedHendelse) =
+        sedHendelse.avsenderNavn == null || sedHendelse.avsenderLand == null
+
+    private fun isBrukersAdresseISEDIUtlandet(bruker: Bruker?) =
+        bruker?.adresse?.land != null && bruker.adresse?.land != "NO"
 
     fun pdlEndringOpplysning(
         endringstype: Endringstype,
