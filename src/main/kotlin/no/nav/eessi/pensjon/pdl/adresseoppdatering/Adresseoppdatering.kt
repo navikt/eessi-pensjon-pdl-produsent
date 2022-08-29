@@ -15,6 +15,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Kontaktadresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -79,17 +80,18 @@ class Adresseoppdatering(
 
         logger.info("Vi har funnet en person fra PDL med samme norsk identifikator som bruker i SED")
 
-        if (personFraPDL.kontaktadresse?.utenlandskAdresse == null || !pdlFiltrering.finnesUtlAdresseFraSedIPDL(
-                personFraPDL.kontaktadresse!!.utenlandskAdresse!!,
-                bruker!!.adresse!!
-            )
-        ) {
-            return NoUpdate("Adresse ikke funnet i PDL, kandidat for (fremtidig) oppdatering")
-            //TODO: send melding for opprettelse til personMottakKlient
+        if (!hasUtenlandskKontaktadresse(personFraPDL)) {
+            return NoUpdate("Finnes ikke utenlandsk kontaktadresse i PDL")
         }
+
+        if (!pdlFiltrering.isUtenlandskAdresseISEDMatchMedAdresseIPDL(bruker!!.adresse!!, personFraPDL.kontaktadresse!!.utenlandskAdresse!!)) {
+            return NoUpdate("Adresse i PDL matcher ikke adressen fra SED")
+        }
+
         if (personFraPDL.kontaktadresse!!.gyldigFraOgMed?.toLocalDate() == LocalDate.now()) {
             return NoUpdate("Adresse finnes allerede i PDL med dagens dato som gyldig-fra-dato, dropper oppdatering")
         }
+
         return Update(
             "Adresse finnes allerede i PDL, oppdaterer gyldig til og fra dato",
             pdlEndringOpplysning(
@@ -101,6 +103,9 @@ class Adresseoppdatering(
         )
 
     }
+
+    private fun hasUtenlandskKontaktadresse(personFraPDL: Person) =
+        personFraPDL.kontaktadresse?.utenlandskAdresse != null
 
     private fun hasNorskPin(bruker: Bruker?) = norskPin(bruker) != null
 

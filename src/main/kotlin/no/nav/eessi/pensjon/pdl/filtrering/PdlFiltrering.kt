@@ -42,7 +42,7 @@ class PdlFiltrering(private val kodeverk: KodeverkClient) {
      *
      */
     //TODO fikse til riktig sjekk av adresse i sed mot pdl
-    fun finnesUtlAdresseFraSedIPDL(utenlandskeAdrIPDL: UtenlandskAdresse, utenlandskAdrISed: Adresse): Boolean {
+    fun isUtenlandskAdresseISEDMatchMedAdresseIPDL(utenlandskAdrISed: Adresse, utenlandskeAdrIPDL: UtenlandskAdresse): Boolean {
         return (utenlandskAdrISed.gate == utenlandskeAdrIPDL.adressenavnNummer || utenlandskAdrISed.gate == utenlandskeAdrIPDL.postboksNummerNavn) &&
             utenlandskAdrISed.bygning == utenlandskeAdrIPDL.bygningEtasjeLeilighet &&
             utenlandskAdrISed.by == utenlandskeAdrIPDL.bySted &&
