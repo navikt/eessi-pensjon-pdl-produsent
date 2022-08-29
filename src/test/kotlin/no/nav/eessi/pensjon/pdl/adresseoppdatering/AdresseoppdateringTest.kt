@@ -155,12 +155,14 @@ internal class AdresseoppdateringTest {
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderNavn = TYSK_INSTITUSJON, avsenderLand = TYSK_ADRESSE_LANDKODE))
 
-        assertEquals(Update("Adresse i SED finnes ikke i PDL, sender endringsmelding",
+        assertEquals(Update("Adresse i SED finnes ikke i PDL, sender opprett endringsmelding",
             pdlAdresseEndringsOpplysning(
                 pdlAdresse = TYSK_ADRESSE_I_SED_GJORT_OM_TIL_PDL_ADRESSE,
                 kilde = "$TYSK_INSTITUSJON ($TYSK_ADRESSE_LANDKODE)",
                 gyldigFraOgMed = LocalDate.now(),
-                gyldigTilOgMed = LocalDate.now().plusYears(1)
+                gyldigTilOgMed = LocalDate.now().plusYears(1),
+                endringsType = Endringstype.OPPRETT,
+                opplysningsId = null
             )), result)
     }
 
@@ -186,6 +188,34 @@ internal class AdresseoppdateringTest {
         landkode = "DEU",
         postboksNummerNavn = null // Dersom vi kan identifisere en postboksadresse så burde vi fylle det inn her
     )
+    @Test
+    fun `Gitt en sed med en tysk bostedsadresse fra en institusjon i Tyskland og den ikke finnes i PDL saa skal PDL oppdateres med ny kontaktadresse`() {
+        every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns
+                sed(brukersAdresse = TYSK_ADRESSE_I_SED)
+
+        every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns
+                personFraPDL(
+                    id = SOME_FNR,
+                    utenlandskAdresse = EDDY_ADRESSE_FRA_PDL,
+                    gyldigFraOgMed = LocalDateTime.now().minusDays(5),
+                    gyldigTilOgMed = LocalDateTime.now().plusDays(5),
+                )
+
+        every { personMottakKlient.opprettPersonopplysning(any()) } returns true
+
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering, sedTilPDLAdresse)
+
+        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderNavn = TYSK_INSTITUSJON, avsenderLand = TYSK_ADRESSE_LANDKODE))
+
+        assertEquals(Update("Adresse i PDL matcher ikke adressen fra SED, sender korriger endringsmelding",
+            pdlAdresseEndringsOpplysning(
+                pdlAdresse = TYSK_ADRESSE_I_SED_GJORT_OM_TIL_PDL_ADRESSE,
+                kilde = "$TYSK_INSTITUSJON ($TYSK_ADRESSE_LANDKODE)",
+                gyldigFraOgMed = LocalDate.now(),
+                gyldigTilOgMed = LocalDate.now().plusYears(1),
+                endringsType = Endringstype.KORRIGER
+            )), result)
+    }
 
     @Test
     fun `Gitt SED med adresse med ulik landkode fra avsender, ingen oppdatering`() {
@@ -339,13 +369,16 @@ internal class AdresseoppdateringTest {
         pdlAdresse: EndringsmeldingUtenlandskAdresse,
         kilde: String,
         gyldigFraOgMed: LocalDate,
-        gyldigTilOgMed: LocalDate
+        gyldigTilOgMed: LocalDate,
+        opplysningsId: String? = "DummyOpplysningsId",
+        endringsType: Endringstype
     ) = PdlEndringOpplysning(
         listOf(
             Personopplysninger(
-                endringstype = Endringstype.OPPRETT,
+                endringstype = endringsType,
                 ident = id,
                 opplysningstype = Opplysningstype.KONTAKTADRESSE,
+                opplysningsId = opplysningsId,
                 endringsmelding = EndringsmeldingKontaktAdresse(
                     type = Opplysningstype.KONTAKTADRESSE.name,
                     kilde = kilde,
