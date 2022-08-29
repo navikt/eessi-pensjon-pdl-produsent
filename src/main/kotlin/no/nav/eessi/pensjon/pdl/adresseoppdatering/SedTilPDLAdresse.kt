@@ -22,8 +22,8 @@ class SedTilPDLAdresse(private val kodeverkClient: KodeverkClient) {
                 bySted = sedAdresse.by,
                 landkode = kodeverkClient.finnLandkode(sedAdresse.land!!)!!,
                 postboksNummerNavn = null,
-                postkode = "postnummer",
-                regionDistriktOmraade = "region"
+                postkode = sedAdresse.postnummer,
+                regionDistriktOmraade = sedAdresse.region
             )
         )
     }
