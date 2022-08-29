@@ -2,7 +2,6 @@ package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.sed.Adresse
@@ -31,7 +30,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -50,6 +49,7 @@ internal class AdresseoppdateringTest {
     var personService: PersonService = mockk()
     var euxService: EuxService = mockk(relaxed = true)
     var kodeverkClient: KodeverkClient = mockk(relaxed = true)
+    var sedTilPDLAdresse = SedTilPDLAdresse(kodeverkClient)
 
     var pdlFiltrering: PdlFiltrering = PdlFiltrering(kodeverkClient)
 
@@ -59,6 +59,8 @@ internal class AdresseoppdateringTest {
     fun setup() {
         every { kodeverkClient.finnLandkode("SWE") } returns "SE"
         every { kodeverkClient.finnLandkode("SE") } returns "SWE"
+        every { kodeverkClient.finnLandkode("DE") } returns "DEU"
+        every { kodeverkClient.finnLandkode("DEU") } returns "DE"
     }
 
     @Test
@@ -78,7 +80,7 @@ internal class AdresseoppdateringTest {
                 )
 
         every { personMottakKlient.opprettPersonopplysning(any()) } returns true
-        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering)
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering, sedTilPDLAdresse)
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(
             sedHendelse(
@@ -139,11 +141,57 @@ internal class AdresseoppdateringTest {
     )
 
     @Test
+    fun `Gitt en sed med en tysk bostedsadresse fra en institusjon i Tyskland og den ikke finnes i PDL saa skal PDL oppdateres med ny bostedsadresse`() {
+        every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns
+                sed(brukersAdresse = TYSK_ADRESSE_I_SED)
+
+        every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns
+                personFraPDL()
+
+        every { personMottakKlient.opprettPersonopplysning(any()) } returns true
+
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering, sedTilPDLAdresse)
+
+        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderNavn = TYSK_INSTITUSJON, avsenderLand = TYSK_ADRESSE_LANDKODE))
+
+        assertEquals(Update("Adresse i SED finnes ikke i PDL, sender endringsmelding",
+            pdlAdresseEndringsOpplysning(
+                pdlAdresse = TYSK_ADRESSE_I_SED_GJORT_OM_TIL_PDL_ADRESSE,
+                kilde = "$TYSK_INSTITUSJON ($TYSK_ADRESSE_LANDKODE)",
+                gyldigFraOgMed = LocalDate.now(),
+                gyldigTilOgMed = LocalDate.now().plusYears(1)
+            )), result)
+    }
+
+    private val TYSK_ADRESSE_LANDKODE = "DE"
+    private val TYSK_INSTITUSJON = "Tysk institusjon"
+
+    private val TYSK_ADRESSE_I_SED = Adresse(
+        gate = "Tysk gateadresse",
+        bygning = "Tysk bygning",
+        by = "München",
+        postnummer = "2222",
+        region = "Bavaria",
+        land = TYSK_ADRESSE_LANDKODE,
+        kontaktpersonadresse = null,
+    )
+
+    private val TYSK_ADRESSE_I_SED_GJORT_OM_TIL_PDL_ADRESSE = EndringsmeldingUtenlandskAdresse(
+        adressenavnNummer = "Tysk gateadresse",
+        bygningEtasjeLeilighet = "Tysk bygning",
+        bySted = "München",
+        postkode = "2222",
+        regionDistriktOmraade = "Bavaria",
+        landkode = "DEU",
+        postboksNummerNavn = null // Dersom vi kan identifisere en postboksadresse så burde vi fylle det inn her
+    )
+
+    @Test
     fun `Gitt SED med adresse med ulik landkode fra avsender, ingen oppdatering`() {
         every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns
                 sed(brukersAdresse = adresse(EDDY_ADRESSE_LANDKODE))
 
-        val adresseoppdatering = Adresseoppdatering(mockk(), euxService, mockk())
+        val adresseoppdatering = Adresseoppdatering(mockk(), euxService, mockk(), mockk())
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(
             avsenderNavn = "Dansk institusjon",
@@ -164,7 +212,7 @@ internal class AdresseoppdateringTest {
                     gyldigFraOgMed = LocalDateTime.now()
                 )
 
-        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering)
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering, mockk())
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(
             sedHendelse(
@@ -187,7 +235,7 @@ internal class AdresseoppdateringTest {
                 )
 
         every { personMottakKlient.opprettPersonopplysning(any()) } returns true
-        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering)
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering, mockk())
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderLand = EDDY_ADRESSE_LANDKODE))
 
@@ -210,17 +258,12 @@ internal class AdresseoppdateringTest {
                     adressebeskyttelse = listOf(AdressebeskyttelseGradering.STRENGT_FORTROLIG)
                 )
 
-        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering)
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering, mockk())
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderLand = EDDY_ADRESSE_LANDKODE))
 
         assertEquals(NoUpdate("Ingen adresseoppdatering"), result)
 
-    }
-
-    @Test
-    fun `Gitt en sed med en tysk bostedsadresse fra en institusjon i Tyskland og den ikke finnes i PDL saa skal PDL oppdateres med ny bostedsadresse`() {
-        //TODO
     }
 
     @Test @Disabled
@@ -258,6 +301,11 @@ internal class AdresseoppdateringTest {
         //TODO
     }
 
+    @Test @Disabled
+    fun `Gitt en SED med postboksadresse i gatefeltet saa skal denne fylles ut i postboks feltet`() {
+        //TODO
+    }
+
     private fun pdlEndringOpplysning(
         id: String = SOME_FNR,
         pdlAdresse: EndringsmeldingUtenlandskAdresse,
@@ -278,6 +326,30 @@ internal class AdresseoppdateringTest {
                     gyldigFraOgMed = gyldigFraOgMed, // TODO er det rett å oppdatere denne datoen? Og hva om tilogmed-datoen er utløpt?
                     gyldigTilOgMed = gyldigTilOgMed,
                     coAdressenavn = "c/o Anund",
+                    adresse = pdlAdresse
+                )
+            )
+        )
+    )
+
+    private fun pdlAdresseEndringsOpplysning(
+        id: String = SOME_FNR,
+        pdlAdresse: EndringsmeldingUtenlandskAdresse,
+        kilde: String,
+        gyldigFraOgMed: LocalDate,
+        gyldigTilOgMed: LocalDate
+    ) = PdlEndringOpplysning(
+        listOf(
+            Personopplysninger(
+                endringstype = Endringstype.OPPRETT,
+                ident = id,
+                opplysningstype = Opplysningstype.KONTAKTADRESSE,
+                endringsmelding = EndringsmeldingKontaktAdresse(
+                    type = Opplysningstype.KONTAKTADRESSE.name,
+                    kilde = kilde,
+                    gyldigFraOgMed = gyldigFraOgMed, // TODO er det rett å oppdatere denne datoen? Og hva om tilogmed-datoen er utløpt?
+                    gyldigTilOgMed = gyldigTilOgMed,
+                    coAdressenavn = null,
                     adresse = pdlAdresse
                 )
             )

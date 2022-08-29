@@ -1,6 +1,7 @@
 package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
 import no.nav.eessi.pensjon.eux.EuxService
+import no.nav.eessi.pensjon.eux.model.sed.Adresse
 import no.nav.eessi.pensjon.eux.model.sed.Bruker
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.models.EndringsmeldingKontaktAdresse
@@ -30,7 +31,8 @@ data class Error(val description: String): Result()
 class Adresseoppdatering(
     private val personService: PersonService,
     private val euxService: EuxService,
-    private val pdlFiltrering: PdlFiltrering
+    private val pdlFiltrering: PdlFiltrering,
+    private val sedTilPDLAdresse: SedTilPDLAdresse
 ) {
     private val logger = LoggerFactory.getLogger(Adresseoppdatering::class.java)
 
@@ -79,7 +81,15 @@ class Adresseoppdatering(
         logger.info("Vi har funnet en person fra PDL med samme norsk identifikator som bruker i SED")
 
         if (!hasUtenlandskKontaktadresse(personFraPDL)) {
-            return NoUpdate("Finnes ikke utenlandsk kontaktadresse i PDL")
+
+
+            return Update("Adresse i SED finnes ikke i PDL, sender endringsmelding",
+                pdlOpprettEndringOpplysning(
+                    endringstype = Endringstype.OPPRETT,
+                    norskFnr = norskPin(bruker)!!.identifikator!!,
+                    kilde = sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")",
+                    adresseFraSed = bruker?.adresse!!
+            ))
         }
 
         if (!pdlFiltrering.isUtenlandskAdresseISEDMatchMedAdresseIPDL(bruker!!.adresse!!, personFraPDL.kontaktadresse!!.utenlandskAdresse!!)) {
@@ -149,6 +159,22 @@ class Adresseoppdatering(
                 ),
                 opplysningstype = Opplysningstype.KONTAKTADRESSE,
                 opplysningsId = kontaktadresse.metadata.opplysningsId
+            )
+        )
+    )
+
+    fun pdlOpprettEndringOpplysning(
+        endringstype: Endringstype,
+        norskFnr: String,
+        kilde: String,
+        adresseFraSed: Adresse
+    ) = PdlEndringOpplysning(
+        listOf(
+            Personopplysninger(
+                endringstype = endringstype,
+                ident = norskFnr,
+                endringsmelding = sedTilPDLAdresse.konverter(kilde, adresseFraSed),
+                opplysningstype = Opplysningstype.KONTAKTADRESSE,
             )
         )
     )
