@@ -80,6 +80,16 @@ class Adresseoppdatering(
 
         logger.info("Vi har funnet en person fra PDL med samme norsk identifikator som bruker i SED")
 
+        if (personFraPDL.erDoed()) {
+            return Update("Adresse i SED for avdød person finnes ikke i PDL, sender OPPRETT endringsmelding",
+                pdlAdresseEndringOpplysning(
+                    norskFnr = norskPin(bruker)!!.identifikator!!,
+                    kilde = sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")",
+                    adresseFraSed = bruker?.adresse!!
+                ))
+
+        }
+
         if (!hasUtenlandskKontaktadresse(personFraPDL)) {
             return Update("Adresse i SED finnes ikke i PDL, sender OPPRETT endringsmelding",
                 pdlAdresseEndringOpplysning(

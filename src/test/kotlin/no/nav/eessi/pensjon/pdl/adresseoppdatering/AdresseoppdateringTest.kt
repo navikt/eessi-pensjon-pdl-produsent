@@ -20,6 +20,7 @@ import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.AdressebeskyttelseGradering
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Doedsfall
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentInformasjon
@@ -44,6 +45,7 @@ private const val SOME_FNR = "1234567799"
 private const val SOME_UTENLANDSK_INSTITUSJON = "Utenlandsk Institusjon"
 
 private const val FNR = "11067122781"
+private const val FNR_DOD_PERSON = "28047114421"
 
 internal class AdresseoppdateringTest {
 
@@ -312,9 +314,28 @@ internal class AdresseoppdateringTest {
         assertTrue(result is Update)
     }
 
-    @Test @Disabled
+    @Test
     fun `Gitt en sed med en adresse for en avdod person saa skal adressen oppdateres i PDL som kontaktadresse`() {
-        //TODO
+        every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns sed(id = FNR_DOD_PERSON, brukersAdresse = EDDY_ADRESSE_I_SED)
+
+        every { personService.hentPerson(NorskIdent(FNR_DOD_PERSON)) } returns
+                personFraPDL(
+                    utenlandskAdresse = EDDY_ADRESSE_FRA_PDL.copy()
+                ).copy(doedsfall = Doedsfall(LocalDate.of(2020, 1,1), mockk(), mockk()))
+
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering, sedTilPDLAdresse)
+
+        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderLand = EDDY_ADRESSE_LANDKODE))
+
+        assertEquals(Update("Adresse i SED for avdød person finnes ikke i PDL, sender OPPRETT endringsmelding",
+            pdlAdresseEndringsOpplysning(
+                id = FNR_DOD_PERSON,
+                pdlAdresse = EDDY_ADRESSE_I_ENDRINGSMELDING,
+                kilde = "$SOME_UTENLANDSK_INSTITUSJON ($EDDY_ADRESSE_LANDKODE)",
+                gyldigFraOgMed = LocalDate.now(),
+                gyldigTilOgMed = LocalDate.now().plusYears(1),
+                endringsType = Endringstype.OPPRETT
+            )), result)
     }
 
     @Test @Disabled
