@@ -161,8 +161,7 @@ internal class AdresseoppdateringTest {
                 kilde = "$TYSK_INSTITUSJON ($TYSK_ADRESSE_LANDKODE)",
                 gyldigFraOgMed = LocalDate.now(),
                 gyldigTilOgMed = LocalDate.now().plusYears(1),
-                endringsType = Endringstype.OPPRETT,
-                opplysningsId = null
+                endringsType = Endringstype.OPPRETT
             )), result)
     }
 
@@ -207,13 +206,13 @@ internal class AdresseoppdateringTest {
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderNavn = TYSK_INSTITUSJON, avsenderLand = TYSK_ADRESSE_LANDKODE))
 
-        assertEquals(Update("Adresse i PDL matcher ikke adressen fra SED, sender korriger endringsmelding",
+        assertEquals(Update("Adresse i PDL matcher ikke adressen fra SED, sender OPPRETT endringsmelding",
             pdlAdresseEndringsOpplysning(
                 pdlAdresse = TYSK_ADRESSE_I_SED_GJORT_OM_TIL_PDL_ADRESSE,
                 kilde = "$TYSK_INSTITUSJON ($TYSK_ADRESSE_LANDKODE)",
                 gyldigFraOgMed = LocalDate.now(),
                 gyldigTilOgMed = LocalDate.now().plusYears(1),
-                endringsType = Endringstype.KORRIGER
+                endringsType = Endringstype.OPPRETT
             )), result)
     }
 
@@ -370,7 +369,6 @@ internal class AdresseoppdateringTest {
         kilde: String,
         gyldigFraOgMed: LocalDate,
         gyldigTilOgMed: LocalDate,
-        opplysningsId: String? = "DummyOpplysningsId",
         endringsType: Endringstype
     ) = PdlEndringOpplysning(
         listOf(
@@ -378,7 +376,6 @@ internal class AdresseoppdateringTest {
                 endringstype = endringsType,
                 ident = id,
                 opplysningstype = Opplysningstype.KONTAKTADRESSE,
-                opplysningsId = opplysningsId,
                 endringsmelding = EndringsmeldingKontaktAdresse(
                     type = Opplysningstype.KONTAKTADRESSE.name,
                     kilde = kilde,

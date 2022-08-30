@@ -81,24 +81,20 @@ class Adresseoppdatering(
         logger.info("Vi har funnet en person fra PDL med samme norsk identifikator som bruker i SED")
 
         if (!hasUtenlandskKontaktadresse(personFraPDL)) {
-            return Update("Adresse i SED finnes ikke i PDL, sender opprett endringsmelding",
+            return Update("Adresse i SED finnes ikke i PDL, sender OPPRETT endringsmelding",
                 pdlAdresseEndringOpplysning(
-                    endringstype = Endringstype.OPPRETT,
                     norskFnr = norskPin(bruker)!!.identifikator!!,
                     kilde = sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")",
-                    adresseFraSed = bruker?.adresse!!,
-                    opplysningsId = null
+                    adresseFraSed = bruker?.adresse!!
                 ))
         }
 
         if (!pdlFiltrering.isUtenlandskAdresseISEDMatchMedAdresseIPDL(bruker!!.adresse!!, personFraPDL.kontaktadresse!!.utenlandskAdresse!!)) {
-            return Update("Adresse i PDL matcher ikke adressen fra SED, sender korriger endringsmelding",
+            return Update("Adresse i PDL matcher ikke adressen fra SED, sender OPPRETT endringsmelding",
                 pdlAdresseEndringOpplysning(
-                    endringstype = Endringstype.KORRIGER,
                     norskFnr = norskPin(bruker)!!.identifikator!!,
                     kilde = sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")",
-                    adresseFraSed = bruker.adresse!!,
-                    opplysningsId = personFraPDL.kontaktadresse?.metadata?.opplysningsId
+                    adresseFraSed = bruker.adresse!!
                 ))
         }
 
@@ -170,19 +166,16 @@ class Adresseoppdatering(
     )
 
     fun pdlAdresseEndringOpplysning(
-        endringstype: Endringstype,
         norskFnr: String,
         kilde: String,
         adresseFraSed: Adresse,
-        opplysningsId: String?
     ) = PdlEndringOpplysning(
         listOf(
             Personopplysninger(
-                endringstype = endringstype,
+                endringstype = Endringstype.OPPRETT,
                 ident = norskFnr,
                 endringsmelding = sedTilPDLAdresse.konverter(kilde, adresseFraSed),
                 opplysningstype = Opplysningstype.KONTAKTADRESSE,
-                opplysningsId = opplysningsId
             )
         )
     )
