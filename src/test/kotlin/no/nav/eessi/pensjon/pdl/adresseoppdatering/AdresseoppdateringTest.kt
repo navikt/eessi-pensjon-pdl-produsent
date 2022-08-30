@@ -155,7 +155,7 @@ internal class AdresseoppdateringTest {
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderNavn = TYSK_INSTITUSJON, avsenderLand = TYSK_ADRESSE_LANDKODE))
 
-        assertEquals(Update("Adresse i SED finnes ikke i PDL, sender opprett endringsmelding",
+        assertEquals(Update("Adresse i SED finnes ikke i PDL, sender OPPRETT endringsmelding",
             pdlAdresseEndringsOpplysning(
                 pdlAdresse = TYSK_ADRESSE_I_SED_GJORT_OM_TIL_PDL_ADRESSE,
                 kilde = "$TYSK_INSTITUSJON ($TYSK_ADRESSE_LANDKODE)",
