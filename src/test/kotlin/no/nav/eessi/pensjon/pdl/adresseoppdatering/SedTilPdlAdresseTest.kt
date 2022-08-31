@@ -19,31 +19,27 @@ class SedTilPdlAdresseTest {
     fun setup() {
         every { kodeverkClient.finnLandkode("DKK") } returns "DK"
         every { kodeverkClient.finnLandkode("DK") } returns "DKK"
+        every { kodeverkClient.finnLandkode("NLD") } returns "NL"
+        every { kodeverkClient.finnLandkode("NL") } returns "NLD"
     }
 
     @Test
     fun `konvertering av gateadresse`(){
-        val sedAdresse = Adresse(
+        val sedAdresse = adresse(
             gate = "gate",
             bygning = "bygning",
             by = "by",
             postnummer = "postnummer",
             region = "region",
-            land = "DK",
-            kontaktpersonadresse = null, // TODO hva er dette?
-            datoforadresseendring = null, // er dette noe
-            postadresse = null, // hva er dette?
-            startdato = null,  // hva er dette?
-            type = null,   // hva er dette?
-            annen = null // hva er dette?
+            land = "DK"
         )
 
-        val pdlAdresse = EndringsmeldingKontaktAdresse(
+        val pdlAdresse = endringsmeldingKontaktAdresse(
             kilde = "kilde",
             gyldigFraOgMed = LocalDate.now(),
             gyldigTilOgMed = LocalDate.now().plusYears(1),
             coAdressenavn = null,
-            adresse = EndringsmeldingUtenlandskAdresse(
+            adresse = endringsmeldingUtenlandskAdresse(
                 adressenavnNummer = "gate",
                 bygningEtasjeLeilighet = "bygning",
                 bySted = "by",
@@ -55,5 +51,74 @@ class SedTilPdlAdresseTest {
 
         assertEquals(pdlAdresse, SedTilPDLAdresse(kodeverkClient).konverter("kilde", sedAdresse))
     }
+
+    @Test
+    fun `Gateadresse med postboksadresse skal fylles ut i postboksNummerNavn`() {
+        val sedAdresse = adresse(gate = "postboks 123")
+        val pdlAdresse = endringsmeldingKontaktAdresse(
+            adresse = endringsmeldingUtenlandskAdresse(
+                adressenavnNummer = null,
+                postboksNummerNavn = "postboks 123"
+            )
+        )
+
+        assertEquals(pdlAdresse, SedTilPDLAdresse(kodeverkClient).konverter("some kilde", sedAdresse))
+    }
+
+    private fun adresse(
+        gate: String,
+        bygning: String = "some bygning",
+        by: String = "some by",
+        postnummer: String = "some postnummer",
+        region: String = "some region",
+        land: String = "NL"
+    ) = Adresse(
+        gate = gate,
+        bygning = bygning,
+        by = by,
+        postnummer = postnummer,
+        region = region,
+        land = land,
+        kontaktpersonadresse = null, // TODO hva er dette?
+        datoforadresseendring = null, // er dette noe
+        postadresse = null, // hva er dette?
+        startdato = null,  // hva er dette?
+        type = null,   // hva er dette?
+        annen = null // hva er dette?
+    )
+
+    private fun endringsmeldingKontaktAdresse(
+        kilde: String = "some kilde",
+        gyldigFraOgMed: LocalDate? = LocalDate.now(),
+        gyldigTilOgMed: LocalDate? = LocalDate.now().plusYears(1),
+        coAdressenavn: String? = null,
+        adresse: EndringsmeldingUtenlandskAdresse
+    ) = EndringsmeldingKontaktAdresse(
+        kilde = kilde,
+        gyldigFraOgMed = gyldigFraOgMed,
+        gyldigTilOgMed = gyldigTilOgMed,
+        coAdressenavn = coAdressenavn,
+        adresse = adresse
+    )
+
+    private fun endringsmeldingUtenlandskAdresse(
+        adressenavnNummer: String? = null,
+        bygningEtasjeLeilighet: String? = "some bygning",
+        bySted: String? = "some by",
+        landkode: String = "NLD",
+        postboksNummerNavn: String? = null,
+        postkode: String? = "some postnummer",
+        regionDistriktOmraade: String? = "some region"
+    ) = EndringsmeldingUtenlandskAdresse(
+        adressenavnNummer = adressenavnNummer,
+        bygningEtasjeLeilighet = bygningEtasjeLeilighet,
+        bySted = bySted,
+        landkode = landkode,
+        postboksNummerNavn = postboksNummerNavn,
+        postkode = postkode,
+        regionDistriktOmraade = regionDistriktOmraade
+    )
+
+
 }
 

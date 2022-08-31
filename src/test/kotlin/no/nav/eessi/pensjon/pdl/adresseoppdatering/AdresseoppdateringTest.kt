@@ -356,6 +356,32 @@ internal class AdresseoppdateringTest {
         assertEquals(NoUpdate("Adressens by inneholder ugyldig informasjon ($ugyldigOrd)"), result)
     }
 
+
+    @Test
+    fun `Gitt en SED med postboksadresse i gatefeltet saa skal denne fylles ut i postboks feltet`() {
+        every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns sed(brukersAdresse = EDDY_ADRESSE_I_SED.copy(gate = "postbox Dette er en gyldig postboksadresse"))
+        every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns personFraPDL()
+
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering, sedTilPDLAdresse)
+
+        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderLand = EDDY_ADRESSE_LANDKODE))
+
+        assertEquals(Update("Adresse i SED finnes ikke i PDL, sender OPPRETT endringsmelding",
+            pdlAdresseEndringsOpplysning(
+                id = SOME_FNR,
+                pdlAdresse = EDDY_ADRESSE_I_ENDRINGSMELDING
+                    .copy(
+                        postboksNummerNavn = "postbox Dette er en gyldig postboksadresse",
+                        adressenavnNummer = null
+                    ),
+                kilde = "$SOME_UTENLANDSK_INSTITUSJON ($EDDY_ADRESSE_LANDKODE)",
+                gyldigFraOgMed = LocalDate.now(),
+                gyldigTilOgMed = LocalDate.now().plusYears(1),
+                endringsType = Endringstype.OPPRETT
+            )), result)
+
+    }
+
     @Test @Disabled
     fun `Gitt en adresse som skal valideres saa maa adressen inneholde minst landkode og ett annet felt`() {
         //TODO
@@ -366,10 +392,6 @@ internal class AdresseoppdateringTest {
         //TODO
     }
 
-    @Test @Disabled
-    fun `Gitt en SED med postboksadresse i gatefeltet saa skal denne fylles ut i postboks feltet`() {
-        //TODO
-    }
 
     private fun pdlEndringOpplysning(
         id: String = SOME_FNR,

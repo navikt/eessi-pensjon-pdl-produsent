@@ -2,8 +2,6 @@ package no.nav.eessi.pensjon.pdl.validering
 
 class AdresseValidering {
 
-    val postBoksInfo = listOf("postboks", "postb", "postbox", "p.b", "po.box")
-
     val ugyldigPostInfo = listOf("postboks", "postb", "postbox", "p.b", "po.box", "ukjent", "vet ikke", "nn")
     val ugyldigFeltInfo = listOf("ukjent", "vet ikke", "nn")
 
@@ -26,7 +24,5 @@ class AdresseValidering {
     }
 
     private fun ugyldigPostInformasjon(byStedRegion: String) = ugyldigFeltInfo.any { byStedRegion.contains(it) }
-
-    fun inneholderPostBoksInfo(gate: String) = postBoksInfo.any { gate.contains(it) }
 
 }
