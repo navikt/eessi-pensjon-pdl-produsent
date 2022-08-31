@@ -2,7 +2,8 @@ package no.nav.eessi.pensjon.pdl.validering
 
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 
 
 /**
@@ -11,60 +12,53 @@ import org.junit.jupiter.api.Test
  */
 
 internal class AdresseValideringTest() {
-    //    Bygning feltet kan ikke inneholde ordene: "postboks", "postb.",  "postbox", "po.box" og "p.b."
-    //    ikke ord som "ukjent" "vet ikke", "nn"
-    //    må inneholde minst 1 bokstav (kan ikke bestå av kun tegn eller siffer)
+    /**
+     * Bygning feltet kan ikke inneholde ordene: "postboks", "postb.",  "postbox", "po.box" og "p.b."
+     * ikke ord som "ukjent" "vet ikke", "nn"
+     * må inneholde minst 1 bokstav (kan ikke bestå av kun tegn eller siffer)
+     */
 
-    @Test
-    fun `Gitt en adresse der validering av by eller sted gir false saa er det ikke en gyldig adresse`() {
-        assertFalse(AdresseValidering().erGyldigAdressenavnNummerEllerBygningEtg("postboks"))
-        assertFalse(AdresseValidering().erGyldigAdressenavnNummerEllerBygningEtg("postb."))
-        assertFalse(AdresseValidering().erGyldigAdressenavnNummerEllerBygningEtg("po.box"))
-        assertFalse(AdresseValidering().erGyldigAdressenavnNummerEllerBygningEtg("ukjent"))
-        assertFalse(AdresseValidering().erGyldigAdressenavnNummerEllerBygningEtg("vet ikke"))
-        assertFalse(AdresseValidering().erGyldigAdressenavnNummerEllerBygningEtg("nn"))
-        assertFalse(AdresseValidering().erGyldigAdressenavnNummerEllerBygningEtg("1"))
+    @ParameterizedTest
+    @CsvSource("postboks", "postb.", "po.box", "ukjent", "vet ikke", "nn", "1")
+    fun `UGYLDIGE Adressenavnnummer bygning eller etasje`(ugyldigVerdi: String) {
+        assertFalse(AdresseValidering().erGyldigAdressenavnNummerEllerBygningEtg(ugyldigVerdi))
 
-        assertTrue(AdresseValidering().erGyldigAdressenavnNummerEllerBygningEtg("a"))
+    }
+    @ParameterizedTest
+    @CsvSource("Strada Principala 34 Rimetea", "a", "Antonína Čermáka 2a 160 68 Prague", "a")
+    fun `GYLDIG Adressenavnnummer bygning eller etasje`(gyldigeVerdier: String) {
+        assertTrue(AdresseValidering().erGyldigAdressenavnNummerEllerBygningEtg(gyldigeVerdier))
     }
 
-
-    @Test
-    fun `Gitt en adresse der validering avpostkode gir false saa er det ikke en gyldig adresse`() {
-        assertFalse(AdresseValidering().erGyldigByStedEllerRegion("ukjent"))
-        assertFalse(AdresseValidering().erGyldigByStedEllerRegion("vet ikke"))
-        assertFalse(AdresseValidering().erGyldigByStedEllerRegion("nn"))
-
-        assertFalse(AdresseValidering().erGyldigByStedEllerRegion("1"))
-        assertFalse(AdresseValidering().erGyldigByStedEllerRegion("1 "))
-        assertFalse(AdresseValidering().erGyldigByStedEllerRegion("1+"))
-
-        assertTrue(AdresseValidering().erGyldigByStedEllerRegion("a"))
-        assertTrue(AdresseValidering().erGyldigByStedEllerRegion("1a"))
-        assertTrue(AdresseValidering().erGyldigByStedEllerRegion("1a1a1"))
-        assertTrue(AdresseValidering().erGyldigByStedEllerRegion("München"))
-        assertTrue(AdresseValidering().erGyldigByStedEllerRegion("Červená Řečice"))
+    @ParameterizedTest
+    @CsvSource("ukjent","vet ikke", "nn", "1", "1+", "1")
+    fun `UGYLDIGE postkoder`(ugyldigVerdi: String) {
+        assertFalse(AdresseValidering().erGyldigByStedEllerRegion(ugyldigVerdi))
     }
 
-    //  Validering postkode:
-    //  ikke ord som "ukjent" "vet ikke". "nn"
-    //  må inneholde minst en bokstav eller ett tall (kan ikke inneholde kun andre tegn)
+    @ParameterizedTest
+    @CsvSource("1a", "1a1a1", "München", "a", "Červená Řečice")
+    fun `GYLDIGE by Sted eller region`(gyldigeVerdier: String) {
+        assertTrue(AdresseValidering().erGyldigByStedEllerRegion(gyldigeVerdier))
+    }
 
-    @Test
-    fun `Gitt en adresse der validering av postkode gir false saa er det ikke en gyldig adresse`() {
-        assertFalse(AdresseValidering().erGyldigPostKode("ukjent"))
-        assertFalse(AdresseValidering().erGyldigPostKode("vet ikke"))
-        assertFalse(AdresseValidering().erGyldigPostKode("nn"))
-        assertFalse(AdresseValidering().erGyldigPostKode("+"))
+    /**
+     * Validering postkode:
+     * ikke ord som "ukjent" "vet ikke". "nn"
+     * må inneholde minst en bokstav eller ett tall (kan ikke inneholde kun andre tegn)
+     */
+
+    @ParameterizedTest
+    @CsvSource("ukjent", "vet ikke", "nn", "+")
+    fun `UGYLDIGE postkoder i adresse`(ugyldigPostkode: String) {
+        assertFalse(AdresseValidering().erGyldigPostKode(ugyldigPostkode))
         assertFalse(AdresseValidering().erGyldigPostKode(" "))
+    }
 
-        assertTrue(AdresseValidering().erGyldigPostKode("a"))
-        assertTrue(AdresseValidering().erGyldigPostKode("1"))
-        assertTrue(AdresseValidering().erGyldigPostKode("1a"))
-        assertTrue(AdresseValidering().erGyldigPostKode("a1"))
-        assertTrue(AdresseValidering().erGyldigPostKode("a1sdkuryiev65"))
-        assertTrue(AdresseValidering().erGyldigPostKode("a1-1"))
-        assertTrue(AdresseValidering().erGyldigPostKode("a1-1 dfuigh 35"))
+    @ParameterizedTest
+    @CsvSource("a", "1", "1a", "a1", "a1sdkuryiev65", "a1-1", "a1-1 dfuigh 35", "1 ")
+    fun `GYLDIG adresse`(gyldigPostkode: String) {
+        assertTrue(AdresseValidering().erGyldigPostKode(gyldigPostkode))
     }
 
 
