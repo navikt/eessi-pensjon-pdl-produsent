@@ -10,6 +10,7 @@ import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
+import no.nav.eessi.pensjon.pdl.validering.AdresseValidering
 import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
@@ -61,6 +62,10 @@ class Adresseoppdatering(
             return NoUpdate("Adressens landkode (${sed.nav?.bruker?.adresse?.land}) er ulik landkode på avsenderland (${sedHendelse.avsenderLand}).")
         }
 
+        if(!AdresseValidering().erGyldigByStedEllerRegion(bruker?.adresse?.by!!)){
+            return NoUpdate("Adressens by inneholder ugyldig informasjon (${bruker.adresse?.by})")
+        }
+
         if (!hasNorskPin(bruker)) {
             // TODO Håndtere brukere med ikke-norske identer
             return NoUpdate("Bruker har ikke norsk pin i SED")
@@ -85,7 +90,7 @@ class Adresseoppdatering(
                 pdlAdresseEndringOpplysning(
                     norskFnr = norskPin(bruker)!!.identifikator!!,
                     kilde = sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")",
-                    adresseFraSed = bruker?.adresse!!
+                    adresseFraSed = bruker.adresse!!
                 ))
 
         }
@@ -95,11 +100,11 @@ class Adresseoppdatering(
                 pdlAdresseEndringOpplysning(
                     norskFnr = norskPin(bruker)!!.identifikator!!,
                     kilde = sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")",
-                    adresseFraSed = bruker?.adresse!!
+                    adresseFraSed = bruker.adresse!!
                 ))
         }
 
-        if (!pdlFiltrering.isUtenlandskAdresseISEDMatchMedAdresseIPDL(bruker!!.adresse!!, personFraPDL.kontaktadresse!!.utenlandskAdresse!!)) {
+        if (!pdlFiltrering.isUtenlandskAdresseISEDMatchMedAdresseIPDL(bruker.adresse!!, personFraPDL.kontaktadresse!!.utenlandskAdresse!!)) {
             return Update("Adresse i PDL matcher ikke adressen fra SED, sender OPPRETT endringsmelding",
                 pdlAdresseEndringOpplysning(
                     norskFnr = norskPin(bruker)!!.identifikator!!,

@@ -1,6 +1,5 @@
 package no.nav.eessi.pensjon.pdl.validering
 
-import no.nav.eessi.pensjon.pdl.validering.AdresseValidering
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -43,7 +42,8 @@ internal class AdresseValideringTest() {
         assertTrue(AdresseValidering().erGyldigByStedEllerRegion("a"))
         assertTrue(AdresseValidering().erGyldigByStedEllerRegion("1a"))
         assertTrue(AdresseValidering().erGyldigByStedEllerRegion("1a1a1"))
-
+        assertTrue(AdresseValidering().erGyldigByStedEllerRegion("München"))
+        assertTrue(AdresseValidering().erGyldigByStedEllerRegion("Červená Řečice"))
     }
 
     //  Validering postkode:
