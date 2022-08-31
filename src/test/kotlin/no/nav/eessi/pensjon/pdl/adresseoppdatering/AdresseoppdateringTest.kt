@@ -22,7 +22,6 @@ import no.nav.eessi.pensjon.pdl.adresseoppdatering.Adresseoppdatering.Update
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.AdressebeskyttelseGradering
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Doedsfall
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentInformasjon
@@ -161,7 +160,7 @@ internal class AdresseoppdateringTest {
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderNavn = TYSK_INSTITUSJON, avsenderLand = TYSK_ADRESSE_LANDKODE))
 
-        assertEquals(Update("Adresse i SED finnes ikke i PDL, sender OPPRETT endringsmelding",
+        assertEquals(Update("Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding",
             pdlAdresseEndringsOpplysning(
                 pdlAdresse = TYSK_ADRESSE_I_SED_GJORT_OM_TIL_PDL_ADRESSE,
                 kilde = "$TYSK_INSTITUSJON ($TYSK_ADRESSE_LANDKODE)",
@@ -212,7 +211,7 @@ internal class AdresseoppdateringTest {
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderNavn = TYSK_INSTITUSJON, avsenderLand = TYSK_ADRESSE_LANDKODE))
 
-        assertEquals(Update("Adresse i PDL matcher ikke adressen fra SED, sender OPPRETT endringsmelding",
+        assertEquals(Update("Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding",
             pdlAdresseEndringsOpplysning(
                 pdlAdresse = TYSK_ADRESSE_I_SED_GJORT_OM_TIL_PDL_ADRESSE,
                 kilde = "$TYSK_INSTITUSJON ($TYSK_ADRESSE_LANDKODE)",
@@ -318,30 +317,6 @@ internal class AdresseoppdateringTest {
         assertTrue(result is Update)
     }
 
-    @Test
-    fun `Gitt en sed med en adresse for en avdod person saa skal adressen oppdateres i PDL som kontaktadresse`() {
-        every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns sed(id = FNR_DOD_PERSON, brukersAdresse = EDDY_ADRESSE_I_SED)
-
-        every { personService.hentPerson(NorskIdent(FNR_DOD_PERSON)) } returns
-                personFraPDL(
-                    utenlandskAdresse = EDDY_ADRESSE_FRA_PDL.copy()
-                ).copy(doedsfall = Doedsfall(LocalDate.of(2020, 1,1), mockk(), mockk()))
-
-        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering, sedTilPDLAdresse)
-
-        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderLand = EDDY_ADRESSE_LANDKODE))
-
-        assertEquals(Update("Adresse i SED for avdød person finnes ikke i PDL, sender OPPRETT endringsmelding",
-            pdlAdresseEndringsOpplysning(
-                id = FNR_DOD_PERSON,
-                pdlAdresse = EDDY_ADRESSE_I_ENDRINGSMELDING,
-                kilde = "$SOME_UTENLANDSK_INSTITUSJON ($EDDY_ADRESSE_LANDKODE)",
-                gyldigFraOgMed = LocalDate.now(),
-                gyldigTilOgMed = LocalDate.now().plusYears(1),
-                endringsType = Endringstype.OPPRETT
-            )), result)
-    }
-
     @ParameterizedTest
     @CsvSource(
         "ukjent",
@@ -370,7 +345,7 @@ internal class AdresseoppdateringTest {
 
         assertEquals(
             Update(
-                "Adresse i SED finnes ikke i PDL, sender OPPRETT endringsmelding",
+                "Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding",
                 pdlAdresseEndringsOpplysning(
                     id = SOME_FNR,
                     pdlAdresse = EDDY_ADRESSE_I_ENDRINGSMELDING

@@ -34,18 +34,20 @@ class SedTilPdlAdresseTest {
             land = "DK"
         )
 
-        val pdlAdresse = endringsmeldingKontaktAdresse(
-            kilde = "kilde",
-            gyldigFraOgMed = LocalDate.now(),
-            gyldigTilOgMed = LocalDate.now().plusYears(1),
-            coAdressenavn = null,
-            adresse = endringsmeldingUtenlandskAdresse(
-                adressenavnNummer = "gate",
-                bygningEtasjeLeilighet = "bygning",
-                bySted = "by",
-                landkode = "DKK",
-                postkode = "postnummer",
-                regionDistriktOmraade = "region"
+        val pdlAdresse = SedTilPDLAdresse.OK(
+            endringsmeldingKontaktAdresse(
+                kilde = "kilde",
+                gyldigFraOgMed = LocalDate.now(),
+                gyldigTilOgMed = LocalDate.now().plusYears(1),
+                coAdressenavn = null,
+                adresse = endringsmeldingUtenlandskAdresse(
+                    adressenavnNummer = "gate",
+                    bygningEtasjeLeilighet = "bygning",
+                    bySted = "by",
+                    landkode = "DKK",
+                    postkode = "postnummer",
+                    regionDistriktOmraade = "region"
+                )
             )
         )
 
@@ -55,10 +57,12 @@ class SedTilPdlAdresseTest {
     @Test
     fun `Gateadresse med postboksadresse skal fylles ut i postboksNummerNavn`() {
         val sedAdresse = adresse(gate = "postboks 123")
-        val pdlAdresse = endringsmeldingKontaktAdresse(
-            adresse = endringsmeldingUtenlandskAdresse(
-                adressenavnNummer = null,
-                postboksNummerNavn = "postboks 123"
+        val pdlAdresse = SedTilPDLAdresse.OK(
+            endringsmeldingKontaktAdresse(
+                adresse = endringsmeldingUtenlandskAdresse(
+                    adressenavnNummer = null,
+                    postboksNummerNavn = "postboks 123"
+                )
             )
         )
 

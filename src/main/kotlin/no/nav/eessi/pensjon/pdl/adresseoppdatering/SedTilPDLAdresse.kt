@@ -12,8 +12,8 @@ class SedTilPDLAdresse(private val kodeverkClient: KodeverkClient) {
 
     private val postBoksInfo = listOf("postboks", "postb", "postbox", "p.b", "po.box")
 
-    fun konverter(kilde: String, sedAdresse: Adresse) =
-        EndringsmeldingKontaktAdresse(
+    fun konverter(kilde: String, sedAdresse: Adresse): Result =
+        OK(EndringsmeldingKontaktAdresse(
             kilde = kilde,
             gyldigFraOgMed = LocalDate.now(),
             gyldigTilOgMed = LocalDate.now().plusYears(1),
@@ -27,7 +27,11 @@ class SedTilPDLAdresse(private val kodeverkClient: KodeverkClient) {
                 postkode = sedAdresse.postnummer,
                 regionDistriktOmraade = sedAdresse.region
             )
-        )
+        ))
 
     private fun inneholderPostBoksInfo(gate: String?) = postBoksInfo.any { gate!!.contains(it) }
+
+    sealed class Result
+    data class OK(val endringsmeldingKontaktAdresse: EndringsmeldingKontaktAdresse): Result()
+    data class Valideringsfeil(val description: String): Result()
 }

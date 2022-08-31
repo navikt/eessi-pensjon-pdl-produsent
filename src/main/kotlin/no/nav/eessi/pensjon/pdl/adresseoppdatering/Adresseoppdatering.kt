@@ -1,7 +1,6 @@
 package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
 import no.nav.eessi.pensjon.eux.EuxService
-import no.nav.eessi.pensjon.eux.model.sed.Adresse
 import no.nav.eessi.pensjon.eux.model.sed.Bruker
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.models.EndringsmeldingKontaktAdresse
@@ -9,6 +8,8 @@ import no.nav.eessi.pensjon.models.EndringsmeldingUtenlandskAdresse
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelse
+import no.nav.eessi.pensjon.pdl.adresseoppdatering.SedTilPDLAdresse.OK
+import no.nav.eessi.pensjon.pdl.adresseoppdatering.SedTilPDLAdresse.Valideringsfeil
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.pdl.validering.AdresseValidering
 import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
@@ -79,32 +80,18 @@ class Adresseoppdatering(
 
         logger.info("Vi har funnet en person fra PDL med samme norsk identifikator som bruker i SED")
 
-        if (personFraPDL.erDoed()) {
-            return Update("Adresse i SED for avdød person finnes ikke i PDL, sender OPPRETT endringsmelding",
-                pdlAdresseEndringOpplysning(
-                    norskFnr = norskPin(bruker)!!.identifikator!!,
-                    kilde = sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")",
-                    adresseFraSed = bruker.adresse!!
-                ))
-
-        }
-
-        if (!hasUtenlandskKontaktadresse(personFraPDL)) {
-            return Update("Adresse i SED finnes ikke i PDL, sender OPPRETT endringsmelding",
-                pdlAdresseEndringOpplysning(
-                    norskFnr = norskPin(bruker)!!.identifikator!!,
-                    kilde = sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")",
-                    adresseFraSed = bruker.adresse!!
-                ))
-        }
-
-        if (!pdlFiltrering.isUtenlandskAdresseISEDMatchMedAdresseIPDL(bruker.adresse!!, personFraPDL.kontaktadresse!!.utenlandskAdresse!!)) {
-            return Update("Adresse i PDL matcher ikke adressen fra SED, sender OPPRETT endringsmelding",
-                pdlAdresseEndringOpplysning(
-                    norskFnr = norskPin(bruker)!!.identifikator!!,
-                    kilde = sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")",
-                    adresseFraSed = bruker.adresse!!
-                ))
+        if (!hasUtenlandskKontaktadresse(personFraPDL) || !pdlFiltrering.isUtenlandskAdresseISEDMatchMedAdresseIPDL(bruker.adresse!!, personFraPDL.kontaktadresse!!.utenlandskAdresse!!)) {
+            return when (val konverteringResult = sedTilPDLAdresse.konverter(sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")", bruker.adresse!!)) {
+                is OK -> Update(
+                    "Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding",
+                    pdlAdresseEndringOpplysning(
+                        norskFnr = norskPin(bruker)!!.identifikator!!,
+                        kilde = sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")",
+                        endringsmeldingKontaktAdresse = konverteringResult.endringsmeldingKontaktAdresse
+                    )
+                )
+                is Valideringsfeil -> NoUpdate("Adressen validerer ikke etter reglene til PDL: ${konverteringResult.description}")
+            }
         }
 
         if (personFraPDL.kontaktadresse!!.gyldigFraOgMed?.toLocalDate() == LocalDate.now()) {
@@ -113,8 +100,7 @@ class Adresseoppdatering(
 
         return Update(
             "Adresse finnes allerede i PDL, oppdaterer gyldig til og fra dato",
-            pdlEndringOpplysning(
-                endringstype = Endringstype.KORRIGER,
+            korrigerDatoEndringOpplysning(
                 norskFnr = norskPin(bruker)!!.identifikator!!,
                 kilde = sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")",
                 kontaktadresse = personFraPDL.kontaktadresse!!
@@ -143,15 +129,14 @@ class Adresseoppdatering(
     private fun isBrukersAdresseISEDIUtlandet(bruker: Bruker?) =
         bruker?.adresse?.land != null && bruker.adresse?.land != "NO"
 
-    fun pdlEndringOpplysning(
-        endringstype: Endringstype,
+    fun korrigerDatoEndringOpplysning(
         norskFnr: String,
         kilde: String,
         kontaktadresse: Kontaktadresse
     ) = PdlEndringOpplysning(
         listOf(
             Personopplysninger(
-                endringstype = endringstype,
+                endringstype = Endringstype.KORRIGER,
                 ident = norskFnr,
                 endringsmelding = EndringsmeldingKontaktAdresse(
                     kilde = kilde,
@@ -177,13 +162,13 @@ class Adresseoppdatering(
     fun pdlAdresseEndringOpplysning(
         norskFnr: String,
         kilde: String,
-        adresseFraSed: Adresse,
+        endringsmeldingKontaktAdresse: EndringsmeldingKontaktAdresse,
     ) = PdlEndringOpplysning(
         listOf(
             Personopplysninger(
                 endringstype = Endringstype.OPPRETT,
                 ident = norskFnr,
-                endringsmelding = sedTilPDLAdresse.konverter(kilde, adresseFraSed),
+                endringsmelding = endringsmeldingKontaktAdresse,
                 opplysningstype = Opplysningstype.KONTAKTADRESSE,
             )
         )
