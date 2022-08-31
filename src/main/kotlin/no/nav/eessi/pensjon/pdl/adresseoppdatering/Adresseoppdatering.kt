@@ -22,12 +22,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 
-sealed class Result
-
-data class Update(val description: String, val pdlEndringsOpplysninger: PdlEndringOpplysning): Result()
-data class NoUpdate(val description: String): Result()
-data class Error(val description: String): Result()
-
 @Service
 class Adresseoppdatering(
     private val personService: PersonService,
@@ -194,5 +188,11 @@ class Adresseoppdatering(
             )
         )
     )
+
+    sealed class Result
+
+    data class Update(val description: String, val pdlEndringsOpplysninger: PdlEndringOpplysning): Result()
+    data class NoUpdate(val description: String): Result()
+    data class Error(val description: String): Result()
 
 }

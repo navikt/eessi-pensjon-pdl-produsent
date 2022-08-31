@@ -17,6 +17,8 @@ import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
+import no.nav.eessi.pensjon.pdl.adresseoppdatering.Adresseoppdatering.NoUpdate
+import no.nav.eessi.pensjon.pdl.adresseoppdatering.Adresseoppdatering.Update
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.AdressebeskyttelseGradering
@@ -366,19 +368,22 @@ internal class AdresseoppdateringTest {
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderLand = EDDY_ADRESSE_LANDKODE))
 
-        assertEquals(Update("Adresse i SED finnes ikke i PDL, sender OPPRETT endringsmelding",
-            pdlAdresseEndringsOpplysning(
-                id = SOME_FNR,
-                pdlAdresse = EDDY_ADRESSE_I_ENDRINGSMELDING
-                    .copy(
-                        postboksNummerNavn = "postbox Dette er en gyldig postboksadresse",
-                        adressenavnNummer = null
-                    ),
-                kilde = "$SOME_UTENLANDSK_INSTITUSJON ($EDDY_ADRESSE_LANDKODE)",
-                gyldigFraOgMed = LocalDate.now(),
-                gyldigTilOgMed = LocalDate.now().plusYears(1),
-                endringsType = Endringstype.OPPRETT
-            )), result)
+        assertEquals(
+            Update(
+                "Adresse i SED finnes ikke i PDL, sender OPPRETT endringsmelding",
+                pdlAdresseEndringsOpplysning(
+                    id = SOME_FNR,
+                    pdlAdresse = EDDY_ADRESSE_I_ENDRINGSMELDING
+                        .copy(
+                            postboksNummerNavn = "postbox Dette er en gyldig postboksadresse",
+                            adressenavnNummer = null
+                        ),
+                    kilde = "$SOME_UTENLANDSK_INSTITUSJON ($EDDY_ADRESSE_LANDKODE)",
+                    gyldigFraOgMed = LocalDate.now(),
+                    gyldigTilOgMed = LocalDate.now().plusYears(1),
+                    endringsType = Endringstype.OPPRETT
+                )
+            ), result)
 
     }
 

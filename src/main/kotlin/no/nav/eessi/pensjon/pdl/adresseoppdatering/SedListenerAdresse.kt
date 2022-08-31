@@ -3,6 +3,9 @@ package no.nav.eessi.pensjon.pdl.adresseoppdatering
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
+import no.nav.eessi.pensjon.pdl.adresseoppdatering.Adresseoppdatering.Error
+import no.nav.eessi.pensjon.pdl.adresseoppdatering.Adresseoppdatering.NoUpdate
+import no.nav.eessi.pensjon.pdl.adresseoppdatering.Adresseoppdatering.Update
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
@@ -13,7 +16,7 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.concurrent.CountDownLatch
+import java.util.concurrent.*
 import javax.annotation.PostConstruct
 
 @Profile("!prod") // Feature toggle -- OBS! IKKE ENDRE UTEN Å HA TENKT PÅ OM KAFKA SKAL KONSUMERE FRA START!
