@@ -25,7 +25,7 @@ internal class AdresseValideringTest() {
 
     }
     @ParameterizedTest
-    @CsvSource("Strada Principala 34 Rimetea", "a", "Antonína Čermáka 2a 160 68 Prague", "a")
+    @CsvSource("Strada Principala 34 Rimetea", "Antonína Čermáka 2a 160 68 Prague", "å", "Åmål")
     fun `GYLDIG Adressenavnnummer bygning eller etasje`(gyldigeVerdier: String) {
         assertTrue(AdresseValidering().erGyldigAdressenavnNummerEllerBygningEtg(gyldigeVerdier))
     }
