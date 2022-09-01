@@ -21,6 +21,11 @@ class SedTilPDLAdresse(private val kodeverkClient: KodeverkClient) {
         if (bySted != null && !AdresseValidering().erGyldigByStedEllerRegion(bySted)) {
             return Valideringsfeil("Ikke gyldig bySted: $bySted")
         }
+        val regionDistriktOmraade = sedAdresse.region
+        if (regionDistriktOmraade != null && !AdresseValidering().erGyldigByStedEllerRegion(regionDistriktOmraade)) {
+            return Valideringsfeil("Ikke gyldig regionDistriktOmraade: $regionDistriktOmraade")
+        }
+
         return OK(
             EndringsmeldingKontaktAdresse(
                 kilde = kilde,
@@ -34,7 +39,7 @@ class SedTilPDLAdresse(private val kodeverkClient: KodeverkClient) {
                     landkode = kodeverkClient.finnLandkode(sedAdresse.land!!)!!,
                     postboksNummerNavn = if (inneholderPostBoksInfo(sedAdresse.gate)) sedAdresse.gate else null,
                     postkode = sedAdresse.postnummer,
-                    regionDistriktOmraade = sedAdresse.region
+                    regionDistriktOmraade = regionDistriktOmraade
                 )
             )
         )

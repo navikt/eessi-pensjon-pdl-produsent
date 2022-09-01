@@ -92,6 +92,14 @@ class SedTilPdlAdresseTest {
         )
     }
 
+    @Test
+    fun `regionDistriktOmraade med bare tall skal gi valideringfeil`() {
+        assertEquals(
+            SedTilPDLAdresse.Valideringsfeil("Ikke gyldig regionDistriktOmraade: 165483546"),
+            SedTilPDLAdresse(kodeverkClient).konverter("some kilde", adresse(region = "165483546"))
+        )
+    }
+
     private fun adresse(
         gate: String = "some gate",
         bygning: String = "some bygning",
