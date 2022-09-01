@@ -2,27 +2,28 @@ package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
 class AdresseValidering {
 
-    val ugyldigPostInfo = listOf("postboks", "postb", "postbox", "p.b", "po.box", "ukjent", "vet ikke", "nn")
+    val maaInneholdeMinstEnBokstav = Regex(".*\\p{L}+.*")
+    val maaInneholdeMinstEnBokstavEllerEtTall = Regex(".*[\\p{L}0-9]+.*")
+    val ugyldigPostInfo = listOf("postboks", "postb", "postbox", "p.b", "po.box")
     val ugyldigFeltInfo = listOf("ukjent", "vet ikke", "nn")
 
-    fun erGyldigAdressenavnNummerEllerBygningEtg(gate: String): Boolean {
-        if (ugyldigPostInfo.any { gate.contains(it) }) return false
-        if (!gate.matches(Regex("^(?=.*[\\p{L}])([0-9\\s\\p{L}]+)\$"))) return false
+    fun erGyldigAdressenavnNummerEllerBygningEtg(tekst: String): Boolean {
+        if (ugyldigPostInfo.any { tekst.contains(it) }) return false
+        if (ugyldigFeltInfo.any { tekst.contains(it) }) return false
+        if (!tekst.matches(maaInneholdeMinstEnBokstav)) return false
         return true
     }
 
-    fun erGyldigByStedEllerRegion(byStedRegion: String): Boolean {
-        if (ugyldigPostInformasjon(byStedRegion)) return false
-        if (!byStedRegion.matches(Regex("^(?=.*[\\p{L}])([0-9\\s\\p{L}]+)\$"))) return false
+    fun erGyldigByStedEllerRegion(tekst: String): Boolean {
+        if (ugyldigFeltInfo.any { tekst.contains(it) }) return false
+        if (!tekst.matches(maaInneholdeMinstEnBokstav)) return false
         return true
     }
 
-    fun erGyldigPostKode(postKode: String): Boolean {
-        if (ugyldigPostInformasjon(postKode)) return false
-        if (!postKode.matches(Regex("^([a-zA-Z0-9]+)(.*)\$"))) return false
+    fun erGyldigPostKode(tekst: String): Boolean {
+        if (ugyldigFeltInfo.any { tekst.contains(it) }) return false
+        if (!tekst.matches(maaInneholdeMinstEnBokstavEllerEtTall)) return false
         return true
     }
-
-    private fun ugyldigPostInformasjon(byStedRegion: String) = ugyldigFeltInfo.any { byStedRegion.contains(it) }
 
 }
