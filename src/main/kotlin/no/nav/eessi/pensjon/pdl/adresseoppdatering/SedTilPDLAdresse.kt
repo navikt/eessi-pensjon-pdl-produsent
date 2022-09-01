@@ -24,6 +24,7 @@ class SedTilPDLAdresse(private val kodeverkClient: KodeverkClient) {
         } catch (ex: LandkodeException) {
             return  Valideringsfeil("Ugyldig landkode: $land")
         }
+
         val adressenavnNummer = if (sedAdresse.gate != null && !inneholderPostBoksInfo(sedAdresse.gate)) sedAdresse.gate else null
         if (adressenavnNummer != null && !AdresseValidering().erGyldigAdressenavnNummerEllerBygningEtg(adressenavnNummer)) {
             return Valideringsfeil("Ikke gyldig adressenavnNummer: $adressenavnNummer")
@@ -49,6 +50,13 @@ class SedTilPDLAdresse(private val kodeverkClient: KodeverkClient) {
             return Valideringsfeil("Ikke gyldig bygningEtasjeLeilighet: $bygningEtasjeLeilighet")
         }
 
+        val postboksNummerNavn = if (sedAdresse.gate != null && inneholderPostBoksInfo(sedAdresse.gate)) sedAdresse.gate else null
+
+        if (adressenavnNummer.isNullOrEmpty() && bygningEtasjeLeilighet.isNullOrEmpty() && bySted.isNullOrEmpty() && postboksNummerNavn.isNullOrEmpty()
+            && postkode.isNullOrEmpty() && regionDistriktOmraade.isNullOrEmpty()) {
+            return Valideringsfeil("Ikke gyldig adresse, har kun landkode")
+        }
+
         return OK(
             EndringsmeldingKontaktAdresse(
                 kilde = kilde,
@@ -60,7 +68,7 @@ class SedTilPDLAdresse(private val kodeverkClient: KodeverkClient) {
                     bygningEtasjeLeilighet = bygningEtasjeLeilighet,
                     bySted = bySted,
                     landkode = landkode!!,
-                    postboksNummerNavn = if (sedAdresse.gate != null && inneholderPostBoksInfo(sedAdresse.gate)) sedAdresse.gate else null,
+                    postboksNummerNavn = postboksNummerNavn,
                     postkode = postkode,
                     regionDistriktOmraade = regionDistriktOmraade
                 )

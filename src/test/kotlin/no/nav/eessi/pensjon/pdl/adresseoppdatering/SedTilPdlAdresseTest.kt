@@ -134,6 +134,14 @@ class SedTilPdlAdresseTest {
         )
     }
 
+    @Test
+    fun `Adressen med kun landkode skal gi valideringfeil`() {
+        assertEquals(
+            SedTilPDLAdresse.Valideringsfeil("Ikke gyldig adresse, har kun landkode"),
+            SedTilPDLAdresse(kodeverkClient).konverter("some kilde", Adresse(land = "DK"))
+        )
+    }
+
     private fun adresse(
         gate: String = "some gate",
         bygning: String = "some bygning",
