@@ -2,6 +2,7 @@ package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
 import no.nav.eessi.pensjon.eux.model.sed.Adresse
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
+import no.nav.eessi.pensjon.kodeverk.LandkodeException
 import no.nav.eessi.pensjon.models.EndringsmeldingKontaktAdresse
 import no.nav.eessi.pensjon.models.EndringsmeldingUtenlandskAdresse
 import org.springframework.stereotype.Component
@@ -13,7 +14,17 @@ class SedTilPDLAdresse(private val kodeverkClient: KodeverkClient) {
     private val postBoksInfo = listOf("postboks", "postb", "postbox", "p.b", "po.box")
 
     fun konverter(kilde: String, sedAdresse: Adresse): Result {
-        val adressenavnNummer = if (!inneholderPostBoksInfo(sedAdresse.gate)) sedAdresse.gate else null
+        val land = sedAdresse.land
+        if (land == null) {
+            return Valideringsfeil("Mangler landkode")
+        }
+
+        val landkode = try {
+            kodeverkClient.finnLandkode(land)
+        } catch (ex: LandkodeException) {
+            return  Valideringsfeil("Ugyldig landkode: $land")
+        }
+        val adressenavnNummer = if (sedAdresse.gate != null && !inneholderPostBoksInfo(sedAdresse.gate)) sedAdresse.gate else null
         if (adressenavnNummer != null && !AdresseValidering().erGyldigAdressenavnNummerEllerBygningEtg(adressenavnNummer)) {
             return Valideringsfeil("Ikke gyldig adressenavnNummer: $adressenavnNummer")
         }
@@ -48,8 +59,8 @@ class SedTilPDLAdresse(private val kodeverkClient: KodeverkClient) {
                     adressenavnNummer = adressenavnNummer,
                     bygningEtasjeLeilighet = bygningEtasjeLeilighet,
                     bySted = bySted,
-                    landkode = kodeverkClient.finnLandkode(sedAdresse.land!!)!!,
-                    postboksNummerNavn = if (inneholderPostBoksInfo(sedAdresse.gate)) sedAdresse.gate else null,
+                    landkode = landkode!!,
+                    postboksNummerNavn = if (sedAdresse.gate != null && inneholderPostBoksInfo(sedAdresse.gate)) sedAdresse.gate else null,
                     postkode = postkode,
                     regionDistriktOmraade = regionDistriktOmraade
                 )

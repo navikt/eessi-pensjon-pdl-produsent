@@ -4,6 +4,7 @@ import io.mockk.every
 import io.mockk.mockk
 import no.nav.eessi.pensjon.eux.model.sed.Adresse
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
+import no.nav.eessi.pensjon.kodeverk.LandkodeException
 import no.nav.eessi.pensjon.models.EndringsmeldingKontaktAdresse
 import no.nav.eessi.pensjon.models.EndringsmeldingUtenlandskAdresse
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -113,6 +114,23 @@ class SedTilPdlAdresseTest {
         assertEquals(
             SedTilPDLAdresse.Valideringsfeil("Ikke gyldig bygningEtasjeLeilighet: postboks 321"),
             SedTilPDLAdresse(kodeverkClient).konverter("some kilde", adresse(bygning = "postboks 321"))
+        )
+    }
+
+    @Test
+    fun `Landkode som er null skal gi valideringfeil`() {
+        assertEquals(
+            SedTilPDLAdresse.Valideringsfeil("Mangler landkode"),
+            SedTilPDLAdresse(kodeverkClient).konverter("some kilde", Adresse(land = null))
+        )
+    }
+
+    @Test
+    fun `Landkode som er ugyldig skal gi valideringfeil`() {
+        every { kodeverkClient.finnLandkode("X") } .throws(LandkodeException(""))
+        assertEquals(
+            SedTilPDLAdresse.Valideringsfeil("Ugyldig landkode: X"),
+            SedTilPDLAdresse(kodeverkClient).konverter("some kilde", Adresse(land = "X"))
         )
     }
 
