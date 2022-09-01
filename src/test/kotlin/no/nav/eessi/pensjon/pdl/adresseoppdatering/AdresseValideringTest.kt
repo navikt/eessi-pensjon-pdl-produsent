@@ -31,7 +31,7 @@ internal class AdresseValideringTest() {
     }
 
     @ParameterizedTest
-    @CsvSource("ukjent","vet ikke", "nn", "1", "1+", "1", "!")
+    @CsvSource("ukjent", "ukjenT", "vet ikke", "nn", "1", "1+", "1", "!")
     fun `UGYLDIGE postkoder`(ugyldigVerdi: String) {
         assertFalse(AdresseValidering().erGyldigByStedEllerRegion(ugyldigVerdi))
     }
@@ -49,7 +49,7 @@ internal class AdresseValideringTest() {
      */
 
     @ParameterizedTest
-    @CsvSource("ukjent", "vet ikke", "nn", "+", "!+")
+    @CsvSource("ukjent", "Ukjent", "UKJENT", "vet ikke", "nn", "+", "!+")
     fun `UGYLDIGE postkoder i adresse`(ugyldigPostkode: String) {
         assertFalse(AdresseValidering().erGyldigPostKode(ugyldigPostkode))
         assertFalse(AdresseValidering().erGyldigPostKode(" "))

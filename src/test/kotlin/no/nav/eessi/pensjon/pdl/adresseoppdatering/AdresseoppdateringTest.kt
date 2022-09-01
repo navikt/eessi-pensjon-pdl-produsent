@@ -35,7 +35,6 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -343,16 +342,19 @@ internal class AdresseoppdateringTest {
 
     }
 
-    @Test @Disabled
-    fun `Gitt en adresse som skal valideres saa maa adressen inneholde minst landkode og ett annet felt`() {
-        //TODO
-    }
+    @Test
+    fun `Gitt en adresse som ikke validerer saa oppdaterer vi ikke PDL`() {
+        every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns sed(brukersAdresse = EDDY_ADRESSE_I_SED.copy(gate = "Ukjent"))
 
-    @Test @Disabled
-    fun `Gitt en adresse som skal valideres som mangler landkode saa skal ikke adressen registreres`() {
-        //TODO
-    }
+        every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns personFraPDL()
 
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering, sedTilPDLAdresse)
+
+        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderLand = EDDY_ADRESSE_LANDKODE))
+
+        assertEquals(NoUpdate("Adressen validerer ikke etter reglene til PDL: Ikke gyldig adressenavnNummer: Ukjent"), result)
+
+    }
 
     private fun pdlEndringOpplysning(
         id: String = SOME_FNR,

@@ -4,26 +4,19 @@ class AdresseValidering {
 
     val maaInneholdeMinstEnBokstav = Regex(".*\\p{L}+.*")
     val maaInneholdeMinstEnBokstavEllerEtTall = Regex(".*[\\p{L}0-9]+.*")
-    val postboksFraser = listOf("postboks", "postb", "postbox", "p.b", "po.box")
-    val ukjentFraser = listOf("ukjent", "vet ikke", "nn")
+    val postboksFraser = listOf("postboks", "postb", "postbox", "p.b", "po.box")  // Bruk lowercase fraser
+    val ukjentFraser = listOf("ukjent", "vet ikke", "nn")  // Bruk lowercase fraser
 
-    fun erGyldigAdressenavnNummerEllerBygningEtg(tekst: String): Boolean {
-        if (!tekst.matches(maaInneholdeMinstEnBokstav)) return false
-        if (postboksFraser.any { tekst.contains(it) }) return false
-        if (ukjentFraser.any { tekst.contains(it) }) return false
-        return true
-    }
+    fun erGyldigAdressenavnNummerEllerBygningEtg(tekst: String) =
+        tekst.matches(maaInneholdeMinstEnBokstav) && !inneholderPostboksFraser(tekst) && !inneholderUkjentFraser(tekst)
 
-    fun erGyldigByStedEllerRegion(tekst: String): Boolean {
-        if (!tekst.matches(maaInneholdeMinstEnBokstav)) return false
-        if (ukjentFraser.any { tekst.contains(it) }) return false
-        return true
-    }
+    fun erGyldigByStedEllerRegion(tekst: String) =
+        tekst.matches(maaInneholdeMinstEnBokstav) && !inneholderUkjentFraser(tekst)
 
-    fun erGyldigPostKode(tekst: String): Boolean {
-        if (!tekst.matches(maaInneholdeMinstEnBokstavEllerEtTall)) return false
-        if (ukjentFraser.any { tekst.contains(it) }) return false
-        return true
-    }
+    fun erGyldigPostKode(tekst: String) =
+        tekst.matches(maaInneholdeMinstEnBokstavEllerEtTall) && !inneholderUkjentFraser(tekst)
+
+    private fun inneholderPostboksFraser(tekst: String) = postboksFraser.any { tekst.lowercase().contains(it) }
+    private fun inneholderUkjentFraser(tekst: String) = ukjentFraser.any { tekst.lowercase().contains(it) }
 
 }
