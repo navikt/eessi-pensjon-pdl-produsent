@@ -1,4 +1,4 @@
-package no.nav.eessi.pensjon.pdl.validering
+package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue

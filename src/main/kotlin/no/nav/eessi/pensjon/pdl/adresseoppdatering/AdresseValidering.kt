@@ -1,4 +1,4 @@
-package no.nav.eessi.pensjon.pdl.validering
+package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
 class AdresseValidering {
 

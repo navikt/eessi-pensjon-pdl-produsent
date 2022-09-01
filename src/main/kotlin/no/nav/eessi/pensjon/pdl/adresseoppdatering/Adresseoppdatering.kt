@@ -11,7 +11,6 @@ import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.adresseoppdatering.SedTilPDLAdresse.OK
 import no.nav.eessi.pensjon.pdl.adresseoppdatering.SedTilPDLAdresse.Valideringsfeil
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
-import no.nav.eessi.pensjon.pdl.validering.AdresseValidering
 import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
