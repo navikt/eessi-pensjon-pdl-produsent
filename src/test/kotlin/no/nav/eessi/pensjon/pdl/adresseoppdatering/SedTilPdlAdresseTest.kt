@@ -100,6 +100,14 @@ class SedTilPdlAdresseTest {
         )
     }
 
+    @Test
+    fun `postkode som inneholder kun tegn saa skal det gi valideringfeil`() {
+        assertEquals(
+            SedTilPDLAdresse.Valideringsfeil("Ikke gyldig postkode: ***"),
+            SedTilPDLAdresse(kodeverkClient).konverter("some kilde", adresse(postnummer = "***"))
+        )
+    }
+
     private fun adresse(
         gate: String = "some gate",
         bygning: String = "some bygning",
