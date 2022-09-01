@@ -37,8 +37,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.CsvSource
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -316,23 +314,6 @@ internal class AdresseoppdateringTest {
 
         assertTrue(result is Update)
     }
-
-    @ParameterizedTest
-    @CsvSource(
-        "ukjent",
-        "vet ikke",
-        "nn"
-    )
-    fun `Gitt en adresse der by inneholder ukjent, saa gjoer vi ingen oppdatering`(ugyldigOrd: String){
-        every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns sed(brukersAdresse = EDDY_ADRESSE_I_SED.copy(by = ugyldigOrd))
-        every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns personFraPDL( utenlandskAdresse = EDDY_ADRESSE_FRA_PDL )
-
-        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering, sedTilPDLAdresse)
-
-        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderLand = EDDY_ADRESSE_LANDKODE))
-        assertEquals(NoUpdate("Adressens by inneholder ugyldig informasjon ($ugyldigOrd)"), result)
-    }
-
 
     @Test
     fun `Gitt en SED med postboksadresse i gatefeltet saa skal denne fylles ut i postboks feltet`() {

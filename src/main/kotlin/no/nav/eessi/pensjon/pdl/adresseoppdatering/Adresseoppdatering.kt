@@ -56,10 +56,6 @@ class Adresseoppdatering(
             return NoUpdate("Adressens landkode (${sed.nav?.bruker?.adresse?.land}) er ulik landkode på avsenderland (${sedHendelse.avsenderLand}).")
         }
 
-        if(!AdresseValidering().erGyldigByStedEllerRegion(bruker?.adresse?.by!!)){
-            return NoUpdate("Adressens by inneholder ugyldig informasjon (${bruker.adresse?.by})")
-        }
-
         if (!hasNorskPin(bruker)) {
             // TODO Håndtere brukere med ikke-norske identer
             return NoUpdate("Bruker har ikke norsk pin i SED")
@@ -79,8 +75,8 @@ class Adresseoppdatering(
 
         logger.info("Vi har funnet en person fra PDL med samme norsk identifikator som bruker i SED")
 
-        if (!hasUtenlandskKontaktadresse(personFraPDL) || !pdlFiltrering.isUtenlandskAdresseISEDMatchMedAdresseIPDL(bruker.adresse!!, personFraPDL.kontaktadresse!!.utenlandskAdresse!!)) {
-            return when (val konverteringResult = sedTilPDLAdresse.konverter(sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")", bruker.adresse!!)) {
+        if (!hasUtenlandskKontaktadresse(personFraPDL) || !pdlFiltrering.isUtenlandskAdresseISEDMatchMedAdresseIPDL(bruker?.adresse!!, personFraPDL.kontaktadresse!!.utenlandskAdresse!!)) {
+            return when (val konverteringResult = sedTilPDLAdresse.konverter(sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")", bruker?.adresse!!)) {
                 is OK -> Update(
                     "Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding",
                     pdlAdresseEndringOpplysning(

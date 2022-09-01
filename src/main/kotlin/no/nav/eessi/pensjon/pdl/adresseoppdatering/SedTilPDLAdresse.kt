@@ -12,22 +12,34 @@ class SedTilPDLAdresse(private val kodeverkClient: KodeverkClient) {
 
     private val postBoksInfo = listOf("postboks", "postb", "postbox", "p.b", "po.box")
 
-    fun konverter(kilde: String, sedAdresse: Adresse): Result =
-        OK(EndringsmeldingKontaktAdresse(
-            kilde = kilde,
-            gyldigFraOgMed = LocalDate.now(),
-            gyldigTilOgMed = LocalDate.now().plusYears(1),
-            coAdressenavn = null,
-            adresse = EndringsmeldingUtenlandskAdresse(
-                adressenavnNummer = if (!inneholderPostBoksInfo(sedAdresse.gate)) sedAdresse.gate else null,
-                bygningEtasjeLeilighet = sedAdresse.bygning,
-                bySted = sedAdresse.by,
-                landkode = kodeverkClient.finnLandkode(sedAdresse.land!!)!!,
-                postboksNummerNavn = if (inneholderPostBoksInfo(sedAdresse.gate)) sedAdresse.gate else null,
-                postkode = sedAdresse.postnummer,
-                regionDistriktOmraade = sedAdresse.region
+    fun konverter(kilde: String, sedAdresse: Adresse): Result {
+        val adressenavnNummer = if (!inneholderPostBoksInfo(sedAdresse.gate)) sedAdresse.gate else null
+        if (adressenavnNummer != null && !AdresseValidering().erGyldigAdressenavnNummerEllerBygningEtg(adressenavnNummer)) {
+            return Valideringsfeil("Ikke gyldig adressenavnNummer: $adressenavnNummer")
+        }
+        val bySted = sedAdresse.by
+        if (bySted != null && !AdresseValidering().erGyldigByStedEllerRegion(bySted)) {
+            return Valideringsfeil("Ikke gyldig bySted: $bySted")
+        }
+        return OK(
+            EndringsmeldingKontaktAdresse(
+                kilde = kilde,
+                gyldigFraOgMed = LocalDate.now(),
+                gyldigTilOgMed = LocalDate.now().plusYears(1),
+                coAdressenavn = null,
+                adresse = EndringsmeldingUtenlandskAdresse(
+                    adressenavnNummer = adressenavnNummer,
+                    bygningEtasjeLeilighet = sedAdresse.bygning,
+                    bySted = bySted,
+                    landkode = kodeverkClient.finnLandkode(sedAdresse.land!!)!!,
+                    postboksNummerNavn = if (inneholderPostBoksInfo(sedAdresse.gate)) sedAdresse.gate else null,
+                    postkode = sedAdresse.postnummer,
+                    regionDistriktOmraade = sedAdresse.region
+                )
             )
-        ))
+        )
+
+    }
 
     private fun inneholderPostBoksInfo(gate: String?) = postBoksInfo.any { gate!!.contains(it) }
 

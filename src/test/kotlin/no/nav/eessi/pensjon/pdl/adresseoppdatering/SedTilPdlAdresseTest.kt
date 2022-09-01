@@ -9,6 +9,8 @@ import no.nav.eessi.pensjon.models.EndringsmeldingUtenlandskAdresse
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import java.time.LocalDate
 
 class SedTilPdlAdresseTest {
@@ -69,8 +71,29 @@ class SedTilPdlAdresseTest {
         assertEquals(pdlAdresse, SedTilPDLAdresse(kodeverkClient).konverter("some kilde", sedAdresse))
     }
 
+    @ParameterizedTest
+    @CsvSource(
+        "ukjent",
+        "vet ikke",
+        "nn"
+    )
+    fun `Gitt en adresse der by inneholder ukjent, saa gjoer vi ingen oppdatering`(ugyldigOrd: String){
+        assertEquals(
+            SedTilPDLAdresse.Valideringsfeil("Ikke gyldig bySted: $ugyldigOrd"),
+            SedTilPDLAdresse(kodeverkClient).konverter("some kilde", adresse(by = ugyldigOrd))
+        )
+    }
+
+    @Test
+    fun `Gateadresse med ukjent skal gi valideringfeil`() {
+        assertEquals(
+            SedTilPDLAdresse.Valideringsfeil("Ikke gyldig adressenavnNummer: ukjent badeland strasse"),
+            SedTilPDLAdresse(kodeverkClient).konverter("some kilde", adresse(gate = "ukjent badeland strasse"))
+        )
+    }
+
     private fun adresse(
-        gate: String,
+        gate: String = "some gate",
         bygning: String = "some bygning",
         by: String = "some by",
         postnummer: String = "some postnummer",
