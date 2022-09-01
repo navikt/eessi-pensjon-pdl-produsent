@@ -108,6 +108,14 @@ class SedTilPdlAdresseTest {
         )
     }
 
+    @Test
+    fun `bygningEtasjeLeilighet med ordet postboks skal gi valideringfeil`() {
+        assertEquals(
+            SedTilPDLAdresse.Valideringsfeil("Ikke gyldig bygningEtasjeLeilighet: postboks 321"),
+            SedTilPDLAdresse(kodeverkClient).konverter("some kilde", adresse(bygning = "postboks 321"))
+        )
+    }
+
     private fun adresse(
         gate: String = "some gate",
         bygning: String = "some bygning",
