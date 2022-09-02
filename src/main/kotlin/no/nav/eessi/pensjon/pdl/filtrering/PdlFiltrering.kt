@@ -35,24 +35,6 @@ class PdlFiltrering(private val kodeverk: KodeverkClient) {
     }
 
     /**
-     * Sjekk om utenlansk adresse i Sed finnes i PDL
-     *
-     * Konverterer 2 bokstavsutlandkode til trebokstavsutlandskode
-     * Sjekker om 3-bokstavslandkode og adresse fra Sed finnes i PDL
-     *
-     */
-    //TODO fikse til riktig sjekk av adresse i sed mot pdl
-    fun isUtenlandskAdresseISEDMatchMedAdresseIPDL(utenlandskAdrISed: Adresse, utenlandskeAdrIPDL: UtenlandskAdresse): Boolean {
-        return (utenlandskAdrISed.gate == utenlandskeAdrIPDL.adressenavnNummer || utenlandskAdrISed.gate == utenlandskeAdrIPDL.postboksNummerNavn) &&
-            utenlandskAdrISed.bygning == utenlandskeAdrIPDL.bygningEtasjeLeilighet &&
-            utenlandskAdrISed.by == utenlandskeAdrIPDL.bySted &&
-            utenlandskAdrISed.postnummer == utenlandskeAdrIPDL.postkode &&
-            utenlandskAdrISed.region == utenlandskeAdrIPDL.regionDistriktOmraade &&
-            utenlandskAdrISed.land == utenlandskeAdrIPDL.landkode.let { kodeverk.finnLandkode(it) }
-    }
-
-
-    /**
      * Sjekk om uid i Sed finnes i PDL
      *
      * Konverterer 2 bokstavsutlandkode til trebokstavsutlandskode

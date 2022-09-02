@@ -54,8 +54,6 @@ internal class AdresseoppdateringTest {
     var kodeverkClient: KodeverkClient = mockk(relaxed = true)
     var sedTilPDLAdresse = SedTilPDLAdresse(kodeverkClient)
 
-    var pdlFiltrering: PdlFiltrering = PdlFiltrering(kodeverkClient)
-
     private val personMottakKlient: PersonMottakKlient = mockk()
 
     @BeforeEach
@@ -83,7 +81,7 @@ internal class AdresseoppdateringTest {
                 )
 
         every { personMottakKlient.opprettPersonopplysning(any()) } returns true
-        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering, sedTilPDLAdresse)
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, sedTilPDLAdresse)
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(
             sedHendelse(
@@ -153,7 +151,7 @@ internal class AdresseoppdateringTest {
 
         every { personMottakKlient.opprettPersonopplysning(any()) } returns true
 
-        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering, sedTilPDLAdresse)
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, sedTilPDLAdresse)
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderNavn = TYSK_INSTITUSJON, avsenderLand = TYSK_ADRESSE_LANDKODE))
 
@@ -204,7 +202,7 @@ internal class AdresseoppdateringTest {
 
         every { personMottakKlient.opprettPersonopplysning(any()) } returns true
 
-        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering, sedTilPDLAdresse)
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, sedTilPDLAdresse)
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderNavn = TYSK_INSTITUSJON, avsenderLand = TYSK_ADRESSE_LANDKODE))
 
@@ -223,7 +221,7 @@ internal class AdresseoppdateringTest {
         every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns
                 sed(brukersAdresse = adresse(EDDY_ADRESSE_LANDKODE))
 
-        val adresseoppdatering = Adresseoppdatering(mockk(), euxService, mockk(), mockk())
+        val adresseoppdatering = Adresseoppdatering(mockk(), euxService, mockk())
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(
             avsenderNavn = "Dansk institusjon",
@@ -244,7 +242,7 @@ internal class AdresseoppdateringTest {
                     gyldigFraOgMed = LocalDateTime.now()
                 )
 
-        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering, mockk())
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, sedTilPDLAdresse)
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(
             sedHendelse(
@@ -267,7 +265,7 @@ internal class AdresseoppdateringTest {
                 )
 
         every { personMottakKlient.opprettPersonopplysning(any()) } returns true
-        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering, mockk())
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, sedTilPDLAdresse)
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderLand = EDDY_ADRESSE_LANDKODE))
 
@@ -290,7 +288,7 @@ internal class AdresseoppdateringTest {
                     adressebeskyttelse = listOf(AdressebeskyttelseGradering.STRENGT_FORTROLIG)
                 )
 
-        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering, mockk())
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, mockk())
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderLand = EDDY_ADRESSE_LANDKODE))
 
@@ -307,7 +305,7 @@ internal class AdresseoppdateringTest {
                     adressebeskyttelse = listOf(AdressebeskyttelseGradering.STRENGT_FORTROLIG_UTLAND)
                 )
 
-        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering, sedTilPDLAdresse)
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, sedTilPDLAdresse)
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderLand = EDDY_ADRESSE_LANDKODE))
 
@@ -319,7 +317,7 @@ internal class AdresseoppdateringTest {
         every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns sed(brukersAdresse = EDDY_ADRESSE_I_SED.copy(gate = "postbox Dette er en gyldig postboksadresse"))
         every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns personFraPDL()
 
-        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering, sedTilPDLAdresse)
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, sedTilPDLAdresse)
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderLand = EDDY_ADRESSE_LANDKODE))
 
@@ -348,7 +346,7 @@ internal class AdresseoppdateringTest {
 
         every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns personFraPDL()
 
-        val adresseoppdatering = Adresseoppdatering(personService, euxService, pdlFiltrering, sedTilPDLAdresse)
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, sedTilPDLAdresse)
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderLand = EDDY_ADRESSE_LANDKODE))
 

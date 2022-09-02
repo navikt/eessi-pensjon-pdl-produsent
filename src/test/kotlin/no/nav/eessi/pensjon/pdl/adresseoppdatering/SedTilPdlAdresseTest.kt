@@ -7,7 +7,9 @@ import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.kodeverk.LandkodeException
 import no.nav.eessi.pensjon.models.EndringsmeldingKontaktAdresse
 import no.nav.eessi.pensjon.models.EndringsmeldingUtenlandskAdresse
+import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -138,6 +140,32 @@ class SedTilPdlAdresseTest {
             SedTilPDLAdresse(kodeverkClient).konverter("some kilde", Adresse(land = "DK"))
         )
     }
+
+    @Test
+    fun `Gitt en utlandsadresse i SED saa sjekker vi om den finnes i PDL`(){
+        every { kodeverkClient.finnLandkode("SE") } returns "SWE"
+
+        val adresse = Adresse(
+            gate = "EddyRoad",
+            bygning = "EddyHouse",
+            by = "EddyCity",
+            postnummer = "111",
+            region = "Oslo",
+            land ="SWE",
+            kontaktpersonadresse = null,
+        )
+        val utenlandskAdresse = UtenlandskAdresse(
+            adressenavnNummer = adresse.gate,
+            landkode = "SE",
+            postkode = adresse.postnummer,
+            bySted = adresse.by,
+            bygningEtasjeLeilighet  = adresse.bygning,
+            regionDistriktOmraade = adresse.region
+        )
+        assertTrue(SedTilPDLAdresse(kodeverkClient).isUtenlandskAdresseISEDMatchMedAdresseIPDL(adresse, utenlandskAdresse))
+    }
+
+
 
     private fun adresse(
         gate: String = "some gate",

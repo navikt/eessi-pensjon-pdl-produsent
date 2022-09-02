@@ -10,7 +10,6 @@ import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.adresseoppdatering.SedTilPDLAdresse.OK
 import no.nav.eessi.pensjon.pdl.adresseoppdatering.SedTilPDLAdresse.Valideringsfeil
-import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
@@ -26,7 +25,6 @@ import java.time.LocalDate
 class Adresseoppdatering(
     private val personService: PersonService,
     private val euxService: EuxService,
-    private val pdlFiltrering: PdlFiltrering,
     private val sedTilPDLAdresse: SedTilPDLAdresse
 ) {
     private val logger = LoggerFactory.getLogger(Adresseoppdatering::class.java)
@@ -75,7 +73,7 @@ class Adresseoppdatering(
 
         logger.info("Vi har funnet en person fra PDL med samme norsk identifikator som bruker i SED")
 
-        if (!hasUtenlandskKontaktadresse(personFraPDL) || !pdlFiltrering.isUtenlandskAdresseISEDMatchMedAdresseIPDL(bruker?.adresse!!, personFraPDL.kontaktadresse!!.utenlandskAdresse!!)) {
+        if (!hasUtenlandskKontaktadresse(personFraPDL) || !sedTilPDLAdresse.isUtenlandskAdresseISEDMatchMedAdresseIPDL(bruker?.adresse!!, personFraPDL.kontaktadresse!!.utenlandskAdresse!!)) {
             return when (val konverteringResult = sedTilPDLAdresse.konverter(sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")", bruker?.adresse!!)) {
                 is OK -> Update(
                     "Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding",

@@ -5,6 +5,7 @@ import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.kodeverk.LandkodeException
 import no.nav.eessi.pensjon.models.EndringsmeldingKontaktAdresse
 import no.nav.eessi.pensjon.models.EndringsmeldingUtenlandskAdresse
+import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import org.springframework.stereotype.Component
 import java.time.LocalDate
 
@@ -75,6 +76,23 @@ class SedTilPDLAdresse(private val kodeverkClient: KodeverkClient) {
             )
         )
 
+    }
+
+    /**
+     * Sjekk om utenlansk adresse i Sed finnes i PDL
+     *
+     * Konverterer 2 bokstavsutlandkode til trebokstavsutlandskode
+     * Sjekker om 3-bokstavslandkode og adresse fra Sed finnes i PDL
+     *
+     */
+    //TODO fikse til riktig sjekk av adresse i sed mot pdl
+    fun isUtenlandskAdresseISEDMatchMedAdresseIPDL(utenlandskAdrISed: Adresse, utenlandskeAdrIPDL: UtenlandskAdresse): Boolean {
+        return (utenlandskAdrISed.gate == utenlandskeAdrIPDL.adressenavnNummer || utenlandskAdrISed.gate == utenlandskeAdrIPDL.postboksNummerNavn) &&
+                utenlandskAdrISed.bygning == utenlandskeAdrIPDL.bygningEtasjeLeilighet &&
+                utenlandskAdrISed.by == utenlandskeAdrIPDL.bySted &&
+                utenlandskAdrISed.postnummer == utenlandskeAdrIPDL.postkode &&
+                utenlandskAdrISed.region == utenlandskeAdrIPDL.regionDistriktOmraade &&
+                utenlandskAdrISed.land == utenlandskeAdrIPDL.landkode.let { kodeverkClient.finnLandkode(it) }
     }
 
     private fun inneholderPostBoksInfo(gate: String?) = postBoksInfo.any { gate!!.contains(it) }

@@ -186,31 +186,6 @@ internal class PdlFiltreringTest {
         assertEquals(validate, pdlFiltrering.sjekkYterligerePaaPDLuidMotSedUid (pdluid, seduid))
     }
 
-    @Test
-    fun `Gitt en utlandsadresse i SED saa sjekker vi om den finnes i PDL`(){
-        every { kodeverkClient.finnLandkode("SE") } returns "SWE"
-
-        val adresse = Adresse(
-            gate = "EddyRoad",
-            bygning = "EddyHouse",
-            by = "EddyCity",
-            postnummer = "111",
-            region = "Oslo",
-            land ="SWE",
-            kontaktpersonadresse = null,
-        )
-        val utenlandskAdresse = UtenlandskAdresse(
-            adressenavnNummer = adresse.gate,
-            landkode = "SE",
-            postkode = adresse.postnummer,
-            bySted = adresse.by,
-            bygningEtasjeLeilighet  = adresse.bygning,
-            regionDistriktOmraade = adresse.region
-        )
-        assertTrue(pdlFiltrering.isUtenlandskAdresseISEDMatchMedAdresseIPDL(adresse, utenlandskAdresse))
-    }
-
-
     private fun mockMeta() = Metadata(
         listOf(
             Endring(
