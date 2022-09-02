@@ -26,27 +26,27 @@ class SedTilPDLAdresse(private val kodeverkClient: KodeverkClient) {
         }
 
         val adressenavnNummer = if (sedAdresse.gate != null && !inneholderPostBoksInfo(sedAdresse.gate)) sedAdresse.gate else null
-        if (adressenavnNummer != null && !AdresseValidering().erGyldigAdressenavnNummerEllerBygningEtg(adressenavnNummer)) {
+        if (adressenavnNummer != null && !AdresseValidering.erGyldigAdressenavnNummerEllerBygningEtg(adressenavnNummer)) {
             return Valideringsfeil("Ikke gyldig adressenavnNummer: $adressenavnNummer")
         }
 
         val bySted = sedAdresse.by
-        if (bySted != null && !AdresseValidering().erGyldigByStedEllerRegion(bySted)) {
+        if (bySted != null && !AdresseValidering.erGyldigByStedEllerRegion(bySted)) {
             return Valideringsfeil("Ikke gyldig bySted: $bySted")
         }
 
         val regionDistriktOmraade = sedAdresse.region
-        if (regionDistriktOmraade != null && !AdresseValidering().erGyldigByStedEllerRegion(regionDistriktOmraade)) {
+        if (regionDistriktOmraade != null && !AdresseValidering.erGyldigByStedEllerRegion(regionDistriktOmraade)) {
             return Valideringsfeil("Ikke gyldig regionDistriktOmraade: $regionDistriktOmraade")
         }
 
         val postkode = sedAdresse.postnummer
-        if (postkode != null && !AdresseValidering().erGyldigPostKode(postkode)) {
+        if (postkode != null && !AdresseValidering.erGyldigPostKode(postkode)) {
             return Valideringsfeil("Ikke gyldig postkode: $postkode")
         }
 
         val bygningEtasjeLeilighet = sedAdresse.bygning
-        if (bygningEtasjeLeilighet != null && !AdresseValidering().erGyldigAdressenavnNummerEllerBygningEtg(bygningEtasjeLeilighet)) {
+        if (bygningEtasjeLeilighet != null && !AdresseValidering.erGyldigAdressenavnNummerEllerBygningEtg(bygningEtasjeLeilighet)) {
             return Valideringsfeil("Ikke gyldig bygningEtasjeLeilighet: $bygningEtasjeLeilighet")
         }
 

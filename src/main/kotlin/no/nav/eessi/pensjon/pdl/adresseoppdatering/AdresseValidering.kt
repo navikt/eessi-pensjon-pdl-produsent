@@ -1,11 +1,11 @@
 package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
-class AdresseValidering {
+object AdresseValidering {
 
     val maaInneholdeMinstEnBokstav = Regex(".*\\p{L}+.*")
     val maaInneholdeMinstEnBokstavEllerEtTall = Regex(".*[\\p{L}0-9]+.*")
-    val postboksFraser = listOf("postboks", "postb", "postbox", "p.b", "po.box")  // Bruk lowercase fraser
-    val ukjentFraser = listOf("ukjent", "vet ikke", "nn")  // Bruk lowercase fraser
+    val postboksFraser = listOf("postboks", "postb", "postbox", "p.b", "po.box").map { toCaseInsensitiveWordRegex(it) }
+    val ukjentFraser = listOf("ukjent", "vet ikke", "unknown", "not known").map { toCaseInsensitiveWordRegex(it) }
 
     fun erGyldigAdressenavnNummerEllerBygningEtg(tekst: String) =
         tekst.matches(maaInneholdeMinstEnBokstav) && !inneholderPostboksFraser(tekst) && !inneholderUkjentFraser(tekst)
@@ -16,7 +16,12 @@ class AdresseValidering {
     fun erGyldigPostKode(tekst: String) =
         tekst.matches(maaInneholdeMinstEnBokstavEllerEtTall) && !inneholderUkjentFraser(tekst)
 
-    private fun inneholderPostboksFraser(tekst: String) = postboksFraser.any { tekst.lowercase().contains(it) }
-    private fun inneholderUkjentFraser(tekst: String) = ukjentFraser.any { tekst.lowercase().contains(it) }
+    private fun inneholderPostboksFraser(tekst: String) = postboksFraser.any { it.matches(tekst) }
+    private fun inneholderUkjentFraser(tekst: String) = ukjentFraser.any { it.matches(tekst) }
+
+    private fun toCaseInsensitiveWordRegex(tekst: String) =
+        tekst
+            .replace(".", "\\.")
+            .let { Regex("""(\b|\W)$it(\b|\W)""", RegexOption.IGNORE_CASE)}
 
 }
