@@ -16,7 +16,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import java.time.LocalDate
 
-class SedTilPDLAdresseTest2 {
+class SedTilPDLAdresseTest {
 
     var kodeverkClient: KodeverkClient = mockk(relaxed = true)
 
