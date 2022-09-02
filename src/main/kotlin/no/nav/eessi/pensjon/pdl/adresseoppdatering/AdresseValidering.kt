@@ -16,8 +16,8 @@ object AdresseValidering {
     fun erGyldigPostKode(tekst: String) =
         tekst.matches(maaInneholdeMinstEnBokstavEllerEtTall) && !inneholderUkjentFraser(tekst)
 
-    private fun inneholderPostboksFraser(tekst: String) = postboksFraser.any { it.matches(tekst) }
-    private fun inneholderUkjentFraser(tekst: String) = ukjentFraser.any { it.matches(tekst) }
+    private fun inneholderPostboksFraser(tekst: String) = postboksFraser.any { tekst.contains(it) }
+    private fun inneholderUkjentFraser(tekst: String) = ukjentFraser.any { tekst.contains(it) }
 
     private fun toCaseInsensitiveWordRegex(tekst: String) =
         tekst

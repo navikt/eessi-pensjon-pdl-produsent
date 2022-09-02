@@ -73,10 +73,7 @@ class SedTilPdlAdresseTest {
     }
 
     @ParameterizedTest
-    @CsvSource(
-        "ukjent",
-        "vet ikke",
-        "nn"
+    @CsvSource("ukjent", "vet ikke"
     )
     fun `Gitt en adresse der by inneholder ukjent, saa gjoer vi ingen oppdatering`(ugyldigOrd: String){
         assertEquals(
