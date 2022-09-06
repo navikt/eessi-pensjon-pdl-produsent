@@ -8,7 +8,6 @@ import org.mockserver.model.Header
 import org.mockserver.model.HttpRequest.request
 import org.mockserver.model.HttpResponse
 import org.mockserver.model.HttpStatusCode
-import org.mockserver.model.JsonBody
 import org.mockserver.verify.VerificationTimes
 import org.springframework.http.HttpMethod
 import java.nio.file.Files
@@ -100,13 +99,14 @@ class CustomMockServer() {
             )
     }
 
-    fun verifyRequestWithBody(path: String, body: String, times: Int) = apply {
+    fun verifyRequestWithBody(path: String, times: Int) = apply {
         MockServerClient("localhost", serverPort)
             .verify(
                 request()
+                    .withMethod(HttpMethod.POST.name)
                     .withPath(path)
-                    .withBody(JsonBody.json(body)),
-                VerificationTimes.atMost(times)
+                ,
+                VerificationTimes.atLeast(times)
             )
     }
 
