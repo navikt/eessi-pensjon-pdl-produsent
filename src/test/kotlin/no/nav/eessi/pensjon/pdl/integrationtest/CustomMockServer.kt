@@ -13,7 +13,6 @@ import org.springframework.http.HttpMethod
 import java.nio.file.Files
 import java.nio.file.Paths
 
-
 class CustomMockServer() {
     private val serverPort = System.getProperty("mockserverport").toInt()
 
@@ -95,18 +94,19 @@ class CustomMockServer() {
             .verify(
                 request()
                     .withPath(path),
-                VerificationTimes.atMost(times)
+                VerificationTimes.atLeast(times)
             )
     }
 
-    fun verifyRequestWithBody(path: String, times: Int) = apply {
+    fun verifyRequestWithBody(path: String, body: String) = apply {
         MockServerClient("localhost", serverPort)
             .verify(
                 request()
                     .withMethod(HttpMethod.POST.name)
                     .withPath(path)
+                    .withBody(body.trimIndent())
                 ,
-                VerificationTimes.atLeast(times)
+                VerificationTimes.atLeast(1)
             )
     }
 
