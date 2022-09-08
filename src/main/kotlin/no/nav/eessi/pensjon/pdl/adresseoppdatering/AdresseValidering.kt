@@ -4,7 +4,7 @@ object AdresseValidering {
 
     val maaInneholdeMinstEnBokstav = Regex(".*\\p{L}+.*")
     val maaInneholdeMinstEnBokstavEllerEtTall = Regex(".*[\\p{L}0-9]+.*")
-    val postboksFraser = listOf("postboks", "postb", "postbox", "p.b", "po.box").map { toCaseInsensitiveWordRegex(it) }
+    val postboksFraser = listOf("postboks", "postb", "postbox", "p.b", "po.box", "p.o.box").map { toCaseInsensitiveWordRegex(it) }
     val ukjentFraser = listOf("ukjent", "vet ikke", "unknown", "not known").map { toCaseInsensitiveWordRegex(it) }
 
     fun erGyldigAdressenavnNummerEllerBygningEtg(tekst: String) =

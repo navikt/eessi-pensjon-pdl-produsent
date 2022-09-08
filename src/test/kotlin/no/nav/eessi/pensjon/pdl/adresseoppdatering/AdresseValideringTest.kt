@@ -19,7 +19,7 @@ internal class AdresseValideringTest() {
      */
 
     @ParameterizedTest
-    @CsvSource("postboks", "postb.", "po.box", "ukjent", "vet ikke", "1", "Unknown")
+    @CsvSource("postboks", "postb.", "po.box", "ukjent", "vet ikke", "1", "Unknown", "p.o.box")
     fun `UGYLDIGE Adressenavnnummer bygning eller etasje`(ugyldigVerdi: String) {
         assertFalse(AdresseValidering.erGyldigAdressenavnNummerEllerBygningEtg(ugyldigVerdi))
 
