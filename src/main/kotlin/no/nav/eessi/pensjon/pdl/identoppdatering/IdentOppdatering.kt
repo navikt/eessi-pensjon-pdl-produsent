@@ -68,7 +68,7 @@ class IdentOppdatering (
             // Vi har utelukket at det er 0 eller flere enn 1
             val utenlandskIdFraSed = utenlandskeIderFraSEDer.first()
 
-            if (sedHendelse.avsenderLand == null || pdlValidering.erUidLandAnnetEnnAvsenderLand(
+            if (sedHendelse.avsenderLand.isNullOrEmpty() || pdlValidering.erUidLandAnnetEnnAvsenderLand(
                     utenlandskIdFraSed,
                     sedHendelse.avsenderLand
                 )
