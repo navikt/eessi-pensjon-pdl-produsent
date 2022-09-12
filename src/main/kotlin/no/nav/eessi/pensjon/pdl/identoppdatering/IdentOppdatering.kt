@@ -98,19 +98,15 @@ class IdentOppdatering (
             if (pdlFiltrering.skalOppgaveOpprettes(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) {
                 // TODO: Denne koden er ikke lett å forstå - hva betyr returverdien?
                 //ytterligere sjekk om f.eks SWE fnr i PDL faktisk er identisk med sedUID (hvis så ikke opprett oppgave bare avslutt)
-                if (pdlFiltrering.sjekkYterligerePaaPDLuidMotSedUid(
-                        identifisertPersonFraPDL.uidFraPdl,
-                        utenlandskIdFraSed
-                    )
-                ) {
-                    logger.info("Det finnes allerede en annen uid fra samme land, opprette oppgave")
-                    val result =
-                        oppgaveHandler.opprettOppgaveForUid(sedHendelse, utenlandskIdFraSed, identifisertPersonFraPDL)
-                    // TODO: Det er litt rart at det logges slik når det nettopp er opprettet en oppgave ...
+                return if (pdlFiltrering.sjekkYterligerePaaPDLuidMotSedUid(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) {
+                    val result = oppgaveHandler.opprettOppgaveForUid(sedHendelse, utenlandskIdFraSed, identifisertPersonFraPDL)
                     if (result) countEnhet("Det finnes allerede en annen uid fra samme land (Oppgave)")
+
+                    NoUpdate("Det finnes allerede en annen uid fra samme land, opprette oppgave")
+
                 } else {
                     countEnhet("PDLuid er identisk med SEDuid")
-                return NoUpdate("Oppretter ikke oppgave, Det som finnes i PDL er faktisk likt det som finnes i SED, avslutter")
+                    NoUpdate("Oppretter ikke oppgave, Det som finnes i PDL er faktisk likt det som finnes i SED, avslutter")
                 }
             }
 
@@ -121,7 +117,7 @@ class IdentOppdatering (
                 return endringsmelding
             }
         }
-         return NoUpdate("")
+         return Error("Uventet feil")
     }
 
     fun lagEndringsMelding(utenlandskPin: UtenlandskId, norskFnr: String, kilde: String): Resultat {

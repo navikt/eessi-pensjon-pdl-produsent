@@ -167,24 +167,7 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
         )
         assertTrue(isMessageInlog("Det finnes allerede en annen uid fra samme land, opprette oppgave"))
 
-        CustomMockServer().verifyRequestWithBody(
-            "/api/v1/endringer", """
-                {
-                  "personopplysninger" : [ {
-                    "endringstype" : "OPPRETT",
-                    "ident" : "11067122781",
-                    "opplysningstype" : "UTENLANDSKIDENTIFIKASJONSNUMMER",
-                    "endringsmelding" : {
-                      "@type" : "UTENLANDSKIDENTIFIKASJONSNUMMER",
-                      "kilde" : "DK:D005",
-                      "identifikasjonsnummer" : "130177-5432",
-                      "utstederland" : "DNK"
-                    },
-                    "opplysningsId" : null
-                  } ]
-                }
-            """
-        )
+        CustomMockServer().verifyRequest("/api/v1/endringer", 0)
     }
 }
 

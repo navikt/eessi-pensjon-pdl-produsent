@@ -3,6 +3,7 @@ package no.nav.eessi.pensjon.pdl.identoppdatering
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.eessi.pensjon.eux.EuxService
+import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.eux.UtenlandskPersonIdentifisering
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
@@ -198,6 +199,16 @@ internal class IdentOppdateringTest {
 
     @Test
     fun `Gitt at SEDen inneholder en UID som ikke finnes i PDL men det finnes allerede en annen UID i PDL saa skal det opprettes en oppgave for UID`() {
+
+        val polskPersonMedUID = forenkletSED(SOME_RINA_SAK_ID)
+        val identifisertPerson= identifisertPerson(uidFraPdl = listOf(utenlandskIdentifikasjonsnummer(SOME_FNR)))
+
+        every { personidentifiseringService.hentIdentifisertePersoner(any(), any()) } returns listOf(identifisertPerson)
+        every { euxService.alleGyldigeSEDForBuc(SOME_RINA_SAK_ID) } returns listOf(Pair(polskPersonMedUID, sed(id = FNR, land = POLEN)))
+        every { oppgaveHandler.opprettOppgaveForUid(any(), UtenlandskId( FNR, POLEN ), identifisertPerson) } returns true
+
+        val resultat = identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = POLEN)) as NoUpdate
+        assertTrue(resultat.description == "Det finnes allerede en annen uid fra samme land, opprette oppgave")
 
     }
 
