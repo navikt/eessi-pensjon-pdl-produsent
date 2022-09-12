@@ -25,7 +25,7 @@ import org.springframework.kafka.support.Acknowledgment
 import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
-import java.util.concurrent.*
+import java.util.concurrent.TimeUnit
 
 @SpringBootTest( classes = [KafkaTestConfig::class, IntegrationBase.TestConfig::class])
 @ActiveProfiles("integrationtest")
@@ -108,6 +108,7 @@ class IdentManglerEllerFeilTest : IntegrationBase() {
     @Test
     fun `Gitt en sed hendelse uten ident ack med logg Ingen utenlandske IDer funnet i BUC`() {
         every { norg2.hentArbeidsfordelingEnhet(any()) } returns Enhet.ID_OG_FORDELING
+        every { personService.hentPerson(NorskIdent( "29087021082")) } returns mockedPerson
 
         val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P15000, SedStatus.RECEIVED))
         val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_10, listOverSeder)
