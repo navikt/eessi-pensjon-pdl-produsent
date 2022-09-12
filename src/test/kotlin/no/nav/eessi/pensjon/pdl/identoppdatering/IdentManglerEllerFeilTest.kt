@@ -7,14 +7,16 @@ import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.models.Enhet
+import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.NoUpdate
 import no.nav.eessi.pensjon.pdl.integrationtest.CustomMockServer
 import no.nav.eessi.pensjon.pdl.integrationtest.IntegrationBase
 import no.nav.eessi.pensjon.pdl.integrationtest.KafkaTestConfig
 import no.nav.eessi.pensjon.pdl.integrationtest.PDL_PRODUSENT_TOPIC_MOTTATT
-import no.nav.eessi.pensjon.personoppslag.pdl.model.PersonMock
 import no.nav.eessi.pensjon.personoppslag.pdl.model.AktoerId
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
+import no.nav.eessi.pensjon.personoppslag.pdl.model.PersonMock
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -23,7 +25,7 @@ import org.springframework.kafka.support.Acknowledgment
 import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.*
 
 @SpringBootTest( classes = [KafkaTestConfig::class, IntegrationBase.TestConfig::class])
 @ActiveProfiles("integrationtest")
@@ -98,6 +100,7 @@ class IdentManglerEllerFeilTest : IntegrationBase() {
         sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
 
         assertTrue(isMessageInlog("Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer"))
+        assertThat(NoUpdate("Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer"))
 
         CustomMockServer().verifyRequest("/api/v1/endringer", 0)
     }

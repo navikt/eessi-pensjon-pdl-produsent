@@ -40,17 +40,29 @@ class IdentOppdatering (
 
             val alleGyldigeSED = dokumentHelper.alleGyldigeSEDForBuc(sedHendelse.rinaSakId)
 
+            val identifisertePersoner = personidentifiseringService.hentIdentifisertePersoner(alleGyldigeSED, bucType)
+
+            if (identifisertePersoner.isEmpty()) {
+                countEnhet("Ingen identifiserte FNR funnet")
+                return NoUpdate("Ingen identifiserte FNR funnet, Acket melding")
+            }
+
+            if (identifisertePersoner.size > 1) {
+                countEnhet("Antall identifiserte FNR er fler enn en")
+                return NoUpdate("Antall identifiserte FNR er fler enn en, Acket melding")
+            }
+
             val utenlandskeIderFraSEDer =
                 utenlandskPersonIdentifisering.finnAlleUtenlandskeIDerIMottatteSed(alleGyldigeSED)
-
-            if (utenlandskeIderFraSEDer.size > 1) {
-                countEnhet("Antall utenlandske IDer er flere enn en")
-                return NoUpdate("Antall utenlandske IDer er flere enn en")
-            }
 
             if (utenlandskeIderFraSEDer.isEmpty()) {
                 countEnhet("Ingen utenlandske IDer funnet i BUC")
                 return NoUpdate("Ingen utenlandske IDer funnet i BUC")
+            }
+
+            if (utenlandskeIderFraSEDer.size > 1) {
+                countEnhet("Antall utenlandske IDer er flere enn en")
+                return NoUpdate("Antall utenlandske IDer er flere enn en")
             }
 
             // Vi har utelukket at det er 0 eller flere enn 1
@@ -65,18 +77,6 @@ class IdentOppdatering (
                 return NoUpdate("Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer")
             }
 
-            val identifisertePersoner = personidentifiseringService.hentIdentifisertePersoner(alleGyldigeSED, bucType)
-
-            if (identifisertePersoner.isEmpty()) {
-                countEnhet("Ingen identifiserte FNR funnet")
-                return NoUpdate("Ingen identifiserte FNR funnet, Acket melding")
-            }
-
-            if (identifisertePersoner.size > 1) {
-                countEnhet("Antall identifiserte FNR er fler enn en")
-                return NoUpdate("Antall identifiserte FNR er fler enn en, Acket melding")
-            }
-
             val identifisertPersonFraPDL = identifisertePersoner.first()
 
             if (identifisertPersonFraPDL.erDoed) {
@@ -85,14 +85,12 @@ class IdentOppdatering (
             }
 
             if (pdlFiltrering.finnesUidFraSedIPDL(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) {
-//                logger.info("PDLuid er identisk med SEDuid. Acket sedMottatt: ${cr.offset()}")
                 countEnhet("PDLuid er identisk med SEDuid")
                 return NoUpdate("PDLuid er identisk med SEDuid. Acket sedMottatt")
             }
 
             //validering av uid korrekt format
             if (!pdlValidering.erPersonValidertPaaLand(utenlandskIdFraSed)) {
-//                logger.info("Ingen validerte identifiserte personer funnet. Acket sedMottatt: ${cr.offset()}")
                 countEnhet("Ingen validerte identifiserte personer funnet")
                 return NoUpdate("Ingen validerte identifiserte personer funnet. Acket sedMottatt")
             }
