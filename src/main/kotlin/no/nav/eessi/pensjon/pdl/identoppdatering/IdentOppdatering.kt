@@ -84,15 +84,15 @@ class IdentOppdatering (
                 return NoUpdate("Identifisert person registrert med doedsfall, kan ikke opprette endringsmelding. Acket melding")
             }
 
-            if (pdlFiltrering.finnesUidFraSedIPDL(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) {
-                countEnhet("PDLuid er identisk med SEDuid")
-                return NoUpdate("PDLuid er identisk med SEDuid. Acket sedMottatt")
-            }
-
             //validering av uid korrekt format
             if (!pdlValidering.erPersonValidertPaaLand(utenlandskIdFraSed)) {
                 countEnhet("Ingen validerte identifiserte personer funnet")
                 return NoUpdate("Ingen validerte identifiserte personer funnet. Acket sedMottatt")
+            }
+
+            if (pdlFiltrering.finnesUidFraSedIPDL(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) {
+                countEnhet("PDLuid er identisk med SEDuid")
+                return NoUpdate("PDLuid er identisk med SEDuid. Acket sedMottatt")
             }
 
             if (pdlFiltrering.skalOppgaveOpprettes(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) {

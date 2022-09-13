@@ -173,9 +173,9 @@ internal class IdentOppdateringTest {
         val polskPerson = forenkletSED(SOME_RINA_SAK_ID)
 
         every { personidentifiseringService.hentIdentifisertePersoner(any(), any()) } returns
-                listOf(identifisertPerson(uidFraPdl = listOf(utenlandskIdentifikasjonsnummer(SOME_FNR))))
+                listOf(identifisertPerson(uidFraPdl = listOf(utenlandskIdentifikasjonsnummer(FNR))))
 
-        every { euxService.alleGyldigeSEDForBuc(SOME_RINA_SAK_ID) } returns listOf(Pair(polskPerson, sed(land = POLEN)))
+        every { euxService.alleGyldigeSEDForBuc(SOME_RINA_SAK_ID) } returns listOf(Pair(polskPerson, sed(id = FNR, land = POLEN)))
 
         val resultat = identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = POLEN)) as NoUpdate
         assertTrue(resultat.description == "PDLuid er identisk med SEDuid. Acket sedMottatt")

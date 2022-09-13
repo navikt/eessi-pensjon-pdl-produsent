@@ -55,9 +55,10 @@ internal class LandspesifikkValideringTest {
         "SVN, 1301771234567, true",
         "SVN, 1301771234567%, false",
         "SWE, 770113-1234, true",
-
-        //"SWE, 770113+1234, true" + tegn benyttes for 100år ++ ,
+        "SWE, 19542020-1234, true",
+        "SWE, 7701131111-1234, false",
         "SWE, 7701131+234, false",
+        "SWE, 7701131234, false",
         "DEU, 56 120157 F 016, true",
         "DEU, 02 140477 T 039, true",
         "DEU, 02 140477 T 03%, false",
