@@ -69,10 +69,19 @@ object LandspesifikkValidering {
     private fun latvia(uid: String) = uid.checkDigitsLength(11) && uid.substring(5, 6) != "-" && uid.checkDigitsLength(IntRange(0,6), 6) && uid.checkDigitsLength(IntRange(6,11), 5)
     private fun nederland(uid: String) = uid.length == 11 && uid.checkDigitsLength(9) && uid.substring(4, 5) == "." && uid.substring(7, 8) == "."
     private fun slovenia(uid: String) = (uid.checkDigitsLength(13) || uid.checkDigitsLength(8))  && (uid.length == 8 || uid.length == 13)
+
+    /**
+     * Godkjente Svenske UIDer kan forekomme i følgende format:
+     * - som 12 siffer pluss "-" eller "+"
+     * - som 10 siffer pluss "-" eller "+"
+     * - som 12 siffer
+     * - som 10 siffer
+     * Disse reglene gjelder ikke for PDL, men kommer av erfaring fra saksbehandler og godkjent fra Produkteier.
+     */
     private fun sverige(uid: String): Boolean {
-        if(uid.length in 11..13) {
-            var uidNew = uid.trim().replace(" ", "").replace("-", "")
-            if(uidNew.length == 12) {
+        var uidNew = uid.trim().replace(" ", "").replace("-", "")
+        if (uidNew.length in 10..12) {
+            if (uidNew.length == 12) {
                 uidNew = uidNew.removeRange(0, 2)
             }
             return uidNew.length == 10 && uidNew.checkDigitsLength(10)
