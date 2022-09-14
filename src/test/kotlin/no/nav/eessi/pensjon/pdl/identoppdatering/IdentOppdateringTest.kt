@@ -20,7 +20,6 @@ import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
-import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.Error
 import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.NoUpdate
 import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.Update
 import no.nav.eessi.pensjon.pdl.validering.PdlValidering
@@ -246,10 +245,11 @@ internal class IdentOppdateringTest {
     }
 
     @Test
-    fun `Gitt at vi har en SedHendelse som mangler bucType saa skal vi faa en Error som resultat`() {
-        val resultat = identoppdatering.oppdaterUtenlandskIdent(SedHendelse(bucType = null, sektorKode = "", rinaDokumentVersjon = "", rinaDokumentId = "", rinaSakId = "")) as Error
-        assertEquals(resultat.description, "Uventet feil")
+    fun `Gitt at vi har en SedHendelse som mangler bucType saa skal vi faa en NoUpdate som resultat`() {
+        val resultat = identoppdatering.oppdaterUtenlandskIdent(SedHendelse(bucType = null, sektorKode = "", rinaDokumentVersjon = "", rinaDokumentId = "", rinaSakId = ""))  as NoUpdate
+        assertEquals(resultat.description, "Ikke relevant for eessipensjon")
     }
+
 
     private fun utenlandskIdentifikasjonsnummer(fnr: String) = UtenlandskIdentifikasjonsnummer(
         identifikasjonsnummer = fnr,

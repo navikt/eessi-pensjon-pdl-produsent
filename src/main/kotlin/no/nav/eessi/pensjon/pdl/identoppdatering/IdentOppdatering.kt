@@ -115,8 +115,9 @@ class IdentOppdatering (
                 countEnhet("Innsending av endringsmelding")
                 return endringsmelding
             }
-        }
          return Error("Uventet feil")
+        }
+        return NoUpdate("Ikke relevant for eessipensjon")
     }
 
     fun lagEndringsMelding(utenlandskPin: UtenlandskId, norskFnr: String, kilde: String): Update {

@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonTypeId
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
-import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import java.time.LocalDate
 
 data class PdlEndringOpplysning(
@@ -34,7 +33,11 @@ data class EndringsmeldingUID(
     override val kilde: String = "",
     val identifikasjonsnummer: String,
     val utstederland: String
-) : Endringsmelding
+) : Endringsmelding {
+    override fun toString(): String {
+        return "EndringsmeldingUID(type='$type', kilde='$kilde', identifikasjonsnummer= 'vises ikke i logg', utstederland='$utstederland')"
+    }
+}
 
 @JsonTypeInfo( use = JsonTypeInfo.Id.NAME, defaultImpl = EndringsmeldingKontaktAdresse::class )
 data class EndringsmeldingKontaktAdresse(
