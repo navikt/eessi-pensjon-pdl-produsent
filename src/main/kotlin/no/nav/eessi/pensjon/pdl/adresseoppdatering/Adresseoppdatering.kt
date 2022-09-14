@@ -30,7 +30,7 @@ class Adresseoppdatering(
     private val logger = LoggerFactory.getLogger(Adresseoppdatering::class.java)
 
     fun oppdaterUtenlandskKontaktadresse(sedHendelse: SedHendelse): Result {
-        logger.info("SED mottatt, rinaId: ${sedHendelse.rinaSakId}, bucType:${sedHendelse.bucType}, sedType:${sedHendelse.sedType}")
+        logger.info("*** Starter pdl endringsmelding (ADRESSE) prosess for BucType: ${sedHendelse.bucType}, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
 
         if (!erRelevantForEESSIPensjon(sedHendelse)) {
             return NoUpdate("SED ikke relevant for EESSI Pensjon")

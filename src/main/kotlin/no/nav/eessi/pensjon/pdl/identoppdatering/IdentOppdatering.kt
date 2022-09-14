@@ -36,7 +36,7 @@ class IdentOppdatering (
     fun oppdaterUtenlandskIdent(sedHendelse: SedHendelse): Resultat {
         if (erRelevantForEESSIPensjon(sedHendelse)) {
             val bucType = sedHendelse.bucType!!
-            logger.info("*** Starter pdl endringsmelding prosess for BucType: $bucType, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
+            logger.info("*** Starter pdl endringsmelding (IDENT) prosess for BucType: $bucType, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
 
             val alleGyldigeSED = dokumentHelper.alleGyldigeSEDForBuc(sedHendelse.rinaSakId)
             val identifisertePersoner = personidentifiseringService.hentIdentifisertePersoner(alleGyldigeSED, bucType)
