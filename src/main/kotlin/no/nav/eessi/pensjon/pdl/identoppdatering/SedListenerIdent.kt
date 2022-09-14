@@ -4,7 +4,6 @@ import io.micrometer.core.instrument.Metrics
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
-import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.Error
 import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.NoUpdate
 import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.Update
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -78,7 +77,6 @@ class SedListenerIdent(
                     personMottakKlient.opprettPersonopplysning(resultat.identOpplysninger)
                     logger.info(resultat.toString())
                 }
-                is Error -> logger.error(resultat.toString())
             }
 
             acknowledgment.acknowledge()

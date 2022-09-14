@@ -250,6 +250,20 @@ internal class IdentOppdateringTest {
         assertEquals(resultat.description, "Ikke relevant for eessipensjon")
     }
 
+    @Test
+    fun `Gitt at vi har en SedHendelse som mangler avsenderNavn saa skal vi faa en NoUpdate som resultat`() {
+
+        val svenskPersonMedUID = forenkletSED(SOME_RINA_SAK_ID)
+        val identifisertPerson= identifisertPerson(uidFraPdl = listOf(utenlandskIdentifikasjonsnummer(SVENSK_UID_UTEN_SEPERATOR)))
+
+        every { personidentifiseringService.hentIdentifisertePersoner(any(), any()) } returns listOf(identifisertPerson)
+        every { euxService.alleGyldigeSEDForBuc(SOME_RINA_SAK_ID) } returns listOf(Pair(svenskPersonMedUID, sed(id = SVENSK_UID_UTEN_SEPERATOR, land = SVERIGE)))
+        every { oppgaveHandler.opprettOppgaveForUid(any(), UtenlandskId( SVENSK_UID_UTEN_SEPERATOR, SVERIGE ), identifisertPerson) } returns false
+
+        val resultat = identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = SVERIGE, avsenderNavn = null)) as NoUpdate
+        assertEquals(resultat.description, "AvsenderNavn er ikke satt, kan derfor ikke lage endringsmelding")
+    }
+
 
     private fun utenlandskIdentifikasjonsnummer(fnr: String) = UtenlandskIdentifikasjonsnummer(
         identifikasjonsnummer = fnr,
@@ -300,7 +314,7 @@ internal class IdentOppdateringTest {
         bucType: BucType = BucType.P_BUC_01,
         sedType: SedType = SedType.P2000,
         avsenderLand: String = "SE",
-        avsenderNavn: String = "Sverige"
+        avsenderNavn: String? = "Sverige"
     ) = SedHendelse(
         sektorKode = PENSJON_SEKTOR_KODE,
         avsenderLand = avsenderLand,

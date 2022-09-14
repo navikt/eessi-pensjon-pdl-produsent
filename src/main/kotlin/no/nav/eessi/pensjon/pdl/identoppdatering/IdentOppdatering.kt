@@ -115,7 +115,7 @@ class IdentOppdatering (
                 countEnhet("Innsending av endringsmelding")
                 return endringsmelding
             }
-         return Error("Uventet feil")
+            return NoUpdate("AvsenderNavn er ikke satt, kan derfor ikke lage endringsmelding")
         }
         return NoUpdate("Ikke relevant for eessipensjon")
     }
@@ -159,6 +159,5 @@ sealed class Resultat
 
 data class Update(val description: String, val identOpplysninger: PdlEndringOpplysning): Resultat()
 data class NoUpdate(val description: String): Resultat()
-data class Error(val description: String): Resultat()
 
 }
