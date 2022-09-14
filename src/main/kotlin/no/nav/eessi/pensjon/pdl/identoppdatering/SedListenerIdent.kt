@@ -1,23 +1,12 @@
 package no.nav.eessi.pensjon.pdl.identoppdatering
 
 import io.micrometer.core.instrument.Metrics
-import no.nav.eessi.pensjon.eux.EuxService
-import no.nav.eessi.pensjon.eux.UtenlandskId
-import no.nav.eessi.pensjon.eux.UtenlandskPersonIdentifisering
-import no.nav.eessi.pensjon.oppgave.OppgaveHandler
-import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.metrics.MetricsHelper
-import no.nav.eessi.pensjon.models.EndringsmeldingUID
-import no.nav.eessi.pensjon.models.PdlEndringOpplysning
-import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
-import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
-import no.nav.eessi.pensjon.pdl.validering.PdlValidering
-import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
-import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
+import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.Error
+import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.NoUpdate
+import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.Update
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
@@ -27,25 +16,18 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.concurrent.CountDownLatch
+import java.util.concurrent.*
 import javax.annotation.PostConstruct
 
 @Service
 class SedListenerIdent(
-    private val personidentifiseringService: PersonidentifiseringService,
-    private val dokumentHelper: EuxService,
     private val personMottakKlient: PersonMottakKlient,
-    private val utenlandskPersonIdentifisering: UtenlandskPersonIdentifisering,
-    private val pdlFiltrering: PdlFiltrering,
-    private val pdlValidering: PdlValidering,
-    private val kodeverkClient: KodeverkClient,
-    private val oppgaveHandler: OppgaveHandler,
+    private val identOppdatering: IdentOppdatering,
     @Value("\${SPRING_PROFILES_ACTIVE:}") private val profile: String,
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
 ) {
 
     private val logger = LoggerFactory.getLogger(SedListenerIdent::class.java)
-
     private val latch = CountDownLatch(1)
     private lateinit var consumeIncomingSed: MetricsHelper.Metric
 
@@ -88,99 +70,15 @@ class SedListenerIdent(
                 return
             }
 
-            if (erRelevantForEESSIPensjon(sedHendelse)) {
-                val bucType = sedHendelse.bucType!!
-                logger.info("*** Starter pdl endringsmelding prosess for BucType: $bucType, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
+            val resultat = identOppdatering.oppdaterUtenlandskIdent(sedHendelse)
 
-                val alleGyldigeSED = dokumentHelper.alleGyldigeSEDForBuc(sedHendelse.rinaSakId)
-
-                val utenlandskeIderFraSEDer = utenlandskPersonIdentifisering.finnAlleUtenlandskeIDerIMottatteSed(alleGyldigeSED)
-
-                if (utenlandskeIderFraSEDer.size > 1) {
-                    acknowledgment.acknowledge()
-                    logger.info("Antall utenlandske IDer er flere enn en")
-                    countEnhet("Antall utenlandske IDer er flere enn en")
-                    return
+            when(resultat) {
+                is NoUpdate -> logger.info(resultat.toString())
+                is Update ->  {
+                    personMottakKlient.opprettPersonopplysning(resultat.identOpplysninger)
+                    logger.info(resultat.toString())
                 }
-
-                if (utenlandskeIderFraSEDer.isEmpty()) {
-                    acknowledgment.acknowledge()
-                    logger.info("Ingen utenlandske IDer funnet i BUC")
-                    countEnhet("Ingen utenlandske IDer funnet i BUC")
-                    return
-                }
-
-                // Vi har utelukket at det er 0 eller flere enn 1
-                val utenlandskIdFraSed = utenlandskeIderFraSEDer.first()
-
-                if (sedHendelse.avsenderLand == null || pdlValidering.erUidLandAnnetEnnAvsenderLand(utenlandskIdFraSed, sedHendelse.avsenderLand)) {
-                    acknowledgment.acknowledge()
-                    logger.info("Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer")
-                    countEnhet("Avsenderland mangler eller avsenderland er ikke det samme som uidland")
-                    return
-                }
-
-                val identifisertePersoner = personidentifiseringService.hentIdentifisertePersoner(alleGyldigeSED, bucType)
-
-                if (identifisertePersoner.isEmpty()) {
-                    acknowledgment.acknowledge()
-                    logger.info("Ingen identifiserte FNR funnet, Acket melding")
-                    countEnhet("Ingen identifiserte FNR funnet")
-                    return
-                }
-
-                if (identifisertePersoner.size > 1) {
-                    acknowledgment.acknowledge()
-                    logger.info("Antall identifiserte FNR er fler enn en, Acket melding")
-                    countEnhet("Antall identifiserte FNR er fler enn en")
-                    return
-                }
-
-                val identifisertPersonFraPDL = identifisertePersoner.first()
-
-                if (identifisertPersonFraPDL.erDoed) {
-                    acknowledgment.acknowledge()
-                    logger.info("Identifisert person registrert med doedsfall, kan ikke opprette endringsmelding. Acket melding")
-                    countEnhet("Identifisert person registrert med doedsfall")
-                    return
-                }
-
-                if (pdlFiltrering.finnesUidFraSedIPDL(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) {
-                    logger.info("PDLuid er identisk med SEDuid. Acket sedMottatt: ${cr.offset()}")
-                    countEnhet("PDLuid er identisk med SEDuid")
-                    acknowledgment.acknowledge()
-                    return
-                }
-
-                //validering av uid korrekt format
-                if (!pdlValidering.erPersonValidertPaaLand(utenlandskIdFraSed)) {
-                    logger.info("Ingen validerte identifiserte personer funnet. Acket sedMottatt: ${cr.offset()}")
-                    countEnhet("Ingen validerte identifiserte personer funnet")
-                    acknowledgment.acknowledge()
-                    return
-                }
-
-                if (pdlFiltrering.skalOppgaveOpprettes(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) {
-                    // TODO: Denne koden er ikke lett å forstå - hva betyr returverdien?
-                    //ytterligere sjekk om f.eks SWE fnr i PDL faktisk er identisk med sedUID (hvis så ikke opprett oppgave bare avslutt)
-                    if (pdlFiltrering.sjekkYterligerePaaPDLuidMotSedUid(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) {
-                        logger.info("Det finnes allerede en annen uid fra samme land, opprette oppgave")
-                        val result = oppgaveHandler.opprettOppgaveForUid(sedHendelse, utenlandskIdFraSed, identifisertPersonFraPDL)
-                        // TODO: Det er litt rart at det logges slik når det nettopp er opprettet en oppgave ...
-                        if (result) countEnhet("Det finnes allerede en annen uid fra samme land (Oppgave)")
-                    } else {
-                        logger.info("Oppretter ikke oppgave, Det som finnes i PDL er faktisk likt det som finnes i SED, avslutter")
-                        countEnhet("PDLuid er identisk med SEDuid")
-                    }
-                    acknowledgment.acknowledge()
-                    return
-                }
-
-                //Utfører faktisk innsending av endringsmelding til PDL (ny UID)
-                sedHendelse.avsenderNavn?.let { avsender ->
-                    lagEndringsMelding(utenlandskIdFraSed, identifisertPersonFraPDL.fnr!!.value, avsender)
-                    countEnhet("Innsending av endringsmelding")
-                }
+                is Error -> logger.error(resultat.toString())
             }
 
             acknowledgment.acknowledge()
@@ -191,27 +89,6 @@ class SedListenerIdent(
             countEnhet("Noe gikk galt under behandling av SED-hendelse")
             acknowledgment.acknowledge()
         }
-    }
-
-
-    fun lagEndringsMelding(utenlandskPin: UtenlandskId,
-                           norskFnr: String,
-                           kilde: String)  {
-        val pdlEndringsOpplysninger = PdlEndringOpplysning(
-            listOf(
-                Personopplysninger(
-                    endringstype = Endringstype.OPPRETT,
-                    ident = norskFnr,
-                    endringsmelding = EndringsmeldingUID(
-                        identifikasjonsnummer = utenlandskPin.id,
-                        utstederland = kodeverkClient.finnLandkode(utenlandskPin.land) ?: throw RuntimeException("Feil ved landkode"),
-                        kilde = kilde
-                    ),
-                    opplysningstype = Opplysningstype.UTENLANDSKIDENTIFIKASJONSNUMMER
-                )
-            )
-        )
-        personMottakKlient.opprettPersonopplysning(pdlEndringsOpplysninger)
     }
 
     fun countEnhet(melding: String) {

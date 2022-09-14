@@ -32,7 +32,12 @@
   "pensjon" : {
     "gjenlevende" : {
       "person" : {
-        "pin" : null,
+        "pin": [
+          {
+            "land": "NO",
+            "identifikator": "29087021082 "
+          }
+        ],
         "statsborgerskap" : [ {
           "land" : "XQ"
         } ],

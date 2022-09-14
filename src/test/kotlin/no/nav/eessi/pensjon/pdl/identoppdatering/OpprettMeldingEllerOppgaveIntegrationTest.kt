@@ -11,9 +11,9 @@ import no.nav.eessi.pensjon.pdl.integrationtest.CustomMockServer
 import no.nav.eessi.pensjon.pdl.integrationtest.IntegrationBase
 import no.nav.eessi.pensjon.pdl.integrationtest.KafkaTestConfig
 import no.nav.eessi.pensjon.pdl.integrationtest.PDL_PRODUSENT_TOPIC_MOTTATT
-import no.nav.eessi.pensjon.personoppslag.pdl.model.PersonMock
 import no.nav.eessi.pensjon.personoppslag.pdl.model.AktoerId
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
+import no.nav.eessi.pensjon.personoppslag.pdl.model.PersonMock
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -87,22 +87,24 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
         assertTrue(isMessageInlog("SED av type: P7000, status: RECEIVED"))
         assertTrue(isMessageInlog("Endringsmelding: OPPRETT, med nye personopplysninger"))
 
-        val check = """
-              "personopplysninger" : [ {
-                "endringstype" : "OPPRETT",
-                "ident" : "11067122781",
-                "opplysningstype" : "UTENLANDSKIDENTIFIKASJONSNUMMER",
-                "endringsmelding" : {
-                  "@type" : "UTENLANDSKIDENTIFIKASJONSNUMMER",
-                  "identifikasjonsnummer" : "130177-1234",
-                  "utstederland" : "DNK",
-                  "kilde" : "DK:D005"
-                },
-                "opplysningsId" : null
-              } ]
-            }
-        """.trimIndent()
-        CustomMockServer().verifyRequestWithBody("/api/v1/endringer", check,1)
+        CustomMockServer().verifyRequestWithBody(
+            "/api/v1/endringer", """
+                {
+                  "personopplysninger" : [ {
+                    "endringstype" : "OPPRETT",
+                    "ident" : "11067122781",
+                    "opplysningstype" : "UTENLANDSKIDENTIFIKASJONSNUMMER",
+                    "endringsmelding" : {
+                      "@type" : "UTENLANDSKIDENTIFIKASJONSNUMMER",
+                      "kilde" : "DK:D005",
+                      "identifikasjonsnummer" : "130177-1234",
+                      "utstederland" : "DNK"
+                    },
+                    "opplysningsId" : null
+                  } ]
+                }
+            """
+        )
     }
 
     @Test
@@ -123,7 +125,7 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
             .medMockBuc("/buc/147729", mockBuc)
             .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
 
-        sendMeldingString(javaClass.getResource("/eux/hendelser/P_BUC_01_P2000-avsenderDK.json").readText())
+        sendMeldingString(javaClass.getResource("/eux/hendelser/P_BUC_01_P2000-avsenderDK.json")!!.readText())
 
         assertTrue(isMessageInlog("Endringsmelding: OPPRETT, med nye personopplysninger"))
     }
@@ -164,19 +166,8 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
             )
         )
         assertTrue(isMessageInlog("Det finnes allerede en annen uid fra samme land, opprette oppgave"))
-        val check = """
-            Opprette oppgave melding på kafka: eessi-pensjon-oppgave-v1  melding: {
-              "sedType" : null,
-              "journalpostId" : null,
-              "tildeltEnhetsnr" : "0001",
-              "aktoerId" : "65466565",
-              "rinaSakId" : "147729",
-              "hendelseType" : "MOTTATT",
-              "filnavn" : null,
-              "oppgaveType" : "PDL"
-            }
-        """.trimIndent()
-        assertTrue(isMessageInlog(check))
+
+        CustomMockServer().verifyRequest("/api/v1/endringer", 0)
     }
 }
 

@@ -4,8 +4,8 @@ import io.mockk.mockk
 import io.mockk.verify
 import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.UtenlandskPersonIdentifisering
-import no.nav.eessi.pensjon.oppgave.OppgaveHandler
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
+import no.nav.eessi.pensjon.oppgave.OppgaveHandler
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.pdl.validering.PdlValidering
@@ -30,33 +30,36 @@ internal class SedMottattListenerTest {
     private val kodeverkClient = mockk<KodeverkClient>(relaxed = true)
     private val oppgaveHandler = mockk<OppgaveHandler>(relaxed = true)
 
-    private val sedListener = SedListenerIdent(
-        personidentifiseringService,
-        sedDokumentHelper,
+
+    private val sedListenerIdent = SedListenerIdent(
         personMottakKlient,
-        utenlandskPersonIdentifisering,
+        identOppdatering = IdentOppdatering(
+        sedDokumentHelper,
         pdlFiltrering,
-        pdlValidering,
-        kodeverkClient,
-        oppgaveHandler,
-        "test",
+            pdlValidering,
+            oppgaveHandler,
+            kodeverkClient,
+            personidentifiseringService,
+            utenlandskPersonIdentifisering
+        ),
+        "test"
     )
 
     @BeforeEach
     fun setup() {
-        sedListener.initMetrics()
+        sedListenerIdent.initMetrics()
     }
 
     @Test
     fun `gitt en gyldig sedHendelse når sedMottatt hendelse konsumeres så ack melding`() {
-        sedListener.consumeSedMottatt(String(Files.readAllBytes(Paths.get("src/test/resources/eux/hendelser/P_BUC_01_P2000.json"))), cr, acknowledgment)
+        sedListenerIdent.consumeSedMottatt(String(Files.readAllBytes(Paths.get("src/test/resources/eux/hendelser/P_BUC_01_P2000.json"))), cr, acknowledgment)
 
         verify(exactly = 1) { acknowledgment.acknowledge() }
     }
 
     @Test
     fun `gitt en exception ved sedMottatt så ack melding`() {
-        sedListener.consumeSedMottatt("Explode!", cr, acknowledgment)
+        sedListenerIdent.consumeSedMottatt("Explode!", cr, acknowledgment)
 
         verify(exactly = 1) { acknowledgment.acknowledge() }
     }

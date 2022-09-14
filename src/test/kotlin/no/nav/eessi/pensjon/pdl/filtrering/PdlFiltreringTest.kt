@@ -140,14 +140,15 @@ internal class PdlFiltreringTest {
         assertFalse(pdlFiltrering.skalOppgaveOpprettes(utenlandskeIdentifikasjonsnummer, utenlandskIdSed))
     }
 
-
     @ParameterizedTest
     @CsvSource(
         "195402021234, 540202-1234, true",
         "195402021234, 440332-2333, false"
     )
     fun `Gitt en uid fra PDL som sjekkes mot SED uid fra SE`(pdluid: String, seduid: String, validate: Boolean) {
-        assertEquals(validate, pdlFiltrering.sjekkForSverigeIdFraPDL(pdluid, seduid))
+        val pdluidTrimmedAndReplaced = pdluid.trim().replace(" ","").removeRange(0,2)
+        val seduidReplaced = seduid.replace("-","")
+        assertEquals(validate, pdluidTrimmedAndReplaced == seduidReplaced)
     }
 
     @ParameterizedTest

@@ -7,14 +7,16 @@ import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.models.Enhet
+import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.NoUpdate
 import no.nav.eessi.pensjon.pdl.integrationtest.CustomMockServer
 import no.nav.eessi.pensjon.pdl.integrationtest.IntegrationBase
 import no.nav.eessi.pensjon.pdl.integrationtest.KafkaTestConfig
 import no.nav.eessi.pensjon.pdl.integrationtest.PDL_PRODUSENT_TOPIC_MOTTATT
-import no.nav.eessi.pensjon.personoppslag.pdl.model.PersonMock
 import no.nav.eessi.pensjon.personoppslag.pdl.model.AktoerId
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
+import no.nav.eessi.pensjon.personoppslag.pdl.model.PersonMock
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -98,6 +100,7 @@ class IdentManglerEllerFeilTest : IntegrationBase() {
         sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
 
         assertTrue(isMessageInlog("Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer"))
+        assertThat(NoUpdate("Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer"))
 
         CustomMockServer().verifyRequest("/api/v1/endringer", 0)
     }
@@ -105,6 +108,7 @@ class IdentManglerEllerFeilTest : IntegrationBase() {
     @Test
     fun `Gitt en sed hendelse uten ident ack med logg Ingen utenlandske IDer funnet i BUC`() {
         every { norg2.hentArbeidsfordelingEnhet(any()) } returns Enhet.ID_OG_FORDELING
+        every { personService.hentPerson(NorskIdent( "29087021082")) } returns mockedPerson
 
         val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P15000, SedStatus.RECEIVED))
         val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_10, listOverSeder)
