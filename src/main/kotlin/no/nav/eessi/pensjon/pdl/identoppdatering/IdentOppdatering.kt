@@ -39,7 +39,6 @@ class IdentOppdatering (
             logger.info("*** Starter pdl endringsmelding prosess for BucType: $bucType, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
 
             val alleGyldigeSED = dokumentHelper.alleGyldigeSEDForBuc(sedHendelse.rinaSakId)
-
             val identifisertePersoner = personidentifiseringService.hentIdentifisertePersoner(alleGyldigeSED, bucType)
 
             if (identifisertePersoner.isEmpty()) {
@@ -120,15 +119,15 @@ class IdentOppdatering (
          return Error("Uventet feil")
     }
 
-    fun lagEndringsMelding(utenlandskPin: UtenlandskId, norskFnr: String, kilde: String): Resultat {
-        return Update("Oppdaterer PDL med Ny Utenlandsk Ident",
+    fun lagEndringsMelding(utenlandskPin: UtenlandskId, norskFnr: String, kilde: String): Update {
+        return Update("Oppdaterer PDL med Ny Utenlandsk Ident fra $kilde",
             PdlEndringOpplysning(
                 listOf(
                     Personopplysninger(
                         endringstype = Endringstype.OPPRETT,
                         ident = norskFnr,
                         endringsmelding = EndringsmeldingUID(
-                            identifikasjonsnummer = utenlandskPin.id,
+                            identifikasjonsnummer = konvertertTilPdlFormat(utenlandskPin),
                             utstederland = kodeverkClient.finnLandkode(utenlandskPin.land) ?: throw RuntimeException("Feil ved landkode"),
                             kilde = kilde
                         ),
@@ -136,6 +135,15 @@ class IdentOppdatering (
                     ))
             ),
         )
+    }
+
+    private fun konvertertTilPdlFormat(utenlandskPin: UtenlandskId): String {
+        val uid = utenlandskPin.id
+        if (utenlandskPin.land == "SE") {
+            if (uid.length == 10) uid.replaceRange(5, 5, "-")
+            if (uid.length == 12) uid.replaceRange(7,7,"-")
+        }
+        return uid
     }
 
     fun countEnhet(melding: String) {

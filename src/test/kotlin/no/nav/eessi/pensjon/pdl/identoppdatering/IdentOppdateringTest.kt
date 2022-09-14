@@ -20,7 +20,9 @@ import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
+import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.Error
 import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.NoUpdate
+import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.Update
 import no.nav.eessi.pensjon.pdl.validering.PdlValidering
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
@@ -43,10 +45,14 @@ private const val SOME_RINA_SAK_ID = "123456"
 
     private const val FNR = "11067122781"
     private const val SOME_FNR = "1234567799"
+    private const val SVENSK_UID = "195420-2012"
+    private const val SVENSK_UID_UTEN_SEPERATOR = "1954202012"
 
     private const val ITALIA = "IT"
     private const val POLEN = "PL"
+    private const val SVERIGE = "SE"
     private const val PENSJON_SEKTOR_KODE = "P"
+    private const val NORGE = "NO"
 
 internal class IdentOppdateringTest {
 
@@ -61,8 +67,8 @@ internal class IdentOppdateringTest {
 
     @BeforeEach
     fun setup() {
-        every { kodeverkClient.finnLandkode("SWE") } returns "SE"
-        every { kodeverkClient.finnLandkode("SE") } returns "SWE"
+        every { kodeverkClient.finnLandkode("SWE") } returns SVERIGE
+        every { kodeverkClient.finnLandkode(SVERIGE) } returns "SWE"
         every { kodeverkClient.finnLandkode(POLEN) } returns "POL"
         every { kodeverkClient.finnLandkode("POL") } returns POLEN
         identoppdatering = IdentOppdatering(
@@ -82,7 +88,7 @@ internal class IdentOppdateringTest {
 
         every { personidentifiseringService.hentIdentifisertePersoner(emptyList(), BucType.P_BUC_01) } returns emptyList()
 
-        val sedHendelse = sedHendelse(avsenderLand = "NO")
+        val sedHendelse = sedHendelse(avsenderLand = NORGE)
 
         val resultat = identoppdatering.oppdaterUtenlandskIdent(sedHendelse) as NoUpdate
         assertTrue(resultat.description == "Ingen identifiserte FNR funnet, Acket melding")
@@ -91,11 +97,11 @@ internal class IdentOppdateringTest {
     @Test
     fun `Gitt at det er en buc med flere enn en identifisert person saa blir det ingen oppdatering`() {
 
-        val ident = identifisertPerson(uidFraPdl = emptyList())
+        val ident = identifisertPerson()
 
         every { personidentifiseringService.hentIdentifisertePersoner(any(), any()) } returns listOf(ident, ident.copy(fnr = fra(SOME_FNR)))
 
-        val resultat = identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "NO")) as NoUpdate
+        val resultat = identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = NORGE)) as NoUpdate
         assertTrue(resultat.description == "Antall identifiserte FNR er fler enn en, Acket melding")
 
     }
@@ -105,7 +111,7 @@ internal class IdentOppdateringTest {
 
         every { personidentifiseringService.hentIdentifisertePersoner(any(), any()) } returns listOf(identifisertPerson())
 
-        val resultat = identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "NO")) as NoUpdate
+        val resultat = identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = NORGE)) as NoUpdate
         assertTrue(resultat.description == "Ingen utenlandske IDer funnet i BUC")
 
     }
@@ -123,7 +129,7 @@ internal class IdentOppdateringTest {
             Pair(italienskPerson, sed(FNR, land = ITALIA))
         )
 
-        val resultat = identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "NO")) as NoUpdate
+        val resultat = identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = NORGE)) as NoUpdate
         assertEquals("Antall utenlandske IDer er flere enn en", resultat.description)
 
     }
@@ -136,7 +142,7 @@ internal class IdentOppdateringTest {
 
         every { euxService.alleGyldigeSEDForBuc(SOME_RINA_SAK_ID) } returns listOf(Pair(polskPerson, sed(land = "")))
 
-        val resultat = identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "NO")) as NoUpdate
+        val resultat = identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = NORGE)) as NoUpdate
         assertTrue(resultat.description == "Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer")
 
     }
@@ -212,7 +218,38 @@ internal class IdentOppdateringTest {
 
     }
 
+    @Test
+    fun `Gitt at vi har en endringsmelding med en svensk uid, med riktig format saa skal det opprettes en endringsmelding`() {
+        val svenskPersonMedUID = forenkletSED(SOME_RINA_SAK_ID)
+        val identifisertPerson= identifisertPerson(uidFraPdl = listOf(utenlandskIdentifikasjonsnummer(SVENSK_UID)))
 
+        every { personidentifiseringService.hentIdentifisertePersoner(any(), any()) } returns listOf(identifisertPerson)
+        every { euxService.alleGyldigeSEDForBuc(SOME_RINA_SAK_ID) } returns listOf(Pair(svenskPersonMedUID, sed(id = SVENSK_UID, land = SVERIGE)))
+        every { oppgaveHandler.opprettOppgaveForUid(any(), UtenlandskId( SVENSK_UID, SVERIGE ), identifisertPerson) } returns false
+
+        val resultat =  identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = SVERIGE)) as Update
+        assertEquals(resultat.description, "Oppdaterer PDL med Ny Utenlandsk Ident fra Sverige")
+
+    }
+    @Test
+    fun `Gitt at vi har en endringsmelding med en svensk uid, med feil format saa skal den konverteres foer innsending`() {
+        val svenskPersonMedUID = forenkletSED(SOME_RINA_SAK_ID)
+        val identifisertPerson= identifisertPerson(uidFraPdl = listOf(utenlandskIdentifikasjonsnummer(SVENSK_UID_UTEN_SEPERATOR)))
+
+        every { personidentifiseringService.hentIdentifisertePersoner(any(), any()) } returns listOf(identifisertPerson)
+        every { euxService.alleGyldigeSEDForBuc(SOME_RINA_SAK_ID) } returns listOf(Pair(svenskPersonMedUID, sed(id = SVENSK_UID_UTEN_SEPERATOR, land = SVERIGE)))
+        every { oppgaveHandler.opprettOppgaveForUid(any(), UtenlandskId( SVENSK_UID_UTEN_SEPERATOR, SVERIGE ), identifisertPerson) } returns false
+
+        val resultat = identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = SVERIGE)) as Update
+        assertEquals(resultat.description, "Oppdaterer PDL med Ny Utenlandsk Ident fra Sverige")
+
+    }
+
+    @Test
+    fun `Gitt at vi har en SedHendelse som mangler bucType saa skal vi faa en Error som resultat`() {
+        val resultat = identoppdatering.oppdaterUtenlandskIdent(SedHendelse(bucType = null, sektorKode = "", rinaDokumentVersjon = "", rinaDokumentId = "", rinaSakId = "")) as Error
+        assertEquals(resultat.description, "Uventet feil")
+    }
 
     private fun utenlandskIdentifikasjonsnummer(fnr: String) = UtenlandskIdentifikasjonsnummer(
         identifikasjonsnummer = fnr,
@@ -262,7 +299,8 @@ internal class IdentOppdateringTest {
     private fun sedHendelse(
         bucType: BucType = BucType.P_BUC_01,
         sedType: SedType = SedType.P2000,
-        avsenderLand: String = "SE"
+        avsenderLand: String = "SE",
+        avsenderNavn: String = "Sverige"
     ) = SedHendelse(
         sektorKode = PENSJON_SEKTOR_KODE,
         avsenderLand = avsenderLand,
@@ -270,7 +308,8 @@ internal class IdentOppdateringTest {
         rinaSakId = SOME_RINA_SAK_ID,
         rinaDokumentId = SOME_DOKUMENT_ID,
         rinaDokumentVersjon = SOME_RINADOKUMENT_VERSION,
-        sedType = sedType
+        sedType = sedType,
+        avsenderNavn = avsenderNavn
     )
 
     private fun sed(id: String = SOME_FNR, brukersAdresse: Adresse? = null, land: String) = SED(
