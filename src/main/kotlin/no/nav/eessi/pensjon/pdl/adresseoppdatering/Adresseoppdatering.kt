@@ -28,6 +28,7 @@ class Adresseoppdatering(
     private val sedTilPDLAdresse: SedTilPDLAdresse
 ) {
     private val logger = LoggerFactory.getLogger(Adresseoppdatering::class.java)
+    private val secureLogger = LoggerFactory.getLogger("secureLog")
 
     fun oppdaterUtenlandskKontaktadresse(sedHendelse: SedHendelse): Result {
         logger.info("*** Starter pdl endringsmelding (ADRESSE) prosess for BucType: ${sedHendelse.bucType}, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
@@ -81,7 +82,7 @@ class Adresseoppdatering(
                         norskFnr = norskPin(bruker)!!.identifikator!!,
                         kilde = sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")",
                         endringsmeldingKontaktAdresse = konverteringResult.endringsmeldingKontaktAdresse
-                    )
+                    ).also { secureLogger.debug(konverteringResult.toString()) }
                 )
                 is Valideringsfeil -> NoUpdate("Adressen validerer ikke etter reglene til PDL: ${konverteringResult.description}")
             }

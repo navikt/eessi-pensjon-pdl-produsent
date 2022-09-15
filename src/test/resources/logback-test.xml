@@ -20,6 +20,27 @@
     <logger name="org.springframework.kafka" level="WARN"/>
     <logger name="org.mockserver.log" level="WARN"/>
 
+    <appender name="secureLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>secure.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>secure.log.%i</fileNamePattern>
+            <minIndex>1</minIndex>
+            <maxIndex>1</maxIndex>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>50MB</maxFileSize>
+        </triggeringPolicy>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeCallerData>true</includeCallerData>
+        </encoder>
+
+    </appender>
+
+
+    <logger name="secureLog" level="DEBUG" additivity="false">
+        <appender-ref ref="secureLog"/>
+    </logger>
+
     <root level="DEBUG">
         <appender-ref ref="stdout" />
     </root>

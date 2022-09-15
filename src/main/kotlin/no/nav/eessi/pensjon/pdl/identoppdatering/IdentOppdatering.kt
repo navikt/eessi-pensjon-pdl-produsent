@@ -32,6 +32,7 @@ class IdentOppdatering (
 ) {
 
     private val logger = LoggerFactory.getLogger(IdentOppdatering::class.java)
+    private val secureLogger = LoggerFactory.getLogger("secureLog")
 
     fun oppdaterUtenlandskIdent(sedHendelse: SedHendelse): Resultat {
         if (erRelevantForEESSIPensjon(sedHendelse)) {
@@ -39,6 +40,7 @@ class IdentOppdatering (
             logger.info("*** Starter pdl endringsmelding (IDENT) prosess for BucType: $bucType, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
 
             val alleGyldigeSED = dokumentHelper.alleGyldigeSEDForBuc(sedHendelse.rinaSakId)
+            logger.info("Alle gyldige seder: \n$alleGyldigeSED")
             val identifisertePersoner = personidentifiseringService.hentIdentifisertePersoner(alleGyldigeSED, bucType)
 
             if (identifisertePersoner.isEmpty()) {
@@ -53,6 +55,7 @@ class IdentOppdatering (
 
             val utenlandskeIderFraSEDer =
                 utenlandskPersonIdentifisering.finnAlleUtenlandskeIDerIMottatteSed(alleGyldigeSED)
+            secureLogger.debug("Utenlandske IDer fra mottatt sed: $utenlandskeIderFraSEDer")
 
             if (utenlandskeIderFraSEDer.isEmpty()) {
                 countEnhet("Ingen utenlandske IDer funnet i BUC")
