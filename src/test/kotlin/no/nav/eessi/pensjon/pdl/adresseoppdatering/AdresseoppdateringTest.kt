@@ -17,9 +17,9 @@ import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
+import no.nav.eessi.pensjon.pdl.adresseoppdatering.Adresseoppdatering.Error
 import no.nav.eessi.pensjon.pdl.adresseoppdatering.Adresseoppdatering.NoUpdate
 import no.nav.eessi.pensjon.pdl.adresseoppdatering.Adresseoppdatering.Update
-import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.AdressebeskyttelseGradering
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
@@ -45,7 +45,6 @@ private const val SOME_FNR = "1234567799"
 private const val SOME_UTENLANDSK_INSTITUSJON = "Utenlandsk Institusjon"
 
 private const val FNR = "11067122781"
-private const val FNR_DOD_PERSON = "28047114421"
 
 internal class AdresseoppdateringTest {
 
@@ -232,6 +231,46 @@ internal class AdresseoppdateringTest {
     }
 
     @Test
+    fun `Gitt SED uten utenlandsk adresse resulterer ikke i NoUpdate`() {
+        every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns
+                sed(brukersAdresse = adresse("NO"))
+
+        val adresseoppdatering = Adresseoppdatering(mockk(), euxService, mockk())
+
+        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse())
+        assertEquals(NoUpdate("Bruker har ikke utenlandsk adresse i SED"), result)
+    }
+
+    @Test
+    fun `Gitt en SED uten avsenderland saa resulterer det i en Error`() {
+        every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns
+                sed(brukersAdresse = adresse(EDDY_ADRESSE_LANDKODE))
+
+        val adresseoppdatering = Adresseoppdatering(mockk(), euxService, mockk())
+
+        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderLand = null))
+        assertTrue((result as Error).description.startsWith(
+            "Mangler avsenderNavn eller avsenderLand i sedHendelse - avslutter adresseoppdatering: SedHendelse"))
+    }
+
+    @Test
+    fun `Gitt en SED uten norsk pin saa oppdaterer vi ikke`() {
+        every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns
+                sed(
+                    brukersAdresse = EDDY_ADRESSE_I_SED,
+                    pinItem = PinItem(
+                        identifikator = "svensk identifikator",
+                        land = "SE"
+                    )
+                )
+
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, mockk())
+
+        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderLand = "SE"))
+        assertEquals(NoUpdate("Bruker har ikke norsk pin i SED"), result)
+    }
+
+    @Test
     fun `Gitt en Sed med lik adresse i pdl som har dagens dato som gyldig fom dato saa sendes ingen oppdatering`() {
         every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns
                 sed(brukersAdresse = EDDY_ADRESSE_I_SED)
@@ -342,9 +381,14 @@ internal class AdresseoppdateringTest {
 
     @Test
     fun `Gitt en adresse som ikke validerer saa oppdaterer vi ikke PDL`() {
-        every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns sed(brukersAdresse = EDDY_ADRESSE_I_SED.copy(gate = "Ukjent"))
+        every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns sed(
+            id = "", brukersAdresse = EDDY_ADRESSE_I_SED.copy(gate = "Ukjent"), pinItem = PinItem(
+                identifikator = "",
+                land = "NO"
+            )
+        )
 
-        every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns personFraPDL()
+        every { personService.hentPerson(NorskIdent("")) } returns personFraPDL(id = "")
 
         val adresseoppdatering = Adresseoppdatering(personService, euxService, sedTilPDLAdresse)
 
@@ -430,7 +474,7 @@ internal class AdresseoppdateringTest {
                 }""".trimMargin()
     )
 
-    private fun sed(id: String = SOME_FNR, brukersAdresse: Adresse? = null) = SED(
+    private fun sed(id: String = SOME_FNR, brukersAdresse: Adresse? = null, pinItem: PinItem? = null) = SED(
         type = SedType.P2100,
         sedGVer = null,
         sedVer = null,
@@ -441,7 +485,7 @@ internal class AdresseoppdateringTest {
                 far = null,
                 person = no.nav.eessi.pensjon.eux.model.sed.Person(
                     pin = listOf(
-                        PinItem(
+                        pinItem ?: PinItem(
                             identifikator = id,
                             land = "NO"
                         )
