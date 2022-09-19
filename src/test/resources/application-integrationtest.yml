@@ -26,7 +26,7 @@ PDL_PERSON_MOTTAK_URL: http://localhost:${mockserverport}
 oppgave.oppgaver.url: http://localhost:${mockserverport}
 aktoerregister.api.v1.url: http://localhost:${mockserverport}
 norg2_url: http://localhost:${mockserverport}
-kodeverk_rest_api_url: http://localhost:${mockserverport}
+kodeverk_url: http://localhost:${mockserverport}
 
 spring:
   main:

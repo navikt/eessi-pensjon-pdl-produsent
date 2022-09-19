@@ -1,11 +1,13 @@
 package no.nav.eessi.pensjon.pdl.identoppdatering
 
+import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
+import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.models.Enhet
 import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.NoUpdate
 import no.nav.eessi.pensjon.pdl.integrationtest.CustomMockServer
@@ -28,7 +30,7 @@ import org.springframework.test.context.ActiveProfiles
 import java.util.concurrent.TimeUnit
 
 @SpringBootTest( classes = [KafkaTestConfig::class, IntegrationBase.TestConfig::class])
-@ActiveProfiles("integrationtest")
+@ActiveProfiles("integrationtest", "excludeKodeverk")
 @DirtiesContext
 @EmbeddedKafka(
     controlledShutdown = true,
@@ -41,6 +43,9 @@ class IdentManglerEllerFeilTest : IntegrationBase() {
 
     @Autowired
     lateinit var sedListenerIdent: SedListenerIdent
+
+    @MockkBean
+    lateinit var kodeverkClient: KodeverkClient
 
     val fnr = "11067122781"
 
@@ -69,7 +74,6 @@ class IdentManglerEllerFeilTest : IntegrationBase() {
         CustomMockServer()
             .medMockSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", mockSed)
             .medMockBuc("/buc/147729", mockBuc)
-            .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
 
         sendMeldingString(
             mockHendelse(
@@ -94,7 +98,6 @@ class IdentManglerEllerFeilTest : IntegrationBase() {
         CustomMockServer()
             .medSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", "src/test/resources/eux/sed/P8000-TyskPIN.json")
             .medMockBuc("/buc/147729", mockBuc)
-            .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
 
         sendMeldingString(javaClass.getResource("/eux/hendelser/P_BUC_01_P2000-avsenderSE.json").readText())
         sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
@@ -116,7 +119,6 @@ class IdentManglerEllerFeilTest : IntegrationBase() {
         CustomMockServer()
             .medSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", "src/test/resources/eux/sed/P15000-UtenPin-NAV.json")
             .medMockBuc("/buc/147729", mockBuc)
-            .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
 
 
         sendMeldingString(
@@ -142,7 +144,6 @@ class IdentManglerEllerFeilTest : IntegrationBase() {
         CustomMockServer()
             .medSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", "src/test/resources/eux/sed/P8000-TyskOgFinskPIN.json")
             .medMockBuc("/buc/147729", mockBuc)
-            .medKodeverk("/api/v1/hierarki/LandkoderSammensattISO2/noder", "src/test/resources/kodeverk/landkoderSammensattIso2.json")
 
         sendMeldingString(javaClass.getResource("/eux/hendelser/P_BUC_01_P2000-avsenderDE.json").readText())
         sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)

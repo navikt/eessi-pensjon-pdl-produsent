@@ -1,6 +1,8 @@
 package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
+import com.ninjasquad.springmockk.MockkBean
 import io.mockk.mockk
+import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.integrationtest.IntegrationBase
 import no.nav.eessi.pensjon.pdl.integrationtest.KafkaTestConfig
@@ -16,7 +18,7 @@ import java.util.concurrent.TimeUnit
 
 
 @SpringBootTest( classes = [KafkaTestConfig::class, IntegrationBase.TestConfig::class])
-@ActiveProfiles("integrationtest")
+@ActiveProfiles("integrationtest", "excludeKodeverk")
 @DirtiesContext
 @EmbeddedKafka(
     controlledShutdown = true,
@@ -26,6 +28,9 @@ class SedListenerAdresseIT : IntegrationBase() {
 
     @Autowired
     lateinit var adresseListener: SedListenerAdresse
+
+    @MockkBean
+    lateinit var kodeverkClient: KodeverkClient
 
     @Test
     fun `Gitt en sed hendelse som kommer på riktig topic og group_id så skal den konsumeres av adresseListener`() {

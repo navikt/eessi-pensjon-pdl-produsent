@@ -74,21 +74,6 @@ class CustomMockServer() {
         println("CustomMockServer Port: $serverPort")
     }
 
-    fun medKodeverk(kodeverkPath: String, kodeVerkLocation: String) = apply {
-
-        MockServerClient("localhost", serverPort).`when`(
-            request()
-                .withMethod(HttpMethod.GET.name)
-                .withPath(kodeverkPath)
-        )
-            .respond(
-                HttpResponse.response()
-                    .withHeader(Header("Content-Type", "application/json; charset=utf-8"))
-                    .withStatusCode(HttpStatusCode.OK_200.code())
-                    .withBody(String(Files.readAllBytes(Paths.get(kodeVerkLocation))))
-            )
-    }
-
     fun verifyRequest(path: String, times: Int) = apply {
         MockServerClient("localhost", serverPort)
             .verify(
