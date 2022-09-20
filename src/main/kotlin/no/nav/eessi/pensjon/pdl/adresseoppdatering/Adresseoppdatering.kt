@@ -39,7 +39,7 @@ class Adresseoppdatering(
 
         val sed = euxService.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId)
 
-        logger.debug("SED: $sed")
+        secureLogger.debug("SED: $sed")
 
         val bruker = sed.nav?.bruker
 
@@ -62,7 +62,7 @@ class Adresseoppdatering(
 
         val personFraPDL = personService.hentPerson(NorskIdent(norskPin(bruker)!!.identifikator!!))
 
-        logger.debug("Person fra PDL: $personFraPDL")
+        secureLogger.debug("Person fra PDL: $personFraPDL")
 
         if (personFraPDL == null) {
             return NoUpdate("Bruker ikke funnet i PDL")
@@ -82,7 +82,7 @@ class Adresseoppdatering(
                         norskFnr = norskPin(bruker)!!.identifikator!!,
                         kilde = sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")",
                         endringsmeldingKontaktAdresse = konverteringResult.endringsmeldingKontaktAdresse
-                    ).also { secureLogger.debug(konverteringResult.toString()) }
+                    )
                 )
                 is Valideringsfeil -> NoUpdate("Adressen validerer ikke etter reglene til PDL: ${konverteringResult.description}")
             }

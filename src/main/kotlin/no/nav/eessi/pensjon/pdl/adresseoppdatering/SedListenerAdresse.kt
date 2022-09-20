@@ -29,6 +29,7 @@ class SedListenerAdresse(
 ) {
     val latch: CountDownLatch = CountDownLatch(1)
     private val logger = LoggerFactory.getLogger(SedListenerAdresse::class.java)
+    private val secureLogger = LoggerFactory.getLogger("secureLog")
 
     private lateinit var adresseMetric: MetricsHelper.Metric
 
@@ -48,7 +49,7 @@ class SedListenerAdresse(
                 logger.info("SED-hendelse mottatt i partisjon: ${cr.partition()}, med offset: ${cr.offset()} ")
 
                 try {
-                    logger.debug("hendelse mottatt: $hendelse")
+                    secureLogger.debug("hendelse mottatt: $hendelse")
 
                     val sedHendelse = SedHendelse.fromJson(hendelse)
                     if (profile == "prod" && sedHendelse.avsenderId in listOf("NO:NAVAT05", "NO:NAVAT07")) {
@@ -63,7 +64,8 @@ class SedListenerAdresse(
                         is NoUpdate -> logger.info(result.toString())
                         is Update ->  {
                             personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
-                            logger.info(result.toString())
+                            logger.info("Update - oppdatering levert til PDL.")
+                            secureLogger.info(result.toString())
                         }
                         is Error -> logger.error(result.toString())
                     }
