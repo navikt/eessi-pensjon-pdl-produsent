@@ -33,12 +33,12 @@
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
             <includeCallerData>true</includeCallerData>
         </encoder>
-
     </appender>
 
 
     <logger name="secureLog" level="DEBUG" additivity="false">
         <appender-ref ref="secureLog"/>
+        <appender-ref ref="stdout"/> <!-- kun for lokale tester! -->
     </logger>
 
     <root level="DEBUG">
