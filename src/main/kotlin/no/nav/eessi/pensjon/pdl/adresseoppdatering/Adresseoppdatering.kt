@@ -17,6 +17,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.Kontaktadresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
+import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -39,7 +40,7 @@ class Adresseoppdatering(
 
         val sed = euxService.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId)
 
-        secureLogger.debug("SED: $sed")
+        secureLogger.debug("SED:\n$sed")
 
         val bruker = sed.nav?.bruker
 
@@ -62,7 +63,7 @@ class Adresseoppdatering(
 
         val personFraPDL = personService.hentPerson(NorskIdent(norskPin(bruker)!!.identifikator!!))
 
-        secureLogger.debug("Person fra PDL: $personFraPDL")
+        secureLogger.debug("Person fra PDL:\n${personFraPDL?.toJson()}")
 
         if (personFraPDL == null) {
             return NoUpdate("Bruker ikke funnet i PDL")

@@ -6,6 +6,7 @@ import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.adresseoppdatering.Adresseoppdatering.Error
 import no.nav.eessi.pensjon.pdl.adresseoppdatering.Adresseoppdatering.NoUpdate
 import no.nav.eessi.pensjon.pdl.adresseoppdatering.Adresseoppdatering.Update
+import no.nav.eessi.pensjon.utils.toJson
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
@@ -49,7 +50,7 @@ class SedListenerAdresse(
                 logger.info("SED-hendelse mottatt i partisjon: ${cr.partition()}, med offset: ${cr.offset()} ")
 
                 try {
-                    secureLogger.debug("hendelse mottatt: $hendelse")
+                    secureLogger.debug("Hendelse mottatt:\n$hendelse")
 
                     val sedHendelse = SedHendelse.fromJson(hendelse)
                     if (profile == "prod" && sedHendelse.avsenderId in listOf("NO:NAVAT05", "NO:NAVAT07")) {
@@ -65,7 +66,7 @@ class SedListenerAdresse(
                         is Update ->  {
                             personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
                             logger.info("Update - oppdatering levert til PDL.")
-                            secureLogger.info(result.toString())
+                            secureLogger.info("Update til PDL:\n${result.toJson()}")
                         }
                         is Error -> logger.error(result.toString())
                     }
