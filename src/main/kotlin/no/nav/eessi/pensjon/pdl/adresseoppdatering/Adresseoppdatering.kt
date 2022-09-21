@@ -13,6 +13,7 @@ import no.nav.eessi.pensjon.pdl.adresseoppdatering.SedTilPDLAdresse.Valideringsf
 import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
+import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Kontaktadresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
@@ -67,13 +68,17 @@ class Adresseoppdatering(
         } catch (ex: IllegalArgumentException) {
             return NoUpdate("Brukers norske id fra SED validerer ikke: \"${norskPin(bruker)!!.identifikator!!}\" - ${ex.message}")
         }
-        val personFraPDL = personService.hentPerson(NorskIdent(normalisertNorskPIN))
 
-        secureLogger.debug("Person fra PDL:\n${personFraPDL?.toJson()}")
+        val personFraPDL = try {
+            personService.hentPerson(NorskIdent(normalisertNorskPIN))
+        } catch (ex: PersonoppslagException) {
+            if (ex.code == "not_found") {
+                return NoUpdate("Finner ikke bruker i PDL med angitt fnr i SED")
+            }
+            throw ex
+        } ?: return Error("hentPerson returnerte null")
 
-        if (personFraPDL == null) {
-            return NoUpdate("Bruker ikke funnet i PDL")
-        }
+        secureLogger.debug("Person fra PDL:\n${personFraPDL.toJson()}")
 
         if (isAdressebeskyttet(personFraPDL.adressebeskyttelse)) {
             return NoUpdate("Ingen adresseoppdatering")

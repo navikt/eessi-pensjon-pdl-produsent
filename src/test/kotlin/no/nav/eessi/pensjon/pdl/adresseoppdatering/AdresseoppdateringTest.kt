@@ -22,6 +22,7 @@ import no.nav.eessi.pensjon.pdl.adresseoppdatering.Adresseoppdatering.NoUpdate
 import no.nav.eessi.pensjon.pdl.adresseoppdatering.Adresseoppdatering.Update
 import no.nav.eessi.pensjon.personoppslag.FodselsnummerGenerator
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
+import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
 import no.nav.eessi.pensjon.personoppslag.pdl.model.AdressebeskyttelseGradering
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
@@ -37,6 +38,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -250,6 +252,32 @@ internal class AdresseoppdateringTest {
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderNavn = TYSK_INSTITUSJON, avsenderLand = TYSK_ADRESSE_LANDKODE))
 
         assertEquals(NoUpdate("Brukers norske id fra SED validerer ikke: \"$norskFnr\" - Ikke et gyldig fødselsnummer: "), result)
+    }
+
+    @Test
+    fun `Gitt en sed med norsk ident som validerer men ikke finnes i PDL så skal vi ikke oppdatere`() {
+        val norskFnr = "06085692087"
+        every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns sed(brukersAdresse = TYSK_ADRESSE_I_SED, id = norskFnr)
+        every { personService.hentPerson(NorskIdent(norskFnr)) } throws PersonoppslagException("Fant ikke person", "not_found")
+
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, mockk())
+
+        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderNavn = TYSK_INSTITUSJON, avsenderLand = TYSK_ADRESSE_LANDKODE))
+
+        assertEquals(NoUpdate("Finner ikke bruker i PDL med angitt fnr i SED"), result)
+    }
+
+    @Test
+    fun `Gitt en uventet feil fra PDL så skal vi kaste en exception`() {
+
+        every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns sed(brukersAdresse = TYSK_ADRESSE_I_SED)
+        every { personService.hentPerson(NorskIdent(SOME_FNR)) } throws PersonoppslagException("Uventet feil", "uventet kode")
+
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, mockk())
+
+        assertThrows<PersonoppslagException> {
+            adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderNavn = TYSK_INSTITUSJON, avsenderLand = TYSK_ADRESSE_LANDKODE))
+        }
     }
 
     @Test
