@@ -20,6 +20,7 @@ import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.adresseoppdatering.Adresseoppdatering.Error
 import no.nav.eessi.pensjon.pdl.adresseoppdatering.Adresseoppdatering.NoUpdate
 import no.nav.eessi.pensjon.pdl.adresseoppdatering.Adresseoppdatering.Update
+import no.nav.eessi.pensjon.personoppslag.FodselsnummerGenerator
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.AdressebeskyttelseGradering
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
@@ -41,10 +42,7 @@ import java.time.LocalDateTime
 
 private const val SOME_RINA_SAK_ID = "123456"
 private const val SOME_DOKUMENT_ID = "1234"
-private const val SOME_FNR = "1234567799"
 private const val SOME_UTENLANDSK_INSTITUSJON = "Utenlandsk Institusjon"
-
-private const val FNR = "11067122781"
 
 internal class AdresseoppdateringTest {
 
@@ -52,6 +50,9 @@ internal class AdresseoppdateringTest {
     var euxService: EuxService = mockk(relaxed = true)
     var kodeverkClient: KodeverkClient = mockk(relaxed = true)
     var sedTilPDLAdresse = SedTilPDLAdresse(kodeverkClient)
+
+    val SOME_FNR = FodselsnummerGenerator.generateFnrForTest(77)
+    val FNR = FodselsnummerGenerator.generateFnrForTest(65)
 
     private val personMottakKlient: PersonMottakKlient = mockk()
 
@@ -209,10 +210,46 @@ internal class AdresseoppdateringTest {
             pdlAdresseEndringsOpplysning(
                 pdlAdresse = TYSK_ADRESSE_I_SED_GJORT_OM_TIL_PDL_ADRESSE,
                 kilde = "$TYSK_INSTITUSJON ($TYSK_ADRESSE_LANDKODE)",
-                gyldigFraOgMed = LocalDate.now(),
-                gyldigTilOgMed = LocalDate.now().plusYears(1),
                 endringsType = Endringstype.OPPRETT
             )), result)
+    }
+
+    @Test
+    fun `Gitt en sed med ustandard norsk ident så skal det likevel oppdateres`() {
+        val norskFnr = FodselsnummerGenerator.generateFnrForTest(69)
+        val norskFnrMedMellomrom = norskFnr.substring(0..5) + " " + norskFnr.substring(6)
+
+        every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns
+                sed(brukersAdresse = TYSK_ADRESSE_I_SED, id = norskFnrMedMellomrom)
+        every { personService.hentPerson(NorskIdent(norskFnr)) } returns personFraPDL(id = norskFnr)
+        every { personMottakKlient.opprettPersonopplysning(any()) } returns true
+
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, sedTilPDLAdresse)
+
+        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderNavn = TYSK_INSTITUSJON, avsenderLand = TYSK_ADRESSE_LANDKODE))
+
+        assertEquals(Update("Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding",
+            pdlAdresseEndringsOpplysning(
+                id = norskFnr,
+                pdlAdresse = TYSK_ADRESSE_I_SED_GJORT_OM_TIL_PDL_ADRESSE,
+                kilde = "$TYSK_INSTITUSJON ($TYSK_ADRESSE_LANDKODE)",
+                endringsType = Endringstype.OPPRETT
+            )), result)
+    }
+
+
+    @Test
+    fun `Gitt en sed med norsk ident som ikke validerer så skal vi ikke oppdatere`() {
+        val norskFnr = "okänd"
+
+        every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns
+                sed(brukersAdresse = TYSK_ADRESSE_I_SED, id = norskFnr)
+
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, mockk())
+
+        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderNavn = TYSK_INSTITUSJON, avsenderLand = TYSK_ADRESSE_LANDKODE))
+
+        assertEquals(NoUpdate("Brukers norske id fra SED validerer ikke: \"$norskFnr\" - Ikke et gyldig fødselsnummer: "), result)
     }
 
     @Test
@@ -382,13 +419,13 @@ internal class AdresseoppdateringTest {
     @Test
     fun `Gitt en adresse som ikke validerer saa oppdaterer vi ikke PDL`() {
         every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns sed(
-            id = "", brukersAdresse = EDDY_ADRESSE_I_SED.copy(gate = "Ukjent"), pinItem = PinItem(
-                identifikator = "",
+            id = SOME_FNR, brukersAdresse = EDDY_ADRESSE_I_SED.copy(gate = "Ukjent"), pinItem = PinItem(
+                identifikator = SOME_FNR,
                 land = "NO"
             )
         )
 
-        every { personService.hentPerson(NorskIdent("")) } returns personFraPDL(id = "")
+        every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns personFraPDL(id = SOME_FNR)
 
         val adresseoppdatering = Adresseoppdatering(personService, euxService, sedTilPDLAdresse)
 
@@ -428,8 +465,8 @@ internal class AdresseoppdateringTest {
         id: String = SOME_FNR,
         pdlAdresse: EndringsmeldingUtenlandskAdresse,
         kilde: String,
-        gyldigFraOgMed: LocalDate,
-        gyldigTilOgMed: LocalDate,
+        gyldigFraOgMed: LocalDate = LocalDate.now(),
+        gyldigTilOgMed: LocalDate = LocalDate.now().plusYears(1),
         endringsType: Endringstype
     ) = PdlEndringOpplysning(
         listOf(
@@ -440,7 +477,7 @@ internal class AdresseoppdateringTest {
                 endringsmelding = EndringsmeldingKontaktAdresse(
                     type = Opplysningstype.KONTAKTADRESSE.name,
                     kilde = kilde,
-                    gyldigFraOgMed = gyldigFraOgMed, // TODO er det rett å oppdatere denne datoen? Og hva om tilogmed-datoen er utløpt?
+                    gyldigFraOgMed = gyldigFraOgMed,
                     gyldigTilOgMed = gyldigTilOgMed,
                     coAdressenavn = null,
                     adresse = pdlAdresse

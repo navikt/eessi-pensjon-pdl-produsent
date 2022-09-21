@@ -11,6 +11,7 @@ import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.adresseoppdatering.SedTilPDLAdresse.OK
 import no.nav.eessi.pensjon.pdl.adresseoppdatering.SedTilPDLAdresse.Valideringsfeil
 import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
+import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Kontaktadresse
@@ -61,7 +62,12 @@ class Adresseoppdatering(
             return NoUpdate("Bruker har ikke norsk pin i SED")
         }
 
-        val personFraPDL = personService.hentPerson(NorskIdent(norskPin(bruker)!!.identifikator!!))
+        val normalisertNorskPIN = try {
+            normaliserNorskPin(norskPin(bruker)!!.identifikator!!)
+        } catch (ex: IllegalArgumentException) {
+            return NoUpdate("Brukers norske id fra SED validerer ikke: \"${norskPin(bruker)!!.identifikator!!}\" - ${ex.message}")
+        }
+        val personFraPDL = personService.hentPerson(NorskIdent(normalisertNorskPIN))
 
         secureLogger.debug("Person fra PDL:\n${personFraPDL?.toJson()}")
 
@@ -80,7 +86,7 @@ class Adresseoppdatering(
                 is OK -> Update(
                     "Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding",
                     pdlAdresseEndringOpplysning(
-                        norskFnr = norskPin(bruker)!!.identifikator!!,
+                        norskFnr = normalisertNorskPIN,
                         kilde = sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")",
                         endringsmeldingKontaktAdresse = konverteringResult.endringsmeldingKontaktAdresse
                     )
@@ -96,13 +102,21 @@ class Adresseoppdatering(
         return Update(
             "Adresse finnes allerede i PDL, oppdaterer gyldig til og fra dato",
             korrigerDatoEndringOpplysning(
-                norskFnr = norskPin(bruker)!!.identifikator!!,
+                norskFnr = normalisertNorskPIN,
                 kilde = sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")",
                 kontaktadresse = personFraPDL.kontaktadresse!!
             )
         )
 
     }
+
+    private fun normaliserNorskPin(norskPinFraSED: String) =
+        Fodselsnummer.fraMedValidation(norskPinFraSED)!!.value
+            .also {
+                if (it != norskPinFraSED) {
+                    logger.info("Fnr i SED på ustandard format - alt utenom tall fjernet.")
+                }
+            }
 
     private fun hasUtenlandskKontaktadresse(personFraPDL: Person) =
         personFraPDL.kontaktadresse?.utenlandskAdresse != null

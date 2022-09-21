@@ -18,6 +18,7 @@ import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.integrationtest.IntegrationBase
 import no.nav.eessi.pensjon.pdl.integrationtest.KafkaTestConfig
+import no.nav.eessi.pensjon.personoppslag.FodselsnummerGenerator
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentInformasjon
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Kontaktadresse
@@ -60,9 +61,10 @@ class SedListenerAdresseIT : IntegrationBase() {
 
     @Test
     fun `Gitt en sed hendelse som kommer på riktig topic og group_id så skal den konsumeres av adresseListener`() {
-        every { euxService.hentSed(eq("74389487"), eq("743982")) } returns enSedFraEux()
-        every { euxService.alleGyldigeSEDForBuc(any()) } returns emptyList() // Dette er fordi vi ikke byr oss om IdentListener
-        every { personService.hentPerson(NorskIdent("12345678901")) } returns enPersonFraPDL()
+        val fnr = FodselsnummerGenerator.generateFnrForTest(70)
+        every { euxService.hentSed(eq("74389487"), eq("743982")) } returns enSedFraEux(fnr)
+        every { euxService.alleGyldigeSEDForBuc(any()) } returns emptyList() // Dette er fordi vi ikke bryr oss om IdentListener
+        every { personService.hentPerson(NorskIdent(fnr)) } returns enPersonFraPDL(fnr)
         every { kodeverkClient.finnLandkode("SE") } returns "SWE"
         every { personMottakKlient.opprettPersonopplysning(any()) } returns true
 
@@ -88,7 +90,7 @@ class SedListenerAdresseIT : IntegrationBase() {
         return sedHendelse
     }
 
-    private fun enSedFraEux() = SED(
+    private fun enSedFraEux(fnr: String) = SED(
         type = SedType.P2100,
         sedGVer = null,
         sedVer = null,
@@ -100,7 +102,7 @@ class SedListenerAdresseIT : IntegrationBase() {
                 person = Person(
                     pin = listOf(
                         null ?: PinItem(
-                            identifikator = "12345678901",
+                            identifikator = fnr,
                             land = "NO"
                         )
                     ),
@@ -135,10 +137,10 @@ class SedListenerAdresseIT : IntegrationBase() {
         pensjon = Pensjon()
     )
 
-    private fun enPersonFraPDL() = no.nav.eessi.pensjon.personoppslag.pdl.model.Person(
+    private fun enPersonFraPDL(fnr: String) = no.nav.eessi.pensjon.personoppslag.pdl.model.Person(
         identer = listOf(
             IdentInformasjon(
-                ident = "12345678901",
+                ident = fnr,
                 gruppe = IdentGruppe.FOLKEREGISTERIDENT
             )
         ),
