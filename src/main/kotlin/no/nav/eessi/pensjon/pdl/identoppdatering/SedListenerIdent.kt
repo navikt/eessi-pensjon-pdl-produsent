@@ -4,7 +4,6 @@ import io.micrometer.core.instrument.Metrics
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
-import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.NoUpdate
 import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.Update
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
@@ -45,43 +44,42 @@ class SedListenerIdent(
     fun consumeSedMottatt(hendelse: String, cr: ConsumerRecord<String, String>, acknowledgment: Acknowledgment) {
         MDC.putCloseable("x_request_id", UUID.randomUUID().toString()).use {
             consumeIncomingSed.measure {
-                consumeHendelse(cr, hendelse, acknowledgment)
+                logger.info("SedMottatt i partisjon: ${cr.partition()}, med offset: ${cr.offset()}")
+                consumeHendelse(hendelse)
+                acknowledgment.acknowledge()
+                logger.info("Acket sedMottatt melding med offset: ${cr.offset()} i partisjon ${cr.partition()}")
                 latch.countDown()
             }
         }
     }
 
-    private fun consumeHendelse(cr: ConsumerRecord<String, String>, hendelse: String, acknowledgment: Acknowledgment) {
-        logger.info("SedMottatt i partisjon: ${cr.partition()}, med offset: ${cr.offset()}")
+    private fun consumeHendelse(hendelse: String) {
         logger.debug(hendelse)
         logger.debug("Profile: $profile")
-
         try {
             val sedHendelse = sedHendelseMapping(hendelse)
 
-            if (profile == "prod" && sedHendelse.avsenderId in listOf("NO:NAVAT05", "NO:NAVAT07")) {
+            if (testHendelseIProd(sedHendelse)) {
                 logger.error("Avsender id er ${sedHendelse.avsenderId}. Dette er testdata i produksjon!!!\n$sedHendelse")
-                acknowledgment.acknowledge()
                 return
             }
 
+            logger.info("*** Starter pdl endringsmelding (IDENT) prosess for BucType: ${sedHendelse.bucType!!}, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
             val resultat = identOppdatering.oppdaterUtenlandskIdent(sedHendelse)
 
             if(resultat is Update) {
                 personMottakKlient.opprettPersonopplysning(resultat.identOpplysninger)
             }
-
             logger.info(resultat.toString())
             count(resultat.description)
-
-            acknowledgment.acknowledge()
-            logger.info("Acket sedMottatt melding med offset: ${cr.offset()} i partisjon ${cr.partition()}")
-
         } catch (ex: Exception) {
             logger.error("Noe gikk galt under behandling av SED-hendelse:\n $hendelse \n", ex)
             throw ex
         }
     }
+
+    private fun testHendelseIProd(sedHendelse: SedHendelse) =
+        profile == "prod" && sedHendelse.avsenderId in listOf("NO:NAVAT05", "NO:NAVAT07")
 
     fun count(melding: String) {
         try {

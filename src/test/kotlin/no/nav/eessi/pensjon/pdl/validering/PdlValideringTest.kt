@@ -13,16 +13,16 @@ internal class PdlValideringTest {
     private val pdlValidering = PdlValidering(kodeverkClient)
 
     @Test
-    fun `Gitt en ny uid naar avsenderland og uidland ikke er det samme saa returner true`() {
+    fun `Gitt en ny uid naar avsenderland og uidland ikke er det samme saa returner false`() {
 
         val identifisertPerson = UtenlandskId("11067122781", "DE")
-        assertTrue(pdlValidering.erUidLandAnnetEnnAvsenderLand(identifisertPerson, "SE"))
+        assertFalse(pdlValidering.avsenderLandHarVerdiOgErSammeSomIdLand(identifisertPerson, "SE"))
     }
 
     @Test
-    fun `Gitt en ny uid naar avsenderland og uidland er det samme saa returner false`() {
+    fun `Gitt en ny uid naar avsenderland og uidland er det samme saa returner true`() {
 
         val identifisertPerson = UtenlandskId("11067122781", "DE")
-        assertFalse (pdlValidering.erUidLandAnnetEnnAvsenderLand(identifisertPerson, "DE"))
+        assertTrue(pdlValidering.avsenderLandHarVerdiOgErSammeSomIdLand(identifisertPerson, "DE"))
     }
 }

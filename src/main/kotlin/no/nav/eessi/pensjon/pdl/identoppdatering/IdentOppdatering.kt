@@ -1,6 +1,5 @@
 package no.nav.eessi.pensjon.pdl.identoppdatering
 
-import io.micrometer.core.instrument.Metrics
 import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.eux.UtenlandskPersonIdentifisering
@@ -35,85 +34,55 @@ class IdentOppdatering (
     private val secureLogger = LoggerFactory.getLogger("secureLog")
 
     fun oppdaterUtenlandskIdent(sedHendelse: SedHendelse): Resultat {
-        if (erRelevantForEESSIPensjon(sedHendelse)) {
-            val bucType = sedHendelse.bucType!!
-            logger.info("*** Starter pdl endringsmelding (IDENT) prosess for BucType: $bucType, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
+        require(erRelevantForEESSIPensjon(sedHendelse)) { return NoUpdate("Ikke relevant for eessipensjon") }
 
-            val alleGyldigeSED = dokumentHelper.alleGyldigeSEDForBuc(sedHendelse.rinaSakId)
-            logger.info("Alle gyldige seder: \n$alleGyldigeSED")
-            val identifisertePersoner = personidentifiseringService.hentIdentifisertePersoner(alleGyldigeSED, bucType)
+        val alleGyldigeSED = dokumentHelper.alleGyldigeSEDForBuc(sedHendelse.rinaSakId).also { secureLogger.debug("Alle gyldige seder: \n$it") }
 
-            if (identifisertePersoner.isEmpty()) {
-                return NoUpdate("Ingen identifiserte FNR funnet")
-            }
+        val identifisertePersoner = personidentifiseringService.hentIdentifisertePersoner(alleGyldigeSED, sedHendelse.bucType!!)
+        require(identifisertePersoner.isNotEmpty()) { return NoUpdate("Ingen identifiserte FNR funnet") }
+        require(identifisertePersoner.size <= 1) { return NoUpdate("Antall identifiserte FNR er fler enn en") }
 
-            if (identifisertePersoner.size > 1) {
-                return NoUpdate("Antall identifiserte FNR er fler enn en")
-            }
+        val utenlandskeIderFraSEDer =
+            utenlandskPersonIdentifisering.finnAlleUtenlandskeIDerIMottatteSed(alleGyldigeSED)
+                .also { secureLogger.debug("Utenlandske IDer fra mottatt sed: $it") }
+        require(utenlandskeIderFraSEDer.isNotEmpty()) { return NoUpdate("Ingen utenlandske IDer funnet i BUC") }
+        require(utenlandskeIderFraSEDer.size <= 1) { return NoUpdate("Antall utenlandske IDer er flere enn en") }
+        // Vi har utelukket at det er 0 eller flere enn 1
+        val utenlandskIdFraSed = utenlandskeIderFraSEDer.first()
 
-            val utenlandskeIderFraSEDer =
-                utenlandskPersonIdentifisering.finnAlleUtenlandskeIDerIMottatteSed(alleGyldigeSED)
-            secureLogger.debug("Utenlandske IDer fra mottatt sed: $utenlandskeIderFraSEDer")
+        require(pdlValidering.avsenderLandHarVerdiOgErSammeSomIdLand(utenlandskIdFraSed, sedHendelse.avsenderLand)) {
+            return NoUpdate("Avsenderland mangler eller avsenderland er ikke det samme som uidland")
+        }
 
-            if (utenlandskeIderFraSEDer.isEmpty()) {
-                return NoUpdate("Ingen utenlandske IDer funnet i BUC")
-            }
+        val identifisertPersonFraPDL = identifisertePersoner.first()
 
-            if (utenlandskeIderFraSEDer.size > 1) {
-                return NoUpdate("Antall utenlandske IDer er flere enn en")
-            }
+        require(!identifisertPersonFraPDL.erDoed) { return NoUpdate("Identifisert person registrert med doedsfall") }
 
-            // Vi har utelukket at det er 0 eller flere enn 1
-            val utenlandskIdFraSed = utenlandskeIderFraSEDer.first()
+        //validering av uid korrekt format
+        require(pdlValidering.erPersonValidertPaaLand(utenlandskIdFraSed)) { return NoUpdate("Ingen validerte identifiserte personer funnet") }
 
-            if (sedHendelse.avsenderLand.isNullOrEmpty() || pdlValidering.erUidLandAnnetEnnAvsenderLand(
-                    utenlandskIdFraSed,
-                    sedHendelse.avsenderLand
-                )
-            ) {
-                return NoUpdate("Avsenderland mangler eller avsenderland er ikke det samme som uidland")
-            }
+        require(!pdlFiltrering.finnesUidFraSedIPDL(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) { return NoUpdate("PDLuid er identisk med SEDuid") }
 
-            val identifisertPersonFraPDL = identifisertePersoner.first()
-
-            if (identifisertPersonFraPDL.erDoed) {
-                return NoUpdate("Identifisert person registrert med doedsfall")
-            }
-
-            //validering av uid korrekt format
-            if (!pdlValidering.erPersonValidertPaaLand(utenlandskIdFraSed)) {
-                return NoUpdate("Ingen validerte identifiserte personer funnet")
-            }
-
-            if (pdlFiltrering.finnesUidFraSedIPDL(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) {
+        if (pdlFiltrering.skalOppgaveOpprettes(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) {
+            //ytterligere sjekk om f.eks SWE fnr i PDL faktisk er identisk med sedUID (hvis så ikke opprett oppgave bare avslutt)
+            require(pdlFiltrering.uidIsedOgIPDLErFaktiskUlik(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) {
+                // Oppretter ikke oppgave, Det som finnes i PDL er faktisk likt det som finnes i SED, avslutter
                 return NoUpdate("PDLuid er identisk med SEDuid")
             }
-
-            if (pdlFiltrering.skalOppgaveOpprettes(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) {
-                // TODO: Denne koden er ikke lett å forstå - hva betyr returverdien?
-                //ytterligere sjekk om f.eks SWE fnr i PDL faktisk er identisk med sedUID (hvis så ikke opprett oppgave bare avslutt)
-                if (!pdlFiltrering.uidIsedOgIPDLErFaktiskUlik(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) {
-                    // Oppretter ikke oppgave, Det som finnes i PDL er faktisk likt det som finnes i SED, avslutter
-                    return NoUpdate("PDLuid er identisk med SEDuid")
-                }
-                if (oppgaveHandler.opprettOppgaveForUid(sedHendelse, utenlandskIdFraSed, identifisertPersonFraPDL)) {
-                    return NoUpdate("Det finnes allerede en annen uid fra samme land (Oppgave)")
-                } else {
-                    return NoUpdate("Oppgave opprettet tidligere")
-                }
+            return if (oppgaveHandler.opprettOppgaveForUid(sedHendelse, utenlandskIdFraSed, identifisertPersonFraPDL)) {
+                NoUpdate("Det finnes allerede en annen uid fra samme land (Oppgave)")
+            } else {
+                NoUpdate("Oppgave opprettet tidligere")
             }
-
-            //Utfører faktisk innsending av endringsmelding til PDL (ny UID)
-            sedHendelse.avsenderNavn?.let { avsender ->
-                logger.info("Oppdaterer PDL med Ny Utenlandsk Ident fra $avsender")
-                return Update(
-                    "Innsending av endringsmelding",
-                    pdlEndringOpplysning(identifisertPersonFraPDL.fnr!!.value, utenlandskIdFraSed, avsender),
-                )
-            }
-            return NoUpdate("AvsenderNavn er ikke satt, kan derfor ikke lage endringsmelding")
         }
-        return NoUpdate("Ikke relevant for eessipensjon")
+
+        require(sedHendelse.avsenderNavn != null) { return NoUpdate("AvsenderNavn er ikke satt, kan derfor ikke lage endringsmelding") }
+
+        logger.info("Oppdaterer PDL med Ny Utenlandsk Ident fra ${sedHendelse.avsenderNavn}")
+        return Update(
+            "Innsending av endringsmelding",
+            pdlEndringOpplysning(identifisertPersonFraPDL.fnr!!.value, utenlandskIdFraSed, sedHendelse.avsenderNavn),
+        ).also { secureLogger.debug(it.toString()) }
     }
 
     private fun pdlEndringOpplysning(norskFnr: String, utenlandskPin: UtenlandskId, kilde: String) =

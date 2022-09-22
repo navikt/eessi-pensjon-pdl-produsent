@@ -18,10 +18,12 @@ class PdlValidering(private val kodeverkClient: KodeverkClient) {
     fun erPersonValidertPaaLand(utenlandskId: UtenlandskId) =
         validering.validerLandsspesifikkUID(kodeverkClient.finnLandkode(utenlandskId.land)!!, utenlandskId.id)
 
-    fun erUidLandAnnetEnnAvsenderLand(utenlandskId: UtenlandskId, avsenderLand: String) =
-        if (utenlandskId.land != avsenderLand) {
-            logger.info("Avsender land er et annet enn UID land")
+    fun avsenderLandHarVerdiOgErSammeSomIdLand(utenlandskId: UtenlandskId, avsenderLand: String?) =
+        if (!avsenderLand.isNullOrEmpty() && utenlandskId.land == avsenderLand) {
             true
-        } else false
+        } else {
+            logger.info("Avsender land er et annet enn UID land")
+            false
+        }
 
 }
