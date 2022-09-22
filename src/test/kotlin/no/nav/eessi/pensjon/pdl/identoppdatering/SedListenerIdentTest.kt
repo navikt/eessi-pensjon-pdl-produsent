@@ -13,6 +13,7 @@ import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.kafka.support.Acknowledgment
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -58,10 +59,10 @@ internal class SedMottattListenerTest {
     }
 
     @Test
-    fun `gitt en exception ved sedMottatt så ack melding`() {
-        sedListenerIdent.consumeSedMottatt("Explode!", cr, acknowledgment)
-
-        verify(exactly = 1) { acknowledgment.acknowledge() }
+    fun `gitt en exception ved sedMottatt så kast exception`() {
+        assertThrows<Exception> {
+            sedListenerIdent.consumeSedMottatt("Explode!", cr, acknowledgment)
+        }
     }
 
 }

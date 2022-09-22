@@ -84,8 +84,7 @@ class SedListenerIdent(
 
         } catch (ex: Exception) {
             logger.error("Noe gikk galt under behandling av SED-hendelse:\n $hendelse \n", ex)
-            countEnhet("Noe gikk galt under behandling av SED-hendelse")
-            acknowledgment.acknowledge()
+            throw ex
         }
     }
 
