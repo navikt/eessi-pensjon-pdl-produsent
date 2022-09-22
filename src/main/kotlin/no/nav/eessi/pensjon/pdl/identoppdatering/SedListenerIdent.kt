@@ -45,10 +45,15 @@ class SedListenerIdent(
         MDC.putCloseable("x_request_id", UUID.randomUUID().toString()).use {
             consumeIncomingSed.measure {
                 logger.info("SedMottatt i partisjon: ${cr.partition()}, med offset: ${cr.offset()}")
-                consumeHendelse(hendelse)
-                acknowledgment.acknowledge()
-                logger.info("Acket sedMottatt melding med offset: ${cr.offset()} i partisjon ${cr.partition()}")
-                latch.countDown()
+                try {
+                    consumeHendelse(hendelse)
+                    acknowledgment.acknowledge()
+                    logger.info("Acket sedMottatt melding med offset: ${cr.offset()} i partisjon ${cr.partition()}")
+                    latch.countDown()
+                } catch (ex: Exception) {
+                    logger.error("Noe gikk galt under behandling av SED-hendelse:\n $hendelse \n", ex)
+                    throw ex
+                }
             }
         }
     }
@@ -56,7 +61,6 @@ class SedListenerIdent(
     private fun consumeHendelse(hendelse: String) {
         logger.debug(hendelse)
         logger.debug("Profile: $profile")
-        try {
             val sedHendelse = sedHendelseMapping(hendelse)
 
             if (testHendelseIProd(sedHendelse)) {
@@ -72,10 +76,6 @@ class SedListenerIdent(
             }
             logger.info(resultat.toString())
             count(resultat.description)
-        } catch (ex: Exception) {
-            logger.error("Noe gikk galt under behandling av SED-hendelse:\n $hendelse \n", ex)
-            throw ex
-        }
     }
 
     private fun testHendelseIProd(sedHendelse: SedHendelse) =

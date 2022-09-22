@@ -48,39 +48,40 @@ class SedListenerAdresseProd(
         MDC.putCloseable("x_request_id", UUID.randomUUID().toString()).use {
             adresseMetric.measure {
                 logger.info("SED-hendelse mottatt i partisjon: ${cr.partition()}, med offset: ${cr.offset()} ")
+                secureLogger.debug("Hendelse mottatt:\n$hendelse")
 
                 try {
-                    secureLogger.debug("Hendelse mottatt:\n$hendelse")
-
-                    val sedHendelse = SedHendelse.fromJson(hendelse)
-
-                    if (testDataInProd(sedHendelse)) {
-                        logger.error("Avsender id er ${sedHendelse.avsenderId}. Dette er testdata i produksjon!!!\n$sedHendelse")
-                        acknowledgment.acknowledge()
-                        return@measure
-                    }
-
-                    logger.info("*** Starter pdl endringsmelding (ADRESSE) prosess for BucType: ${sedHendelse.bucType}, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
-
-                    when(val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse)) {
-                        is NoUpdate -> logger.info(result.toString())
-                        is Update -> {
-                            // UTKOMMENTERT INNTIL VIDERE
-                            // personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
-                            // logger.info("Update - oppdatering levert til PDL.")
-                            logger.info("Denne hendelsen ville ført til en oppdatering til PDL (foreløpig feature-toggled).")
-                            secureLogger.info("Update til PDL:\n${result.toJson()}")
-                        }
-                    }
-
+                    consumeSedHendelse(hendelse)
                     acknowledgment.acknowledge()
-
+                    logger.info("Acket sedMottatt melding med offset: ${cr.offset()} i partisjon ${cr.partition()}")
+                    latch.countDown()
                 } catch (ex: Exception) {
                     logger.error("Noe gikk galt under behandling av SED-hendelse for adresse:\n$hendelse\n", ex)
                     throw ex
                 }
             }
-            latch.countDown()
+        }
+    }
+
+    private fun consumeSedHendelse(hendelse: String) {
+        val sedHendelse = SedHendelse.fromJson(hendelse)
+
+        if (testDataInProd(sedHendelse)) {
+            logger.error("Avsender id er ${sedHendelse.avsenderId}. Dette er testdata i produksjon!!!\n$sedHendelse")
+            return
+        }
+
+        logger.info("*** Starter pdl endringsmelding (ADRESSE) prosess for BucType: ${sedHendelse.bucType}, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
+
+        when (val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse)) {
+            is NoUpdate -> logger.info(result.toString())
+            is Update -> {
+                // UTKOMMENTERT INNTIL VIDERE
+                // personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
+                // logger.info("Update - oppdatering levert til PDL.")
+                logger.info("Denne hendelsen ville ført til en oppdatering til PDL (foreløpig feature-toggled).")
+                secureLogger.info("Update til PDL:\n${result.toJson()}")
+            }
         }
     }
 
