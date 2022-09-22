@@ -32,39 +32,25 @@ class Adresseoppdatering(
     private val secureLogger = LoggerFactory.getLogger("secureLog")
 
     fun oppdaterUtenlandskKontaktadresse(sedHendelse: SedHendelse): Result {
-        logger.info("*** Starter pdl endringsmelding (ADRESSE) prosess for BucType: ${sedHendelse.bucType}, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
 
-        if (!erRelevantForEESSIPensjon(sedHendelse)) {
-            return NoUpdate("SED ikke relevant for EESSI Pensjon")
-        }
+        require(erRelevantForEESSIPensjon(sedHendelse)) { return NoUpdate("SED ikke relevant for EESSI Pensjon") }
 
         val sed = euxService.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId)
-
         secureLogger.debug("SED:\n$sed")
 
-        val bruker = sed.nav?.bruker
-
-        if (!isBrukersAdresseISEDIUtlandet(bruker)) {
-            return NoUpdate("Bruker har ikke utenlandsk adresse i SED")
-        }
-
-        if (isSedHendelseAvsenderNull(sedHendelse)) {
-            return Error("Mangler avsenderNavn eller avsenderLand i sedHendelse - avslutter adresseoppdatering: $sedHendelse")
-        }
-
-        if(!isSedHendelseFromPreprod(sedHendelse) && isAvsenderLandForskjelligFraAdressensLand(sedHendelse, sed)) {
+        require(isBrukersAdresseISEDIUtlandet(sed.nav?.bruker)) { return NoUpdate("Bruker har ikke utenlandsk adresse i SED") }
+        require(!isSedHendelseAvsenderNull(sedHendelse)) { return Error("Mangler avsenderNavn eller avsenderLand i sedHendelse - avslutter adresseoppdatering: $sedHendelse") }
+        require(isSedHendelseFromPreprod(sedHendelse) || !isAvsenderLandForskjelligFraAdressensLand(sedHendelse, sed)) {
             return NoUpdate("Adressens landkode (${sed.nav?.bruker?.adresse?.land}) er ulik landkode på avsenderland (${sedHendelse.avsenderLand}).")
         }
 
-        if (!hasNorskPin(bruker)) {
-            // TODO Håndtere brukere med ikke-norske identer
-            return NoUpdate("Bruker har ikke norsk pin i SED")
-        }
+        // TODO Håndtere brukere med ikke-norske identer
+        require (hasNorskPin(sed.nav?.bruker)) { return NoUpdate("Bruker har ikke norsk pin i SED") }
 
         val normalisertNorskPIN = try {
-            normaliserNorskPin(norskPin(bruker)!!.identifikator!!)
+            normaliserNorskPin(norskPin(sed.nav?.bruker)!!.identifikator!!)
         } catch (ex: IllegalArgumentException) {
-            return NoUpdate("Brukers norske id fra SED validerer ikke: \"${norskPin(bruker)!!.identifikator!!}\" - ${ex.message}")
+            return NoUpdate("Brukers norske id fra SED validerer ikke: \"${norskPin(sed.nav?.bruker)!!.identifikator!!}\" - ${ex.message}")
         }
 
         val personFraPDL = try {
@@ -78,17 +64,14 @@ class Adresseoppdatering(
 
         secureLogger.debug("Person fra PDL:\n${personFraPDL.toJson()}")
 
-        if (isAdressebeskyttet(personFraPDL.adressebeskyttelse)) {
-            return NoUpdate("Ingen adresseoppdatering")
-        }
+        require(!isAdressebeskyttet(personFraPDL.adressebeskyttelse)) { return NoUpdate("Ingen adresseoppdatering") }
 
         logger.info("Vi har funnet en person fra PDL med samme norsk identifikator som bruker i SED")
 
         if (!hasUtenlandskKontaktadresse(personFraPDL) || !sedTilPDLAdresse.isUtenlandskAdresseISEDMatchMedAdresseIPDL(
                 sed.nav?.bruker?.adresse!!, personFraPDL.kontaktadresse!!.utenlandskAdresse!!)) {
             val endringsmelding = try {
-                sedTilPDLAdresse.konverter(sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")",
-                    sed.nav?.bruker?.adresse!!)
+                sedTilPDLAdresse.konverter(sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")", sed.nav?.bruker?.adresse!!)
             } catch (ex: IllegalArgumentException) {
                 return NoUpdate("Adressen validerer ikke etter reglene til PDL: ${ex.message}")
             }
@@ -98,7 +81,7 @@ class Adresseoppdatering(
             )
         }
 
-        if (personFraPDL.kontaktadresse!!.gyldigFraOgMed?.toLocalDate() == LocalDate.now()) {
+        require(LocalDate.now() != personFraPDL.kontaktadresse!!.gyldigFraOgMed?.toLocalDate()) {
             return NoUpdate("Adresse finnes allerede i PDL med dagens dato som gyldig-fra-dato, dropper oppdatering")
         }
 

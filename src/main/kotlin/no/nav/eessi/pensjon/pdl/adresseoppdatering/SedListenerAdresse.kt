@@ -53,11 +53,14 @@ class SedListenerAdresse(
                     secureLogger.debug("Hendelse mottatt:\n$hendelse")
 
                     val sedHendelse = SedHendelse.fromJson(hendelse)
+
                     if (profile == "prod" && sedHendelse.avsenderId in listOf("NO:NAVAT05", "NO:NAVAT07")) {
                         logger.error("Avsender id er ${sedHendelse.avsenderId}. Dette er testdata i produksjon!!!\n$sedHendelse")
                         acknowledgment.acknowledge()
                         return@measure
                     }
+
+                    logger.info("*** Starter pdl endringsmelding (ADRESSE) prosess for BucType: ${sedHendelse.bucType}, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
 
                     val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse)
 
