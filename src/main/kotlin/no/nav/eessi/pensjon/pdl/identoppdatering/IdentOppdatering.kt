@@ -124,8 +124,10 @@ class IdentOppdatering (
                 count("Innsending av endringsmelding")
                 return endringsmelding
             }
+            count("AvsenderNavn er ikke satt, kan derfor ikke lage endringsmelding")
             return NoUpdate("AvsenderNavn er ikke satt, kan derfor ikke lage endringsmelding")
         }
+        count("Ikke relevant for eessipensjon")
         return NoUpdate("Ikke relevant for eessipensjon")
     }
 
