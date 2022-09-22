@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import java.time.LocalDate
@@ -39,7 +40,7 @@ class SedTilPDLAdresseTest {
             land = "DK"
         )
 
-        val pdlAdresse = SedTilPDLAdresse.OK(
+        val pdlAdresse =
             endringsmeldingKontaktAdresse(
                 kilde = "kilde",
                 gyldigFraOgMed = LocalDate.now(),
@@ -54,7 +55,6 @@ class SedTilPDLAdresseTest {
                     regionDistriktOmraade = "region"
                 )
             )
-        )
 
         assertEquals(pdlAdresse, SedTilPDLAdresse(kodeverkClient).konverter("kilde", sedAdresse))
     }
@@ -62,14 +62,13 @@ class SedTilPDLAdresseTest {
     @Test
     fun `Gateadresse med postboksadresse skal fylles ut i postboksNummerNavn`() {
         val sedAdresse = adresse(gate = "postboks 123")
-        val pdlAdresse = SedTilPDLAdresse.OK(
+        val pdlAdresse =
             endringsmeldingKontaktAdresse(
                 adresse = endringsmeldingUtenlandskAdresse(
                     adressenavnNummer = null,
                     postboksNummerNavn = "postboks 123"
                 )
             )
-        )
 
         assertEquals(pdlAdresse, SedTilPDLAdresse(kodeverkClient).konverter("some kilde", sedAdresse))
     }
@@ -78,67 +77,68 @@ class SedTilPDLAdresseTest {
     @CsvSource("ukjent", "vet ikke"
     )
     fun `Gitt en adresse der by inneholder ukjent, saa gjoer vi ingen oppdatering`(ugyldigOrd: String){
-        assertEquals(
-            SedTilPDLAdresse.Valideringsfeil("Ikke gyldig bySted: $ugyldigOrd"),
+        val ex = assertThrows<IllegalArgumentException> {
             SedTilPDLAdresse(kodeverkClient).konverter("some kilde", adresse(by = ugyldigOrd))
-        )
+        }
+        assertEquals("Ikke gyldig bySted: $ugyldigOrd", ex.message)
     }
 
     @Test
     fun `Gateadresse med ukjent skal gi valideringfeil`() {
-        assertEquals(
-            SedTilPDLAdresse.Valideringsfeil("Ikke gyldig adressenavnNummer: ukjent badeland strasse"),
+        val ex = assertThrows<IllegalArgumentException> {
             SedTilPDLAdresse(kodeverkClient).konverter("some kilde", adresse(gate = "ukjent badeland strasse"))
-        )
+        }
+        assertEquals("Ikke gyldig adressenavnNummer: ukjent badeland strasse", ex.message)
     }
 
     @Test
     fun `regionDistriktOmraade med bare tall skal gi valideringfeil`() {
-        assertEquals(
-            SedTilPDLAdresse.Valideringsfeil("Ikke gyldig regionDistriktOmraade: 165483546"),
+        val ex = assertThrows<IllegalArgumentException> {
             SedTilPDLAdresse(kodeverkClient).konverter("some kilde", adresse(region = "165483546"))
-        )
+        }
+        assertEquals("Ikke gyldig regionDistriktOmraade: 165483546", ex.message)
     }
 
     @Test
     fun `postkode som inneholder kun tegn saa skal det gi valideringfeil`() {
-        assertEquals(
-            SedTilPDLAdresse.Valideringsfeil("Ikke gyldig postkode: ***"),
+        val ex = assertThrows<IllegalArgumentException> {
             SedTilPDLAdresse(kodeverkClient).konverter("some kilde", adresse(postnummer = "***"))
-        )
+        }
+        assertEquals("Ikke gyldig postkode: ***", ex.message)
     }
 
     @Test
     fun `bygningEtasjeLeilighet med ordet postboks skal gi valideringfeil`() {
-        assertEquals(
-            SedTilPDLAdresse.Valideringsfeil("Ikke gyldig bygningEtasjeLeilighet: postboks 321"),
+        val ex = assertThrows<IllegalArgumentException> {
             SedTilPDLAdresse(kodeverkClient).konverter("some kilde", adresse(bygning = "postboks 321"))
-        )
+        }
+        assertEquals("Ikke gyldig bygningEtasjeLeilighet: postboks 321", ex.message)
     }
 
     @Test
     fun `Landkode som er null skal gi valideringfeil`() {
-        assertEquals(
-            SedTilPDLAdresse.Valideringsfeil("Mangler landkode"),
+        val ex = assertThrows<IllegalArgumentException> {
             SedTilPDLAdresse(kodeverkClient).konverter("some kilde", Adresse(land = null))
-        )
+        }
+        assertEquals("Mangler landkode", ex.message)
     }
 
     @Test
     fun `Landkode som er ugyldig skal gi valideringfeil`() {
         every { kodeverkClient.finnLandkode("X") } .throws(LandkodeException(""))
-        assertEquals(
-            SedTilPDLAdresse.Valideringsfeil("Ugyldig landkode: X"),
+
+        val ex = assertThrows<IllegalArgumentException> {
             SedTilPDLAdresse(kodeverkClient).konverter("some kilde", Adresse(land = "X"))
-        )
+        }
+        assertEquals("Ugyldig landkode: X", ex.message)
     }
 
     @Test
     fun `Adressen med kun landkode skal gi valideringfeil`() {
-        assertEquals(
-            SedTilPDLAdresse.Valideringsfeil("Ikke gyldig adresse, har kun landkode"),
+        val ex = assertThrows<IllegalArgumentException> {
             SedTilPDLAdresse(kodeverkClient).konverter("some kilde", Adresse(land = "DK"))
-        )
+        }
+        assertEquals("Ikke gyldig adresse, har kun landkode", ex.message)
     }
 
     @Test
@@ -220,7 +220,5 @@ class SedTilPDLAdresseTest {
         postkode = postkode,
         regionDistriktOmraade = regionDistriktOmraade
     )
-
-
 }
 

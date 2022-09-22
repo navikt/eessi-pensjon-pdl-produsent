@@ -8,8 +8,6 @@ import no.nav.eessi.pensjon.models.EndringsmeldingUtenlandskAdresse
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelse
-import no.nav.eessi.pensjon.pdl.adresseoppdatering.SedTilPDLAdresse.OK
-import no.nav.eessi.pensjon.pdl.adresseoppdatering.SedTilPDLAdresse.Valideringsfeil
 import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
@@ -86,18 +84,18 @@ class Adresseoppdatering(
 
         logger.info("Vi har funnet en person fra PDL med samme norsk identifikator som bruker i SED")
 
-        if (!hasUtenlandskKontaktadresse(personFraPDL) || !sedTilPDLAdresse.isUtenlandskAdresseISEDMatchMedAdresseIPDL(bruker?.adresse!!, personFraPDL.kontaktadresse!!.utenlandskAdresse!!)) {
-            return when (val konverteringResult = sedTilPDLAdresse.konverter(sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")", bruker?.adresse!!)) {
-                is OK -> Update(
-                    "Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding",
-                    pdlAdresseEndringOpplysning(
-                        norskFnr = normalisertNorskPIN,
-                        kilde = sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")",
-                        endringsmeldingKontaktAdresse = konverteringResult.endringsmeldingKontaktAdresse
-                    )
-                )
-                is Valideringsfeil -> NoUpdate("Adressen validerer ikke etter reglene til PDL: ${konverteringResult.description}")
+        if (!hasUtenlandskKontaktadresse(personFraPDL) || !sedTilPDLAdresse.isUtenlandskAdresseISEDMatchMedAdresseIPDL(
+                sed.nav?.bruker?.adresse!!, personFraPDL.kontaktadresse!!.utenlandskAdresse!!)) {
+            val endringsmelding = try {
+                sedTilPDLAdresse.konverter(sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")",
+                    sed.nav?.bruker?.adresse!!)
+            } catch (ex: IllegalArgumentException) {
+                return NoUpdate("Adressen validerer ikke etter reglene til PDL: ${ex.message}")
             }
+            return Update(
+                "Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding",
+                opprettAdresseEndringOpplysning(normalisertNorskPIN, endringsmelding)
+            )
         }
 
         if (personFraPDL.kontaktadresse!!.gyldigFraOgMed?.toLocalDate() == LocalDate.now()) {
@@ -112,8 +110,21 @@ class Adresseoppdatering(
                 kontaktadresse = personFraPDL.kontaktadresse!!
             )
         )
-
     }
+
+    private fun opprettAdresseEndringOpplysning(
+        normalisertNorskPIN: String,
+        endringsmelding: EndringsmeldingKontaktAdresse
+    ) = PdlEndringOpplysning(
+        listOf(
+            Personopplysninger(
+                endringstype = Endringstype.OPPRETT,
+                ident = normalisertNorskPIN,
+                endringsmelding = endringsmelding,
+                opplysningstype = Opplysningstype.KONTAKTADRESSE,
+            )
+        )
+    )
 
     private fun normaliserNorskPin(norskPinFraSED: String) =
         Fodselsnummer.fraMedValidation(norskPinFraSED)!!.value
@@ -143,12 +154,8 @@ class Adresseoppdatering(
     private fun isBrukersAdresseISEDIUtlandet(bruker: Bruker?) =
         bruker?.adresse?.land != null && bruker.adresse?.land != "NO"
 
-    fun korrigerDatoEndringOpplysning(
-        norskFnr: String,
-        kilde: String,
-        kontaktadresse: Kontaktadresse
-    ) = PdlEndringOpplysning(
-        listOf(
+    fun korrigerDatoEndringOpplysning(norskFnr: String, kilde: String, kontaktadresse: Kontaktadresse) =
+        PdlEndringOpplysning(listOf(
             Personopplysninger(
                 endringstype = Endringstype.KORRIGER,
                 ident = norskFnr,
@@ -170,23 +177,7 @@ class Adresseoppdatering(
                 opplysningstype = Opplysningstype.KONTAKTADRESSE,
                 opplysningsId = kontaktadresse.metadata.opplysningsId
             )
-        )
-    )
-
-    fun pdlAdresseEndringOpplysning(
-        norskFnr: String,
-        kilde: String,
-        endringsmeldingKontaktAdresse: EndringsmeldingKontaktAdresse,
-    ) = PdlEndringOpplysning(
-        listOf(
-            Personopplysninger(
-                endringstype = Endringstype.OPPRETT,
-                ident = norskFnr,
-                endringsmelding = endringsmeldingKontaktAdresse,
-                opplysningstype = Opplysningstype.KONTAKTADRESSE,
-            )
-        )
-    )
+        ))
 
     sealed class Result
 

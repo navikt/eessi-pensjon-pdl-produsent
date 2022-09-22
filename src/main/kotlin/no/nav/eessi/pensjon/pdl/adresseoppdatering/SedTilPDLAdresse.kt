@@ -11,74 +11,71 @@ import no.nav.eessi.pensjon.pdl.adresseoppdatering.AdresseValidering.erGyldigPos
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import org.springframework.stereotype.Component
 import java.time.LocalDate
-import kotlin.contracts.contract
 
 @Component
 class SedTilPDLAdresse(private val kodeverkClient: KodeverkClient) {
-
     private val postBoksInfo = listOf("postboks", "postb", "postbox", "p.b", "po.box")
 
-    fun konverter(kilde: String, sedAdresse: Adresse): Result {
-        val land = sedAdresse.land ?: return Valideringsfeil("Mangler landkode")
-
-        val landkode = try {
-            kodeverkClient.finnLandkode(land)
-        } catch (ex: LandkodeException) {
-            return  Valideringsfeil("Ugyldig landkode: $land")
-        }
-
-        val adressenavnNummer = sedAdresse.gate
-            ?.let { if(inneholderPostBoksInfo(it)) null else it }
-            ?.also { require (erGyldigAdressenavnNummerEllerBygningEtg(it)) {
-                return Valideringsfeil("Ikke gyldig adressenavnNummer: $it") }
-            }
-
-        val bySted = sedAdresse.by
-            ?.also { require(erGyldigByStedEllerRegion(it)) {
-                return Valideringsfeil("Ikke gyldig bySted: $it") }
-            }
-
-        val regionDistriktOmraade = sedAdresse.region
-            ?.also { require(erGyldigByStedEllerRegion(it)) {
-                return Valideringsfeil("Ikke gyldig regionDistriktOmraade: $it") }
-            }
-
-        val postkode = sedAdresse.postnummer
-            ?.also { require(erGyldigPostKode(it)) {
-                return Valideringsfeil("Ikke gyldig postkode: $it") }
-            }
-
-        val bygningEtasjeLeilighet = sedAdresse.bygning
-            ?.also { require(erGyldigAdressenavnNummerEllerBygningEtg(it)) {
-                return Valideringsfeil("Ikke gyldig bygningEtasjeLeilighet: $it") }
-            }
-
-        val postboksNummerNavn = sedAdresse.gate
-            ?.let { if(inneholderPostBoksInfo(it)) it else null }
-
-        require (listOf(adressenavnNummer, bygningEtasjeLeilighet, bySted, postboksNummerNavn, postkode, regionDistriktOmraade).any { it.isNullOrEmpty().not() }) {
-            return Valideringsfeil("Ikke gyldig adresse, har kun landkode")
-        }
-
-        return OK(
-            EndringsmeldingKontaktAdresse(
-                kilde = kilde,
-                gyldigFraOgMed = LocalDate.now(),
-                gyldigTilOgMed = LocalDate.now().plusYears(1),
-                coAdressenavn = null,
-                adresse = EndringsmeldingUtenlandskAdresse(
-                    adressenavnNummer = adressenavnNummer,
-                    bygningEtasjeLeilighet = bygningEtasjeLeilighet,
-                    bySted = bySted,
-                    landkode = landkode!!,
-                    postboksNummerNavn = postboksNummerNavn,
-                    postkode = postkode,
-                    regionDistriktOmraade = regionDistriktOmraade
-                )
+    /**
+     * @throws IllegalArgumentException ved valideringsfeil
+     */
+    fun konverter(kilde: String, sedAdresse: Adresse) =
+        EndringsmeldingKontaktAdresse(
+            kilde = kilde,
+            gyldigFraOgMed = LocalDate.now(),
+            gyldigTilOgMed = LocalDate.now().plusYears(1),
+            coAdressenavn = null,
+            adresse = EndringsmeldingUtenlandskAdresse(
+                adressenavnNummer = adresseNavnNummerFra(sedAdresse.gate),
+                bygningEtasjeLeilighet = bygningEtasjeLeilighetFra(sedAdresse.bygning),
+                bySted = byStedFra(sedAdresse.by),
+                landkode = landKodeFra(sedAdresse.land)!!,
+                postboksNummerNavn = postboksNummerNavnFra(sedAdresse.gate),
+                postkode = postKodeFra(sedAdresse.postnummer),
+                regionDistriktOmraade = regionDistriktOmraadeFra(sedAdresse.region)
             )
-        )
-
+        ).also {
+            requireMinstEttFeltMedVerdi(listOf(
+                it.adresse!!.adressenavnNummer,
+                it.adresse.bygningEtasjeLeilighet,
+                it.adresse.bySted,
+                it.adresse.postboksNummerNavn,
+                it.adresse.postkode,
+                it.adresse.regionDistriktOmraade)
+            )
     }
+
+    private fun requireMinstEttFeltMedVerdi(verdier: List<String?>) {
+        require(verdier.any { it.isNullOrEmpty().not() }) { "Ikke gyldig adresse, har kun landkode" }
+    }
+
+    private fun postboksNummerNavnFra(gate: String?) =
+        gate?.let { if (inneholderPostBoksInfo(it)) it else null }
+
+    private fun bygningEtasjeLeilighetFra(bygning: String?) =
+        bygning?.also { require(erGyldigAdressenavnNummerEllerBygningEtg(it)) { "Ikke gyldig bygningEtasjeLeilighet: $it" } }
+
+    private fun landKodeFra(land: String?): String? {
+        require(land != null) { "Mangler landkode" }
+        return try {
+            kodeverkClient.finnLandkode(land)
+            } catch (ex: LandkodeException) {
+                throw IllegalArgumentException("Ugyldig landkode: ${land}", ex)
+            }
+    }
+
+    private fun postKodeFra(postnummer: String?) =
+        postnummer?.also { require(erGyldigPostKode(it)) { "Ikke gyldig postkode: $it" } }
+
+    private fun regionDistriktOmraadeFra(region: String?) =
+        region?.also { require(erGyldigByStedEllerRegion(it)) { "Ikke gyldig regionDistriktOmraade: $it" } }
+
+    private fun byStedFra(by: String?) =
+        by?.also { require(erGyldigByStedEllerRegion(it)) { "Ikke gyldig bySted: $it" } }
+
+    private fun adresseNavnNummerFra(gate: String?) =
+        gate?.let { if (inneholderPostBoksInfo(it)) null else it }
+            ?.also { require(erGyldigAdressenavnNummerEllerBygningEtg(it)) { "Ikke gyldig adressenavnNummer: $it" } }
 
     @SuppressWarnings("kotlin:S1067") // enkel struktur gir lav kognitiv load
     fun isUtenlandskAdresseISEDMatchMedAdresseIPDL(sedAdresse: Adresse, pdlAdresse: UtenlandskAdresse) =
@@ -90,8 +87,4 @@ class SedTilPDLAdresse(private val kodeverkClient: KodeverkClient) {
                 && sedAdresse.land == pdlAdresse.landkode.let { kodeverkClient.finnLandkode(it) }
 
     private fun inneholderPostBoksInfo(gate: String) = postBoksInfo.any { gate.contains(it) }
-
-    sealed class Result
-    data class OK(val endringsmeldingKontaktAdresse: EndringsmeldingKontaktAdresse): Result()
-    data class Valideringsfeil(val description: String): Result()
 }
