@@ -102,8 +102,8 @@ class IdentManglerEllerFeilTest : IntegrationBase() {
         sendMeldingString(javaClass.getResource("/eux/hendelser/P_BUC_01_P2000-avsenderSE.json").readText())
         sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
 
-        assertTrue(isMessageInlog("Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer"))
-        assertThat(NoUpdate("Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer"))
+        assertTrue(isMessageInlog("Avsenderland mangler eller avsenderland er ikke det samme som uidland"))
+        assertThat(NoUpdate("Avsenderland mangler eller avsenderland er ikke det samme som uidland"))
 
         CustomMockServer().verifyRequest("/api/v1/endringer", 0)
     }

@@ -172,7 +172,7 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
                 docId = "eb938171a4cb4e658b3a6c011962d204"
             )
         )
-        assertTrue(isMessageInlog("Det finnes allerede en annen uid fra samme land, opprette oppgave"))
+        assertTrue(isMessageInlog("Det finnes allerede en annen uid fra samme land (Oppgave)"))
 
         CustomMockServer().verifyRequest("/api/v1/endringer", 0)
     }

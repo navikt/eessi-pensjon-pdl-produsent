@@ -78,7 +78,7 @@ class IdentFinnesIntegrationTest : IntegrationBase() {
 
         sendMeldingString(javaClass.getResource("/eux/hendelser/P_BUC_01_P2000-avsenderDK.json").readText())
         sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
-        assertTrue(isMessageInlog("PDLuid er identisk med SEDuid. Acket sedMottatt"))
+        assertTrue(isMessageInlog("PDLuid er identisk med SEDuid"))
     }
 
     @Test
@@ -114,7 +114,7 @@ class IdentFinnesIntegrationTest : IntegrationBase() {
         sendMeldingString(hendelseJson)
         sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
 
-        assertTrue(isMessageInlog("Oppretter ikke oppgave, Det som finnes i PDL er faktisk likt det som finnes i SED, avslutter"))
+        assertTrue(isMessageInlog("PDLuid er identisk med SEDuid"))
     }
 
 }

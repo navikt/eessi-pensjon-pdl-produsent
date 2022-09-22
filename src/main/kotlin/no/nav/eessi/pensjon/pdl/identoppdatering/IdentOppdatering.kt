@@ -45,12 +45,12 @@ class IdentOppdatering (
 
             if (identifisertePersoner.isEmpty()) {
                 count("Ingen identifiserte FNR funnet")
-                return NoUpdate("Ingen identifiserte FNR funnet, Acket melding")
+                return NoUpdate("Ingen identifiserte FNR funnet")
             }
 
             if (identifisertePersoner.size > 1) {
                 count("Antall identifiserte FNR er fler enn en")
-                return NoUpdate("Antall identifiserte FNR er fler enn en, Acket melding")
+                return NoUpdate("Antall identifiserte FNR er fler enn en")
             }
 
             val utenlandskeIderFraSEDer =
@@ -76,45 +76,51 @@ class IdentOppdatering (
                 )
             ) {
                 count("Avsenderland mangler eller avsenderland er ikke det samme som uidland")
-                return NoUpdate("Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer")
+                return NoUpdate("Avsenderland mangler eller avsenderland er ikke det samme som uidland")
             }
 
             val identifisertPersonFraPDL = identifisertePersoner.first()
 
             if (identifisertPersonFraPDL.erDoed) {
                 count("Identifisert person registrert med doedsfall")
-                return NoUpdate("Identifisert person registrert med doedsfall, kan ikke opprette endringsmelding. Acket melding")
+                return NoUpdate("Identifisert person registrert med doedsfall")
             }
 
             //validering av uid korrekt format
             if (!pdlValidering.erPersonValidertPaaLand(utenlandskIdFraSed)) {
                 count("Ingen validerte identifiserte personer funnet")
-                return NoUpdate("Ingen validerte identifiserte personer funnet. Acket sedMottatt")
+                return NoUpdate("Ingen validerte identifiserte personer funnet")
             }
 
             if (pdlFiltrering.finnesUidFraSedIPDL(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) {
                 count("PDLuid er identisk med SEDuid")
-                return NoUpdate("PDLuid er identisk med SEDuid. Acket sedMottatt")
+                return NoUpdate("PDLuid er identisk med SEDuid")
             }
 
             if (pdlFiltrering.skalOppgaveOpprettes(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) {
                 // TODO: Denne koden er ikke lett å forstå - hva betyr returverdien?
                 //ytterligere sjekk om f.eks SWE fnr i PDL faktisk er identisk med sedUID (hvis så ikke opprett oppgave bare avslutt)
-                return if (pdlFiltrering.sjekkYterligerePaaPDLuidMotSedUid(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) {
-                    val result = oppgaveHandler.opprettOppgaveForUid(sedHendelse, utenlandskIdFraSed, identifisertPersonFraPDL)
-                    if (result) count("Det finnes allerede en annen uid fra samme land (Oppgave)")
-
-                    NoUpdate("Det finnes allerede en annen uid fra samme land, opprette oppgave")
-
-                } else {
+                if (!pdlFiltrering.uidIsedOgIPDLErFaktiskUlik(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) {
+                    // Oppretter ikke oppgave, Det som finnes i PDL er faktisk likt det som finnes i SED, avslutter
                     count("PDLuid er identisk med SEDuid")
-                    NoUpdate("Oppretter ikke oppgave, Det som finnes i PDL er faktisk likt det som finnes i SED, avslutter")
+                    return NoUpdate("PDLuid er identisk med SEDuid")
+                }
+                if (oppgaveHandler.opprettOppgaveForUid(sedHendelse, utenlandskIdFraSed, identifisertPersonFraPDL)) {
+                    count("Det finnes allerede en annen uid fra samme land (Oppgave)")
+                    return NoUpdate("Det finnes allerede en annen uid fra samme land (Oppgave)")
+                } else {
+                    count("Oppgave opprettet tidligere")
+                    return NoUpdate("Oppgave opprettet tidligere")
                 }
             }
 
             //Utfører faktisk innsending av endringsmelding til PDL (ny UID)
             sedHendelse.avsenderNavn?.let { avsender ->
-                val endringsmelding = lagEndringsMelding(utenlandskIdFraSed, identifisertPersonFraPDL.fnr!!.value, avsender)
+                logger.info("Oppdaterer PDL med Ny Utenlandsk Ident fra $avsender")
+                val endringsmelding = Update(
+                    "Innsending av endringsmelding",
+                    pdlEndringOpplysning(identifisertPersonFraPDL.fnr!!.value, utenlandskIdFraSed, avsender),
+                )
                 count("Innsending av endringsmelding")
                 return endringsmelding
             }
@@ -123,23 +129,22 @@ class IdentOppdatering (
         return NoUpdate("Ikke relevant for eessipensjon")
     }
 
-    fun lagEndringsMelding(utenlandskPin: UtenlandskId, norskFnr: String, kilde: String): Update {
-        return Update("Oppdaterer PDL med Ny Utenlandsk Ident fra $kilde",
-            PdlEndringOpplysning(
-                listOf(
-                    Personopplysninger(
-                        endringstype = Endringstype.OPPRETT,
-                        ident = norskFnr,
-                        endringsmelding = EndringsmeldingUID(
-                            identifikasjonsnummer = konvertertTilPdlFormat(utenlandskPin),
-                            utstederland = kodeverkClient.finnLandkode(utenlandskPin.land) ?: throw RuntimeException("Feil ved landkode"),
-                            kilde = kilde
-                        ),
-                        opplysningstype = Opplysningstype.UTENLANDSKIDENTIFIKASJONSNUMMER
-                    ))
-            ),
+    private fun pdlEndringOpplysning(norskFnr: String, utenlandskPin: UtenlandskId, kilde: String) =
+        PdlEndringOpplysning(
+            listOf(
+                Personopplysninger(
+                    endringstype = Endringstype.OPPRETT,
+                    ident = norskFnr,
+                    endringsmelding = EndringsmeldingUID(
+                        identifikasjonsnummer = konvertertTilPdlFormat(utenlandskPin),
+                        utstederland = kodeverkClient.finnLandkode(utenlandskPin.land)
+                            ?: throw RuntimeException("Feil ved landkode"),
+                        kilde = kilde
+                    ),
+                    opplysningstype = Opplysningstype.UTENLANDSKIDENTIFIKASJONSNUMMER
+                )
+            )
         )
-    }
 
     private fun konvertertTilPdlFormat(utenlandskPin: UtenlandskId): String {
         val uid = utenlandskPin.id

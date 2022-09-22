@@ -32,7 +32,6 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.Folkeregistermetadata
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Metadata
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
@@ -84,40 +83,38 @@ internal class IdentOppdateringTest {
 
     @Test
     fun `Gitt at ingen identifiserte personer blir funnet saa gjoeres ingen oppdatrering`() {
-
         every { personidentifiseringService.hentIdentifisertePersoner(emptyList(), BucType.P_BUC_01) } returns emptyList()
 
-        val sedHendelse = sedHendelse(avsenderLand = NORGE)
-
-        val resultat = identoppdatering.oppdaterUtenlandskIdent(sedHendelse) as NoUpdate
-        assertTrue(resultat.description == "Ingen identifiserte FNR funnet, Acket melding")
+        assertEquals(
+            NoUpdate("Ingen identifiserte FNR funnet"),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = NORGE))
+        )
     }
 
     @Test
     fun `Gitt at det er en buc med flere enn en identifisert person saa blir det ingen oppdatering`() {
-
         val ident = identifisertPerson()
 
         every { personidentifiseringService.hentIdentifisertePersoner(any(), any()) } returns listOf(ident, ident.copy(fnr = fra(SOME_FNR)))
 
-        val resultat = identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = NORGE)) as NoUpdate
-        assertTrue(resultat.description == "Antall identifiserte FNR er fler enn en, Acket melding")
-
+        assertEquals(
+            NoUpdate("Antall identifiserte FNR er fler enn en"),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = NORGE))
+        )
     }
 
     @Test
     fun `Gitt at det er en buc uten utenlandsk ident saa blir det ingen oppdatering`() {
-
         every { personidentifiseringService.hentIdentifisertePersoner(any(), any()) } returns listOf(identifisertPerson())
 
-        val resultat = identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = NORGE)) as NoUpdate
-        assertTrue(resultat.description == "Ingen utenlandske IDer funnet i BUC")
-
+        assertEquals(
+            NoUpdate("Ingen utenlandske IDer funnet i BUC"),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = NORGE))
+        )
     }
 
     @Test
     fun `Gitt at det er en buc med flere enn en utenlandsk ident saa blir det ingen oppdatering`() {
-
         val polskPerson = forenkletSED(SOME_RINA_SAK_ID)
         val italienskPerson = forenkletSED(SOME_RINA_SAK_ID_2)
 
@@ -128,48 +125,49 @@ internal class IdentOppdateringTest {
             Pair(italienskPerson, sed(FNR, land = ITALIA))
         )
 
-        val resultat = identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = NORGE)) as NoUpdate
-        assertEquals("Antall utenlandske IDer er flere enn en", resultat.description)
-
+        assertEquals(
+            NoUpdate("Antall utenlandske IDer er flere enn en"),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = NORGE))
+        )
     }
 
     @Test
     fun `Gitt BUCen mangler avsenderland da blir det ingen oppdatering`() {
-
         val polskPerson = forenkletSED(SOME_RINA_SAK_ID)
         every { personidentifiseringService.hentIdentifisertePersoner(any(), any()) } returns listOf(identifisertPerson())
 
         every { euxService.alleGyldigeSEDForBuc(SOME_RINA_SAK_ID) } returns listOf(Pair(polskPerson, sed(land = "")))
 
-        val resultat = identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = NORGE)) as NoUpdate
-        assertTrue(resultat.description == "Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer")
-
+        assertEquals(
+            NoUpdate("Avsenderland mangler eller avsenderland er ikke det samme som uidland"),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = NORGE))
+        )
     }
 
     @Test
     fun `Gitt at avsenderland ikke er det samme som UIDland da blir det ingen oppdatering`() {
-
         val polskPerson = forenkletSED(SOME_RINA_SAK_ID)
 
         every { personidentifiseringService.hentIdentifisertePersoner(any(), any()) } returns listOf(identifisertPerson())
         every { euxService.alleGyldigeSEDForBuc(SOME_RINA_SAK_ID) } returns listOf(Pair(polskPerson, sed(land = POLEN)))
 
-        val resultat = identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = ITALIA)) as NoUpdate
-        assertTrue(resultat.description == "Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer")
-
+        assertEquals(
+            NoUpdate("Avsenderland mangler eller avsenderland er ikke det samme som uidland"),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = ITALIA))
+        )
     }
 
     @Test
     fun `Gitt at BUCen inneholder uid paa en doed person saa blir det ingen oppdatering`() {
-
         val polskPerson = forenkletSED(SOME_RINA_SAK_ID)
 
         every { personidentifiseringService.hentIdentifisertePersoner(any(), any()) } returns listOf(identifisertPerson(true))
         every { euxService.alleGyldigeSEDForBuc(SOME_RINA_SAK_ID) } returns listOf(Pair(polskPerson, sed(land = POLEN)))
 
-        val resultat = identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = POLEN)) as NoUpdate
-        assertTrue(resultat.description == "Identifisert person registrert med doedsfall, kan ikke opprette endringsmelding. Acket melding")
-
+        assertEquals(
+            NoUpdate("Identifisert person registrert med doedsfall"),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = POLEN))
+        )
     }
 
     @Test
@@ -182,9 +180,10 @@ internal class IdentOppdateringTest {
 
         every { euxService.alleGyldigeSEDForBuc(SOME_RINA_SAK_ID) } returns listOf(Pair(polskPerson, sed(id = FNR, land = POLEN)))
 
-        val resultat = identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = POLEN)) as NoUpdate
-        assertTrue(resultat.description == "PDLuid er identisk med SEDuid. Acket sedMottatt")
-
+        assertEquals(
+            NoUpdate("PDLuid er identisk med SEDuid"),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = POLEN)) as NoUpdate
+        )
     }
 
     @Test
@@ -197,8 +196,10 @@ internal class IdentOppdateringTest {
 
         every { euxService.alleGyldigeSEDForBuc(SOME_RINA_SAK_ID) } returns listOf(Pair(polskPerson, sed(land = POLEN)))
 
-        val resultat = identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = POLEN)) as NoUpdate
-        assertTrue(resultat.description == "Ingen validerte identifiserte personer funnet. Acket sedMottatt")
+        assertEquals(
+            NoUpdate("Ingen validerte identifiserte personer funnet"),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = POLEN))
+        )
 
     }
 
@@ -212,8 +213,10 @@ internal class IdentOppdateringTest {
         every { euxService.alleGyldigeSEDForBuc(SOME_RINA_SAK_ID) } returns listOf(Pair(polskPersonMedUID, sed(id = FNR, land = POLEN)))
         every { oppgaveHandler.opprettOppgaveForUid(any(), UtenlandskId( FNR, POLEN ), identifisertPerson) } returns true
 
-        val resultat = identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = POLEN)) as NoUpdate
-        assertTrue(resultat.description == "Det finnes allerede en annen uid fra samme land, opprette oppgave")
+        assertEquals(
+            NoUpdate("Det finnes allerede en annen uid fra samme land (Oppgave)"),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = POLEN))
+        )
 
     }
 
@@ -227,7 +230,7 @@ internal class IdentOppdateringTest {
         every { oppgaveHandler.opprettOppgaveForUid(any(), UtenlandskId( SVENSK_UID, SVERIGE ), identifisertPerson) } returns false
 
         val resultat =  identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = SVERIGE)) as Update
-        assertEquals(resultat.description, "Oppdaterer PDL med Ny Utenlandsk Ident fra Sverige")
+        assertEquals(resultat.description, "Innsending av endringsmelding")
 
     }
     @Test
@@ -240,14 +243,24 @@ internal class IdentOppdateringTest {
         every { oppgaveHandler.opprettOppgaveForUid(any(), UtenlandskId( SVENSK_UID_UTEN_SEPERATOR, SVERIGE ), identifisertPerson) } returns false
 
         val resultat = identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = SVERIGE)) as Update
-        assertEquals(resultat.description, "Oppdaterer PDL med Ny Utenlandsk Ident fra Sverige")
+        assertEquals( "Innsending av endringsmelding", resultat.description)
 
     }
 
     @Test
     fun `Gitt at vi har en SedHendelse som mangler bucType saa skal vi faa en NoUpdate som resultat`() {
-        val resultat = identoppdatering.oppdaterUtenlandskIdent(SedHendelse(bucType = null, sektorKode = "", rinaDokumentVersjon = "", rinaDokumentId = "", rinaSakId = ""))  as NoUpdate
-        assertEquals(resultat.description, "Ikke relevant for eessipensjon")
+        assertEquals(
+            NoUpdate("Ikke relevant for eessipensjon"),
+            identoppdatering.oppdaterUtenlandskIdent(
+                SedHendelse(
+                    bucType = null,
+                    sektorKode = "",
+                    rinaDokumentVersjon = "",
+                    rinaDokumentId = "",
+                    rinaSakId = ""
+                )
+            )
+        )
     }
 
     @Test
@@ -260,8 +273,10 @@ internal class IdentOppdateringTest {
         every { euxService.alleGyldigeSEDForBuc(SOME_RINA_SAK_ID) } returns listOf(Pair(svenskPersonMedUID, sed(id = SVENSK_UID_UTEN_SEPERATOR, land = SVERIGE)))
         every { oppgaveHandler.opprettOppgaveForUid(any(), UtenlandskId( SVENSK_UID_UTEN_SEPERATOR, SVERIGE ), identifisertPerson) } returns false
 
-        val resultat = identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = SVERIGE, avsenderNavn = null)) as NoUpdate
-        assertEquals(resultat.description, "AvsenderNavn er ikke satt, kan derfor ikke lage endringsmelding")
+        assertEquals(
+            NoUpdate("AvsenderNavn er ikke satt, kan derfor ikke lage endringsmelding"),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = SVERIGE, avsenderNavn = null))
+        )
     }
 
 
