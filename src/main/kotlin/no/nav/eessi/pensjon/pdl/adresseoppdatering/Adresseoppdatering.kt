@@ -36,9 +36,9 @@ class Adresseoppdatering(
 
         val sed = euxService.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId).also { secureLogger.debug("SED:\n$it") }
 
-        require(isAdresseIUtlandet(adresseFra(sed))) { return NoUpdate("Bruker har ikke utenlandsk adresse i SED") }
-        require(!isSedHendelseAvsenderNull(sedHendelse)) { "Mangler avsenderNavn eller avsenderLand i sedHendelse - avslutter adresseoppdatering: $sedHendelse" }
-        require(!isAvsenderLandForskjelligFraAdressensLand(sedHendelse, sed)) {
+        require(adresseErIUtlandet(adresseFra(sed))) { return NoUpdate("Bruker har ikke utenlandsk adresse i SED") }
+        require(avsenderISedHendelse(sedHendelse)) { "Mangler avsenderNavn eller avsenderLand i sedHendelse - avslutter adresseoppdatering: $sedHendelse" }
+        require(avsenderLandOgAdressensLandErSamme(sedHendelse, sed)) {
             return NoUpdate("Adressens landkode (${adresseFra(sed)?.land}) er ulik landkode på avsenderland (${sedHendelse.avsenderLand}).")
         }
 
@@ -60,7 +60,7 @@ class Adresseoppdatering(
             throw ex
         }.also { secureLogger.debug("Person fra PDL:\n${it.toJson()}") }
 
-        require(!isAdressebeskyttet(personFraPDL.adressebeskyttelse)) { return NoUpdate("Ingen adresseoppdatering") }
+        require(erUtenAdressebeskyttelse(personFraPDL.adressebeskyttelse)) { return NoUpdate("Ingen adresseoppdatering") }
 
         logger.info("Vi har funnet en person fra PDL med samme norsk identifikator som bruker i SED")
 
@@ -90,19 +90,17 @@ class Adresseoppdatering(
         )
     }
 
-    private fun opprettAdresseEndringOpplysning(
-        normalisertNorskPIN: String,
-        endringsmelding: EndringsmeldingKontaktAdresse
-    ) = PdlEndringOpplysning(
-        listOf(
-            Personopplysninger(
-                endringstype = Endringstype.OPPRETT,
-                ident = normalisertNorskPIN,
-                endringsmelding = endringsmelding,
-                opplysningstype = Opplysningstype.KONTAKTADRESSE,
+    private fun opprettAdresseEndringOpplysning(normalisertNorskPIN: String, endringsmelding: EndringsmeldingKontaktAdresse) =
+        PdlEndringOpplysning(
+            listOf(
+                Personopplysninger(
+                    endringstype = Endringstype.OPPRETT,
+                    ident = normalisertNorskPIN,
+                    endringsmelding = endringsmelding,
+                    opplysningstype = Opplysningstype.KONTAKTADRESSE,
+                )
             )
         )
-    )
 
     private fun normaliserNorskPin(norskPinFraSED: String) =
         Fodselsnummer.fraMedValidation(norskPinFraSED)!!.value
@@ -117,8 +115,8 @@ class Adresseoppdatering(
     private fun norskPin(bruker: Bruker?) =
         bruker?.person?.pin?.firstOrNull { it.land == "NO" }
 
-    private fun isAvsenderLandForskjelligFraAdressensLand(sedHendelse: SedHendelse, sed: SED) =
-        sedHendelse.avsenderLand != adresseFra(sed)?.land || isSedHendelseFromPreprod(sedHendelse) /* "alt" er fra Norge i preprod */
+    private fun avsenderLandOgAdressensLandErSamme(sedHendelse: SedHendelse, sed: SED) =
+        sedHendelse.avsenderLand == adresseFra(sed)?.land || isSedHendelseFromPreprod(sedHendelse) /* "alt" er fra Norge i preprod */
 
     private fun adresseFra(sed: SED) = brukerFra(sed)?.adresse
 
@@ -127,10 +125,10 @@ class Adresseoppdatering(
     private fun isSedHendelseFromPreprod(sedHendelse: SedHendelse) =
         sedHendelse.avsenderId in listOf("NO:NAVAT05", "NO:NAVAT07")
 
-    private fun isSedHendelseAvsenderNull(sedHendelse: SedHendelse) =
-        sedHendelse.avsenderNavn == null || sedHendelse.avsenderLand == null
+    private fun avsenderISedHendelse(sedHendelse: SedHendelse) =
+        sedHendelse.avsenderNavn != null && sedHendelse.avsenderLand != null
 
-    private fun isAdresseIUtlandet(adresse: Adresse?) =
+    private fun adresseErIUtlandet(adresse: Adresse?) =
         adresse?.land != null && adresse.land != "NO"
 
     fun korrigerDatoEndringOpplysning(norskFnr: String, kilde: String, kontaktadresse: Kontaktadresse) =
