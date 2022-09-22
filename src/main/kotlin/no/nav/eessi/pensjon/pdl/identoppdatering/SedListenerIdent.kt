@@ -88,7 +88,7 @@ class SedListenerIdent(
         }
     }
 
-    fun countEnhet(melding: String) {
+    fun count(melding: String) {
         try {
             Metrics.counter("PDLmeldingSteg",   "melding", melding).increment()
         } catch (e: Exception) {

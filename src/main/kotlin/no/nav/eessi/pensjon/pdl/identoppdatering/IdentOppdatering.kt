@@ -44,12 +44,12 @@ class IdentOppdatering (
             val identifisertePersoner = personidentifiseringService.hentIdentifisertePersoner(alleGyldigeSED, bucType)
 
             if (identifisertePersoner.isEmpty()) {
-                countEnhet("Ingen identifiserte FNR funnet")
+                count("Ingen identifiserte FNR funnet")
                 return NoUpdate("Ingen identifiserte FNR funnet, Acket melding")
             }
 
             if (identifisertePersoner.size > 1) {
-                countEnhet("Antall identifiserte FNR er fler enn en")
+                count("Antall identifiserte FNR er fler enn en")
                 return NoUpdate("Antall identifiserte FNR er fler enn en, Acket melding")
             }
 
@@ -58,12 +58,12 @@ class IdentOppdatering (
             secureLogger.debug("Utenlandske IDer fra mottatt sed: $utenlandskeIderFraSEDer")
 
             if (utenlandskeIderFraSEDer.isEmpty()) {
-                countEnhet("Ingen utenlandske IDer funnet i BUC")
+                count("Ingen utenlandske IDer funnet i BUC")
                 return NoUpdate("Ingen utenlandske IDer funnet i BUC")
             }
 
             if (utenlandskeIderFraSEDer.size > 1) {
-                countEnhet("Antall utenlandske IDer er flere enn en")
+                count("Antall utenlandske IDer er flere enn en")
                 return NoUpdate("Antall utenlandske IDer er flere enn en")
             }
 
@@ -75,25 +75,25 @@ class IdentOppdatering (
                     sedHendelse.avsenderLand
                 )
             ) {
-                countEnhet("Avsenderland mangler eller avsenderland er ikke det samme som uidland")
+                count("Avsenderland mangler eller avsenderland er ikke det samme som uidland")
                 return NoUpdate("Avsenderland mangler eller avsenderland er ikke det samme som uidland, stopper identifisering av personer")
             }
 
             val identifisertPersonFraPDL = identifisertePersoner.first()
 
             if (identifisertPersonFraPDL.erDoed) {
-                countEnhet("Identifisert person registrert med doedsfall")
+                count("Identifisert person registrert med doedsfall")
                 return NoUpdate("Identifisert person registrert med doedsfall, kan ikke opprette endringsmelding. Acket melding")
             }
 
             //validering av uid korrekt format
             if (!pdlValidering.erPersonValidertPaaLand(utenlandskIdFraSed)) {
-                countEnhet("Ingen validerte identifiserte personer funnet")
+                count("Ingen validerte identifiserte personer funnet")
                 return NoUpdate("Ingen validerte identifiserte personer funnet. Acket sedMottatt")
             }
 
             if (pdlFiltrering.finnesUidFraSedIPDL(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) {
-                countEnhet("PDLuid er identisk med SEDuid")
+                count("PDLuid er identisk med SEDuid")
                 return NoUpdate("PDLuid er identisk med SEDuid. Acket sedMottatt")
             }
 
@@ -102,12 +102,12 @@ class IdentOppdatering (
                 //ytterligere sjekk om f.eks SWE fnr i PDL faktisk er identisk med sedUID (hvis så ikke opprett oppgave bare avslutt)
                 return if (pdlFiltrering.sjekkYterligerePaaPDLuidMotSedUid(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) {
                     val result = oppgaveHandler.opprettOppgaveForUid(sedHendelse, utenlandskIdFraSed, identifisertPersonFraPDL)
-                    if (result) countEnhet("Det finnes allerede en annen uid fra samme land (Oppgave)")
+                    if (result) count("Det finnes allerede en annen uid fra samme land (Oppgave)")
 
                     NoUpdate("Det finnes allerede en annen uid fra samme land, opprette oppgave")
 
                 } else {
-                    countEnhet("PDLuid er identisk med SEDuid")
+                    count("PDLuid er identisk med SEDuid")
                     NoUpdate("Oppretter ikke oppgave, Det som finnes i PDL er faktisk likt det som finnes i SED, avslutter")
                 }
             }
@@ -115,7 +115,7 @@ class IdentOppdatering (
             //Utfører faktisk innsending av endringsmelding til PDL (ny UID)
             sedHendelse.avsenderNavn?.let { avsender ->
                 val endringsmelding = lagEndringsMelding(utenlandskIdFraSed, identifisertPersonFraPDL.fnr!!.value, avsender)
-                countEnhet("Innsending av endringsmelding")
+                count("Innsending av endringsmelding")
                 return endringsmelding
             }
             return NoUpdate("AvsenderNavn er ikke satt, kan derfor ikke lage endringsmelding")
@@ -150,7 +150,7 @@ class IdentOppdatering (
         return uid
     }
 
-    fun countEnhet(melding: String) {
+    fun count(melding: String) {
         try {
             Metrics.counter("PDLmeldingSteg",   "melding", melding).increment()
         } catch (e: Exception) {
