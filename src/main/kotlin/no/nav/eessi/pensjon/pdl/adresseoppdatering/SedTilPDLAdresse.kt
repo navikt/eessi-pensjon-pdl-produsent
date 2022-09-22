@@ -5,9 +5,13 @@ import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.kodeverk.LandkodeException
 import no.nav.eessi.pensjon.models.EndringsmeldingKontaktAdresse
 import no.nav.eessi.pensjon.models.EndringsmeldingUtenlandskAdresse
+import no.nav.eessi.pensjon.pdl.adresseoppdatering.AdresseValidering.erGyldigAdressenavnNummerEllerBygningEtg
+import no.nav.eessi.pensjon.pdl.adresseoppdatering.AdresseValidering.erGyldigByStedEllerRegion
+import no.nav.eessi.pensjon.pdl.adresseoppdatering.AdresseValidering.erGyldigPostKode
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import org.springframework.stereotype.Component
 import java.time.LocalDate
+import kotlin.contracts.contract
 
 @Component
 class SedTilPDLAdresse(private val kodeverkClient: KodeverkClient) {
@@ -15,10 +19,7 @@ class SedTilPDLAdresse(private val kodeverkClient: KodeverkClient) {
     private val postBoksInfo = listOf("postboks", "postb", "postbox", "p.b", "po.box")
 
     fun konverter(kilde: String, sedAdresse: Adresse): Result {
-        val land = sedAdresse.land
-        if (land == null) {
-            return Valideringsfeil("Mangler landkode")
-        }
+        val land = sedAdresse.land ?: return Valideringsfeil("Mangler landkode")
 
         val landkode = try {
             kodeverkClient.finnLandkode(land)
@@ -26,35 +27,36 @@ class SedTilPDLAdresse(private val kodeverkClient: KodeverkClient) {
             return  Valideringsfeil("Ugyldig landkode: $land")
         }
 
-        val adressenavnNummer = if (sedAdresse.gate != null && !inneholderPostBoksInfo(sedAdresse.gate)) sedAdresse.gate else null
-        if (adressenavnNummer != null && !AdresseValidering.erGyldigAdressenavnNummerEllerBygningEtg(adressenavnNummer)) {
-            return Valideringsfeil("Ikke gyldig adressenavnNummer: $adressenavnNummer")
-        }
+        val adressenavnNummer = sedAdresse.gate
+            ?.let { if(inneholderPostBoksInfo(it)) null else it }
+            ?.also { require (erGyldigAdressenavnNummerEllerBygningEtg(it)) {
+                return Valideringsfeil("Ikke gyldig adressenavnNummer: $it") }
+            }
 
         val bySted = sedAdresse.by
-        if (bySted != null && !AdresseValidering.erGyldigByStedEllerRegion(bySted)) {
-            return Valideringsfeil("Ikke gyldig bySted: $bySted")
-        }
+            ?.also { require(erGyldigByStedEllerRegion(it)) {
+                return Valideringsfeil("Ikke gyldig bySted: $it") }
+            }
 
         val regionDistriktOmraade = sedAdresse.region
-        if (regionDistriktOmraade != null && !AdresseValidering.erGyldigByStedEllerRegion(regionDistriktOmraade)) {
-            return Valideringsfeil("Ikke gyldig regionDistriktOmraade: $regionDistriktOmraade")
-        }
+            ?.also { require(erGyldigByStedEllerRegion(it)) {
+                return Valideringsfeil("Ikke gyldig regionDistriktOmraade: $it") }
+            }
 
         val postkode = sedAdresse.postnummer
-        if (postkode != null && !AdresseValidering.erGyldigPostKode(postkode)) {
-            return Valideringsfeil("Ikke gyldig postkode: $postkode")
-        }
+            ?.also { require(erGyldigPostKode(it)) {
+                return Valideringsfeil("Ikke gyldig postkode: $it") }
+            }
 
         val bygningEtasjeLeilighet = sedAdresse.bygning
-        if (bygningEtasjeLeilighet != null && !AdresseValidering.erGyldigAdressenavnNummerEllerBygningEtg(bygningEtasjeLeilighet)) {
-            return Valideringsfeil("Ikke gyldig bygningEtasjeLeilighet: $bygningEtasjeLeilighet")
-        }
+            ?.also { require(erGyldigAdressenavnNummerEllerBygningEtg(it)) {
+                return Valideringsfeil("Ikke gyldig bygningEtasjeLeilighet: $it") }
+            }
 
-        val postboksNummerNavn = if (sedAdresse.gate != null && inneholderPostBoksInfo(sedAdresse.gate)) sedAdresse.gate else null
+        val postboksNummerNavn = sedAdresse.gate
+            ?.let { if(inneholderPostBoksInfo(it)) it else null }
 
-        if (adressenavnNummer.isNullOrEmpty() && bygningEtasjeLeilighet.isNullOrEmpty() && bySted.isNullOrEmpty() && postboksNummerNavn.isNullOrEmpty()
-            && postkode.isNullOrEmpty() && regionDistriktOmraade.isNullOrEmpty()) {
+        require (listOf(adressenavnNummer, bygningEtasjeLeilighet, bySted, postboksNummerNavn, postkode, regionDistriktOmraade).any { it.isNullOrEmpty().not() }) {
             return Valideringsfeil("Ikke gyldig adresse, har kun landkode")
         }
 
@@ -78,16 +80,16 @@ class SedTilPDLAdresse(private val kodeverkClient: KodeverkClient) {
 
     }
 
-    fun isUtenlandskAdresseISEDMatchMedAdresseIPDL(sedAdresse: Adresse, pdlAdresse: UtenlandskAdresse): Boolean {
-        return (sedAdresse.gate == pdlAdresse.adressenavnNummer || sedAdresse.gate == pdlAdresse.postboksNummerNavn) &&
-                sedAdresse.bygning == pdlAdresse.bygningEtasjeLeilighet &&
-                sedAdresse.by == pdlAdresse.bySted &&
-                sedAdresse.postnummer == pdlAdresse.postkode &&
-                sedAdresse.region == pdlAdresse.regionDistriktOmraade &&
-                sedAdresse.land == pdlAdresse.landkode.let { kodeverkClient.finnLandkode(it) }
-    }
+    @SuppressWarnings("kotlin:S1067") // enkel struktur gir lav kognitiv load
+    fun isUtenlandskAdresseISEDMatchMedAdresseIPDL(sedAdresse: Adresse, pdlAdresse: UtenlandskAdresse) =
+        sedAdresse.gate in listOf(pdlAdresse.adressenavnNummer, pdlAdresse.postboksNummerNavn)
+                && sedAdresse.bygning == pdlAdresse.bygningEtasjeLeilighet
+                && sedAdresse.by == pdlAdresse.bySted
+                && sedAdresse.postnummer == pdlAdresse.postkode
+                && sedAdresse.region == pdlAdresse.regionDistriktOmraade
+                && sedAdresse.land == pdlAdresse.landkode.let { kodeverkClient.finnLandkode(it) }
 
-    private fun inneholderPostBoksInfo(gate: String?) = postBoksInfo.any { gate!!.contains(it) }
+    private fun inneholderPostBoksInfo(gate: String) = postBoksInfo.any { gate.contains(it) }
 
     sealed class Result
     data class OK(val endringsmeldingKontaktAdresse: EndringsmeldingKontaktAdresse): Result()
