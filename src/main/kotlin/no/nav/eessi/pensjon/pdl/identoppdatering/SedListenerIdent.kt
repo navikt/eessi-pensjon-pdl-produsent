@@ -68,7 +68,7 @@ class SedListenerIdent(
                 return
             }
 
-            logger.info("*** Starter pdl endringsmelding (IDENT) prosess for BucType: ${sedHendelse.bucType!!}, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
+            logger.info("*** Starter pdl endringsmelding (IDENT) prosess for BucType: ${sedHendelse.bucType}, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
             val resultat = identOppdatering.oppdaterUtenlandskIdent(sedHendelse)
 
             if(resultat is Update) {
