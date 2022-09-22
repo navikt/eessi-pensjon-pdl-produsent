@@ -17,7 +17,6 @@ import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
-import no.nav.eessi.pensjon.pdl.adresseoppdatering.Adresseoppdatering.Error
 import no.nav.eessi.pensjon.pdl.adresseoppdatering.Adresseoppdatering.NoUpdate
 import no.nav.eessi.pensjon.pdl.adresseoppdatering.Adresseoppdatering.Update
 import no.nav.eessi.pensjon.personoppslag.FodselsnummerGenerator
@@ -307,15 +306,16 @@ internal class AdresseoppdateringTest {
     }
 
     @Test
-    fun `Gitt en SED uten avsenderland saa resulterer det i en Error`() {
+    fun `Gitt en SED uten avsenderland saa resulterer det i en Exception`() {
         every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns
                 sed(brukersAdresse = adresse(EDDY_ADRESSE_LANDKODE))
 
         val adresseoppdatering = Adresseoppdatering(mockk(), euxService, mockk())
 
-        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderLand = null))
-        assertTrue((result as Error).description.startsWith(
-            "Mangler avsenderNavn eller avsenderLand i sedHendelse - avslutter adresseoppdatering: SedHendelse"))
+        val ex = assertThrows<IllegalArgumentException> {
+            adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderLand = null))
+        }
+        assertTrue(ex.message!!.startsWith("Mangler avsenderNavn eller avsenderLand i sedHendelse - avslutter adresseoppdatering: SedHendelse"))
     }
 
     @Test

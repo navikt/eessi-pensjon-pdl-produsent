@@ -3,7 +3,6 @@ package no.nav.eessi.pensjon.pdl.adresseoppdatering
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
-import no.nav.eessi.pensjon.pdl.adresseoppdatering.Adresseoppdatering.Error
 import no.nav.eessi.pensjon.pdl.adresseoppdatering.Adresseoppdatering.NoUpdate
 import no.nav.eessi.pensjon.pdl.adresseoppdatering.Adresseoppdatering.Update
 import no.nav.eessi.pensjon.utils.toJson
@@ -17,7 +16,7 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.concurrent.*
+import java.util.concurrent.CountDownLatch
 import javax.annotation.PostConstruct
 
 @Profile("!prod") // Feature toggle -- OBS! IKKE ENDRE UTEN Å HA TENKT PÅ OM KAFKA SKAL KONSUMERE FRA START!
@@ -54,7 +53,7 @@ class SedListenerAdresse(
 
                     val sedHendelse = SedHendelse.fromJson(hendelse)
 
-                    if (profile == "prod" && sedHendelse.avsenderId in listOf("NO:NAVAT05", "NO:NAVAT07")) {
+                    if (testDataInProd(sedHendelse)) {
                         logger.error("Avsender id er ${sedHendelse.avsenderId}. Dette er testdata i produksjon!!!\n$sedHendelse")
                         acknowledgment.acknowledge()
                         return@measure
@@ -62,27 +61,27 @@ class SedListenerAdresse(
 
                     logger.info("*** Starter pdl endringsmelding (ADRESSE) prosess for BucType: ${sedHendelse.bucType}, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
 
-                    val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse)
-
-                    when(result) {
+                    when(val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse)) {
                         is NoUpdate -> logger.info(result.toString())
                         is Update ->  {
                             personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
                             logger.info("Update - oppdatering levert til PDL.")
                             secureLogger.info("Update til PDL:\n${result.toJson()}")
                         }
-                        is Error -> logger.error(result.toString())
                     }
 
                     acknowledgment.acknowledge()
 
                 } catch (ex: Exception) {
-                    logger.error("Noe gikk galt under behandling av SED-hendelse for adresse:\n $hendelse \n", ex)
+                    logger.error("Noe gikk galt under behandling av SED-hendelse for adresse:\n$hendelse\n", ex)
                     throw ex
                 }
             }
             latch.countDown()
         }
     }
+
+    private fun testDataInProd(sedHendelse: SedHendelse) =
+        profile == "prod" && sedHendelse.avsenderId in listOf("NO:NAVAT05", "NO:NAVAT07")
 
 }

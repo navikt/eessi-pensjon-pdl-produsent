@@ -3,7 +3,6 @@ package no.nav.eessi.pensjon.pdl.adresseoppdatering
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
-import no.nav.eessi.pensjon.pdl.adresseoppdatering.Adresseoppdatering.Error
 import no.nav.eessi.pensjon.pdl.adresseoppdatering.Adresseoppdatering.NoUpdate
 import no.nav.eessi.pensjon.pdl.adresseoppdatering.Adresseoppdatering.Update
 import no.nav.eessi.pensjon.utils.toJson
@@ -17,7 +16,7 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.concurrent.*
+import java.util.concurrent.CountDownLatch
 import javax.annotation.PostConstruct
 
 // TODO Dette er en temporær versjon - kun for å se hva som evt vil skrives til PDL
@@ -60,24 +59,21 @@ class SedListenerAdresseProd(
                         return@measure
                     }
 
-                    val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse)
-
-                    when(result) {
+                    when(val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse)) {
                         is NoUpdate -> logger.info(result.toString())
-                        is Update ->  {
+                        is Update -> {
                             // UTKOMMENTERT INNTIL VIDERE
                             // personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
                             // logger.info("Update - oppdatering levert til PDL.")
                             logger.info("Denne hendelsen ville ført til en oppdatering til PDL (foreløpig feature-toggled).")
                             secureLogger.info("Update til PDL:\n${result.toJson()}")
                         }
-                        is Error -> logger.error(result.toString())
                     }
 
                     acknowledgment.acknowledge()
 
                 } catch (ex: Exception) {
-                    logger.error("Noe gikk galt under behandling av SED-hendelse for adresse:\n $hendelse \n", ex)
+                    logger.error("Noe gikk galt under behandling av SED-hendelse for adresse:\n$hendelse\n", ex)
                     throw ex
                 }
             }

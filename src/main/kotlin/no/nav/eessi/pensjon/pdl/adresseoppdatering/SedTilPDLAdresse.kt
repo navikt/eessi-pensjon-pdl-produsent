@@ -78,8 +78,9 @@ class SedTilPDLAdresse(private val kodeverkClient: KodeverkClient) {
             ?.also { require(erGyldigAdressenavnNummerEllerBygningEtg(it)) { "Ikke gyldig adressenavnNummer: $it" } }
 
     @SuppressWarnings("kotlin:S1067") // enkel struktur gir lav kognitiv load
-    fun isUtenlandskAdresseISEDMatchMedAdresseIPDL(sedAdresse: Adresse, pdlAdresse: UtenlandskAdresse) =
-        sedAdresse.gate in listOf(pdlAdresse.adressenavnNummer, pdlAdresse.postboksNummerNavn)
+    fun isUtenlandskAdresseISEDMatchMedAdresseIPDL(sedAdresse: Adresse, pdlAdresse: UtenlandskAdresse?) =
+        pdlAdresse != null
+                && sedAdresse.gate in listOf(pdlAdresse.adressenavnNummer, pdlAdresse.postboksNummerNavn)
                 && sedAdresse.bygning == pdlAdresse.bygningEtasjeLeilighet
                 && sedAdresse.by == pdlAdresse.bySted
                 && sedAdresse.postnummer == pdlAdresse.postkode
