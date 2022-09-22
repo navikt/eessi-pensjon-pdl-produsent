@@ -51,11 +51,7 @@ class SedListenerIdent(
         }
     }
 
-    private fun consumeHendelse(
-        cr: ConsumerRecord<String, String>,
-        hendelse: String,
-        acknowledgment: Acknowledgment
-    ) {
+    private fun consumeHendelse(cr: ConsumerRecord<String, String>, hendelse: String, acknowledgment: Acknowledgment) {
         logger.info("SedMottatt i partisjon: ${cr.partition()}, med offset: ${cr.offset()}")
         logger.debug(hendelse)
         logger.debug("Profile: $profile")
@@ -71,13 +67,12 @@ class SedListenerIdent(
 
             val resultat = identOppdatering.oppdaterUtenlandskIdent(sedHendelse)
 
-            when(resultat) {
-                is NoUpdate -> logger.info(resultat.toString())
-                is Update ->  {
-                    personMottakKlient.opprettPersonopplysning(resultat.identOpplysninger)
-                    logger.info(resultat.toString())
-                }
+            if(resultat is Update) {
+                personMottakKlient.opprettPersonopplysning(resultat.identOpplysninger)
             }
+
+            logger.info(resultat.toString())
+            count(resultat.description)
 
             acknowledgment.acknowledge()
             logger.info("Acket sedMottatt melding med offset: ${cr.offset()} i partisjon ${cr.partition()}")
