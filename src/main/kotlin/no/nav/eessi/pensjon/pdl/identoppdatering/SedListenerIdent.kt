@@ -46,7 +46,7 @@ class SedListenerIdent(
             consumeIncomingSed.measure {
                 logger.info("SedMottatt i partisjon: ${cr.partition()}, med offset: ${cr.offset()}")
                 try {
-                    consumeHendelse(hendelse)
+                    behandle(hendelse)
                     acknowledgment.acknowledge()
                     logger.info("Acket sedMottatt melding med offset: ${cr.offset()} i partisjon ${cr.partition()}")
                     latch.countDown()
@@ -58,7 +58,7 @@ class SedListenerIdent(
         }
     }
 
-    private fun consumeHendelse(hendelse: String) {
+    private fun behandle(hendelse: String) {
         logger.debug(hendelse)
         logger.debug("Profile: $profile")
             val sedHendelse = sedHendelseMapping(hendelse)

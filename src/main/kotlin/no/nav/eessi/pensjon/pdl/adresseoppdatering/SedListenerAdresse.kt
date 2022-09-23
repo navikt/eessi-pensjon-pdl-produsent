@@ -50,7 +50,7 @@ class SedListenerAdresse(
                 secureLogger.debug("Hendelse mottatt:\n$hendelse")
 
                 try {
-                    consumeSedHendelse(hendelse)
+                    behandle(hendelse)
                     acknowledgment.acknowledge()
                     logger.info("Acket sedMottatt melding med offset: ${cr.offset()} i partisjon ${cr.partition()}")
                     latch.countDown()
@@ -62,7 +62,7 @@ class SedListenerAdresse(
         }
     }
 
-    private fun consumeSedHendelse(hendelse: String) {
+    private fun behandle(hendelse: String) {
         val sedHendelse = SedHendelse.fromJson(hendelse)
 
         if (testDataInProd(sedHendelse)) {
