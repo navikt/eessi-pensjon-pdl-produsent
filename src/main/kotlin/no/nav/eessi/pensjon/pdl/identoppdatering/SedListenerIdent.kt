@@ -6,6 +6,7 @@ import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.NoUpdate
 import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.Update
+import no.nav.eessi.pensjon.utils.toJson
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
@@ -63,7 +64,7 @@ class SedListenerIdent(
     private fun behandle(hendelse: String) {
         logger.debug(hendelse)
         logger.debug("Profile: $profile")
-        val sedHendelse = sedHendelseMapping(hendelse)
+        val sedHendelse = sedHendelseMapping(hendelse).also { secureLogger.debug("Sedhendelse:\n${it.toJson()}") }
 
         if (testHendelseIProd(sedHendelse)) {
             logger.error("Avsender id er ${sedHendelse.avsenderId}. Dette er testdata i produksjon!!!\n$sedHendelse")
@@ -84,7 +85,7 @@ class SedListenerIdent(
     private fun log(result: IdentOppdatering.Result) {
         when (result) {
             is Update -> {
-                secureLogger.info(result.toString())
+                secureLogger.debug("Update:\n${result.toJson()}")
                 logger.info("Update(${result.description}")
             }
 

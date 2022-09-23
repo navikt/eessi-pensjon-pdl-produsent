@@ -15,6 +15,7 @@ import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
+import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
@@ -36,15 +37,16 @@ class IdentOppdatering (
     fun oppdaterUtenlandskIdent(sedHendelse: SedHendelse): Result {
         require(erRelevantForEESSIPensjon(sedHendelse)) { return NoUpdate("Ikke relevant for eessipensjon") }
 
-        val alleGyldigeSED = dokumentHelper.alleGyldigeSEDForBuc(sedHendelse.rinaSakId).also { secureLogger.debug("Alle gyldige seder: \n$it") }
+        val alleGyldigeSED = dokumentHelper.alleGyldigeSEDForBuc(sedHendelse.rinaSakId).also { secureLogger.debug("Alle gyldige seder: \n${it.toJson()}") }
 
         val identifisertePersoner = personidentifiseringService.hentIdentifisertePersoner(alleGyldigeSED, sedHendelse.bucType!!)
+            .also { secureLogger.debug("Identifiserte personer:\n${it.toJson()}") }
         require(identifisertePersoner.isNotEmpty()) { return NoUpdate("Ingen identifiserte FNR funnet") }
         require(identifisertePersoner.size <= 1) { return NoUpdate("Antall identifiserte FNR er fler enn en") }
 
         val utenlandskeIderFraSEDer =
             utenlandskPersonIdentifisering.finnAlleUtenlandskeIDerIMottatteSed(alleGyldigeSED)
-                .also { secureLogger.debug("Utenlandske IDer fra mottatt sed: $it") }
+                .also { secureLogger.debug("Utenlandske IDer fra mottatt sed:\n${it.toJson()}") }
         require(utenlandskeIderFraSEDer.isNotEmpty()) { return NoUpdate("Ingen utenlandske IDer funnet i BUC") }
         require(utenlandskeIderFraSEDer.size <= 1) { return NoUpdate("Antall utenlandske IDer er flere enn en") }
         // Vi har utelukket at det er 0 eller flere enn 1
@@ -82,7 +84,7 @@ class IdentOppdatering (
         return Update(
             "Innsending av endringsmelding",
             pdlEndringOpplysning(identifisertPersonFraPDL.fnr!!.value, utenlandskIdFraSed, sedHendelse.avsenderNavn),
-        ).also { secureLogger.debug(it.toString()) }
+        )
     }
 
     private fun pdlEndringOpplysning(norskFnr: String, utenlandskPin: UtenlandskId, kilde: String) =
