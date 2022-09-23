@@ -73,11 +73,20 @@ class SedListenerAdresseProd(
 
         logger.info("*** Starter pdl endringsmelding (ADRESSE) prosess for BucType: ${sedHendelse.bucType}, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
 
-        when (val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse)) {
+        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse)
+
+        if (result is Update) {
+            // UTKOMMENTERT INNTIL VIDERE
+            // personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
+        }
+
+        log(result) // TODO fiks logging når vi begynner å sende meldinger _for realz_
+    }
+
+    private fun log(result: Adresseoppdatering.Result) {
+        when (result) {
             is NoUpdate -> logger.info(result.toString())
             is Update -> {
-                // UTKOMMENTERT INNTIL VIDERE
-                // personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
                 // logger.info("Update - oppdatering levert til PDL.")
                 logger.info("Denne hendelsen ville ført til en oppdatering til PDL (foreløpig feature-toggled).")
                 secureLogger.info("Update til PDL:\n${result.toJson()}")

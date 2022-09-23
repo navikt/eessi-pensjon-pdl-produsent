@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.Metrics
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
+import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.NoUpdate
 import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.Update
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
@@ -26,6 +27,7 @@ class SedListenerIdent(
 ) {
 
     private val logger = LoggerFactory.getLogger(SedListenerIdent::class.java)
+    private val secureLogger = LoggerFactory.getLogger("secureLog")
     private val latch = CountDownLatch(1)
     private lateinit var consumeIncomingSed: MetricsHelper.Metric
 
@@ -61,21 +63,35 @@ class SedListenerIdent(
     private fun behandle(hendelse: String) {
         logger.debug(hendelse)
         logger.debug("Profile: $profile")
-            val sedHendelse = sedHendelseMapping(hendelse)
+        val sedHendelse = sedHendelseMapping(hendelse)
 
-            if (testHendelseIProd(sedHendelse)) {
-                logger.error("Avsender id er ${sedHendelse.avsenderId}. Dette er testdata i produksjon!!!\n$sedHendelse")
-                return
+        if (testHendelseIProd(sedHendelse)) {
+            logger.error("Avsender id er ${sedHendelse.avsenderId}. Dette er testdata i produksjon!!!\n$sedHendelse")
+            return
+        }
+
+        logger.info("*** Starter pdl endringsmelding (IDENT) prosess for BucType: ${sedHendelse.bucType}, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
+        val result = identOppdatering.oppdaterUtenlandskIdent(sedHendelse)
+
+        if (result is Update) {
+            personMottakKlient.opprettPersonopplysning(result.identOpplysninger)
+        }
+
+        log(result)
+        count(result.description)
+    }
+
+    private fun log(result: IdentOppdatering.Result) {
+        when (result) {
+            is Update -> {
+                secureLogger.info(result.toString())
+                logger.info("Update(${result.description}")
             }
 
-            logger.info("*** Starter pdl endringsmelding (IDENT) prosess for BucType: ${sedHendelse.bucType}, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
-            val resultat = identOppdatering.oppdaterUtenlandskIdent(sedHendelse)
-
-            if(resultat is Update) {
-                personMottakKlient.opprettPersonopplysning(resultat.identOpplysninger)
+            is NoUpdate -> {
+                logger.info(result.toString())
             }
-            logger.info(resultat.toString())
-            count(resultat.description)
+        }
     }
 
     private fun testHendelseIProd(sedHendelse: SedHendelse) =

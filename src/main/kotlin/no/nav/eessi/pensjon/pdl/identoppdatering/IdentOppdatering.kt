@@ -33,7 +33,7 @@ class IdentOppdatering (
     private val logger = LoggerFactory.getLogger(IdentOppdatering::class.java)
     private val secureLogger = LoggerFactory.getLogger("secureLog")
 
-    fun oppdaterUtenlandskIdent(sedHendelse: SedHendelse): Resultat {
+    fun oppdaterUtenlandskIdent(sedHendelse: SedHendelse): Result {
         require(erRelevantForEESSIPensjon(sedHendelse)) { return NoUpdate("Ikke relevant for eessipensjon") }
 
         val alleGyldigeSED = dokumentHelper.alleGyldigeSEDForBuc(sedHendelse.rinaSakId).also { secureLogger.debug("Alle gyldige seder: \n$it") }
@@ -111,10 +111,10 @@ class IdentOppdatering (
         return uid
     }
 
-    sealed class Resultat {
+    sealed class Result {
         abstract val description: String
     }
 
-    data class Update(override val description: String, val identOpplysninger: PdlEndringOpplysning) : Resultat()
-    data class NoUpdate(override val description: String) : Resultat()
+    data class Update(override val description: String, val identOpplysninger: PdlEndringOpplysning) : Result()
+    data class NoUpdate(override val description: String) : Result()
 }
