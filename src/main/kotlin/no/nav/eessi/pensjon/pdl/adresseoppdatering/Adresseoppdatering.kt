@@ -39,7 +39,9 @@ class Adresseoppdatering(
         require(adresseErIUtlandet(adresseFra(sed))) { return NoUpdate("Bruker har ikke utenlandsk adresse i SED") }
         require(avsenderISedHendelse(sedHendelse)) { "Mangler avsenderNavn eller avsenderLand i sedHendelse - avslutter adresseoppdatering: $sedHendelse" }
         require(avsenderLandOgAdressensLandErSamme(sedHendelse, sed)) {
-            return NoUpdate("Adressens landkode (${adresseFra(sed)?.land}) er ulik landkode på avsenderland (${sedHendelse.avsenderLand}).")
+            return NoUpdate(
+                "Adressens landkode (${adresseFra(sed)?.land}) er ulik landkode på avsenderland (${sedHendelse.avsenderLand})",
+                "Adressens landkode er ulik landkode på avsenderland")
         }
 
         // TODO Håndtere brukere med ikke-norske identer
@@ -48,7 +50,10 @@ class Adresseoppdatering(
         val normalisertNorskPIN = try {
             normaliserNorskPin(norskPin(brukerFra(sed))!!.identifikator!!)
         } catch (ex: IllegalArgumentException) {
-            return NoUpdate("Brukers norske id fra SED validerer ikke: \"${norskPin(brukerFra(sed))!!.identifikator!!}\" - ${ex.message}")
+            return NoUpdate(
+                "Brukers norske id fra SED validerer ikke: \"${norskPin(brukerFra(sed))!!.identifikator!!}\" - ${ex.message}",
+                "Brukers norske id fra SED validerer ikke",
+            )
         }
 
         val personFraPDL = try {
@@ -81,7 +86,10 @@ class Adresseoppdatering(
         val endringsmelding = try {
             sedTilPDLAdresse.konverter(sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")", adresseFra(sed)!!)
         } catch (ex: IllegalArgumentException) {
-            return NoUpdate("Adressen validerer ikke etter reglene til PDL: ${ex.message}")
+            return NoUpdate(
+                "Adressen validerer ikke etter reglene til PDL: ${ex.message}",
+                "Adressen validerer ikke etter reglene til PDL"
+            )
         }
 
         return Update(
@@ -106,7 +114,7 @@ class Adresseoppdatering(
         Fodselsnummer.fraMedValidation(norskPinFraSED)!!.value
             .also {
                 if (it != norskPinFraSED) {
-                    logger.info("Fnr i SED på ustandard format - alt utenom tall fjernet.")
+                    logger.info("Fnr i SED på ustandard format - alt utenom tall fjernet")
                 }
             }
 
@@ -158,8 +166,12 @@ class Adresseoppdatering(
 
     sealed class Result {
         abstract val description: String
+        abstract val metricTagValueOverride: String?
+
+        val metricTagValue: String
+            get() = metricTagValueOverride ?: description
     }
 
-    data class Update(override val description: String, val pdlEndringsOpplysninger: PdlEndringOpplysning): Result()
-    data class NoUpdate(override val description: String): Result()
+    data class Update(override val description: String, val pdlEndringsOpplysninger: PdlEndringOpplysning, override val metricTagValueOverride: String? = null, ): Result()
+    data class NoUpdate(override val description: String, override val metricTagValueOverride: String? = null): Result()
 }

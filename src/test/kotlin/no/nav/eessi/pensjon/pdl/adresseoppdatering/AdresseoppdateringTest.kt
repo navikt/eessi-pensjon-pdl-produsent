@@ -250,7 +250,10 @@ internal class AdresseoppdateringTest {
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderNavn = TYSK_INSTITUSJON, avsenderLand = TYSK_ADRESSE_LANDKODE))
 
-        assertEquals(NoUpdate("Brukers norske id fra SED validerer ikke: \"$norskFnr\" - Ikke et gyldig fødselsnummer: "), result)
+        assertEquals(NoUpdate(
+            "Brukers norske id fra SED validerer ikke: \"$norskFnr\" - Ikke et gyldig fødselsnummer: ",
+            "Brukers norske id fra SED validerer ikke"
+        ), result)
     }
 
     @Test
@@ -291,7 +294,10 @@ internal class AdresseoppdateringTest {
             avsenderLand = "DK",
         ))
 
-        assertEquals(NoUpdate("Adressens landkode (${EDDY_ADRESSE_LANDKODE}) er ulik landkode på avsenderland (DK)."), result)
+        assertEquals(NoUpdate(
+            "Adressens landkode (${EDDY_ADRESSE_LANDKODE}) er ulik landkode på avsenderland (DK)",
+            "Adressens landkode er ulik landkode på avsenderland"
+        ), result)
     }
 
     @Test
@@ -459,7 +465,10 @@ internal class AdresseoppdateringTest {
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderLand = EDDY_ADRESSE_LANDKODE))
 
-        assertEquals(NoUpdate("Adressen validerer ikke etter reglene til PDL: Ikke gyldig adressenavnNummer: Ukjent"), result)
+        assertEquals(NoUpdate(
+            "Adressen validerer ikke etter reglene til PDL: Ikke gyldig adressenavnNummer: Ukjent",
+            "Adressen validerer ikke etter reglene til PDL"
+        ), result)
 
     }
 

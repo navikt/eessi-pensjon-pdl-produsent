@@ -80,12 +80,12 @@ class SedListenerAdresse(
         }
 
         log(result)
-        countForAddress(result.description)
+        countForAddress(result.metricTagValue)
     }
 
     fun countForAddress(melding: String) {
         try {
-            Metrics.counter("PDLmeldingStegAdresse",   "melding", melding).increment()
+            Metrics.counter("PDLAdresseOppdateringResultat",   "melding", melding).increment()
         } catch (e: Exception) {
             logger.warn("Metrics feilet med melding: $melding")
         }

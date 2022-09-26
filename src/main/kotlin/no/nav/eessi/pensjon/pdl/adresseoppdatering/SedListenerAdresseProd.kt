@@ -33,11 +33,11 @@ class SedListenerAdresseProd(
     private val logger = LoggerFactory.getLogger(SedListenerAdresseProd::class.java)
     private val secureLogger = LoggerFactory.getLogger("secureLog")
 
-    private lateinit var adresseMetricProd: MetricsHelper.Metric
+    private lateinit var adresseMetric: MetricsHelper.Metric
 
     @PostConstruct
     fun initMetrics() {
-        adresseMetricProd = metricsHelper.init("consumeIncomingSedForAddress")
+        adresseMetric = metricsHelper.init("consumeIncomingSedForAddress")
     }
 
     @KafkaListener(
@@ -47,7 +47,7 @@ class SedListenerAdresseProd(
     )
     fun consumeSedMottatt(hendelse: String, cr: ConsumerRecord<String, String>, acknowledgment: Acknowledgment) {
         MDC.putCloseable("x_request_id", UUID.randomUUID().toString()).use {
-            adresseMetricProd.measure {
+            adresseMetric.measure {
                 logger.info("SED-hendelse mottatt i partisjon: ${cr.partition()}, med offset: ${cr.offset()} ")
                 secureLogger.debug("Hendelse mottatt:\n$hendelse")
 
@@ -82,12 +82,12 @@ class SedListenerAdresseProd(
         }
 
         log(result) // TODO fiks logging når vi begynner å sende meldinger _for realz_
-        countForAddressProd(result.description)
+        countForAddress(result.metricTagValue)
     }
 
-    fun countForAddressProd(melding: String) {
+    fun countForAddress(melding: String) {
         try {
-            Metrics.counter("ProdPDLmeldingStegAdresse",   "melding", melding).increment()
+            Metrics.counter("PDLAdresseOppdateringResultatPilot",   "melding", melding).increment()
         } catch (e: Exception) {
             logger.warn("Metrics feilet med melding: $melding")
         }
