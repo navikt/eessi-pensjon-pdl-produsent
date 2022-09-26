@@ -1,5 +1,6 @@
 package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
+import io.micrometer.core.instrument.Metrics
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
@@ -16,7 +17,7 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.concurrent.CountDownLatch
+import java.util.concurrent.*
 import javax.annotation.PostConstruct
 
 // TODO Dette er en temporær versjon - kun for å se hva som evt vil skrives til PDL
@@ -32,11 +33,11 @@ class SedListenerAdresseProd(
     private val logger = LoggerFactory.getLogger(SedListenerAdresseProd::class.java)
     private val secureLogger = LoggerFactory.getLogger("secureLog")
 
-    private lateinit var adresseMetric: MetricsHelper.Metric
+    private lateinit var adresseMetricProd: MetricsHelper.Metric
 
     @PostConstruct
     fun initMetrics() {
-        adresseMetric = metricsHelper.init("consumeIncomingSedForAddress")
+        adresseMetricProd = metricsHelper.init("consumeIncomingSedForAddress")
     }
 
     @KafkaListener(
@@ -46,7 +47,7 @@ class SedListenerAdresseProd(
     )
     fun consumeSedMottatt(hendelse: String, cr: ConsumerRecord<String, String>, acknowledgment: Acknowledgment) {
         MDC.putCloseable("x_request_id", UUID.randomUUID().toString()).use {
-            adresseMetric.measure {
+            adresseMetricProd.measure {
                 logger.info("SED-hendelse mottatt i partisjon: ${cr.partition()}, med offset: ${cr.offset()} ")
                 secureLogger.debug("Hendelse mottatt:\n$hendelse")
 
@@ -81,6 +82,15 @@ class SedListenerAdresseProd(
         }
 
         log(result) // TODO fiks logging når vi begynner å sende meldinger _for realz_
+        countForAddressProd(result.description)
+    }
+
+    fun countForAddressProd(melding: String) {
+        try {
+            Metrics.counter("ProdPDLmeldingStegAdresse",   "melding", melding).increment()
+        } catch (e: Exception) {
+            logger.warn("Metrics feilet med melding: $melding")
+        }
     }
 
     private fun log(result: Adresseoppdatering.Result) {

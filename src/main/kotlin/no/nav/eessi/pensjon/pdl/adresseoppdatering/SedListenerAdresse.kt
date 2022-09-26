@@ -1,5 +1,6 @@
 package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
+import io.micrometer.core.instrument.Metrics
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
@@ -16,7 +17,7 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.concurrent.CountDownLatch
+import java.util.concurrent.*
 import javax.annotation.PostConstruct
 
 @Profile("!prod") // Feature toggle -- OBS! IKKE ENDRE UTEN Å HA TENKT PÅ OM KAFKA SKAL KONSUMERE FRA START!
@@ -79,6 +80,15 @@ class SedListenerAdresse(
         }
 
         log(result)
+        countForAddress(result.description)
+    }
+
+    fun countForAddress(melding: String) {
+        try {
+            Metrics.counter("PDLmeldingStegAdresse",   "melding", melding).increment()
+        } catch (e: Exception) {
+            logger.warn("Metrics feilet med melding: $melding")
+        }
     }
 
     private fun log(result: Adresseoppdatering.Result) {

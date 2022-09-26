@@ -156,8 +156,10 @@ class Adresseoppdatering(
             )
         ))
 
-    sealed class Result
+    sealed class Result {
+        abstract val description: String
+    }
 
-    data class Update(val description: String, val pdlEndringsOpplysninger: PdlEndringOpplysning): Result()
-    data class NoUpdate(val description: String): Result()
+    data class Update(override val description: String, val pdlEndringsOpplysninger: PdlEndringOpplysning): Result()
+    data class NoUpdate(override val description: String): Result()
 }
