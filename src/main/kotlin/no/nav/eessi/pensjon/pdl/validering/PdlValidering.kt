@@ -18,7 +18,7 @@ class PdlValidering(private val kodeverkClient: KodeverkClient) {
     fun erPersonValidertPaaLand(utenlandskId: UtenlandskId) =
         validering.validerLandsspesifikkUID(kodeverkClient.finnLandkode(utenlandskId.land)!!, utenlandskId.id)
 
-    fun avsenderLandHarVerdiOgErSammeSomIdLand(utenlandskId: UtenlandskId, avsenderLand: String?) =
+    fun avsenderLandHarVerdiOgErSammeSomUidLand(utenlandskId: UtenlandskId, avsenderLand: String?) =
         if (!avsenderLand.isNullOrEmpty() && utenlandskId.land == avsenderLand) {
             true
         } else {

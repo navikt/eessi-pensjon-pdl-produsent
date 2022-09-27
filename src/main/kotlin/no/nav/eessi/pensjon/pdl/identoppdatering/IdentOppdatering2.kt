@@ -21,6 +21,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -43,24 +44,70 @@ class IdentOppdatering2 (
     fun oppdaterUtenlandskIdent(sedHendelse: SedHendelse): Result {
         require(erRelevantForEESSIPensjon(sedHendelse)) { return NoUpdate("Ikke relevant for eessipensjon") }
 
+        require(sedHendelse.avsenderLand.isNullOrEmpty().not()) {
+            return NoUpdate("Avsenderland mangler eller avsenderland er ikke det samme som uidland")
+        }
+
+        require(sedHendelse.avsenderNavn.isNullOrEmpty().not()) {
+            return NoUpdate("AvsenderNavn er ikke satt, kan derfor ikke lage endringsmelding")
+        }
 
         val sed = euxService.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId)
             .also { secureLogger.debug("SED:\n$it") }
 
-        require(hasNorskPin(brukerFra(sed))) { return NoUpdate("Bruker har ikke norsk pin i SED") }
+        require(sed.nav?.bruker?.person?.pin?.filter { it.land == "NO" }.isNullOrEmpty().not()) {
+            return NoUpdate("Bruker har ikke norsk pin i SED")
+        }
 
-        val normalisertNorskPIN = try {
+        //NoUpdate der avsenderland er ulik UIDland
+        require(sedHendelse.avsenderLand == sed.nav?.bruker?.person?.pin?.firstOrNull()?.land) {
+            return NoUpdate("Avsenderland mangler eller avsenderland er ikke det samme som uidland")
+        }
+
+        val utenlandskPin = harUtenlandskPin(sed)
+        require(utenlandskPin != null) { return NoUpdate("Bruker har ikke utenlandsk ident") }
+
+        val normalisertNorskPIN = hentNorskPin(sed) as String
+        val personFraPDL = hentPdlPerson(normalisertNorskPIN) as Person
+
+        //NoUpdate der UID er fra en avdød person
+        require(personFraPDL.erDoed().not()) {
+            return NoUpdate("Identifisert person registrert med doedsfall")
+        }
+
+        //NoUpdate der UID ikke validerer
+
+        //NoUpdate der UID er lik UID fra PDL
+
+        //Opprette oppgave der er en eller flere nye utenlandske identer
+
+        //Opprette oppgave der UID ikke finnes i PDL, men det finnes allerede en UID i PDL som er ulik
+
+        //Update (endringsmelding) der UID ikke finnes i PDL
+
+        //Update (endringsmelding) der UID (med feil format) ikke finnes i PDL, så skal den konverteres til korrekt format før sending
+
+
+        return Update(
+            "Innsending av endringsmelding",
+            pdlEndringOpplysning(personFraPDL.identer.firstOrNull()?.ident!!, UtenlandskId(id ="dummy", land = "PL" ), sedHendelse.avsenderNavn!!)
+        )
+
+
+    }
+
+    private fun hentNorskPin(sed: SED): Any {
+        return try {
             normaliserNorskPin(norskPin(brukerFra(sed))!!.identifikator!!)
         } catch (ex: IllegalArgumentException) {
             return NoUpdate(
                 "Brukers norske id fra SED validerer ikke: \"${norskPin(brukerFra(sed))!!.identifikator!!}\" - ${ex.message}"
             )
         }
+    }
 
-        val utenlandskPin = harUtenlandskPin(sed)
-        require(utenlandskPin != null) { return NoUpdate("Bruker har ikke utenlandsk ident") }
-
-        val personFraPDL = try {
+    private fun hentPdlPerson(normalisertNorskPIN: String): Any {
+        return try {
             personService.hentPerson(NorskIdent(normalisertNorskPIN))
                 ?: throw NullPointerException("hentPerson returnerte null")
         } catch (ex: PersonoppslagException) {
@@ -69,13 +116,6 @@ class IdentOppdatering2 (
             }
             throw ex
         }.also { secureLogger.debug("Person fra PDL:\n${it.toJson()}") }
-
-        return IdentOppdatering2.Update(
-            "Innsending av endringsmelding",
-            pdlEndringOpplysning(personFraPDL.identer.firstOrNull()?.ident!!, UtenlandskId(id ="dummy", land = "PL" ), sedHendelse.avsenderNavn!!)
-        )
-
-
     }
 
     private fun harUtenlandskPin(sed: SED): String? = sed.nav?.bruker?.person?.pin?.firstOrNull { it.land != "NO" }?.identifikator

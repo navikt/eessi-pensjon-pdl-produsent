@@ -52,7 +52,7 @@ class IdentOppdatering (
         // Vi har utelukket at det er 0 eller flere enn 1
         val utenlandskIdFraSed = utenlandskeIderFraSEDer.first()
 
-        require(pdlValidering.avsenderLandHarVerdiOgErSammeSomIdLand(utenlandskIdFraSed, sedHendelse.avsenderLand)) {
+        require(pdlValidering.avsenderLandHarVerdiOgErSammeSomUidLand(utenlandskIdFraSed, sedHendelse.avsenderLand)) {
             return NoUpdate("Avsenderland mangler eller avsenderland er ikke det samme som uidland")
         }
 

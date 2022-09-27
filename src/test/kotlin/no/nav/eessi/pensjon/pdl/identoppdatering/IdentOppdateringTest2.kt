@@ -12,7 +12,6 @@ import no.nav.eessi.pensjon.eux.model.sed.Adresse
 import no.nav.eessi.pensjon.eux.model.sed.Bruker
 import no.nav.eessi.pensjon.eux.model.sed.Nav
 import no.nav.eessi.pensjon.eux.model.sed.Pensjon
-import no.nav.eessi.pensjon.eux.model.sed.Person
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
@@ -23,6 +22,7 @@ import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering2.NoUpdate
 import no.nav.eessi.pensjon.pdl.validering.PdlValidering
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.AdressebeskyttelseGradering
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Doedsfall
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Folkeregistermetadata
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentInformasjon
@@ -30,11 +30,13 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.Kontaktadresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.KontaktadresseType
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Metadata
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 private const val FNR = "11067122781"
@@ -81,6 +83,7 @@ internal class IdentOppdateringTest2 {
 
     @Test
     fun `Gitt at bruker ikke har norsk pin i SED saa resulterer det i en NoUpdate`() {
+        every { euxService.hentSed(any(), any()) } returns sed(id = FNR, land = "SE")
 
         assertEquals(
             NoUpdate("Bruker har ikke norsk pin i SED"),
@@ -89,13 +92,77 @@ internal class IdentOppdateringTest2 {
     }
 
     @Test
-    fun `Gitt at det er en buc uten utenlandsk ident saa blir det ingen oppdatering`() {
+    fun `Gitt at det er en Sed uten utenlandsk ident saa blir det ingen oppdatering`() {
         every { euxService.hentSed(any(), any()) } returns sed(id = FNR, land = "NO")
-        every { personService.hentPerson(NorskIdent(id = "11067122781")) } returns personFraPDL(id = FNR)
+
         assertEquals(
             NoUpdate("Bruker har ikke utenlandsk ident"),
             identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "NO"))
         )
+    }
+
+    @Test
+    fun `Gitt at BUCen mangler avsenderland da blir det ingen oppdatering`() {
+
+        assertEquals(
+            NoUpdate("Avsenderland mangler eller avsenderland er ikke det samme som uidland"),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = ""))
+        )
+    }
+
+    @Test
+    fun `Gitt at vi har en SedHendelse som mangler avsenderNavn saa skal vi faa en NoUpdate som resultat`() {
+
+        assertEquals(
+            NoUpdate("AvsenderNavn er ikke satt, kan derfor ikke lage endringsmelding"),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "SE", avsenderNavn = null))
+        )
+    }
+
+    @Test
+    fun `Gitt at BUCen inneholder uid paa en doed person saa blir det ingen oppdatering`() {
+        every { euxService.hentSed(any(), any()) } returns
+                sed(id = FNR, land = "NO", pinItem =  listOf(
+                    PinItem(identifikator = SOME_FNR, land = "FI"),
+                    PinItem(identifikator = FNR, land = "NO"))
+                )
+
+        every { personService.hentPerson(NorskIdent(FNR)) } returns
+                personFraPDL(
+                    id = FNR,
+                    doedsdato = LocalDate.now().minusYears(1)
+            )
+
+        assertEquals(
+            NoUpdate("Identifisert person registrert med doedsfall"),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "FI"))
+        )
+    }
+
+    @Test
+    fun `Gitt at avsenderland ikke er det samme som UIDland da blir det ingen oppdatering`() {
+        every { euxService.hentSed(any(), any()) } returns
+                sed(id = FNR, land = "FI", pinItem =  listOf(
+                    PinItem(identifikator = SOME_FNR, land = "FI"),
+                    PinItem(identifikator = FNR, land = "NO"))
+                )
+
+        assertEquals(
+            NoUpdate("Avsenderland mangler eller avsenderland er ikke det samme som uidland"),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse())
+        )
+    }
+
+    @Test
+    fun `Gitt at Seden inneholder en uid der avsenderland ikke er det samme som uidland da blir det ingen oppdatering`() {
+        every { euxService.hentSed(any(), any()) } returns sed(id = FNR, land = "NO")
+        every { personService.hentPerson(NorskIdent(FNR)) } returns personFraPDL(id = FNR)
+
+        assertEquals(
+            NoUpdate("Avsenderland mangler eller avsenderland er ikke det samme som uidland"),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = POLEN))
+        )
+
     }
 
     private fun utenlandskIdentifikasjonsnummer(fnr: String) = UtenlandskIdentifikasjonsnummer(
@@ -159,7 +226,10 @@ internal class IdentOppdateringTest2 {
         avsenderNavn = avsenderNavn
     )
 
-    private fun sed(id: String = SOME_FNR, brukersAdresse: Adresse? = null, land: String) = SED(
+    private fun sed(id: String = SOME_FNR,
+                    brukersAdresse: Adresse? = null,
+                    land: String?,
+                    pinItem: List<PinItem>? = listOf(PinItem(land = land, identifikator = id)) ) = SED(
         type = SedType.P2000,
         sedGVer = null,
         sedVer = null,
@@ -168,13 +238,8 @@ internal class IdentOppdateringTest2 {
             bruker = Bruker(
                 mor = null,
                 far = null,
-                person = Person(
-                    pin = listOf(
-                        PinItem(
-                            identifikator = id,
-                            land = land
-                        )
-                    ),
+                person = no.nav.eessi.pensjon.eux.model.sed.Person(
+                    pin = pinItem,
                     pinland = null,
                     statsborgerskap = null,
                     etternavn = null,
@@ -204,8 +269,9 @@ internal class IdentOppdateringTest2 {
         utenlandskAdresse: UtenlandskAdresse? = null,
         opplysningsId: String = "DummyOpplysningsId",
         gyldigFraOgMed: LocalDateTime = LocalDateTime.now().minusDays(10),
-        gyldigTilOgMed: LocalDateTime = LocalDateTime.now().plusDays(10)
-    ) = no.nav.eessi.pensjon.personoppslag.pdl.model.Person(
+        gyldigTilOgMed: LocalDateTime = LocalDateTime.now().plusDays(10),
+        doedsdato: LocalDate? = null
+    ): Person = Person(
         identer = listOf(IdentInformasjon(id, IdentGruppe.FOLKEREGISTERIDENT)),
         navn = null,
         adressebeskyttelse = adressebeskyttelse,
@@ -215,7 +281,11 @@ internal class IdentOppdateringTest2 {
         foedsel = null,
         geografiskTilknytning = null,
         kjoenn = null,
-        doedsfall = null,
+        doedsfall = Doedsfall(
+            doedsdato = doedsdato,
+            folkeregistermetadata = null,
+            metadata= metadata()
+        ),
         forelderBarnRelasjon = listOf(),
         sivilstand = listOf(),
         kontaktadresse = Kontaktadresse(
