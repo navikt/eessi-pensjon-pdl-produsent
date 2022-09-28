@@ -61,7 +61,7 @@ class IdentOppdatering (
         require(!identifisertPersonFraPDL.erDoed) { return NoUpdate("Identifisert person registrert med doedsfall") }
 
         //validering av uid korrekt format
-        require(pdlValidering.erPersonValidertPaaLand(utenlandskIdFraSed)) { return NoUpdate("Ingen validerte identifiserte personer funnet") }
+        require(pdlValidering.erPersonValidertPaaLand(utenlandskIdFraSed.id, utenlandskIdFraSed.land)) { return NoUpdate("Ingen validerte identifiserte personer funnet") }
 
         require(!pdlFiltrering.finnesUidFraSedIPDL(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) { return NoUpdate("PDLuid er identisk med SEDuid") }
 

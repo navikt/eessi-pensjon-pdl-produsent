@@ -5,6 +5,7 @@ import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.eux.UtenlandskPersonIdentifisering
 import no.nav.eessi.pensjon.eux.model.sed.Adresse
 import no.nav.eessi.pensjon.eux.model.sed.Bruker
+import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.models.EndringsmeldingUID
@@ -60,24 +61,27 @@ class IdentOppdatering2 (
         }
 
         //NoUpdate der avsenderland er ulik UIDland
-        require(sedHendelse.avsenderLand == sed.nav?.bruker?.person?.pin?.firstOrNull()?.land) {
+        val pinItem = sed.nav?.bruker?.person?.pin?.firstOrNull()
+        require(sedHendelse.avsenderLand == pinItem?.land) {
             return NoUpdate("Avsenderland mangler eller avsenderland er ikke det samme som uidland")
         }
 
         val utenlandskPin = harUtenlandskPin(sed)
         require(utenlandskPin != null) { return NoUpdate("Bruker har ikke utenlandsk ident") }
 
+
+        //NoUpdate der UID ikke validerer
+        require(pdlValidering.erPersonValidertPaaLand(utenlandskPin.identifikator!!, utenlandskPin.land!!)) {
+            return NoUpdate("Ingen validerte identifiserte personer funnet")
+        }
+
         val normalisertNorskPIN = hentNorskPin(sed) as String
         val personFraPDL = hentPdlPerson(normalisertNorskPIN) as Person
 
-        //NoUpdate der UID er fra en avdød person
-        require(personFraPDL.erDoed().not()) {
-            return NoUpdate("Identifisert person registrert med doedsfall")
-        }
-
-        //NoUpdate der UID ikke validerer
-
         //NoUpdate der UID er lik UID fra PDL
+        require(!pdlFiltrering.finnesUidFraSedIPDL(personFraPDL.utenlandskIdentifikasjonsnummer, UtenlandskId(utenlandskPin.identifikator!!, utenlandskPin.land!!))) {
+            return NoUpdate("PDL uid er identisk med SED uid")
+        }
 
         //Opprette oppgave der er en eller flere nye utenlandske identer
 
@@ -118,7 +122,7 @@ class IdentOppdatering2 (
         }.also { secureLogger.debug("Person fra PDL:\n${it.toJson()}") }
     }
 
-    private fun harUtenlandskPin(sed: SED): String? = sed.nav?.bruker?.person?.pin?.firstOrNull { it.land != "NO" }?.identifikator
+    private fun harUtenlandskPin(sed: SED): PinItem? = sed.nav?.bruker?.person?.pin?.firstOrNull { it.land != "NO" }
 
     private fun normaliserNorskPin(norskPinFraSED: String) =
         Fodselsnummer.fraMedValidation(norskPinFraSED)!!.value

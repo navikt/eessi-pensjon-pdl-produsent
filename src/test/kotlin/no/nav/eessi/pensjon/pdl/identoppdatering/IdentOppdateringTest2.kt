@@ -42,7 +42,6 @@ import java.time.LocalDateTime
 private const val FNR = "11067122781"
 private const val SOME_FNR = "1234567799"
 private const val POLEN = "PL"
-
 internal class IdentOppdateringTest2 {
 
     var euxService: EuxService = mockk(relaxed = true)
@@ -60,6 +59,8 @@ internal class IdentOppdateringTest2 {
         every { kodeverkClient.finnLandkode("SE") } returns "SWE"
         every { kodeverkClient.finnLandkode("PL") } returns "POL"
         every { kodeverkClient.finnLandkode("POL") } returns "PL"
+        every { kodeverkClient.finnLandkode("FIN") } returns "FI"
+        every { kodeverkClient.finnLandkode("FI") } returns "FIN"
         identoppdatering = IdentOppdatering2(
             euxService,
             pdlFiltrering,
@@ -120,26 +121,6 @@ internal class IdentOppdateringTest2 {
     }
 
     @Test
-    fun `Gitt at BUCen inneholder uid paa en doed person saa blir det ingen oppdatering`() {
-        every { euxService.hentSed(any(), any()) } returns
-                sed(id = FNR, land = "NO", pinItem =  listOf(
-                    PinItem(identifikator = SOME_FNR, land = "FI"),
-                    PinItem(identifikator = FNR, land = "NO"))
-                )
-
-        every { personService.hentPerson(NorskIdent(FNR)) } returns
-                personFraPDL(
-                    id = FNR,
-                    doedsdato = LocalDate.now().minusYears(1)
-            )
-
-        assertEquals(
-            NoUpdate("Identifisert person registrert med doedsfall"),
-            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "FI"))
-        )
-    }
-
-    @Test
     fun `Gitt at avsenderland ikke er det samme som UIDland da blir det ingen oppdatering`() {
         every { euxService.hentSed(any(), any()) } returns
                 sed(id = FNR, land = "FI", pinItem =  listOf(
@@ -164,6 +145,40 @@ internal class IdentOppdateringTest2 {
         )
 
     }
+
+    @Test
+    fun `Gitt at SEDen inneholder en uid som ikke validerer saa blir det ingen oppdatering`() {
+
+        every { euxService.hentSed(any(), any()) } returns
+                sed(id = FNR, land = "NO", pinItem =  listOf(
+                    PinItem(identifikator = "6549876543168765", land = "FI"),
+                    PinItem(identifikator = FNR, land = "NO"))
+                )
+
+        assertEquals(
+            NoUpdate("Ingen validerte identifiserte personer funnet"),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "FI"))
+        )
+    }
+
+    @Test
+    fun `Gitt at SEDen inneholder en uid ssom er lik UID fra PDL saa blir det ingen oppdatering`() {
+
+        every { personService.hentPerson(NorskIdent(FNR)) } returns personFraPDL(id = FNR)
+            .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer("130177-308T").copy(utstederland = "FIN")))
+        every { euxService.hentSed(any(), any()) } returns
+                sed(id = FNR, land = "NO", pinItem =  listOf(
+                    PinItem(identifikator = "130177-308T", land = "FI"),
+                    PinItem(identifikator = FNR, land = "NO"))
+                )
+
+        assertEquals(
+            NoUpdate("PDL uid er identisk med SED uid"),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "FI"))
+        )
+    }
+
+
 
     private fun utenlandskIdentifikasjonsnummer(fnr: String) = UtenlandskIdentifikasjonsnummer(
         identifikasjonsnummer = fnr,

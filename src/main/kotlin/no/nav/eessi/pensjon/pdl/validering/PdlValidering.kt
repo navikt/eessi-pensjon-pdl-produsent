@@ -15,8 +15,8 @@ class PdlValidering(private val kodeverkClient: KodeverkClient) {
      * Kjører landspesifik validering
      * Aksepterer kun et nytt UID om gangen
      */
-    fun erPersonValidertPaaLand(utenlandskId: UtenlandskId) =
-        validering.validerLandsspesifikkUID(kodeverkClient.finnLandkode(utenlandskId.land)!!, utenlandskId.id)
+    fun erPersonValidertPaaLand(utenlandskId: String, land: String) =
+        validering.validerLandsspesifikkUID(kodeverkClient.finnLandkode(land)!!, utenlandskId)
 
     fun avsenderLandHarVerdiOgErSammeSomUidLand(utenlandskId: UtenlandskId, avsenderLand: String?) =
         if (!avsenderLand.isNullOrEmpty() && utenlandskId.land == avsenderLand) {
