@@ -44,7 +44,7 @@ class Adresseoppdatering(
                 "Adressens landkode er ulik landkode på avsenderland")
         }
 
-        // TODO Håndtere brukere med ikke-norske identer
+        // Når det ikke finnes norsk ID så er det helt fint at dette tas av Id & Fordeling
         require (hasNorskPin(brukerFra(sed))) { return NoUpdate("Bruker har ikke norsk pin i SED") }
 
         val normalisertNorskPIN = try {
