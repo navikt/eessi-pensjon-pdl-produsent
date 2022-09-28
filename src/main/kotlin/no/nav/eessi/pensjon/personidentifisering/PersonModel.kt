@@ -16,7 +16,7 @@ data class IdentifisertPerson(
     val geografiskTilknytning: String?,
     val harAdressebeskyttelse: Boolean,
     val personListe: List<IdentifisertPerson>? = null,
-    val personRelasjon: SEDPersonRelasjon,
+    val personRelasjon: SEDPersonRelasjon? = null,
     val erDoed: Boolean = false,
     val kontaktAdresse: Kontaktadresse?
 ) {

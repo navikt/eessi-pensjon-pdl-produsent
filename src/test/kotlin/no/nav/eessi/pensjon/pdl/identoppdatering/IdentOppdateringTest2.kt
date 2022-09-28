@@ -17,7 +17,6 @@ import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
-import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering2.NoUpdate
 import no.nav.eessi.pensjon.pdl.validering.PdlValidering
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
@@ -46,7 +45,6 @@ internal class IdentOppdateringTest2 {
 
     var euxService: EuxService = mockk(relaxed = true)
     var kodeverkClient: KodeverkClient = mockk(relaxed = true)
-    var pdlFiltrering: PdlFiltrering = PdlFiltrering(kodeverkClient)
     var pdlValidering = PdlValidering(kodeverkClient)
     var oppgaveHandler: OppgaveHandler = mockk()
     var personService: PersonService = mockk()
@@ -63,7 +61,6 @@ internal class IdentOppdateringTest2 {
         every { kodeverkClient.finnLandkode("FI") } returns "FIN"
         identoppdatering = IdentOppdatering2(
             euxService,
-            pdlFiltrering,
             pdlValidering,
             oppgaveHandler,
             kodeverkClient,
@@ -175,6 +172,28 @@ internal class IdentOppdateringTest2 {
         assertEquals(
             NoUpdate("PDL uid er identisk med SED uid"),
             identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "FI"))
+        )
+    }
+
+    @Test
+    fun `Gitt at SEDen inneholder en uid som er ulik UID fra PDL saa blir det opprettet en oppgave`() {
+
+        every { personService.hentPerson(NorskIdent(FNR)) } returns personFraPDL(id = FNR).copy(identer = listOf(
+            IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT),
+            IdentInformasjon("32165498732", IdentGruppe.AKTORID)
+        ))
+            .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer("77011313345").copy(utstederland = "POL")))
+        every { euxService.hentSed(any(), any()) } returns
+                sed(id = FNR, land = "NO", pinItem =  listOf(
+                    PinItem(identifikator = "77011312345", land = "PL"),
+                    PinItem(identifikator = FNR, land = "NO"))
+                )
+
+        every { oppgaveHandler.opprettOppgaveForUid(any(), any(), any()) } returns true
+
+        assertEquals(
+            NoUpdate("Det finnes allerede en annen uid fra samme land (Oppgave)"),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "PL"))
         )
     }
 
