@@ -192,6 +192,29 @@ internal class IdentOppdateringTest2 {
         every { oppgaveHandler.opprettOppgaveForUid(any(), any(), any()) } returns true
 
         assertEquals(
+            NoUpdate("PDL uid er identisk med SED uid"),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "PL"))
+        )
+    }
+
+    @Test
+    fun `Gitt at SEDen inneholder flere utelandske ID og fra samme land saa skal det opprettes oppgave`() {
+
+        every { personService.hentPerson(NorskIdent(FNR)) } returns personFraPDL(id = FNR).copy(identer = listOf(
+            IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT),
+            IdentInformasjon("32165498732", IdentGruppe.AKTORID)
+        ))
+
+        every { euxService.hentSed(any(), any()) } returns
+                sed(id = FNR, land = "NO", pinItem =  listOf(
+                    PinItem(identifikator = "77011312345", land = "PL"),
+                    PinItem(identifikator = "88011312341", land = "PL"),
+                    PinItem(identifikator = FNR, land = "NO"))
+                )
+
+        every { oppgaveHandler.opprettOppgaveForUid(any(), any(), any()) } returns true
+
+        assertEquals(
             NoUpdate("Det finnes allerede en annen uid fra samme land (Oppgave)"),
             identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "PL"))
         )
@@ -217,32 +240,11 @@ internal class IdentOppdateringTest2 {
         opplysningsId = "opplysningsId"
     )
 
-
     private fun forenkletSED(rinaId: String) = ForenkletSED(
         rinaId,
         SedType.P2000,
         SedStatus.RECEIVED
     )
-
-
-//    private fun identifisertPerson(
-//        erDoed: Boolean = false, uidFraPdl: List<UtenlandskIdentifikasjonsnummer> = emptyList()
-//    ) = IdentifisertPerson(
-//        fnr = Fodselsnummer.fra(FNR),
-//        uidFraPdl = uidFraPdl,
-//        aktoerId = "123456789351",
-//        landkode = null,
-//        geografiskTilknytning = null,
-//        harAdressebeskyttelse = erDoed,
-//        personListe = null,
-//        personRelasjon = SEDPersonRelasjon(
-//            relasjon = Relasjon.ANNET,
-//            fnr = Fodselsnummer.fra(FNR),
-//            rinaDocumentId = SOME_RINA_SAK_ID
-//        ),
-//        erDoed = erDoed,
-//        kontaktAdresse = null,
-//    )
 
     private fun sedHendelse(
         bucType: BucType = BucType.P_BUC_01,

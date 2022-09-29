@@ -81,18 +81,16 @@ class IdentOppdatering2 (
 
         //NoUpdate der UID er lik UID fra PDL
         val utenlandskPinFraPDL = UtenlandskId(utenlandskPin.identifikator!!, utenlandskPin.land!!)
-        require(!finnesUidFraSedIPDL(personFraPDL.utenlandskIdentifikasjonsnummer, utenlandskPinFraPDL)) {
+        require(utenlandskPinFinnesIPdl(utenlandskPinFraPDL, personFraPDL.utenlandskIdentifikasjonsnummer)) {
             return NoUpdate("PDL uid er identisk med SED uid")
         }
 
-        //Opprette oppgave der er en eller flere nye utenlandske identer
         //Opprette oppgave der UID ikke finnes i PDL, men det finnes allerede en UID i PDL som er ulik
+        //Opprette oppgave der er en eller flere nye utenlandske identer
+        if (personFraPDL.utenlandskIdentifikasjonsnummer.map { it.utstederland }.contains(utenlandskPinFraPDL.land)) {
 
-        if (skalOppgaveOpprettes(personFraPDL.utenlandskIdentifikasjonsnummer, utenlandskPinFraPDL)) {
-            //ytterligere sjekk om f.eks SWE fnr i PDL faktisk er identisk med sedUID (hvis så ikke opprett oppgave bare avslutt)
-            require(sedUidErUlikPDLUid(personFraPDL.utenlandskIdentifikasjonsnummer,
-                utenlandskPinFraPDL
-            )) {
+            //Update (endringsmelding) der UID (med feil format) ikke finnes i PDL, så skal den konverteres til korrekt format før sending
+            require(sedUidErUlikPDLUid(personFraPDL.utenlandskIdentifikasjonsnummer, utenlandskPinFraPDL)) {
                 // Oppretter ikke oppgave, Det som finnes i PDL er faktisk likt det som finnes i SED, avslutter
                 return NoUpdate("PDLuid er identisk med SEDuid")
             }
@@ -105,18 +103,17 @@ class IdentOppdatering2 (
             }
         }
 
-        //Update (endringsmelding) der UID (med feil format) ikke finnes i PDL, så skal den konverteres til korrekt format før sending
-
-
-        //Update (endringsmelding) der UID ikke finnes i PDL
-
         logger.info("Oppdaterer PDL med Ny Utenlandsk Ident fra ${sedHendelse.avsenderNavn}")
         return Update(
+            //Update (endringsmelding) der UID ikke finnes i PDL
             "Innsending av endringsmelding",
             pdlEndringOpplysning(personFraPDL.identer.firstOrNull()?.ident!!, utenlandskPinFraPDL, sedHendelse.avsenderNavn!!),
         )
 
     }
+
+    private fun utenlandskPinFinnesIPdl(utenlandskPin: UtenlandskId, utenlandskeUids: List<UtenlandskIdentifikasjonsnummer>) =
+        utenlandskeUids.map { Pair(it.identifikasjonsnummer, it.utstederland) }.contains(Pair(utenlandskPin.id, utenlandskPin.land))
 
     private fun identifisertPerson(
         normalisertNorskPIN: String,
@@ -186,8 +183,12 @@ class IdentOppdatering2 (
 
     private fun adresseErIUtlandet(adresse: Adresse?) = adresse?.land != null && adresse.land != "NO"
 
-    fun skalOppgaveOpprettes(utenlandskeIdPDL: List<UtenlandskIdentifikasjonsnummer>, utenlandskIdSed: UtenlandskId): Boolean {
-        return uidLandLiktPdlLand(utenlandskeIdPDL, utenlandskIdSed) && utenlandsIdUlikPdlId(utenlandskeIdPDL, utenlandskIdSed)
+    fun skalOppgaveOpprettes(utenlandskeIdPDL: List<UtenlandskIdentifikasjonsnummer>, utenlandskIdSed: UtenlandskId): UtenlandskIdentifikasjonsnummer? {
+        utenlandskeIdPDL.forEach { utenlandskIdIPDL ->
+            val landkodeFraPdl = kodeverkClient.finnLandkode(utenlandskIdIPDL.utstederland)
+            if (utenlandskIdSed.land == landkodeFraPdl && utenlandskIdSed.id != utenlandskIdIPDL.identifikasjonsnummer) return utenlandskIdIPDL
+        }
+        return null
     }
 
     /**
@@ -197,24 +198,11 @@ class IdentOppdatering2 (
      * Sjekker om 3-bokstavslandkode og identifikasjonsnummer fra Sed finnes i PDL
      *
      */
-    fun uidLandLiktPdlLand(utenlandskeIdPDL: List<UtenlandskIdentifikasjonsnummer>, utenlandskIdSed: UtenlandskId): Boolean {
-        utenlandskeIdPDL.forEach { utenlandskIdIPDL ->
-            val landkodeFraPdl = kodeverkClient.finnLandkode(utenlandskIdIPDL.utstederland)
-            if (utenlandskIdSed.land == landkodeFraPdl) return true
-        }
-        return false
-    }
 
-    fun utenlandsIdUlikPdlId(utenlandskeIdPDL: List<UtenlandskIdentifikasjonsnummer>, utenlandskIdSed: UtenlandskId): Boolean {
-        utenlandskeIdPDL.forEach { utenlandskIdIPDL ->
-            if ( utenlandskIdSed.id != utenlandskIdIPDL.identifikasjonsnummer) return true
-        }
-        return false
-    }
 
-    fun finnesUidFraSedIPDL(utenlandskeIdPDL: List<UtenlandskIdentifikasjonsnummer>, utenlandskIdSed: UtenlandskId): Boolean {
-        return uidLandLiktPdlLand(utenlandskeIdPDL, utenlandskIdSed) && !utenlandsIdUlikPdlId(utenlandskeIdPDL, utenlandskIdSed)
-    }
+/*    fun finnesUidFraSedIPDL(utenlandskeIdPDL: List<UtenlandskIdentifikasjonsnummer>, utenlandskIdSed: UtenlandskId): Boolean {
+        return finnesUidLandFraSedIPdl(utenlandskeIdPDL, utenlandskIdSed) && !finnesUidFraSedIPdl(utenlandskeIdPDL, utenlandskIdSed)
+    }*/
 
     fun sedUidErUlikPDLUid(utenlandskeIdPDL: List<UtenlandskIdentifikasjonsnummer>, utenlandskIdSed: UtenlandskId): Boolean {
         utenlandskeIdPDL.forEach { utenlandskIdIPDL ->
