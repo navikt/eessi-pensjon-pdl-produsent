@@ -2,7 +2,6 @@ package no.nav.eessi.pensjon.pdl.identoppdatering
 
 import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.UtenlandskId
-import no.nav.eessi.pensjon.eux.UtenlandskPersonIdentifisering
 import no.nav.eessi.pensjon.eux.model.sed.Adresse
 import no.nav.eessi.pensjon.eux.model.sed.Bruker
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
@@ -13,6 +12,7 @@ import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
+import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
 import no.nav.eessi.pensjon.pdl.validering.PdlValidering
 import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
@@ -37,7 +37,6 @@ class IdentOppdatering2 (
     private val oppgaveHandler: OppgaveHandler,
     private val kodeverkClient: KodeverkClient,
     private val personService: PersonService,
-    private val utenlandskPersonIdentifisering: UtenlandskPersonIdentifisering
 ) {
 
     private val logger = LoggerFactory.getLogger(IdentOppdatering2::class.java)
@@ -67,36 +66,34 @@ class IdentOppdatering2 (
             return NoUpdate("Avsenderland mangler eller avsenderland er ikke det samme som uidland")
         }
 
-        val utenlandskPin = harUtenlandskPin(sed)
-        require(utenlandskPin != null) { return NoUpdate("Bruker har ikke utenlandsk ident") }
+        val utenlandskPinItemFraSed = harUtenlandskPin(sed)
+        require(utenlandskPinItemFraSed != null) { return NoUpdate("Bruker har ikke utenlandsk ident") }
 
 
         //NoUpdate der UID ikke validerer
-        require(pdlValidering.erPersonValidertPaaLand(utenlandskPin.identifikator!!, utenlandskPin.land!!)) {
+        require(pdlValidering.erPersonValidertPaaLand(utenlandskPinItemFraSed.identifikator!!, utenlandskPinItemFraSed.land!!)) {
             return NoUpdate("Ingen validerte identifiserte personer funnet")
         }
 
-        val normalisertNorskPIN = hentNorskPin(sed) as String
-        val personFraPDL = hentPdlPerson(normalisertNorskPIN) as Person
+        val normalisertNorskPINFraSed = hentNorskPin(sed) as String
+        val personFraPDL = hentPdlPerson(normalisertNorskPINFraSed) as Person
 
-        //NoUpdate der UID er lik UID fra PDL
-        val utenlandskPinFraPDL = UtenlandskId(utenlandskPin.identifikator!!, utenlandskPin.land!!)
-        require(utenlandskPinFinnesIPdl(utenlandskPinFraPDL, personFraPDL.utenlandskIdentifikasjonsnummer)) {
+        //NoUpdate der UID fra Sed er lik UID fra PDL
+        val utenlandskPinFraSed = UtenlandskId(utenlandskPinItemFraSed.identifikator!!, utenlandskPinItemFraSed.land!!)
+        require(!utenlandskPinFinnesIPdl(utenlandskPinFraSed, personFraPDL.utenlandskIdentifikasjonsnummer)) {
             return NoUpdate("PDL uid er identisk med SED uid")
         }
 
-        //Opprette oppgave der UID ikke finnes i PDL, men det finnes allerede en UID i PDL som er ulik
+        //Opprette oppgave der UID er fra samme land, men ikke finnes i PDL
         //Opprette oppgave der er en eller flere nye utenlandske identer
-        if (personFraPDL.utenlandskIdentifikasjonsnummer.map { it.utstederland }.contains(utenlandskPinFraPDL.land)) {
+        if (personFraPDL.utenlandskIdentifikasjonsnummer.map { it.utstederland }.contains(kodeverkClient.finnLandkode(utenlandskPinFraSed.land))) {
 
             //Update (endringsmelding) der UID (med feil format) ikke finnes i PDL, så skal den konverteres til korrekt format før sending
-            require(sedUidErUlikPDLUid(personFraPDL.utenlandskIdentifikasjonsnummer, utenlandskPinFraPDL)) {
-                // Oppretter ikke oppgave, Det som finnes i PDL er faktisk likt det som finnes i SED, avslutter
-                return NoUpdate("PDLuid er identisk med SEDuid")
+            require( !erUidSvenskOgLikPdlUid(personFraPDL.utenlandskIdentifikasjonsnummer.filter { it.utstederland == "SWE" },utenlandskPinFraSed)) {
+                return NoUpdate("Sed er fra Sverige, men uid er lik PDL uid")
             }
-            val identifisetPerson = identifisertPerson(normalisertNorskPIN, personFraPDL)
 
-            return if (oppgaveHandler.opprettOppgaveForUid(sedHendelse, utenlandskPinFraPDL, identifisetPerson)) {
+            return if (oppgaveHandler.opprettOppgaveForUid(sedHendelse, utenlandskPinFraSed, identifisertPerson(normalisertNorskPINFraSed, personFraPDL))) {
                 NoUpdate("Det finnes allerede en annen uid fra samme land (Oppgave)")
             } else {
                 NoUpdate("Oppgave opprettet tidligere")
@@ -107,13 +104,13 @@ class IdentOppdatering2 (
         return Update(
             //Update (endringsmelding) der UID ikke finnes i PDL
             "Innsending av endringsmelding",
-            pdlEndringOpplysning(personFraPDL.identer.firstOrNull()?.ident!!, utenlandskPinFraPDL, sedHendelse.avsenderNavn!!),
+            pdlEndringOpplysning(personFraPDL.identer.firstOrNull()?.ident!!, utenlandskPinFraSed, sedHendelse.avsenderNavn!!),
         )
 
     }
 
     private fun utenlandskPinFinnesIPdl(utenlandskPin: UtenlandskId, utenlandskeUids: List<UtenlandskIdentifikasjonsnummer>) =
-        utenlandskeUids.map { Pair(it.identifikasjonsnummer, it.utstederland) }.contains(Pair(utenlandskPin.id, utenlandskPin.land))
+        utenlandskeUids.map { Pair(it.identifikasjonsnummer, kodeverkClient.finnLandkode(it.utstederland)) }.contains(Pair(utenlandskPin.id, utenlandskPin.land))
 
     private fun identifisertPerson(
         normalisertNorskPIN: String,
@@ -199,28 +196,13 @@ class IdentOppdatering2 (
      *
      */
 
-
-/*    fun finnesUidFraSedIPDL(utenlandskeIdPDL: List<UtenlandskIdentifikasjonsnummer>, utenlandskIdSed: UtenlandskId): Boolean {
-        return finnesUidLandFraSedIPdl(utenlandskeIdPDL, utenlandskIdSed) && !finnesUidFraSedIPdl(utenlandskeIdPDL, utenlandskIdSed)
-    }*/
-
-    fun sedUidErUlikPDLUid(utenlandskeIdPDL: List<UtenlandskIdentifikasjonsnummer>, utenlandskIdSed: UtenlandskId): Boolean {
+    fun erUidSvenskOgLikPdlUid(utenlandskeIdPDL: List<UtenlandskIdentifikasjonsnummer>, utenlandskIdSed: UtenlandskId): Boolean {
         utenlandskeIdPDL.forEach { utenlandskIdIPDL ->
-            val landkodeFraPdl = kodeverkClient.finnLandkode(utenlandskIdIPDL.utstederland)
-            if (utenlandskIdSed.land == landkodeFraPdl && utenlandskIdSed.id != utenlandskIdIPDL.identifikasjonsnummer) {
-                if (utenlandskIdIPDL.utstederland != "SWE") return true
-
-                val pdluidTrimmedAndReplaced = utenlandskIdIPDL.identifikasjonsnummer.trim().replace(" ", "").removeRange(0, 2)
-                val seduidReplaced = utenlandskIdSed.id.replace("-", "")
-                logger.debug("validering Oppgave SE: ${(pdluidTrimmedAndReplaced == seduidReplaced)} (true er ikke Oppgave)")
-                return pdluidTrimmedAndReplaced != seduidReplaced
-                //betyr oppgave
-                //landsesefikk valideringer ut ifra hva som finnes i PDL .. gjelder kun se for nå.
-            }
+            return LandspesifikkValidering.formaterSvenskUID(utenlandskIdIPDL.identifikasjonsnummer) ==
+                    LandspesifikkValidering.formaterSvenskUID(utenlandskIdSed.id)
         }
         return false
     }
-
 
     private fun pdlEndringOpplysning(norskFnr: String, utenlandskPin: UtenlandskId, kilde: String) =
         PdlEndringOpplysning(

@@ -3,7 +3,6 @@ package no.nav.eessi.pensjon.pdl.identoppdatering
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.eessi.pensjon.eux.EuxService
-import no.nav.eessi.pensjon.eux.UtenlandskPersonIdentifisering
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
@@ -35,6 +34,8 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnum
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -48,7 +49,6 @@ internal class IdentOppdateringTest2 {
     var pdlValidering = PdlValidering(kodeverkClient)
     var oppgaveHandler: OppgaveHandler = mockk()
     var personService: PersonService = mockk()
-    var utenlandskPersonIdentifisering = UtenlandskPersonIdentifisering()
     lateinit var identoppdatering : IdentOppdatering2
 
     @BeforeEach
@@ -65,7 +65,6 @@ internal class IdentOppdateringTest2 {
             oppgaveHandler,
             kodeverkClient,
             personService,
-            utenlandskPersonIdentifisering
         )
 
     }
@@ -159,7 +158,7 @@ internal class IdentOppdateringTest2 {
     }
 
     @Test
-    fun `Gitt at SEDen inneholder en uid ssom er lik UID fra PDL saa blir det ingen oppdatering`() {
+    fun `Gitt at SEDen inneholder en uid som er lik UID fra PDL saa blir det ingen oppdatering`() {
 
         every { personService.hentPerson(NorskIdent(FNR)) } returns personFraPDL(id = FNR)
             .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer("130177-308T").copy(utstederland = "FIN")))
@@ -175,40 +174,47 @@ internal class IdentOppdateringTest2 {
         )
     }
 
-    @Test
-    fun `Gitt at SEDen inneholder en uid som er ulik UID fra PDL saa blir det opprettet en oppgave`() {
+    @ParameterizedTest
+    @CsvSource(
+        "51 06 06-22 34",
+        "19 51 06 06-22 34",
+        "19 510606-2234",
+        "19 510606 2234"
+    )
+    fun `Gitt at SEDen inneholder uid som er feilformatert men lik UID fra PDL saa blir det ingen oppdatering`(uid : String) {
 
         every { personService.hentPerson(NorskIdent(FNR)) } returns personFraPDL(id = FNR).copy(identer = listOf(
             IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT),
             IdentInformasjon("32165498732", IdentGruppe.AKTORID)
         ))
-            .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer("77011313345").copy(utstederland = "POL")))
+            .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer("19510606-2234").copy(utstederland = "SWE")))
+
         every { euxService.hentSed(any(), any()) } returns
                 sed(id = FNR, land = "NO", pinItem =  listOf(
-                    PinItem(identifikator = "77011312345", land = "PL"),
+                    PinItem(identifikator = uid, land = "SE"),
                     PinItem(identifikator = FNR, land = "NO"))
                 )
 
         every { oppgaveHandler.opprettOppgaveForUid(any(), any(), any()) } returns true
 
         assertEquals(
-            NoUpdate("PDL uid er identisk med SED uid"),
-            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "PL"))
+            NoUpdate("Sed er fra Sverige, men uid er lik PDL uid"),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
         )
     }
 
     @Test
-    fun `Gitt at SEDen inneholder flere utelandske ID og fra samme land saa skal det opprettes oppgave`() {
+    fun `Gitt at SEDen inneholder uid som er feilformatert, men ulik UID fra PDL saa blir det oppgave`() {
 
         every { personService.hentPerson(NorskIdent(FNR)) } returns personFraPDL(id = FNR).copy(identer = listOf(
             IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT),
             IdentInformasjon("32165498732", IdentGruppe.AKTORID)
         ))
+            .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer("19510606-1234").copy(utstederland = "SWE")))
 
         every { euxService.hentSed(any(), any()) } returns
                 sed(id = FNR, land = "NO", pinItem =  listOf(
-                    PinItem(identifikator = "77011312345", land = "PL"),
-                    PinItem(identifikator = "88011312341", land = "PL"),
+                    PinItem(identifikator = "1951 06 06-22 34", land = "SE"),
                     PinItem(identifikator = FNR, land = "NO"))
                 )
 
@@ -216,11 +222,9 @@ internal class IdentOppdateringTest2 {
 
         assertEquals(
             NoUpdate("Det finnes allerede en annen uid fra samme land (Oppgave)"),
-            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "PL"))
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
         )
     }
-
-
 
     private fun utenlandskIdentifikasjonsnummer(fnr: String) = UtenlandskIdentifikasjonsnummer(
         identifikasjonsnummer = fnr,
