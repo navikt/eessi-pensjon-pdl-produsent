@@ -46,9 +46,10 @@ internal class IdentOppdateringTest2 {
 
     var euxService: EuxService = mockk(relaxed = true)
     var kodeverkClient: KodeverkClient = mockk(relaxed = true)
-    var pdlValidering = PdlValidering(kodeverkClient)
     var oppgaveHandler: OppgaveHandler = mockk()
     var personService: PersonService = mockk()
+
+    var pdlValidering = PdlValidering(kodeverkClient)
     lateinit var identoppdatering : IdentOppdatering2
 
     @BeforeEach
@@ -223,6 +224,31 @@ internal class IdentOppdateringTest2 {
         assertEquals(
             NoUpdate("Det finnes allerede en annen uid fra samme land (Oppgave)"),
             identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
+        )
+    }
+
+    @Test
+    fun `Gitt at SEDen inneholder uid som er ulik UID fra PDL men det finnes allerede en oppgave på det fra foer av`() {
+
+        every { personService.hentPerson(NorskIdent(FNR)) } returns personFraPDL(id = FNR).copy(identer = listOf(
+            IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT),
+            IdentInformasjon("32165498732", IdentGruppe.AKTORID)
+        ))
+            .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer("19512020-2234").copy(utstederland = "SWE")))
+
+        every { euxService.hentSed(any(), any()) } returns
+                sed(id = FNR, land = "NO", pinItem =  listOf(
+                    PinItem(identifikator = "5 12 020-1234", land = "SE"),
+                    PinItem(identifikator = FNR, land = "NO"))
+                )
+
+        val sedHendelse = sedHendelse(avsenderLand = "SE")
+        every { oppgaveHandler.opprettOppgaveForUid(any(), any(), any()) } returns true
+        every { oppgaveHandler.opprettOppgaveForUid(eq(sedHendelse), any(), any()) } returns false
+
+        assertEquals(
+            NoUpdate("Oppgave opprettet tidligere"),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse)
         )
     }
 
