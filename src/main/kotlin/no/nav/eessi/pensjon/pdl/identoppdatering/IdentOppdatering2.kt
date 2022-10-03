@@ -2,7 +2,6 @@ package no.nav.eessi.pensjon.pdl.identoppdatering
 
 import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.UtenlandskId
-import no.nav.eessi.pensjon.eux.model.sed.Adresse
 import no.nav.eessi.pensjon.eux.model.sed.Bruker
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.eux.model.sed.SED
@@ -161,8 +160,6 @@ class IdentOppdatering2 (
                 }
             }
 
-    private fun hasNorskPin(bruker: Bruker?) = norskPin(bruker) != null
-
     private fun norskPin(bruker: Bruker?) =
         bruker?.person?.pin?.firstOrNull { it.land == "NO" }
 
@@ -175,10 +172,6 @@ class IdentOppdatering2 (
 
     private fun isSedHendelseFromPreprod(sedHendelse: SedHendelse) =
         sedHendelse.avsenderId in listOf("NO:NAVAT05", "NO:NAVAT07")
-
-    private fun avsenderISedHendelse(sedHendelse: SedHendelse) = sedHendelse.avsenderNavn != null && sedHendelse.avsenderLand != null
-
-    private fun adresseErIUtlandet(adresse: Adresse?) = adresse?.land != null && adresse.land != "NO"
 
     fun skalOppgaveOpprettes(utenlandskeIdPDL: List<UtenlandskIdentifikasjonsnummer>, utenlandskIdSed: UtenlandskId): UtenlandskIdentifikasjonsnummer? {
         utenlandskeIdPDL.forEach { utenlandskIdIPDL ->
