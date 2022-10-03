@@ -3,6 +3,7 @@ package no.nav.eessi.pensjon.pdl.identoppdatering
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.eessi.pensjon.eux.EuxService
+import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
@@ -14,13 +15,22 @@ import no.nav.eessi.pensjon.eux.model.sed.Pensjon
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
+import no.nav.eessi.pensjon.models.EndringsmeldingUID
+import no.nav.eessi.pensjon.models.PdlEndringOpplysning
+import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
 import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering2.NoUpdate
+import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering2.Update
 import no.nav.eessi.pensjon.pdl.validering.PdlValidering
+import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
+import no.nav.eessi.pensjon.personidentifisering.Relasjon
+import no.nav.eessi.pensjon.personidentifisering.SEDPersonRelasjon
+import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.AdressebeskyttelseGradering
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Doedsfall
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Folkeregistermetadata
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentInformasjon
@@ -28,6 +38,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.Kontaktadresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.KontaktadresseType
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Metadata
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
@@ -251,6 +262,91 @@ internal class IdentOppdateringTest2 {
             identoppdatering.oppdaterUtenlandskIdent(sedHendelse)
         )
     }
+
+    @Test
+    fun `Gitt at SEDen inneholder uid som er ulik UID fra PDL saa skal vi oppdatere`() {
+
+        every { personService.hentPerson(NorskIdent(FNR)) } returns personFraPDL(id = FNR).copy(identer = listOf(
+            IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT),
+            IdentInformasjon("32165498732", IdentGruppe.AKTORID)
+        ))
+            .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer("19512020-2234").copy(utstederland = "SWE")))
+
+        every { euxService.hentSed(any(), any()) } returns
+                sed(id = FNR, land = "NO", pinItem =  listOf(
+                    PinItem(identifikator = "5 12 020-1234", land = "SE"),
+                    PinItem(identifikator = FNR, land = "NO"))
+                )
+
+        val sedHendelse = sedHendelse(avsenderLand = "SE")
+        every { oppgaveHandler.opprettOppgaveForUid(any(), any(), any()) } returns true
+        every { oppgaveHandler.opprettOppgaveForUid(eq(sedHendelse), any(), any()) } returns false
+
+        assertEquals(
+            NoUpdate("Oppgave opprettet tidligere"),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse)
+        )
+    }
+
+    @Test
+    fun `Gitt at vi har en endringsmelding med en svensk uid, med riktig format saa skal det opprettes en endringsmelding`() {
+        val identifisertPerson= identifisertPerson(uidFraPdl = listOf(utenlandskIdentifikasjonsnummer("195120202234")))
+
+        every { personService.hentPerson(NorskIdent(FNR)) } returns
+                personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT)))
+
+        every { euxService.hentSed(any(), any()) } returns
+                sed(id = FNR, land = "NO", pinItem =  listOf(
+                    PinItem(identifikator = "5 12 020-1234", land = "SE"),
+                    PinItem(identifikator = FNR, land = "NO"))
+                )
+
+        every { oppgaveHandler.opprettOppgaveForUid(any(), UtenlandskId( "19512020-2234", "SE" ), identifisertPerson) } returns false
+        every { oppgaveHandler.opprettOppgaveForUid(any(), any(), any()) } returns true
+
+        val result = Update("Innsending av endringsmelding", pdlEndringsMelding())
+        val oppdaterUtenlandskIdent = identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
+
+        assertEquals(
+            result.description,
+            oppdaterUtenlandskIdent.description
+        )
+    }
+
+    private fun pdlEndringsMelding() =
+        PdlEndringOpplysning(
+            listOf(
+                Personopplysninger(
+                    endringstype = Endringstype.OPPRETT,
+                    ident = FNR,
+                    endringsmelding = EndringsmeldingUID(
+                        identifikasjonsnummer = ("19512020-2234"),
+                        utstederland = "SWE",
+                        kilde = "Sverige"
+                    ),
+                    opplysningstype = Opplysningstype.UTENLANDSKIDENTIFIKASJONSNUMMER
+                )
+            )
+        )
+
+    private fun identifisertPerson(
+        erDoed: Boolean = false, uidFraPdl: List<UtenlandskIdentifikasjonsnummer> = emptyList()
+    ) = IdentifisertPerson(
+        fnr = Fodselsnummer.fra(FNR),
+        uidFraPdl = uidFraPdl,
+        aktoerId = "123456789351",
+        landkode = null,
+        geografiskTilknytning = null,
+        harAdressebeskyttelse = erDoed,
+        personListe = null,
+        personRelasjon = SEDPersonRelasjon(
+            relasjon = Relasjon.ANNET,
+            fnr = Fodselsnummer.fra(FNR),
+            rinaDocumentId = "12345"
+        ),
+        erDoed = erDoed,
+        kontaktAdresse = null,
+    )
 
     private fun utenlandskIdentifikasjonsnummer(fnr: String) = UtenlandskIdentifikasjonsnummer(
         identifikasjonsnummer = fnr,
