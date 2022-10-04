@@ -215,12 +215,10 @@ class IdentOppdatering2 (
         )
 
     private fun konvertertTilPdlFormat(utenlandskPin: UtenlandskId): String {
-        val uid = utenlandskPin.id
         if (utenlandskPin.land == "SE") {
-            if (uid.length == 10) uid.replaceRange(5, 5, "-")
-            if (uid.length == 12) uid.replaceRange(7, 7, "-")
+            return LandspesifikkValidering.formaterSvenskUID(utenlandskPin.id)
         }
-        return uid
+        return utenlandskPin.id
     }
 
     sealed class Result {

@@ -50,7 +50,10 @@ import java.time.LocalDateTime
 
 private const val FNR = "11067122781"
 private const val SOME_FNR = "1234567799"
-private const val SVENSK_FNR = "19512020-2234"
+private const val SVENSK_FNR = "512020-1234"
+private const val FINSK_FNR = "130177-308T"
+
+private const val AKTOERID = "32165498732"
 
 private const val POLEN = "PL"
 private const val SVERIGE = "SE"
@@ -181,10 +184,10 @@ internal class IdentOppdateringTest2 {
     fun `Gitt at SEDen inneholder en uid som er lik UID fra PDL saa blir det ingen oppdatering`() {
 
         every { personService.hentPerson(NorskIdent(FNR)) } returns personFraPDL(id = FNR)
-            .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer("130177-308T").copy(utstederland = "FIN")))
+            .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer(FINSK_FNR).copy(utstederland = "FIN")))
         every { euxService.hentSed(any(), any()) } returns
                 sed(id = FNR, land = NORGE, pinItem =  listOf(
-                    PinItem(identifikator = "130177-308T", land = FINLAND),
+                    PinItem(identifikator = FINSK_FNR, land = FINLAND),
                     PinItem(identifikator = FNR, land = NORGE))
                 )
 
@@ -205,7 +208,7 @@ internal class IdentOppdateringTest2 {
 
         every { personService.hentPerson(NorskIdent(FNR)) } returns personFraPDL(id = FNR).copy(identer = listOf(
             IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT),
-            IdentInformasjon("32165498732", IdentGruppe.AKTORID)
+            IdentInformasjon(AKTOERID, IdentGruppe.AKTORID)
         ))
             .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer("19510606-2234").copy(utstederland = "SWE")))
 
@@ -228,9 +231,9 @@ internal class IdentOppdateringTest2 {
 
         every { personService.hentPerson(NorskIdent(FNR)) } returns personFraPDL(id = FNR).copy(identer = listOf(
             IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT),
-            IdentInformasjon("32165498732", IdentGruppe.AKTORID)
+            IdentInformasjon(AKTOERID, IdentGruppe.AKTORID)
         ))
-            .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer("19510606-1234").copy(utstederland = "SWE")))
+            .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer(SVENSK_FNR).copy(utstederland = "SWE")))
 
         every { euxService.hentSed(any(), any()) } returns
                 sed(id = FNR, land = NORGE, pinItem =  listOf(
@@ -251,13 +254,13 @@ internal class IdentOppdateringTest2 {
 
         every { personService.hentPerson(NorskIdent(FNR)) } returns personFraPDL(id = FNR).copy(identer = listOf(
             IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT),
-            IdentInformasjon("32165498732", IdentGruppe.AKTORID)
+            IdentInformasjon(AKTOERID, IdentGruppe.AKTORID)
         ))
             .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer(SVENSK_FNR).copy(utstederland = "SWE")))
 
         every { euxService.hentSed(any(), any()) } returns
                 sed(id = FNR, land = NORGE, pinItem =  listOf(
-                    PinItem(identifikator = "5 12 020-1234", land = SVERIGE),
+                    PinItem(identifikator = "5 12 020-2234", land = SVERIGE),
                     PinItem(identifikator = FNR, land = NORGE))
                 )
 
@@ -277,13 +280,13 @@ internal class IdentOppdateringTest2 {
 
         every { personService.hentPerson(NorskIdent(FNR)) } returns personFraPDL(id = FNR).copy(identer = listOf(
             IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT),
-            IdentInformasjon("32165498732", IdentGruppe.AKTORID)
+            IdentInformasjon(AKTOERID, IdentGruppe.AKTORID)
         ))
             .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer(SVENSK_FNR).copy(utstederland = "SWE")))
 
         every { euxService.hentSed(any(), any()) } returns
                 sed(id = FNR, land = NORGE, pinItem =  listOf(
-                    PinItem(identifikator = "5 12 020-1234", land = SVERIGE),
+                    PinItem(identifikator = "5 12 020-2234", land = SVERIGE),
                     PinItem(identifikator = FNR, land = NORGE))
                 )
 
@@ -313,10 +316,34 @@ internal class IdentOppdateringTest2 {
         every { oppgaveHandler.opprettOppgaveForUid(any(), UtenlandskId( SVENSK_FNR, SVERIGE), identifisertPerson) } returns false
         every { oppgaveHandler.opprettOppgaveForUid(any(), any(), any()) } returns true
 
-        val result = Update("Innsending av endringsmelding", pdlEndringsMelding())
-        val oppdaterUtenlandskIdent = identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = SVERIGE))
+        assertEquals(
+            Update("Innsending av endringsmelding", pdlEndringsMelding()),
+            (identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = SVERIGE)))
+        )
 
-        assertEquals(result.description, oppdaterUtenlandskIdent.description)
+    }
+
+    @Test
+    fun `Gitt at vi har en SED med svensk UID naar det allerede finnes en UID i PDL fra Finland saa skal det opprettes en endringsmelding`() {
+        val identifisertPerson= identifisertPerson(uidFraPdl = listOf(utenlandskIdentifikasjonsnummer(SVENSK_FNR)))
+
+        every { personService.hentPerson(NorskIdent(FNR)) } returns
+                personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT)))
+                    .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer(FINSK_FNR).copy(utstederland = "FIN")))
+
+        every { euxService.hentSed(any(), any()) } returns
+                sed(id = FNR, land = NORGE, pinItem =  listOf(
+                    PinItem(identifikator = "5 12 020-1234", land = SVERIGE),
+                    PinItem(identifikator = FNR, land = NORGE))
+                )
+
+        every { oppgaveHandler.opprettOppgaveForUid(any(), UtenlandskId( SVENSK_FNR, SVERIGE), identifisertPerson) } returns false
+        every { oppgaveHandler.opprettOppgaveForUid(any(), any(), any()) } returns true
+
+        assertEquals(
+            Update("Innsending av endringsmelding", pdlEndringsMelding()),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = SVERIGE))
+        )
     }
 
     private fun pdlEndringsMelding() =
@@ -326,7 +353,7 @@ internal class IdentOppdateringTest2 {
                     endringstype = Endringstype.OPPRETT,
                     ident = FNR,
                     endringsmelding = EndringsmeldingUID(
-                        identifikasjonsnummer = (SVENSK_FNR),
+                        identifikasjonsnummer = SVENSK_FNR,
                         utstederland = "SWE",
                         kilde = "Sverige"
                     ),

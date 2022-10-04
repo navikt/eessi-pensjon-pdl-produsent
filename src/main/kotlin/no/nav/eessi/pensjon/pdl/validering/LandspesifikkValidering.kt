@@ -79,17 +79,15 @@ object LandspesifikkValidering {
      * Disse reglene gjelder ikke for PDL, men kommer av erfaring fra saksbehandler og godkjent fra Produkteier.
      */
     private fun sverige(uid: String): Boolean {
-        return formaterSvenskUID(uid).length == 10 && formaterSvenskUID(uid).checkDigitsLength(10)
+        return formaterSvenskUID(uid).length == 11 && formaterSvenskUID(uid).checkDigitsLength(10)
     }
 
      fun formaterSvenskUID(uid: String): String {
         var uidNew = uid.trim().replace(" ", "").replace("-", "")
-        if (uidNew.length in 10..12) {
-            if (uidNew.length == 12) {
-                uidNew = uidNew.removeRange(0, 2)
-            }
+        if (uidNew.length == 12) {
+            uidNew = uidNew.removeRange(0, 2)
         }
-        return uidNew
+        return uidNew.replaceRange(6, 6, "-")
     }
 
     private fun danmarkIsland(uid: String) = uid.length == 11 && uid.checkDigitsLength(10) && uid.substring(6, 7) == "-" && uid.checkDigitsLength(IntRange(0,5), 6) && uid.checkDigitsLength(IntRange(7,10), 4)
