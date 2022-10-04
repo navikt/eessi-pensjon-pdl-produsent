@@ -53,7 +53,18 @@ class LandspesifikkValidering(private val kodeverkClient: KodeverkClient) {
         }.also { logger.debug("$landkode -> result  of our dreams: $it") }
     }
 
+    /**
+     * Vi aksepterer feil i uid for noen land, gitt at det er mulig å konvertere til et kjent format
+     */
+    fun normalisertPin(uid: String, land: String): String {
 
+        return when (GyldigeLand.landkode(land)) {
+            SVERIGE -> {
+                return formaterSvenskUID(uid)
+            }
+            else ->  uid
+        }
+    }
 
     fun String.checkDigitsLength(range: IntRange, len: Int): Boolean =  this.substring(range).checkDigitsLength(len)
 
@@ -108,6 +119,7 @@ class LandspesifikkValidering(private val kodeverkClient: KodeverkClient) {
     private fun frankrike(uid: String): Boolean = uid.checkDigitsLength(13) && uid.length == 18  && uid.substring(1,2) == " " && uid.substring(4,5) == " " && uid.substring(7,8) == " " && uid.substring(10,11) == " "  && uid.substring(14,15) == " "
     private fun spania(uid: String): Boolean = uid.isLettersOrDigit() && uid.length == 10
     private fun storbritannia(uid: String): Boolean = uid.replace(" ","") .isLettersOrDigit() && erHvertredjeBokstavBlank(uid)  && uid.length > 10
+
 }
 
 enum class GyldigeLand(val landkode: String) {

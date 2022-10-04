@@ -27,7 +27,7 @@ import org.springframework.kafka.support.Acknowledgment
 import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
-import java.util.concurrent.*
+import java.util.concurrent.TimeUnit
 
 @SpringBootTest( classes = [KafkaTestConfig::class, IntegrationBase.TestConfig::class])
 @ActiveProfiles("integrationtest", "excludeKodeverk")
@@ -61,30 +61,34 @@ class IdentManglerEllerFeilTest : IntegrationBase() {
     }
 
     @Test
-    fun `Gitt en sed hendelse med uten dansk uid som ikke finnes i pdl skal det ack med logg Ingen utenlandske IDer funnet i BUC`() {
+    fun `En sed hendelse med uten UID vil resultere i en NoUpdate`() {
         every { norg2.hentArbeidsfordelingEnhet(any()) } returns Enhet.ID_OG_FORDELING
         every { personService.hentPerson(NorskIdent( fnr)) } returns mockedPerson
+        //every { kodeverkClient.finnLandkode("DK") } returns "DNK"
 
         val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P15000, SedStatus.RECEIVED))
         val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_10, listOverSeder)
 
-        val mockPin = mockPin(fnr, "NO")
-        val mockSed = mockSedUtenPensjon(sedType = SedType.P15000, pin = listOf(mockPin))
+        val mockNorskPin = mockPin(fnr, "NO")
+        //val mockDanskPin = mockPin("130177-1234", "DK")
+        val mockSed = mockSedUtenPensjon(sedType = SedType.P15000, pin = listOf(mockNorskPin))
 
         CustomMockServer()
             .medMockSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", mockSed)
             .medMockBuc("/buc/147729", mockBuc)
+            .medEndring()
 
         sendMeldingString(
             mockHendelse(
                 bucType = BucType.P_BUC_10,
                 sedType = SedType.P15000,
+                avsenderLand = "DK",
                 docId = "eb938171a4cb4e658b3a6c011962d204"
             )
         )
         sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
 
-        assertTrue(isMessageInlog("Ingen utenlandske IDer funnet i BUC"))
+        assertTrue(isMessageInlog("NoUpdate(description=Avsenderland mangler eller avsenderland er ikke det samme som uidland)"))
     }
 
     @Test

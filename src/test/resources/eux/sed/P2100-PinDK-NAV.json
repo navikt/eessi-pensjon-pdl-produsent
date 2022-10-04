@@ -179,7 +179,21 @@
             "land": "NO"
           }
         ],
-        "pin": [],
+        "pin" : [ {
+          "institusjonsnavn" : "NOINST002, NO INST002, NO",
+          "institusjonsid" : "NO:noinst002",
+          "identifikator" : "11067122781",
+          "land" : "NO"
+        },
+        {
+          "land": "DK",
+          "institusjon": {
+            "institusjonsnavn": "Dansk institusjon",
+            "institusjonsid": "Dansk inst93"
+          },
+          "identifikator": "130177-1234"
+        }
+        ],
         "foedested": {
           "region": "sdfsdf",
           "land": "DK",

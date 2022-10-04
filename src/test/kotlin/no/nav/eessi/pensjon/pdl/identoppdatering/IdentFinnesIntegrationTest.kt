@@ -13,19 +13,19 @@ import no.nav.eessi.pensjon.pdl.integrationtest.CustomMockServer
 import no.nav.eessi.pensjon.pdl.integrationtest.IntegrationBase
 import no.nav.eessi.pensjon.pdl.integrationtest.KafkaTestConfig
 import no.nav.eessi.pensjon.pdl.integrationtest.PDL_PRODUSENT_TOPIC_MOTTATT
-import no.nav.eessi.pensjon.personoppslag.pdl.model.PersonMock
 import no.nav.eessi.pensjon.personoppslag.pdl.model.AktoerId
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
+import no.nav.eessi.pensjon.personoppslag.pdl.model.PersonMock
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.kafka.support.Acknowledgment
 import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.kafka.support.Acknowledgment
 import java.util.concurrent.TimeUnit
 
 @SpringBootTest( classes = [KafkaTestConfig::class, IntegrationBase.TestConfig::class])
@@ -69,16 +69,16 @@ class IdentFinnesIntegrationTest : IntegrationBase() {
         every { kodeverkClient.finnLandkode("DK") }.returns("DNK")
         every { kodeverkClient.finnLandkode("DNK") }.returns("DK")
 
-        val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P2100, SedStatus.RECEIVED))
+        val listOverSeder = listOf(ForenkletSED("b12e06dda2c7474b9998c7139c841646", SedType.P2100, SedStatus.RECEIVED))
         val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_02, listOverSeder)
 
         CustomMockServer()
-            .medSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", "src/test/resources/eux/sed/P2100-PinDK-NAV.json")
+            .medSed("/buc/147729/sed/b12e06dda2c7474b9998c7139c841646", "src/test/resources/eux/sed/P2100-PinDK-NAV.json")
             .medMockBuc("/buc/147729", mockBuc)
 
         sendMeldingString(javaClass.getResource("/eux/hendelser/P_BUC_01_P2000-avsenderDK.json").readText())
         sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
-        assertTrue(isMessageInlog("PDLuid er identisk med SEDuid"))
+        assertTrue(isMessageInlog("NoUpdate(description=PDL uid er identisk med SED uid)"))
     }
 
     @Test
@@ -114,7 +114,7 @@ class IdentFinnesIntegrationTest : IntegrationBase() {
         sendMeldingString(hendelseJson)
         sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
 
-        assertTrue(isMessageInlog("PDLuid er identisk med SEDuid"))
+        assertTrue(isMessageInlog("NoUpdate(description=Sed er fra Sverige, men uid er lik PDL uid)"))
     }
 
 }
