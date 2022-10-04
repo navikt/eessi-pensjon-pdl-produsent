@@ -2,7 +2,6 @@ package no.nav.eessi.pensjon.architecture
 
 import com.tngtech.archunit.core.importer.ClassFileImporter
 import com.tngtech.archunit.core.importer.ImportOption
-import com.tngtech.archunit.core.importer.ImportOptions
 import com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses
 import com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noMethods
 import com.tngtech.archunit.library.Architectures.layeredArchitecture
@@ -17,32 +16,30 @@ import org.junit.jupiter.api.TestInstance
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class ArchitectureTest {
 
-    private val rootDir = EessiPensjonApplication::class.qualifiedName!! .replace("." + EessiPensjonApplication::class.simpleName, "")
+    private val root = EessiPensjonApplication::class.qualifiedName!! .replace("." + EessiPensjonApplication::class.simpleName, "")
 
     // Only include main module. Ignore test module and external deps
     private val classesToAnalyze = ClassFileImporter()
-            .importClasspath(
-                    ImportOptions()
-                            .with(ImportOption.DoNotIncludeJars())
-                            .with(ImportOption.DoNotIncludeArchives())
-                            .with(ImportOption.DoNotIncludeTests())
-            )
+        .withImportOptions(listOf(
+            ImportOption.DoNotIncludeJars(),
+            ImportOption.DoNotIncludeArchives(),
+            ImportOption.DoNotIncludeTests()))
+        .importPackages(root)
 
     @BeforeAll
     fun beforeAll() {
         // Validate number of classes to analyze
-        assertTrue(classesToAnalyze.size > 100, "Sanity check on no. of classes to analyze")
-        assertTrue(classesToAnalyze.size < 250, "Sanity check on no. of classes to analyze")
+        assertTrue(classesToAnalyze.size in 100..250, "Sanity check on no. of classes to analyze (is ${classesToAnalyze.size})")
     }
 
     @Test
     fun `Packages should not have cyclic depenedencies`() {
-        slices().matching("$rootDir.(*)..").should().beFreeOfCycles().check(classesToAnalyze)
+        slices().matching("$root.(*)..").should().beFreeOfCycles().check(classesToAnalyze)
     }
 
     @Test
     fun `Klienter should not depend on eachother`() {
-        slices().matching("..$rootDir.klienter.(**)").should().notDependOnEachOther().check(classesToAnalyze)
+        slices().matching("..$root.klienter.(**)").should().notDependOnEachOther().check(classesToAnalyze)
     }
 
     @Test @Disabled("TODO Fix when we have found a good structure")
@@ -59,16 +56,17 @@ internal class ArchitectureTest {
         val personidentifisering = "pdl.personidentifisering"
 
         layeredArchitecture()
+            .consideringOnlyDependenciesInAnyPackage(root)
                 //Define components
-                .layer(config).definedBy("$rootDir.config")
-                .layer(health).definedBy("$rootDir.health")
-                .layer(eux).definedBy("$rootDir.handler")
-                .layer(gcp).definedBy("$rootDir.gcp")
-                .layer(pdlOppdatering).definedBy("$rootDir.pdl.oppdatering")
-                .layer(klienter).definedBy("$rootDir.klienter..")
-                .layer(oppgaveRouting).definedBy("$rootDir.oppgaverouting")
-                .layer(personidentifisering).definedBy("$rootDir.personidentifisering")
-                .layer(validering).definedBy("$rootDir.pdl.validering")
+                .layer(config).definedBy("$root.config")
+                .layer(health).definedBy("$root.health")
+                .layer(eux).definedBy("$root.handler")
+                .layer(gcp).definedBy("$root.gcp")
+                .layer(pdlOppdatering).definedBy("$root.pdl.oppdatering")
+                .layer(klienter).definedBy("$root.klienter..")
+                .layer(oppgaveRouting).definedBy("$root.oppgaverouting")
+                .layer(personidentifisering).definedBy("$root.personidentifisering")
+                .layer(validering).definedBy("$root.pdl.validering")
                 //define rules
                 .whereLayer(config).mayNotBeAccessedByAnyLayer()
                 .whereLayer(health).mayNotBeAccessedByAnyLayer()
