@@ -9,7 +9,7 @@ import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.models.Enhet
-import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.NoUpdate
+import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering2.NoUpdate
 import no.nav.eessi.pensjon.pdl.integrationtest.CustomMockServer
 import no.nav.eessi.pensjon.pdl.integrationtest.IntegrationBase
 import no.nav.eessi.pensjon.pdl.integrationtest.KafkaTestConfig
@@ -27,7 +27,7 @@ import org.springframework.kafka.support.Acknowledgment
 import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.*
 
 @SpringBootTest( classes = [KafkaTestConfig::class, IntegrationBase.TestConfig::class])
 @ActiveProfiles("integrationtest", "excludeKodeverk")

@@ -1,6 +1,10 @@
 package no.nav.eessi.pensjon.pdl.validering
 
+import io.mockk.every
+import io.mockk.mockk
+import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
@@ -11,72 +15,97 @@ import org.junit.jupiter.params.provider.CsvSource
  */
 internal class LandspesifikkValideringTest {
 
-    private val valdidering = LandspesifikkValidering
+    var kodeverkClient: KodeverkClient = mockk(relaxed = true)
+    private val valdidering = LandspesifikkValidering(kodeverkClient)
+
+    @BeforeEach
+    fun setup() {
+        every { kodeverkClient.finnLandkode("PL") } returns "POL"
+        every { kodeverkClient.finnLandkode("SE") } returns "SWE"
+        every { kodeverkClient.finnLandkode("BE") } returns "BEL"
+        every { kodeverkClient.finnLandkode("BR") } returns "BGR"
+        every { kodeverkClient.finnLandkode("FI") } returns "FIN"
+        every { kodeverkClient.finnLandkode("IS") } returns "ISL"
+        every { kodeverkClient.finnLandkode("DK") } returns "DNK"
+        every { kodeverkClient.finnLandkode("ET") } returns "EST"
+        every { kodeverkClient.finnLandkode("LT") } returns "LTU"
+        every { kodeverkClient.finnLandkode("IT") } returns "ITA"
+        every { kodeverkClient.finnLandkode("LV") } returns "LVA"
+        every { kodeverkClient.finnLandkode("NL") } returns "NLD"
+        every { kodeverkClient.finnLandkode("PL") } returns "POL"
+        every { kodeverkClient.finnLandkode("SV") } returns "SVN"
+        every { kodeverkClient.finnLandkode("FR") } returns "FRA"
+        every { kodeverkClient.finnLandkode("GB") } returns "GBR"
+        every { kodeverkClient.finnLandkode("ES") } returns "ESP"
+        every { kodeverkClient.finnLandkode("HU") } returns "HUN"
+        every { kodeverkClient.finnLandkode("DE") } returns "DEU"
+
+    }
 
     @ParameterizedTest
     @CsvSource(
-        "BEL, 770113-123-12, true",
-        "BEL, 770113-12312, false",
-        "BGR, 1234567890, true" ,
-        "BGR, 123456789012, false" ,
-        "BGR, 770113-12312, false",
-        "FIN, 130177A636D, true",
-        "FIN, 130177-308T, true",
-        "FIN, 130177-5800, true",
-        "FIN, 130177A5800, true",
-        "FIN, 130177A636D, true",
-        "ISL, 130177-7159, true",
-        "ISL, 130177-71591, false",
-        "ISL, 1301777159, false",
-        "ISL, 1301777159-, false",
-        "DNK, 130177-1234, true",
-        "DNK, 130177-12341, false",
-        "EST, 37701132722, true",
-        "EST, 377A1132722, false",
-        "LTU, 37701132722, true",
-        "LTU, 377011-2722X, false",
-        "ITA, PSNSVR77A13B123C, true",
-        "ITA, a2c4e677A13B123C, true",
-        "ITA, PSNSVR77A13B123C-, false",
-        "ITA, PSNSVRA13B123C-, false",
-        "ITA, PSNSVR%123C-, false",
-        "LVA, 130177-18017, true",
-        "LVA, 130177-180171, false",
-        "LVA, 130177-1801Ø, false",
-        "NLD, 1234.56.789, true",
-        "NLD, 130177-1801Ø, false",
-        "NLD, 130177&1801Ø, false",
-        "NLD, 130-1801Ø, false",
-        "POL, 77011312345, true",
-        "POL, 770113123455, false",
-        "POL, 77011312345%, false",
-        "POL, 771---12345%, false",
+        "BE, 770113-123-12, true",
+        "BE, 770113-12312, false",
+        "BR, 1234567890, true" ,
+        "BR, 123456789012, false" ,
+        "BR, 770113-12312, false",
+        "FI, 130177A636D, true",
+        "FI, 130177-308T, true",
+        "FI, 130177-5800, true",
+        "FI, 130177A5800, true",
+        "FI, 130177A636D, true",
+        "IS, 130177-7159, true",
+        "IS, 130177-71591, false",
+        "IS, 1301777159, false",
+        "IS, 1301777159-, false",
+        "DK, 130177-1234, true",
+        "DK, 130177-12341, false",
+        "ET, 37701132722, true",
+        "ET, 377A1132722, false",
+        "LT, 37701132722, true",
+        "LT, 377011-2722X, false",
+        "IT, PSNSVR77A13B123C, true",
+        "IT, a2c4e677A13B123C, true",
+        "IT, PSNSVR77A13B123C-, false",
+        "IT, PSNSVRA13B123C-, false",
+        "IT, PSNSVR%123C-, false",
+        "LV, 130177-18017, true",
+        "LV, 130177-180171, false",
+        "LV, 130177-1801Ø, false",
+        "NL, 1234.56.789, true",
+        "NL, 130177-1801Ø, false",
+        "NL, 130177&1801Ø, false",
+        "NL, 130-1801Ø, false",
+        "PL, 77011312345, true",
+        "PL, 770113123455, false",
+        "PL, 77011312345%, false",
+        "PL, 771---12345%, false",
         "XKZ, 7732423, false",
-        "SVN, 1301771234567, true",
-        "SVN, 1301771234567%, false",
-        "SWE, 770113-1234, true",
-        "SWE, 19542020-1234, true",
-        "SWE, 1954202012, true",
-        "SWE, 7701131111-1234, false",
-        "SWE, 7701131+234, false",
-        "SWE, 7701131234, true",
-        "SWE, 7 7 0 1131234, true",
-        "SWE, 7 7% 1131234, false",
-        "DEU, 56 120157 F 016, true",
-        "DEU, 02 140477 T 039, true",
-        "DEU, 02 140477 T 03%, false",
-        "HUN, 069-441-934, true",
-        "HUN, 069-441-S34, false",
-        "FRA, 2 52 01 75 068 079, true",
-        "FRA, 2 52 01 75 068 079A, false",
-        "ESP, 0X5807635C, true",
-        "ESP, 0X5807635C%, false",
-        "ESP, 0X580763 5C, false",
-        "GBR, ZX 91 67 77 C9, true",
-        "GBR, ZX 91-67 77MØ, false",
-        "GBR, ZX 91-6777M, false",
-        "GBR, ZXS, false", //format og lengde
-        "GBR, ZX, false" //length
+        "SV, 1301771234567, true",
+        "SV, 1301771234567%, false",
+        "SE, 770113-1234, true",
+        "SE, 19542020-1234, true",
+        "SE, 1954202012, true",
+        "SE, 7701131111-1234, false",
+        "SE, 7701131+234, false",
+        "SE, 7701131234, true",
+        "SE, 7 7 0 1131234, true",
+        "SE, 7 7% 1131234, false",
+        "DE, 56 120157 F 016, true",
+        "DE, 02 140477 T 039, true",
+        "DE, 02 140477 T 03%, false",
+        "HU, 069-441-934, true",
+        "HU, 069-441-S34, false",
+        "FR, 2 52 01 75 068 079, true",
+        "FR, 2 52 01 75 068 079A, false",
+        "ES, 0X5807635C, true",
+        "ES, 0X5807635C%, false",
+        "ES, 0X580763 5C, false",
+        "GB, ZX 91 67 77 C9, true",
+        "GB, ZX 91-67 77MØ, false",
+        "GB, ZX 91-6777M, false",
+        "GB, ZXS, false", //format og lengde
+        "GB, ZX, false" //length
     )
 /**
  * Regler for andre land vi kommuniserer med

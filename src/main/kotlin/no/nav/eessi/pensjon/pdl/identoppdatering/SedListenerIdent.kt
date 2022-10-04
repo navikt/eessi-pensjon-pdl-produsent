@@ -4,8 +4,8 @@ import io.micrometer.core.instrument.Metrics
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
-import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.NoUpdate
-import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.Update
+import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering2.NoUpdate
+import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering2.Update
 import no.nav.eessi.pensjon.utils.toJson
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
@@ -24,7 +24,7 @@ import javax.annotation.PostConstruct
 @Service
 class SedListenerIdent(
     private val personMottakKlient: PersonMottakKlient,
-    private val identOppdatering: IdentOppdatering,
+    private val identOppdatering: IdentOppdatering2,
     @Value("\${SPRING_PROFILES_ACTIVE:}") private val profile: String,
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
 ) {
@@ -84,7 +84,7 @@ class SedListenerIdent(
         count(result.description)
     }
 
-    private fun log(result: IdentOppdatering.Result) {
+    private fun log(result: IdentOppdatering2.Result) {
         when (result) {
             is Update -> {
                 secureLogger.debug("Update:\n${result.toJson()}")

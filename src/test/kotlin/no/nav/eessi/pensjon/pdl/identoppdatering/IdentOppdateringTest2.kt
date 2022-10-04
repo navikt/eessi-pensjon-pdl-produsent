@@ -20,7 +20,7 @@ import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
 import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering2.NoUpdate
 import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering2.Update
-import no.nav.eessi.pensjon.pdl.validering.PdlValidering
+import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import no.nav.eessi.pensjon.personidentifisering.Relasjon
 import no.nav.eessi.pensjon.personidentifisering.SEDPersonRelasjon
@@ -67,8 +67,7 @@ internal class IdentOppdateringTest2 {
     var kodeverkClient: KodeverkClient = mockk(relaxed = true)
     var oppgaveHandler: OppgaveHandler = mockk()
     var personService: PersonService = mockk()
-
-    var pdlValidering = PdlValidering(kodeverkClient)
+    var landspesifikkValidering = LandspesifikkValidering(kodeverkClient)
     lateinit var identoppdatering : IdentOppdatering2
 
     @BeforeEach
@@ -84,10 +83,10 @@ internal class IdentOppdateringTest2 {
 
         identoppdatering = IdentOppdatering2(
             euxService,
-            pdlValidering,
             oppgaveHandler,
             kodeverkClient,
             personService,
+            landspesifikkValidering
         )
 
     }

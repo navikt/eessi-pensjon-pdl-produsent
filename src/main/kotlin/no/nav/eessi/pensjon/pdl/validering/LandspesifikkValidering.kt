@@ -1,5 +1,6 @@
 package no.nav.eessi.pensjon.pdl.validering
 
+import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.BELGIA
 import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.BULGARIA
 import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.DANMARK
@@ -19,15 +20,20 @@ import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.SVERIGE
 import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.TYSKLAND
 import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.UNGARN
 import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Component
 
-object LandspesifikkValidering {
+@Component
+class LandspesifikkValidering(private val kodeverkClient: KodeverkClient) {
 
     private val logger = LoggerFactory.getLogger(LandspesifikkValidering::class.java)
 
     fun validerLandsspesifikkUID(landkode: String, uid: String): Boolean {
         logger.debug("valider land: $landkode, uid: $uid, len: ${uid.length}")
 
-        return when (GyldigeLand.landkode(landkode)) {
+        val land = kodeverkClient.finnLandkode(landkode)
+        if(land.isNullOrEmpty()) return false
+
+        return when (GyldigeLand.landkode(land)) {
             BELGIA -> belgia(uid)
             BULGARIA -> bulgaria(uid)
             FINLAND -> finland(uid)
