@@ -75,11 +75,11 @@ internal class IdentOppdateringTest2 {
         every { kodeverkClient.finnLandkode(POLEN) } returns "POL"
         every { kodeverkClient.finnLandkode("POL") } returns POLEN
 
-        every { kodeverkClient.finnLandkode("SWE") } returns SVERIGE
         every { kodeverkClient.finnLandkode(SVERIGE) } returns "SWE"
+        every { kodeverkClient.finnLandkode("SWE") } returns SVERIGE
 
-        every { kodeverkClient.finnLandkode("FIN") } returns FINLAND
         every { kodeverkClient.finnLandkode(FINLAND) } returns "FIN"
+        every { kodeverkClient.finnLandkode("FIN") } returns FINLAND
 
         identoppdatering = IdentOppdatering2(
             euxService,
@@ -190,7 +190,7 @@ internal class IdentOppdateringTest2 {
             IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT),
             IdentInformasjon(AKTOERID, IdentGruppe.AKTORID)
         ))
-            .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer("19510606-2234").copy(utstederland = "SWE")))
+            .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer("510606-2234").copy(utstederland = "SWE")))
 
         every { euxService.hentSed(any(), any()) } returns
                 sed(id = FNR, land = NORGE, pinItem =  listOf(
@@ -201,7 +201,7 @@ internal class IdentOppdateringTest2 {
         every { oppgaveHandler.opprettOppgaveForUid(any(), any(), any()) } returns true
 
         assertEquals(
-            NoUpdate("Sed er fra Sverige, men uid er lik PDL uid"),
+            NoUpdate("PDL uid er identisk med SED uid"),
             identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = SVERIGE))
         )
     }

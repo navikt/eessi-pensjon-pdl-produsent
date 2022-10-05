@@ -82,7 +82,7 @@ class IdentFinnesIntegrationTest : IntegrationBase() {
     }
 
     @Test
-    fun `Gitt PDLuid som sjekke med SEDuid er faktisk identisk oppgave opprettes ikke avslutter hendelse `() {
+    fun `Gitt svensk uid i SED som er ulik svensk uid fra pdl, men fra samme land, saa skal det opprettes oppgave `() {
         every { norg2.hentArbeidsfordelingEnhet(any()) } returns Enhet.PENSJON_UTLAND
         every { personService.hentPerson(NorskIdent(fnr)) } returns PersonMock.createWith(
             fnr = fnr,
@@ -114,7 +114,7 @@ class IdentFinnesIntegrationTest : IntegrationBase() {
         sendMeldingString(hendelseJson)
         sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
 
-        assertTrue(isMessageInlog("NoUpdate(description=Sed er fra Sverige, men uid er lik PDL uid)"))
+        assertTrue(isMessageInlog("NoUpdate(description=Det finnes allerede en annen uid fra samme land (Oppgave))"))
     }
 
 }

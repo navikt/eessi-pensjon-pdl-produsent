@@ -63,6 +63,12 @@ class IdentOppdatering2 (
             return NoUpdate("Bruker har ikke norsk pin i SED")
         }
 
+        val normalisertNorskPINFraSed =  try {
+            normaliserNorskPin(norskPin(brukerFra(sed))!!.identifikator!!)
+        } catch (ex: IllegalArgumentException) {
+            return NoUpdate("Brukers norske id fra SED validerer ikke")
+        }
+
         val utenlandskPinItemFraSed = hentUtenlandskID(sed)
         require(utenlandskPinItemFraSed != null) { return NoUpdate("Bruker har ikke utenlandsk ident") }
 
@@ -70,13 +76,6 @@ class IdentOppdatering2 (
             return NoUpdate("Ingen validerte identifiserte personer funnet")
         }
 
-        val normalisertNorskPINFraSed =  try {
-            normaliserNorskPin(norskPin(brukerFra(sed))!!.identifikator!!)
-        } catch (ex: IllegalArgumentException) {
-            return NoUpdate(
-                "Brukers norske id fra SED validerer ikke: \"${norskPin(brukerFra(sed))!!.identifikator!!}\" - ${ex.message}"
-            )
-        }
 
         val personFraPDL = try {
             personService.hentPerson(NorskIdent(normalisertNorskPINFraSed))?: throw NullPointerException("hentPerson returnerte null")
@@ -93,7 +92,11 @@ class IdentOppdatering2 (
         }
 
         //Opprette oppgave der UID er fra samme land, men ikke finnes i PDL eller der det er er en eller flere nye utenlandske identer
-        if (personFraPDL.utenlandskIdentifikasjonsnummer.map { it.utstederland }.contains(kodeverkClient.finnLandkode(utenlandskPinItemFraSed.land))) {
+        if (personFraPDL.utenlandskIdentifikasjonsnummer
+                .filter { it.identifikasjonsnummer != utenlandskPinItemFraSed.id.trim() }
+                .also { println(it+":"+utenlandskPinItemFraSed) }
+                .map { it.utstederland }
+                .contains(kodeverkClient.finnLandkode(utenlandskPinItemFraSed.land))) {
 
             return opprettOppgave(personFraPDL, utenlandskPinItemFraSed, sedHendelse, normalisertNorskPINFraSed)
         }
@@ -104,14 +107,9 @@ class IdentOppdatering2 (
             "Innsending av endringsmelding",
             pdlEndringOpplysning(personFraPDL.identer.firstOrNull()?.ident!!, utenlandskPinItemFraSed, sedHendelse.avsenderNavn!!),
         )
-
     }
 
     private fun opprettOppgave(personFraPDL: Person, utenlandskPinFraSed: UtenlandskId, sedHendelse: SedHendelse, normalisertNorskPINFraSed: String): Result {
-        require(!erUidSvenskOgLikPdlUid(personFraPDL.utenlandskIdentifikasjonsnummer.filter { it.utstederland == "SWE" }, utenlandskPinFraSed)) {
-            return NoUpdate("Sed er fra Sverige, men uid er lik PDL uid")
-        }
-
         return if (oppgaveHandler.opprettOppgaveForUid(sedHendelse, utenlandskPinFraSed, identifisertPerson(normalisertNorskPINFraSed, personFraPDL))) {
             NoUpdate("Det finnes allerede en annen uid fra samme land (Oppgave)")
         } else NoUpdate("Oppgave opprettet tidligere")
