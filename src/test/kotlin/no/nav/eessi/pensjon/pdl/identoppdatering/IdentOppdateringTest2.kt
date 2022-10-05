@@ -106,7 +106,7 @@ internal class IdentOppdateringTest2 {
 
         assertEquals(
             NoUpdate("Bruker har ikke norsk pin i SED"),
-            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = NORGE))
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = SVERIGE))
         )
     }
 
@@ -121,48 +121,29 @@ internal class IdentOppdateringTest2 {
     }
 
     @Test
-    fun `Gitt at BUCen mangler avsenderland da blir det ingen oppdatering`() {
+    fun `Gitt at Seden inneholder en uid der avsenderland ikke er det samme som uidland da blir det ingen oppdatering`() {
+        every { euxService.hentSed(any(), any()) } returns sed(id = FNR, land = POLEN)
+        every { personService.hentPerson(NorskIdent(FNR)) } returns personFraPDL(id = FNR)
 
         assertEquals(
-            NoUpdate("Avsenderland mangler eller avsenderland er ikke det samme som uidland"),
-            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = ""))
+            NoUpdate("Avsenderland er ikke det samme som uidland"),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = NORGE))
         )
     }
 
     @Test
     fun `Gitt at vi har en SedHendelse som mangler avsenderNavn saa skal vi faa en NoUpdate som resultat`() {
 
-        assertEquals(
-            NoUpdate("AvsenderNavn er ikke satt, kan derfor ikke lage endringsmelding"),
-            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = SVERIGE, avsenderNavn = null))
-        )
-    }
-
-    @Test
-    fun `Gitt at avsenderland ikke er det samme som UIDland da blir det ingen oppdatering`() {
-        every { euxService.hentSed(any(), any()) } returns
-                sed(id = FNR, land = FINLAND, pinItem =  listOf(
-                    PinItem(identifikator = SOME_FNR, land = FINLAND),
-                    PinItem(identifikator = FNR, land = NORGE))
-                )
-
-        assertEquals(
-            NoUpdate("Avsenderland mangler eller avsenderland er ikke det samme som uidland"),
-            identoppdatering.oppdaterUtenlandskIdent(sedHendelse())
-        )
-    }
-
-    @Test
-    fun `Gitt at Seden inneholder en uid der avsenderland ikke er det samme som uidland da blir det ingen oppdatering`() {
-        every { euxService.hentSed(any(), any()) } returns sed(id = FNR, land = NORGE)
+        every { euxService.hentSed(any(), any()) } returns sed(id = FNR, land = POLEN)
         every { personService.hentPerson(NorskIdent(FNR)) } returns personFraPDL(id = FNR)
 
         assertEquals(
-            NoUpdate("Avsenderland mangler eller avsenderland er ikke det samme som uidland"),
-            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = POLEN))
+            NoUpdate("AvsenderNavn er ikke satt, kan derfor ikke lage endringsmelding"),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = POLEN, avsenderNavn = null))
         )
-
     }
+
+
 
     @Test
     fun `Gitt at SEDen inneholder en uid som ikke validerer saa blir det ingen oppdatering`() {

@@ -41,25 +41,25 @@ class IdentOppdatering2 (
     fun oppdaterUtenlandskIdent(sedHendelse: SedHendelse): Result {
         require(erRelevantForEESSIPensjon(sedHendelse)) { return NoUpdate("Ikke relevant for eessipensjon") }
 
+        val sed = euxService.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId)
+            .also { secureLogger.debug("SED:\n$it") }
+
+        val pinItem = sed.nav?.bruker?.person?.pin?.firstOrNull{it.land == sedHendelse.avsenderLand}
+
         require(sedHendelse.avsenderLand.isNullOrEmpty().not()) {
-            return NoUpdate("Avsenderland mangler eller avsenderland er ikke det samme som uidland")
+            return NoUpdate("Avsenderland mangler")
+        }
+
+        require(sedHendelse.avsenderLand == pinItem?.land) {
+            return NoUpdate("Avsenderland er ikke det samme som uidland")
         }
 
         require(sedHendelse.avsenderNavn.isNullOrEmpty().not()) {
             return NoUpdate("AvsenderNavn er ikke satt, kan derfor ikke lage endringsmelding")
         }
 
-        val sed = euxService.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId)
-            .also { secureLogger.debug("SED:\n$it") }
-
         require(sed.nav?.bruker?.person?.pin?.filter { it.land == "NO" }.isNullOrEmpty().not()) {
             return NoUpdate("Bruker har ikke norsk pin i SED")
-        }
-
-        val pinItem = sed.nav?.bruker?.person?.pin?.firstOrNull{it.land == sedHendelse.avsenderLand}
-        //TODO: samme som 45
-        require(sedHendelse.avsenderLand == pinItem?.land) {
-            return NoUpdate("Avsenderland mangler eller avsenderland er ikke det samme som uidland")
         }
 
         val utenlandskPinItemFraSed = hentUtenlandskID(sed)
@@ -138,9 +138,13 @@ class IdentOppdatering2 (
 
     private fun hentUtenlandskID(sed: SED): UtenlandskId? {
         val pinitem  = sed.nav?.bruker?.person?.pin?.firstOrNull { it.land != "NO" }
+
         if(pinitem?.land.isNullOrEmpty() || pinitem?.identifikator.isNullOrEmpty()) return null
-        val normalisertPin = landspesifikkValidering.normalisertPin(pinitem?.identifikator!!, pinitem.land!!)
-        return UtenlandskId(normalisertPin, pinitem.land!!)
+
+        return UtenlandskId(
+            landspesifikkValidering.normalisertPin(pinitem?.identifikator!!, pinitem.land!!),
+            pinitem.land!!
+        )
     }
 
     private fun normaliserNorskPin(norskPinFraSED: String) =
