@@ -57,13 +57,10 @@ class LandspesifikkValidering(private val kodeverkClient: KodeverkClient) {
      * Vi aksepterer feil i uid for noen land, gitt at det er mulig å konvertere til et kjent format
      */
     fun normalisertPin(uid: String, land: String): String {
-
-        return when (GyldigeLand.landkode(land)) {
-            SVERIGE -> {
-                return formaterSvenskUID(uid)
-            }
-            else ->  uid
+        return if (GyldigeLand.landkode(land) == SVERIGE) {
+            formaterSvenskUID(uid)
         }
+        else uid
     }
 
     fun String.checkDigitsLength(range: IntRange, len: Int): Boolean =  this.substring(range).checkDigitsLength(len)

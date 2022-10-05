@@ -18,7 +18,7 @@ internal class UtenlandskPersonIdentifiseringTest {
 
         val resultat = utenlandskPersonIdentifisering.finnAlleUtenlandskeIDerIMottatteSed(listOf(Pair(mockForenkledSed(SedType.P2100), sed)))
 
-        assertEquals(1, resultat.size)
+        assertEquals(2, resultat.size)
         assertEquals(resultat.first().id, "130177-1234")
         assertEquals(resultat.first().land, "DK")
 

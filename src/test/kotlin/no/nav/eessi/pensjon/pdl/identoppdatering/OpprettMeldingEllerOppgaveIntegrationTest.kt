@@ -57,7 +57,7 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
         every { norg2.hentArbeidsfordelingEnhet(any()) } returns Enhet.NFP_UTLAND_OSLO
         every { personService.hentPerson(NorskIdent(fnr))} returns PersonMock.createWith(
             fnr = fnr,
-            aktoerId = AktoerId("1231231231"),
+//            aktoerId = AktoerId("1231231231"),
             uid = emptyList()
         )
         every { kodeverkClient.finnLandkode("DK") }.returns("DNK")
@@ -83,13 +83,11 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
             mockHendelse(
                 bucType = BucType.P_BUC_02,
                 sedType = SedType.P7000,
+                avsenderLand = "DK",
                 docId = "eb938171a4cb4e658b3a6c011962d504"
             )
         )
 
-        assertTrue(isMessageInlog("SED av type: P2100, status: RECEIVED"))
-        assertTrue(isMessageInlog("SED av type: P5000, status: SENT"))
-        assertTrue(isMessageInlog("SED av type: P7000, status: RECEIVED"))
         assertTrue(isMessageInlog("Endringsmelding: OPPRETT, med nye personopplysninger"))
 
         CustomMockServer().verifyRequestWithBody(
@@ -122,12 +120,12 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
         )
         every { kodeverkClient.finnLandkode("DK") }.returns("DNK")
 
-        val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P2100, SedStatus.RECEIVED))
+        val listOverSeder = listOf(ForenkletSED("b12e06dda2c7474b9998c7139c841646", SedType.P2100, SedStatus.RECEIVED))
         val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_02, listOverSeder)
 
         CustomMockServer()
             .medEndring()
-            .medSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", "src/test/resources/eux/sed/P2100-PinDK-NAV.json")
+            .medSed("/buc/147729/sed/b12e06dda2c7474b9998c7139c841646", "src/test/resources/eux/sed/P2100-PinDK-NAV.json")
             .medMockBuc("/buc/147729", mockBuc)
 
 

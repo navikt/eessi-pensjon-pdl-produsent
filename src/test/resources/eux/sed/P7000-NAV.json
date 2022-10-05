@@ -15,11 +15,18 @@
     "bruker" : {
       "person" : {
         "pin" : [ {
-          "institusjonsnavn" : "NOINST002, NO INST002, NO",
-          "institusjonsid" : "NO:noinst002",
-          "identifikator" : "9876543210",
-          "land" : "NO"
-        } ],
+            "institusjonsnavn" : "NOINST002, NO INST002, NO",
+            "institusjonsid" : "NO:noinst002",
+            "identifikator" : "11067122781",
+            "land" : "NO"
+          },
+          {
+            "institusjonsnavn" : "DKKKK, DK INST002, DK",
+            "institusjonsid" : "DK:noinst002",
+            "identifikator" : "130177-1234",
+            "land" : "DK"
+          }
+        ],
         "etternavn" : "Død",
         "fornavn" : "Avdød",
         "kjoenn" : "M",
