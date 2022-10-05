@@ -44,6 +44,7 @@ class IdentOppdatering2 (
         val sed = euxService.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId)
             .also { secureLogger.debug("SED:\n$it") }
 
+        //vurderer kun sed-uid som er det samme som innkommet sedhendelse
         val pinItem = sed.nav?.bruker?.person?.pin?.firstOrNull{it.land == sedHendelse.avsenderLand}
 
         require(sedHendelse.avsenderLand.isNullOrEmpty().not()) {
