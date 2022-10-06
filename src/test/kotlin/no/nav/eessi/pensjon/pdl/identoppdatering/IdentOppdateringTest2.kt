@@ -102,7 +102,7 @@ internal class IdentOppdateringTest2 {
 
     @Test
     fun `Gitt at bruker ikke har norsk pin i SED saa resulterer det i en NoUpdate`() {
-        every { euxService.hentSed(any(), any()) } returns sed(id = FNR, land = SVERIGE)
+        every { euxService.hentSed(any(), any()) } returns sed(id = SVENSK_FNR, land = SVERIGE)
 
         assertEquals(
             NoUpdate("Bruker har ikke norsk pin i SED"),
@@ -155,7 +155,10 @@ internal class IdentOppdateringTest2 {
                 )
 
         assertEquals(
-            NoUpdate("Ingen validerte identifiserte personer funnet"),
+            NoUpdate(
+                description = "Utenlandsk id \"6549876543168765\" er ikke på gyldig format for land FI",
+                metricTagValueOverride = "Utenlandsk id er ikke på gyldig format"
+            ),
             identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = FINLAND))
         )
     }

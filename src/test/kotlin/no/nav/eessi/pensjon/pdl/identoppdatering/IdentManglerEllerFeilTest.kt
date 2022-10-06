@@ -84,13 +84,14 @@ class IdentManglerEllerFeilTest : IntegrationBase() {
         )
         sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
 
-        assertTrue(isMessageInlog("NoUpdate(description=Bruker har ikke utenlandsk ident)"))
+        assertTrue(isMessageInlog("NoUpdate(description=Bruker har ikke utenlandsk ident, metricTagValueOverride=null)"))
     }
 
     @Test
     fun `Gitt en sed-hendelse fra Sverige som sender inn en tysk uid saa skal det stoppes av valideringen`() {
         every { norg2.hentArbeidsfordelingEnhet(any()) } returns  Enhet.ID_OG_FORDELING
         every { personService.hentPerson(NorskIdent( "29087021082")) } returns mockedPerson
+        every { kodeverkClient.finnLandkode("DE") } returns "DEU"
 
         val listOverSeder = listOf(ForenkletSED("b12e06dda2c7474b9998c7139c841646", SedType.P8000, SedStatus.RECEIVED))
         val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_02, listOverSeder)
@@ -112,6 +113,7 @@ class IdentManglerEllerFeilTest : IntegrationBase() {
     fun `Gitt en sed hendelse uten avsenderNavn saa sender vi ingen oppdatering`() {
         every { norg2.hentArbeidsfordelingEnhet(any()) } returns Enhet.ID_OG_FORDELING
         every { personService.hentPerson(NorskIdent( "29087021082")) } returns mockedPerson
+        every { kodeverkClient.finnLandkode("DK") } returns "DNK"
 
         val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P15000, SedStatus.RECEIVED))
         val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_10, listOverSeder)

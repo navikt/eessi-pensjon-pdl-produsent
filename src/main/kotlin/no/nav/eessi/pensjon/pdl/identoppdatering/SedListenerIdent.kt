@@ -17,7 +17,7 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.concurrent.*
+import java.util.concurrent.CountDownLatch
 import javax.annotation.PostConstruct
 
 @Profile("!prod") // Stoppet inntil videre i prod
@@ -77,11 +77,11 @@ class SedListenerIdent(
         val result = identOppdatering.oppdaterUtenlandskIdent(sedHendelse)
 
         if (result is Update) {
-            personMottakKlient.opprettPersonopplysning(result.identOpplysninger)
+            personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
         }
 
         log(result)
-        count(result.description)
+        count(result.metricTagValue)
     }
 
     private fun log(result: IdentOppdatering2.Result) {
