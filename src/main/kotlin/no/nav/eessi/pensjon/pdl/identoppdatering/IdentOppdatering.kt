@@ -28,8 +28,7 @@ class IdentOppdatering (
     private val pdlFiltrering: PdlFiltrering,
     private val oppgaveHandler: OppgaveHandler,
     private val kodeverkClient: KodeverkClient,
-    private val personidentifiseringService: PersonidentifiseringService,
-    private val utenlandskPersonIdentifisering: UtenlandskPersonIdentifisering
+    private val personidentifiseringService: PersonidentifiseringService
 ) {
 
     private val logger = LoggerFactory.getLogger(IdentOppdatering::class.java)
@@ -45,8 +44,7 @@ class IdentOppdatering (
         require(identifisertePersoner.isNotEmpty()) { return NoUpdate("Ingen identifiserte FNR funnet") }
         require(identifisertePersoner.size <= 1) { return NoUpdate("Antall identifiserte FNR er fler enn en") }
 
-        val utenlandskeIderFraSEDer =
-            utenlandskPersonIdentifisering.finnAlleUtenlandskeIDerIMottatteSed(alleGyldigeSED)
+        val utenlandskeIderFraSEDer = UtenlandskPersonIdentifisering.finnAlleUtenlandskeIDerIMottatteSed(alleGyldigeSED)
                 .also { secureLogger.debug("Utenlandske IDer fra mottatt sed:\n${it.toJson()}") }
         require(utenlandskeIderFraSEDer.isNotEmpty()) { return NoUpdate("Ingen utenlandske IDer funnet i BUC") }
         require(utenlandskeIderFraSEDer.size <= 1) { return NoUpdate("Antall utenlandske IDer er flere enn en") }

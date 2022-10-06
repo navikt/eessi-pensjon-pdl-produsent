@@ -3,7 +3,6 @@ package no.nav.eessi.pensjon.pdl.identoppdatering
 import io.mockk.mockk
 import io.mockk.verify
 import no.nav.eessi.pensjon.eux.EuxService
-import no.nav.eessi.pensjon.eux.UtenlandskPersonIdentifisering
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
@@ -41,11 +40,10 @@ internal class SedListenerIdentTest {
         ),
         oldIdent = IdentOppdatering(
             euxService,
-            PdlFiltrering(mockk()),
+            PdlFiltrering(kodeverkClient),
             oppgaveHandler,
             kodeverkClient,
-            PersonidentifiseringService(personService),
-            UtenlandskPersonIdentifisering()
+            PersonidentifiseringService(personService)
         ),        "test"
     )
 
