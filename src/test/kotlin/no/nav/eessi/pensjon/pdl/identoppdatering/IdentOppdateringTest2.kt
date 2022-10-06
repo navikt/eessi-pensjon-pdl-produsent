@@ -26,6 +26,7 @@ import no.nav.eessi.pensjon.personidentifisering.Relasjon
 import no.nav.eessi.pensjon.personidentifisering.SEDPersonRelasjon
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
+import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
 import no.nav.eessi.pensjon.personoppslag.pdl.model.AdressebeskyttelseGradering
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Doedsfall
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
@@ -176,6 +177,21 @@ internal class IdentOppdateringTest2 {
 
         assertEquals(
             NoUpdate("PDL uid er identisk med SED uid"),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = FINLAND))
+        )
+    }
+
+    @Test
+    fun `Gitt at pdl person ikke finnes og det kastes et PersonoppslagException saa skal det gi en NoUpdate`() {
+        every { personService.hentPerson(NorskIdent(FNR)) } throws PersonoppslagException("pdl person finnes ikke", "not_found")
+        every { euxService.hentSed(any(), any()) } returns
+                sed(id = FNR, land = NORGE, pinItem =  listOf(
+                    PinItem(identifikator = FINSK_FNR, land = FINLAND),
+                    PinItem(identifikator = FNR, land = NORGE))
+                )
+
+        assertEquals(
+            NoUpdate("Finner ikke bruker i PDL med angitt fnr i SED"),
             identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = FINLAND))
         )
     }

@@ -85,7 +85,6 @@ class IdentOppdatering2(
             throw ex
         }.also { secureLogger.debug("Person fra PDL:\n${it.toJson()}") }
 
-
         require(!utenlandskPinFinnesIPdl(utenlandskPinItemFraSed, personFraPDL.utenlandskIdentifikasjonsnummer)) {
             return NoUpdate("PDL uid er identisk med SED uid")
         }
