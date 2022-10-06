@@ -25,6 +25,7 @@ import javax.annotation.PostConstruct
 class SedListenerIdent(
     private val personMottakKlient: PersonMottakKlient,
     private val identOppdatering: IdentOppdatering2,
+    private val oldIdent: IdentOppdatering,
     @Value("\${SPRING_PROFILES_ACTIVE:}") private val profile: String,
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
 ) {
@@ -74,7 +75,14 @@ class SedListenerIdent(
         }
 
         logger.info("*** Starter pdl endringsmelding (IDENT) prosess for BucType: ${sedHendelse.bucType}, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
+
         val result = identOppdatering.oppdaterUtenlandskIdent(sedHendelse)
+        val resultFraOldIdent = oldIdent.oppdaterUtenlandskIdent(sedHendelse)
+
+        if(resultFraOldIdent.equals(result).not()){
+            logger.debug("Gammel implementasjon: ${resultFraOldIdent.toJson()}\n")
+            logger.debug("Ny implementasjon: ${result.toJson()}")
+        }
 
         if (result is Update) {
             personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
@@ -102,7 +110,7 @@ class SedListenerIdent(
 
     fun count(melding: String) {
         try {
-            Metrics.counter("PDLmeldingSteg",   "melding", melding).increment()
+            Metrics.counter("PDLIdentOppdateringResultat",   "melding", melding).increment()
         } catch (e: Exception) {
             logger.warn("Metrics feilet på enhet: $melding")
         }
