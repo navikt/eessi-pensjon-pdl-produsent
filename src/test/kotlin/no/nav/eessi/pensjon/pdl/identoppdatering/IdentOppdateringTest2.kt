@@ -44,6 +44,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnum
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import java.time.LocalDate
@@ -194,6 +195,20 @@ internal class IdentOppdateringTest2 {
             NoUpdate("Finner ikke bruker i PDL med angitt fnr i SED"),
             identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = FINLAND))
         )
+    }
+
+    @Test
+    fun `Gitt at pdl person ikke finnes og det kastesen NPE saa skal den kastes videre`() {
+        every { personService.hentPerson(NorskIdent(FNR)) } throws NullPointerException("pdl kaster NPE")
+        every { euxService.hentSed(any(), any()) } returns
+                sed(id = FNR, land = NORGE, pinItem =  listOf(
+                    PinItem(identifikator = FINSK_FNR, land = FINLAND),
+                    PinItem(identifikator = FNR, land = NORGE))
+                )
+
+        assertThrows<NullPointerException> {
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = FINLAND))
+        }
     }
 
     @ParameterizedTest

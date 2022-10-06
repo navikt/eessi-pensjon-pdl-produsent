@@ -1,3 +1,4 @@
+/*
 //package no.nav.eessi.pensjon.pdl.identoppdatering
 //
 //import io.mockk.every
@@ -378,4 +379,4 @@
 //    )
 //
 //
-//}
+//}*/
