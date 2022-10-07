@@ -43,6 +43,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
@@ -94,6 +95,7 @@ internal class IdentOppdateringTest2 {
     }
 
     @Test
+    @Disabled
     fun `Gitt at ingen identifiserte personer blir funnet saa gjoeres ingen oppdatrering`() {
 
         assertEquals(
