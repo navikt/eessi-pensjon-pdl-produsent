@@ -11,7 +11,6 @@ import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
 import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
-import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
@@ -39,7 +38,7 @@ class IdentOppdatering2(
     private val secureLogger = LoggerFactory.getLogger("secureLog")
 
     fun oppdaterUtenlandskIdent(sedHendelse: SedHendelse): Result {
-        require(erRelevantForEESSIPensjon(sedHendelse)) { return NoUpdate("Ikke relevant for eessipensjon") }
+        //require(erRelevantForEESSIPensjon(sedHendelse)) { return NoUpdate("Ikke relevant for eessipensjon") }
 
         val sed = euxService.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId)
             .also { secureLogger.debug("SED:\n$it") }
