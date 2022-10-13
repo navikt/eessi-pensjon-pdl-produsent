@@ -97,7 +97,7 @@ internal class AdresseoppdateringTest {
 
         assertEquals(
             Update(
-                "Adresse finnes allerede i PDL, oppdaterer gyldig til og fra dato",
+                "Adressen fra $EDDY_ADRESSE_LANDKODE finnes allerede i PDL, oppdaterer gyldig til og fra dato",
                 pdlEndringOpplysning(
                     id = FNR,
                     pdlAdresse = EDDY_ADRESSE_I_ENDRINGSMELDING,
@@ -105,7 +105,7 @@ internal class AdresseoppdateringTest {
                     kilde = "Utenlandsk Institusjon ($EDDY_ADRESSE_LANDKODE)",
                     gyldigFraOgMed = LocalDate.now(),
                     gyldigTilOgMed = LocalDate.now().plusYears(1)
-                )
+                ), "Adressen finnes allerede i PDL, oppdaterer gyldig til og fra dato"
             ), result
         )
 
@@ -156,14 +156,15 @@ internal class AdresseoppdateringTest {
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderNavn = TYSK_INSTITUSJON, avsenderLand = TYSK_ADRESSE_LANDKODE))
 
-        assertEquals(Update("Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding",
+        assertEquals(Update("Adressen i SED fra $TYSK_ADRESSE_LANDKODE finnes ikke i PDL, sender OPPRETT endringsmelding",
             pdlAdresseEndringsOpplysning(
                 pdlAdresse = TYSK_ADRESSE_I_SED_GJORT_OM_TIL_PDL_ADRESSE,
                 kilde = "$TYSK_INSTITUSJON ($TYSK_ADRESSE_LANDKODE)",
                 gyldigFraOgMed = LocalDate.now(),
                 gyldigTilOgMed = LocalDate.now().plusYears(1),
                 endringsType = Endringstype.OPPRETT
-            )), result)
+            ), metricTagValueOverride = "Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding")
+        , result)
     }
 
     private val TYSK_ADRESSE_LANDKODE = "DE"
@@ -207,12 +208,13 @@ internal class AdresseoppdateringTest {
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderNavn = TYSK_INSTITUSJON, avsenderLand = TYSK_ADRESSE_LANDKODE))
 
-        assertEquals(Update("Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding",
+        assertEquals(Update("Adressen i SED fra $TYSK_ADRESSE_LANDKODE finnes ikke i PDL, sender OPPRETT endringsmelding",
             pdlAdresseEndringsOpplysning(
                 pdlAdresse = TYSK_ADRESSE_I_SED_GJORT_OM_TIL_PDL_ADRESSE,
                 kilde = "$TYSK_INSTITUSJON ($TYSK_ADRESSE_LANDKODE)",
                 endringsType = Endringstype.OPPRETT
-            )), result)
+            ), "Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding"
+        ), result)
     }
 
     @Test
@@ -229,13 +231,14 @@ internal class AdresseoppdateringTest {
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderNavn = TYSK_INSTITUSJON, avsenderLand = TYSK_ADRESSE_LANDKODE))
 
-        assertEquals(Update("Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding",
+        assertEquals(Update("Adressen i SED fra $TYSK_ADRESSE_LANDKODE finnes ikke i PDL, sender OPPRETT endringsmelding",
             pdlAdresseEndringsOpplysning(
                 id = norskFnr,
                 pdlAdresse = TYSK_ADRESSE_I_SED_GJORT_OM_TIL_PDL_ADRESSE,
                 kilde = "$TYSK_INSTITUSJON ($TYSK_ADRESSE_LANDKODE)",
                 endringsType = Endringstype.OPPRETT
-            )), result)
+            ), metricTagValueOverride = "Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding"
+        ), result)
     }
 
 
@@ -379,13 +382,14 @@ internal class AdresseoppdateringTest {
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderLand = EDDY_ADRESSE_LANDKODE))
 
-        assertEquals(Update("Adresse finnes allerede i PDL, oppdaterer gyldig til og fra dato",
+        assertEquals(Update("Adressen fra $EDDY_ADRESSE_LANDKODE finnes allerede i PDL, oppdaterer gyldig til og fra dato",
             pdlEndringOpplysning(
             pdlAdresse = EDDY_ADRESSE_I_ENDRINGSMELDING.copy(postboksNummerNavn = "Postboks 543", adressenavnNummer = null),
             kilde = "$SOME_UTENLANDSK_INSTITUSJON ($EDDY_ADRESSE_LANDKODE)",
             gyldigFraOgMed = LocalDate.now(),
-            gyldigTilOgMed = LocalDate.now().plusYears(1)
-        )), result)
+            gyldigTilOgMed = LocalDate.now().plusYears(1)),
+            "Adressen finnes allerede i PDL, oppdaterer gyldig til og fra dato"
+        ), result)
 
     }
 
@@ -433,7 +437,7 @@ internal class AdresseoppdateringTest {
 
         assertEquals(
             Update(
-                "Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding",
+                "Adressen i SED fra $EDDY_ADRESSE_LANDKODE finnes ikke i PDL, sender OPPRETT endringsmelding",
                 pdlAdresseEndringsOpplysning(
                     id = SOME_FNR,
                     pdlAdresse = EDDY_ADRESSE_I_ENDRINGSMELDING
@@ -445,7 +449,7 @@ internal class AdresseoppdateringTest {
                     gyldigFraOgMed = LocalDate.now(),
                     gyldigTilOgMed = LocalDate.now().plusYears(1),
                     endringsType = Endringstype.OPPRETT
-                )
+                ), metricTagValueOverride = "Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding"
             ), result)
 
     }
@@ -466,7 +470,7 @@ internal class AdresseoppdateringTest {
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderLand = EDDY_ADRESSE_LANDKODE))
 
         assertEquals(NoUpdate(
-            "Adressen validerer ikke etter reglene til PDL: Ikke gyldig adressenavnNummer: Ukjent",
+            "Adressen fra $EDDY_ADRESSE_LANDKODE validerer ikke etter reglene til PDL: Ikke gyldig adressenavnNummer: Ukjent",
             "Adressen validerer ikke etter reglene til PDL"
         ), result)
 

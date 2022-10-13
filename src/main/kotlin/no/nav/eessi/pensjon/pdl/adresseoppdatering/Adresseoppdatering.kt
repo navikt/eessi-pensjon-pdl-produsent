@@ -74,12 +74,13 @@ class Adresseoppdatering(
                 return NoUpdate("Adresse finnes allerede i PDL med dagens dato som gyldig-fra-dato, dropper oppdatering")
             }
             return Update(
-                "Adresse finnes allerede i PDL, oppdaterer gyldig til og fra dato",
+                "Adressen fra ${sedHendelse.avsenderLand} finnes allerede i PDL, oppdaterer gyldig til og fra dato",
                 korrigerDatoEndringOpplysning(
                     norskFnr = normalisertNorskPIN,
                     kilde = sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")",
                     kontaktadresse = personFraPDL.kontaktadresse!!
                 )
+            , metricTagValueOverride = "Adressen finnes allerede i PDL, oppdaterer gyldig til og fra dato"
             )
         }
 
@@ -87,14 +88,15 @@ class Adresseoppdatering(
             sedTilPDLAdresse.konverter(sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")", adresseFra(sed)!!)
         } catch (ex: IllegalArgumentException) {
             return NoUpdate(
-                "Adressen validerer ikke etter reglene til PDL: ${ex.message}",
+                "Adressen fra ${sedHendelse.avsenderLand} validerer ikke etter reglene til PDL: ${ex.message}",
                 "Adressen validerer ikke etter reglene til PDL"
             )
         }
 
         return Update(
-            "Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding",
-            opprettAdresseEndringOpplysning(normalisertNorskPIN, endringsmelding)
+            "Adressen i SED fra ${sedHendelse.avsenderLand} finnes ikke i PDL, sender OPPRETT endringsmelding",
+            opprettAdresseEndringOpplysning(normalisertNorskPIN, endringsmelding),
+            metricTagValueOverride = "Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding"
         )
     }
 
@@ -172,6 +174,6 @@ class Adresseoppdatering(
             get() = metricTagValueOverride ?: description
     }
 
-    data class Update(override val description: String, val pdlEndringsOpplysninger: PdlEndringOpplysning, override val metricTagValueOverride: String? = null, ): Result()
+    data class Update(override val description: String, val pdlEndringsOpplysninger: PdlEndringOpplysning, override val metricTagValueOverride: String? = null): Result()
     data class NoUpdate(override val description: String, override val metricTagValueOverride: String? = null): Result()
 }
