@@ -9,16 +9,14 @@ import org.junit.jupiter.api.Test
 
 internal class UtenlandskPersonIdentifiseringTest {
 
-    private val utenlandskPersonIdentifisering = UtenlandskPersonIdentifisering()
-
     @Test
     fun `Gitt at en dansk uid finnes i sed så skal vi kunne hente og returnere denne`() {
 
         val sed = SED.fromJsonToConcrete(javaClass.getResource("/eux/sed/P2100-PinDK-NAV.json")!!.readText())
 
-        val resultat = utenlandskPersonIdentifisering.finnAlleUtenlandskeIDerIMottatteSed(listOf(Pair(mockForenkledSed(SedType.P2100), sed)))
+        val resultat = UtenlandskPersonIdentifisering.finnAlleUtenlandskeIDerIMottatteSed(listOf(Pair(mockForenkledSed(SedType.P2100), sed)))
 
-        assertEquals(1, resultat.size)
+        assertEquals(2, resultat.size)
         assertEquals(resultat.first().id, "130177-1234")
         assertEquals(resultat.first().land, "DK")
 

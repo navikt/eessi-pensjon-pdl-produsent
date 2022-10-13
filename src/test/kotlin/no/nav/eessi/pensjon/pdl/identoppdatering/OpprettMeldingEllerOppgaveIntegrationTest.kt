@@ -16,7 +16,6 @@ import no.nav.eessi.pensjon.pdl.integrationtest.PDL_PRODUSENT_TOPIC_MOTTATT
 import no.nav.eessi.pensjon.personoppslag.pdl.model.AktoerId
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.PersonMock
-import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -26,6 +25,7 @@ import org.springframework.kafka.support.Acknowledgment
 import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
+import java.util.concurrent.TimeUnit
 
 @SpringBootTest( classes = [KafkaTestConfig::class, IntegrationBase.TestConfig::class])
 @ActiveProfiles("integrationtest", "excludeKodeverk")
@@ -57,7 +57,6 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
         every { norg2.hentArbeidsfordelingEnhet(any()) } returns Enhet.NFP_UTLAND_OSLO
         every { personService.hentPerson(NorskIdent(fnr))} returns PersonMock.createWith(
             fnr = fnr,
-            aktoerId = AktoerId("1231231231"),
             uid = emptyList()
         )
         every { kodeverkClient.finnLandkode("DK") }.returns("DNK")
@@ -83,13 +82,11 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
             mockHendelse(
                 bucType = BucType.P_BUC_02,
                 sedType = SedType.P7000,
+                avsenderLand = "DK",
                 docId = "eb938171a4cb4e658b3a6c011962d504"
             )
         )
 
-        assertTrue(isMessageInlog("SED av type: P2100, status: RECEIVED"))
-        assertTrue(isMessageInlog("SED av type: P5000, status: SENT"))
-        assertTrue(isMessageInlog("SED av type: P7000, status: RECEIVED"))
         assertTrue(isMessageInlog("Endringsmelding: OPPRETT, med nye personopplysninger"))
 
         CustomMockServer().verifyRequestWithBody(
@@ -122,12 +119,12 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
         )
         every { kodeverkClient.finnLandkode("DK") }.returns("DNK")
 
-        val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P2100, SedStatus.RECEIVED))
+        val listOverSeder = listOf(ForenkletSED("b12e06dda2c7474b9998c7139c841646", SedType.P2100, SedStatus.RECEIVED))
         val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_02, listOverSeder)
 
         CustomMockServer()
             .medEndring()
-            .medSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", "src/test/resources/eux/sed/P2100-PinDK-NAV.json")
+            .medSed("/buc/147729/sed/b12e06dda2c7474b9998c7139c841646", "src/test/resources/eux/sed/P2100-PinDK-NAV.json")
             .medMockBuc("/buc/147729", mockBuc)
 
 
@@ -137,44 +134,38 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
     }
 
     @Test
-    fun `Gitt en sed hendelse dansk uid som er forskjellig fra det som finnes i PDL skal det ack med logg Det finnes allerede en annen uid fra samme land Og Oppgave skal opprettes `() {
-        every { norg2.hentArbeidsfordelingEnhet(any()) } returns  Enhet.PENSJON_UTLAND
-        every { personService.hentPerson(NorskIdent(fnr)) } returns  PersonMock.createWith(
-            fnr = fnr,
-            landkoder = true,
-            aktoerId = AktoerId("65466565"),
-            uid = listOf(
-                UtenlandskIdentifikasjonsnummer(
-                    identifikasjonsnummer = "130177-1234",
-                    utstederland = "DNK",
-                    opphoert = false,
-                    metadata = PersonMock.createMetadata()
-                )
-            )
-        )
-        every { kodeverkClient.finnLandkode("DK") }.returns("DNK")
-        every { kodeverkClient.finnLandkode("DNK") }.returns("DK")
+    fun `En sed hendelse uten UID vil resultere i en NoUpdate`() {
+        every { norg2.hentArbeidsfordelingEnhet(any()) } returns Enhet.ID_OG_FORDELING
+        every { personService.hentPerson(NorskIdent( fnr)) } returns mockedPerson
 
         val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P15000, SedStatus.RECEIVED))
         val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_10, listOverSeder)
-        val mockPin = listOf(mockPin(fnr, "NO"),
-            mockPin("130177-5432", "DK"))
-        val mockSed = mockSedUtenPensjon(sedType = SedType.P15000, pin = mockPin)
+
+        val mockNorskPin = mockPin(fnr, "NO")
+        val mockSed = mockSedUtenPensjon(sedType = SedType.P15000, pin = listOf(mockNorskPin))
 
         CustomMockServer()
             .medMockSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", mockSed)
             .medMockBuc("/buc/147729", mockBuc)
+            .medEndring()
 
         sendMeldingString(
             mockHendelse(
                 bucType = BucType.P_BUC_10,
                 sedType = SedType.P15000,
+                avsenderLand = "NO",
                 docId = "eb938171a4cb4e658b3a6c011962d204"
             )
         )
-        assertTrue(isMessageInlog("Det finnes allerede en annen uid fra samme land (Oppgave)"))
+        sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
 
-        CustomMockServer().verifyRequest("/api/v1/endringer", 0)
+        assertTrue(isMessageInlog("NoUpdate(description=Bruker har ikke utenlandsk ident, metricTagValueOverride=null)"))
     }
+
+    val mockedPerson = PersonMock.createWith(
+        fnr = fnr,
+        aktoerId = AktoerId("1231231231"),
+        uid = emptyList()
+    )
 }
 

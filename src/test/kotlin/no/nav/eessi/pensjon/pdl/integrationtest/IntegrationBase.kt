@@ -85,7 +85,7 @@ abstract class IntegrationBase {
         mottattContainer = initConsumer()
         mottattContainer.start()
         ContainerTestUtils.waitForAssignment(mottattContainer, embeddedKafka.partitionsPerTopic)
-        Thread.sleep(2000) // wait a bit for the container to start
+        Thread.sleep(3000) // wait a bit for the container to start
 
         kafkaTemplate =  KafkaTemplate(producerFactory).apply { defaultTopic = PDL_PRODUSENT_TOPIC_MOTTATT }
 
@@ -101,7 +101,7 @@ abstract class IntegrationBase {
 
     open fun sendMeldingString(message: String) {
         kafkaTemplate.sendDefault(message).get(20L, TimeUnit.SECONDS)
-        Thread.sleep(5000)
+        Thread.sleep(6000)
     }
 
     private fun initConsumer(): KafkaMessageListenerContainer<String, String> {

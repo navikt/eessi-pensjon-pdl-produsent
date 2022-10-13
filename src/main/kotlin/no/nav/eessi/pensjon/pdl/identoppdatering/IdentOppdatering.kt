@@ -10,7 +10,9 @@ import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
 import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
-import no.nav.eessi.pensjon.pdl.validering.PdlValidering
+import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering2.NoUpdate
+import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering2.Result
+import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering2.Update
 import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
 import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
@@ -24,11 +26,9 @@ import org.springframework.stereotype.Service
 class IdentOppdatering (
     private val dokumentHelper: EuxService,
     private val pdlFiltrering: PdlFiltrering,
-    private val pdlValidering: PdlValidering,
     private val oppgaveHandler: OppgaveHandler,
     private val kodeverkClient: KodeverkClient,
-    private val personidentifiseringService: PersonidentifiseringService,
-    private val utenlandskPersonIdentifisering: UtenlandskPersonIdentifisering
+    private val personidentifiseringService: PersonidentifiseringService
 ) {
 
     private val logger = LoggerFactory.getLogger(IdentOppdatering::class.java)
@@ -44,24 +44,23 @@ class IdentOppdatering (
         require(identifisertePersoner.isNotEmpty()) { return NoUpdate("Ingen identifiserte FNR funnet") }
         require(identifisertePersoner.size <= 1) { return NoUpdate("Antall identifiserte FNR er fler enn en") }
 
-        val utenlandskeIderFraSEDer =
-            utenlandskPersonIdentifisering.finnAlleUtenlandskeIDerIMottatteSed(alleGyldigeSED)
+        val utenlandskeIderFraSEDer = UtenlandskPersonIdentifisering.finnAlleUtenlandskeIDerIMottatteSed(alleGyldigeSED)
                 .also { secureLogger.debug("Utenlandske IDer fra mottatt sed:\n${it.toJson()}") }
         require(utenlandskeIderFraSEDer.isNotEmpty()) { return NoUpdate("Ingen utenlandske IDer funnet i BUC") }
         require(utenlandskeIderFraSEDer.size <= 1) { return NoUpdate("Antall utenlandske IDer er flere enn en") }
         // Vi har utelukket at det er 0 eller flere enn 1
         val utenlandskIdFraSed = utenlandskeIderFraSEDer.first()
 
-        require(pdlValidering.avsenderLandHarVerdiOgErSammeSomIdLand(utenlandskIdFraSed, sedHendelse.avsenderLand)) {
-            return NoUpdate("Avsenderland mangler eller avsenderland er ikke det samme som uidland")
-        }
+        //require(pdlValidering.avsenderLandHarVerdiOgErSammeSomUidLand(utenlandskIdFraSed, sedHendelse.avsenderLand)) {
+         //   return NoUpdate("Avsenderland mangler eller avsenderland er ikke det samme som uidland")
+        //}
 
         val identifisertPersonFraPDL = identifisertePersoner.first()
 
         require(!identifisertPersonFraPDL.erDoed) { return NoUpdate("Identifisert person registrert med doedsfall") }
 
         //validering av uid korrekt format
-        require(pdlValidering.erPersonValidertPaaLand(utenlandskIdFraSed)) { return NoUpdate("Ingen validerte identifiserte personer funnet") }
+        //require(pdlValidering.erPersonValidertPaaLand(utenlandskIdFraSed.id, utenlandskIdFraSed.land)) { return NoUpdate("Ingen validerte identifiserte personer funnet") }
 
         require(!pdlFiltrering.finnesUidFraSedIPDL(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) { return NoUpdate("PDLuid er identisk med SEDuid") }
 
@@ -112,11 +111,4 @@ class IdentOppdatering (
         }
         return uid
     }
-
-    sealed class Result {
-        abstract val description: String
-    }
-
-    data class Update(override val description: String, val identOpplysninger: PdlEndringOpplysning) : Result()
-    data class NoUpdate(override val description: String) : Result()
 }

@@ -4,10 +4,8 @@ import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.personidentifisering.relasjoner.logger
-import org.springframework.stereotype.Component
 
-@Component
-class UtenlandskPersonIdentifisering {
+object UtenlandskPersonIdentifisering {
 
     fun finnAlleUtenlandskeIDerIMottatteSed(seder: List<Pair<ForenkletSED, SED>>): List<UtenlandskId> =
         seder

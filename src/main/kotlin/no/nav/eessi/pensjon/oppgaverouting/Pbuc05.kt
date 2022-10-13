@@ -50,8 +50,8 @@ class Pbuc05 : BucTilEnhetHandler {
             } else enhetFraAlderOgLand(request)
         } else {
             when {
-                personListe.any { it.personRelasjon.relasjon == Relasjon.FORSORGER } -> enhetFraAlderOgLand(request)
-                personListe.any { it.personRelasjon.relasjon == Relasjon.BARN } -> enhetFraAlderOgLand(request)
+                personListe.any { it.personRelasjon?.relasjon == Relasjon.FORSORGER } -> enhetFraAlderOgLand(request)
+                personListe.any { it.personRelasjon?.relasjon == Relasjon.BARN } -> enhetFraAlderOgLand(request)
                 else -> {
                     logger.info("Router mottatt ${request.sedType} i ${request.bucType} til ${Enhet.ID_OG_FORDELING.enhetsNr} på grunn av det finnes personrelasjoner men disse er hverken forsørger eller barn")
                     Enhet.ID_OG_FORDELING
@@ -106,8 +106,8 @@ class Pbuc05 : BucTilEnhetHandler {
         val personer = request.identifisertPerson?.personListe ?: return enhetFraAlderOgLand(request)
 
         return when {
-            personer.any { it.personRelasjon.relasjon == Relasjon.BARN } -> enhetForRelasjonBarn(request)
-            personer.any { it.personRelasjon.relasjon == Relasjon.FORSORGER } -> enhetForRelasjonForsorger(request)
+            personer.any { it.personRelasjon?.relasjon == Relasjon.BARN } -> enhetForRelasjonBarn(request)
+            personer.any { it.personRelasjon?.relasjon == Relasjon.FORSORGER } -> enhetForRelasjonForsorger(request)
             else -> enhetFraAlderOgLand(request)
         }
     }

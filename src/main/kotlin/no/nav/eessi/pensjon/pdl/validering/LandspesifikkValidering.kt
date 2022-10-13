@@ -1,5 +1,6 @@
 package no.nav.eessi.pensjon.pdl.validering
 
+import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.BELGIA
 import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.BULGARIA
 import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.DANMARK
@@ -19,15 +20,20 @@ import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.SVERIGE
 import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.TYSKLAND
 import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.UNGARN
 import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Component
 
-object LandspesifikkValidering {
+@Component
+class LandspesifikkValidering(private val kodeverkClient: KodeverkClient) {
 
     private val logger = LoggerFactory.getLogger(LandspesifikkValidering::class.java)
 
     fun validerLandsspesifikkUID(landkode: String, uid: String): Boolean {
         logger.debug("valider land: $landkode, uid: $uid, len: ${uid.length}")
 
-        return when (GyldigeLand.landkode(landkode)) {
+        val land = kodeverkClient.finnLandkode(landkode)
+        if(land.isNullOrEmpty()) return false
+
+        return when (GyldigeLand.landkode(land)) {
             BELGIA -> belgia(uid)
             BULGARIA -> bulgaria(uid)
             FINLAND -> finland(uid)
@@ -47,7 +53,16 @@ object LandspesifikkValidering {
         }.also { logger.debug("$landkode -> result  of our dreams: $it") }
     }
 
-
+    /**
+     * Vi aksepterer feil i uid for noen land, gitt at det er mulig å konvertere til et kjent format
+     */
+    fun normalisertPin(uid: String, land: String): String {
+        val landKode = kodeverkClient.finnLandkode(land)
+        return if (GyldigeLand.landkode(landKode!!) == SVERIGE) {
+            formaterSvenskUID(uid)
+        }
+        else uid
+    }
 
     fun String.checkDigitsLength(range: IntRange, len: Int): Boolean =  this.substring(range).checkDigitsLength(len)
 
@@ -79,14 +94,15 @@ object LandspesifikkValidering {
      * Disse reglene gjelder ikke for PDL, men kommer av erfaring fra saksbehandler og godkjent fra Produkteier.
      */
     private fun sverige(uid: String): Boolean {
+        return formaterSvenskUID(uid).length == 11 && formaterSvenskUID(uid).checkDigitsLength(10)
+    }
+
+     fun formaterSvenskUID(uid: String): String {
         var uidNew = uid.trim().replace(" ", "").replace("-", "")
-        if (uidNew.length in 10..12) {
-            if (uidNew.length == 12) {
-                uidNew = uidNew.removeRange(0, 2)
-            }
-            return uidNew.length == 10 && uidNew.checkDigitsLength(10)
+        if (uidNew.length == 12) {
+            uidNew = uidNew.removeRange(0, 2)
         }
-        return false
+        return uidNew.replaceRange(6, 6, "-")
     }
 
     private fun danmarkIsland(uid: String) = uid.length == 11 && uid.checkDigitsLength(10) && uid.substring(6, 7) == "-" && uid.checkDigitsLength(IntRange(0,5), 6) && uid.checkDigitsLength(IntRange(7,10), 4)
@@ -101,6 +117,7 @@ object LandspesifikkValidering {
     private fun frankrike(uid: String): Boolean = uid.checkDigitsLength(13) && uid.length == 18  && uid.substring(1,2) == " " && uid.substring(4,5) == " " && uid.substring(7,8) == " " && uid.substring(10,11) == " "  && uid.substring(14,15) == " "
     private fun spania(uid: String): Boolean = uid.isLettersOrDigit() && uid.length == 10
     private fun storbritannia(uid: String): Boolean = uid.replace(" ","") .isLettersOrDigit() && erHvertredjeBokstavBlank(uid)  && uid.length > 10
+
 }
 
 enum class GyldigeLand(val landkode: String) {
