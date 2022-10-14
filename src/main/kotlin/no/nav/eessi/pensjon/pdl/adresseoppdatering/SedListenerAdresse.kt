@@ -21,6 +21,7 @@ import java.util.concurrent.*
 import javax.annotation.PostConstruct
 
 @Service
+@Profile("!prod")
 class SedListenerAdresse(
     private val adresseoppdatering: Adresseoppdatering,
     private val personMottakKlient: PersonMottakKlient,
