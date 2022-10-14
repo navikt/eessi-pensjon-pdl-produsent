@@ -174,6 +174,8 @@ class Adresseoppdatering(
             get() = metricTagValueOverride ?: description
     }
 
-    data class Update(override val description: String, val pdlEndringsOpplysninger: PdlEndringOpplysning, override val metricTagValueOverride: String? = null): Result()
+    data class Update(override val description: String, val pdlEndringsOpplysninger: PdlEndringOpplysning, override val metricTagValueOverride: String? = null): Result() {
+        override fun toString() = "Update(description=$description, pdlEndringsOpplysninger=[omitted], metricTagValueOverride=$metricTagValueOverride)"
+    }
     data class NoUpdate(override val description: String, override val metricTagValueOverride: String? = null): Result()
 }

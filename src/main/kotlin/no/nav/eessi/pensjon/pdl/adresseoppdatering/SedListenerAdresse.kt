@@ -20,7 +20,6 @@ import java.util.*
 import java.util.concurrent.*
 import javax.annotation.PostConstruct
 
-@Profile("!prod") // Feature toggle -- OBS! IKKE ENDRE UTEN Å HA TENKT PÅ OM KAFKA SKAL KONSUMERE FRA START!
 @Service
 class SedListenerAdresse(
     private val adresseoppdatering: Adresseoppdatering,
@@ -85,19 +84,16 @@ class SedListenerAdresse(
 
     fun countForAddress(melding: String) {
         try {
-            Metrics.counter("PDLAdresseOppdateringResultat",   "melding", melding).increment()
+            Metrics.counter("eessi_pensjon_pdl_produsent_adresseoppdatering", "melding", melding).increment()
         } catch (e: Exception) {
-            logger.warn("Metrics feilet med melding: $melding")
+            logger.warn("Metrics feilet med melding: $melding", e)
         }
     }
 
     private fun log(result: Adresseoppdatering.Result) {
-        when (result) {
-            is NoUpdate -> logger.info(result.toString())
-            is Update -> {
-                logger.info("Update - oppdatering levert til PDL.")
-                secureLogger.info("Update til PDL:\n${result.toJson()}")
-            }
+        logger.info(result.toString())
+        if (result is Update) {
+            secureLogger.info("Oppdatering til PDL:\n${result.pdlEndringsOpplysninger.toJson()}")
         }
     }
 
