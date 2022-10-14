@@ -19,7 +19,7 @@ class PersonMottakKlient(private val personMottakRestTemplate: RestTemplate) {
 
     internal fun opprettPersonopplysning(endringer: PdlEndringOpplysning): Boolean {
         val foersteEndring = endringer.personopplysninger.first()
-        logger.info("Endringsmelding: ${foersteEndring.endringstype}, med nye personopplysninger: ${foersteEndring.endringsmelding.toJson()}")
+        logger.info("Endringsmelding: ${foersteEndring.endringstype}, med nye personopplysninger av type ${foersteEndring.endringsmelding.type}")
 
         val httpEntity = HttpEntity(endringer.toJson(), createHeaders())
 
