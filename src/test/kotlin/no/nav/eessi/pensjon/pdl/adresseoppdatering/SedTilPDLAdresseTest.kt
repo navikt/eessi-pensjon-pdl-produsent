@@ -108,6 +108,14 @@ class SedTilPDLAdresseTest {
     }
 
     @Test
+    fun `postkode er null skal gi valideringsfeil`() {
+        val ex = assertThrows<IllegalArgumentException> {
+            SedTilPDLAdresse(kodeverkClient).konverter("some kilde", adresse(postnummer = null))
+        }
+        assertEquals("Ikke gyldig postkode: null", ex.message)
+    }
+
+    @Test
     fun `bygningEtasjeLeilighet med ordet postboks skal gi valideringfeil`() {
         val ex = assertThrows<IllegalArgumentException> {
             SedTilPDLAdresse(kodeverkClient).konverter("some kilde", adresse(bygning = "postboks 321"))
@@ -138,7 +146,9 @@ class SedTilPDLAdresseTest {
         val ex = assertThrows<IllegalArgumentException> {
             SedTilPDLAdresse(kodeverkClient).konverter("some kilde", Adresse(land = "DK"))
         }
-        assertEquals("Ikke gyldig adresse, har kun landkode", ex.message)
+        // Etter at vi innførte krav om postkode så slår denne til
+        // før sjekken om at det finnes minst ett felt med verdi
+        assertEquals("Ikke gyldig postkode: null", ex.message)
     }
 
     @Test
@@ -171,7 +181,7 @@ class SedTilPDLAdresseTest {
         gate: String = "some gate",
         bygning: String = "some bygning",
         by: String = "some by",
-        postnummer: String = "some postnummer",
+        postnummer: String? = "some postnummer",
         region: String = "some region",
         land: String = "NL"
     ) = Adresse(

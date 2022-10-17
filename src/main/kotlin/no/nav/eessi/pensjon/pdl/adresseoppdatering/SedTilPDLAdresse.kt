@@ -34,7 +34,7 @@ class SedTilPDLAdresse(private val kodeverkClient: KodeverkClient) {
                 postkode = postKodeFra(sedAdresse.postnummer),
                 regionDistriktOmraade = regionDistriktOmraadeFra(sedAdresse.region)
             )
-        ).also {
+        ).also { // Denne er spesifisert av PDL, men slår ikke til etter at vi innførte krav om postkode
             requireMinstEttFeltMedVerdi(listOf(
                 it.adresse!!.adressenavnNummer,
                 it.adresse.bygningEtasjeLeilighet,
@@ -65,7 +65,8 @@ class SedTilPDLAdresse(private val kodeverkClient: KodeverkClient) {
     }
 
     private fun postKodeFra(postnummer: String?) =
-        postnummer?.also { require(erGyldigPostKode(it)) { "Ikke gyldig postkode: $it" } }
+        requireNotNull(postnummer) { "Ikke gyldig postkode: null" }
+            .also { require(erGyldigPostKode(it)) { "Ikke gyldig postkode: $it" } }
 
     private fun regionDistriktOmraadeFra(region: String?) =
         region?.also { require(erGyldigByStedEllerRegion(it)) { "Ikke gyldig regionDistriktOmraade: $it" } }
