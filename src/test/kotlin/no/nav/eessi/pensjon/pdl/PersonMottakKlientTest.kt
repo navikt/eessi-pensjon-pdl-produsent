@@ -1,7 +1,7 @@
 package no.nav.eessi.pensjon.pdl
 
-import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.verify
 import no.nav.eessi.pensjon.models.EndringsmeldingUID
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
@@ -9,32 +9,27 @@ import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.retry.annotation.EnableRetry
-import org.springframework.stereotype.Component
-import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestTemplate
 
-@ActiveProfiles("retryConfigOverride")
-@SpringJUnitConfig(classes = [PersonMottakKlient::class, TestPersonMottakKlientRetryConfig::class])
-@EnableRetry
 internal class PersonMottakKlientTest {
 
-    @MockkBean
-    lateinit var restTemplate: RestTemplate
+    private var restTemplate: RestTemplate = mockk()
 
-    @Autowired
-    lateinit var personMottakKlient: PersonMottakKlient
+    private lateinit var personMottakKlient: PersonMottakKlient
+
+    @BeforeEach
+    fun setUp() {
+        personMottakKlient = PersonMottakKlient(restTemplate)
+    }
 
     @Test
     fun `opprettPersonopplysning - happy day`() {
@@ -46,7 +41,7 @@ internal class PersonMottakKlientTest {
     }
 
     @Test
-    fun `opprettPersonopplysning - bad request - no retry`() {
+    fun `opprettPersonopplysning - bad request throws`() {
         restTemplateCall() throws HttpClientErrorException(HttpStatus.BAD_REQUEST)
 
         val ex = assertThrows<HttpClientErrorException> {
@@ -55,19 +50,6 @@ internal class PersonMottakKlientTest {
         assertEquals(HttpStatus.BAD_REQUEST, ex.statusCode)
 
         verifyRestTemplateInvocations(1)
-    }
-
-    // https://github.com/spring-projects/spring-retry
-    @Test
-    fun `opprettPersonopplysning - locked - retry 3 times`() {
-        restTemplateCall() throws HttpClientErrorException(HttpStatus.LOCKED)
-
-        val ex = assertThrows<HttpClientErrorException> {
-            personMottakKlient.opprettPersonopplysning(PdlEndringOpplysning(listOf(dummyPersonOpplysninger)))
-        }
-        assertEquals(HttpStatus.LOCKED, ex.statusCode)
-
-        verifyRestTemplateInvocations(3)
     }
 
     private fun restTemplateCall() = every {
@@ -98,8 +80,3 @@ internal class PersonMottakKlientTest {
     )
 
 }
-
-// Brukes for at testen skal gå kjapt
-@Profile("retryConfigOverride")
-@Component("personMottakKlientRetryConfig")
-data class TestPersonMottakKlientRetryConfig(val initialRetryMillis: Long = 10L)
