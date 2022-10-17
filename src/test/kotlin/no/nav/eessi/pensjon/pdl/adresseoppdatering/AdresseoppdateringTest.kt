@@ -260,6 +260,42 @@ internal class AdresseoppdateringTest {
     }
 
     @Test
+    fun `Gitt en sed med midlertidig norsk d-nummer, som PDL returnerer fnr på, oppdateres på fnr`() {
+        val midlertidigNorskId = "51077403071"
+        val norskFnr = FodselsnummerGenerator.generateFnrForTest(69)
+
+        every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns
+                sed(brukersAdresse = TYSK_ADRESSE_I_SED, id = midlertidigNorskId)
+        every { personService.hentPerson(NorskIdent(midlertidigNorskId)) } returns personFraPDL(id = norskFnr)
+        every { personMottakKlient.opprettPersonopplysning(any()) } returns true
+
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, sedTilPDLAdresse)
+
+        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(
+            sedHendelse(
+                avsenderNavn = TYSK_INSTITUSJON,
+                avsenderLand = TYSK_ADRESSE_LANDKODE
+            )
+        )
+
+        val forventetAdresseEndringsOpplysning = pdlAdresseEndringsOpplysning(
+            id = norskFnr,
+            pdlAdresse = TYSK_ADRESSE_I_SED_GJORT_OM_TIL_PDL_ADRESSE,
+            kilde = "$TYSK_INSTITUSJON ($TYSK_ADRESSE_LANDKODE)",
+            endringsType = Endringstype.OPPRETT
+        )
+        assertEquals(forventetAdresseEndringsOpplysning, (result as Update).pdlEndringsOpplysninger)
+
+        assertEquals(
+            Update(
+                "Adressen i SED fra $TYSK_ADRESSE_LANDKODE finnes ikke i PDL, sender OPPRETT endringsmelding",
+                forventetAdresseEndringsOpplysning,
+                metricTagValueOverride = "Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding"
+            ), result
+        )
+    }
+
+    @Test
     fun `Gitt en sed med norsk ident som validerer men ikke finnes i PDL så skal vi ikke oppdatere`() {
         val norskFnr = "06085692087"
         every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns sed(brukersAdresse = TYSK_ADRESSE_I_SED, id = norskFnr)

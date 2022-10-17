@@ -14,6 +14,7 @@ import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
+import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Kontaktadresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
@@ -47,16 +48,17 @@ class Adresseoppdatering(
         // Når det ikke finnes norsk ID så er det helt fint at dette tas av Id & Fordeling
         require (hasNorskPin(brukerFra(sed))) { return NoUpdate("Bruker har ikke norsk pin i SED") }
 
-        val normalisertNorskPIN = try {
-            normaliserNorskPin(norskPin(brukerFra(sed))!!.identifikator!!)
-        } catch (ex: IllegalArgumentException) {
-            return NoUpdate(
-                "Brukers norske id fra SED validerer ikke: \"${norskPin(brukerFra(sed))!!.identifikator!!}\" - ${ex.message}",
-                "Brukers norske id fra SED validerer ikke",
-            )
-        }
-
         val personFraPDL = try {
+
+            val normalisertNorskPIN = try {
+                normaliserNorskPin(norskPin(brukerFra(sed))!!.identifikator!!)
+            } catch (ex: IllegalArgumentException) {
+                return NoUpdate(
+                    "Brukers norske id fra SED validerer ikke: \"${norskPin(brukerFra(sed))!!.identifikator!!}\" - ${ex.message}",
+                    "Brukers norske id fra SED validerer ikke",
+                )
+            }
+
             personService.hentPerson(NorskIdent(normalisertNorskPIN)) ?: throw NullPointerException("hentPerson returnerte null")
         } catch (ex: PersonoppslagException) {
             if (ex.code == "not_found") {
@@ -64,6 +66,11 @@ class Adresseoppdatering(
             }
             throw ex
         }.also { secureLogger.debug("Person fra PDL:\n${it.toJson()}") }
+
+        val norskFolkeregisterIdent =
+            personFraPDL.identer
+                .firstOrNull { it.gruppe == IdentGruppe.FOLKEREGISTERIDENT }?.ident
+                ?: personFraPDL.identer.first().ident
 
         require(erUtenAdressebeskyttelse(personFraPDL.adressebeskyttelse)) { return NoUpdate("Ingen adresseoppdatering") }
 
@@ -76,7 +83,7 @@ class Adresseoppdatering(
             return Update(
                 "Adressen fra ${sedHendelse.avsenderLand} finnes allerede i PDL, oppdaterer gyldig til og fra dato",
                 korrigerDatoEndringOpplysning(
-                    norskFnr = normalisertNorskPIN,
+                    norskFnr = norskFolkeregisterIdent,
                     kilde = sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")",
                     kontaktadresse = personFraPDL.kontaktadresse!!
                 )
@@ -95,17 +102,17 @@ class Adresseoppdatering(
 
         return Update(
             "Adressen i SED fra ${sedHendelse.avsenderLand} finnes ikke i PDL, sender OPPRETT endringsmelding",
-            opprettAdresseEndringOpplysning(normalisertNorskPIN, endringsmelding),
+            opprettAdresseEndringOpplysning(norskFolkeregisterIdent, endringsmelding),
             metricTagValueOverride = "Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding"
         )
     }
 
-    private fun opprettAdresseEndringOpplysning(normalisertNorskPIN: String, endringsmelding: EndringsmeldingKontaktAdresse) =
+    private fun opprettAdresseEndringOpplysning(ident: String, endringsmelding: EndringsmeldingKontaktAdresse) =
         PdlEndringOpplysning(
             listOf(
                 Personopplysninger(
                     endringstype = Endringstype.OPPRETT,
-                    ident = normalisertNorskPIN,
+                    ident = ident,
                     endringsmelding = endringsmelding,
                     opplysningstype = Opplysningstype.KONTAKTADRESSE,
                 )
