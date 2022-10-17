@@ -82,7 +82,7 @@ class SedListenerAdresse(
         countForAddress(result.metricTagValue)
     }
 
-    fun countForAddress(melding: String) {
+    private fun countForAddress(melding: String) {
         try {
             Metrics.counter("eessi_pensjon_pdl_produsent_adresseoppdatering", "melding", melding).increment()
         } catch (e: Exception) {
