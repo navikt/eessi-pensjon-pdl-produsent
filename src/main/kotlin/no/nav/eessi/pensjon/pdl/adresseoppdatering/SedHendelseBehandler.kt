@@ -80,6 +80,6 @@ data class SedHendelseBehandlerRetryConfig(val initialRetryMillis: Long = 20000L
 class SedHendelseBehandlerRetryLogger : RetryListenerSupport() {
     private val logger = LoggerFactory.getLogger(SedHendelseBehandlerRetryLogger::class.java)
     override fun <T : Any?, E : Throwable?> onError(context: RetryContext?, callback: RetryCallback<T, E>?, throwable: Throwable?) {
-        logger.warn("Feil under adresseoppdatering - try #${context?.retryCount }", throwable)
+        logger.warn("Feil under behandling av sedHendelse - try #${context?.retryCount } - ${throwable?.toString()}", throwable)
     }
 }
