@@ -24,14 +24,14 @@ import org.springframework.web.client.HttpClientErrorException
 
 @ActiveProfiles("retryConfigOverride")
 @SpringJUnitConfig(classes = [
-    SedListenerAdresse::class,
+    SedHendelseBehandler::class,
     Adresseoppdatering::class,
     SedTilPDLAdresse::class,
-    SedListenerRetryLogger::class,
-    TestSedListenerRetryConfig::class]
+    SedHendelseBehandlerRetryLogger::class,
+    TestSedHendelseBehandlerRetryConfig::class]
 )
 @EnableRetry
-class SedListenerAdresseRetryTest {
+class SedHendelseBehandlerTest {
 
     @MockkBean
     lateinit var euxService: EuxService
@@ -46,7 +46,7 @@ class SedListenerAdresseRetryTest {
     lateinit var personMottakKlient: PersonMottakKlient
 
     @Autowired
-    lateinit var adresseListener: SedListenerAdresse
+    lateinit var sedHendelseBehandler: SedHendelseBehandler
 
     @Test
     fun `Gitt en at vi får 423 LOCKED fra PDL så gjør vi retry på hele prosessen`() {
@@ -58,7 +58,7 @@ class SedListenerAdresseRetryTest {
         every { personMottakKlient.opprettPersonopplysning(any()) } throws HttpClientErrorException(HttpStatus.LOCKED)
 
         val ex = assertThrows<HttpClientErrorException> {
-            adresseListener.behandle(SedListenerAdresseIT.enSedHendelse().toJson())
+            sedHendelseBehandler.behandle(SedListenerAdresseIT.enSedHendelse().toJson())
         }
 
         Assertions.assertEquals(HttpStatus.LOCKED, ex.statusCode)
@@ -76,7 +76,7 @@ class SedListenerAdresseRetryTest {
         every { personMottakKlient.opprettPersonopplysning(any()) } throws HttpClientErrorException(HttpStatus.BAD_REQUEST)
 
         val ex = assertThrows<HttpClientErrorException> {
-            adresseListener.behandle(SedListenerAdresseIT.enSedHendelse().toJson())
+            sedHendelseBehandler.behandle(SedListenerAdresseIT.enSedHendelse().toJson())
         }
 
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, ex.statusCode)
@@ -87,5 +87,5 @@ class SedListenerAdresseRetryTest {
 
 // Brukes for at testen skal gå kjapt
 @Profile("retryConfigOverride")
-@Component("sedListenerRetryConfig")
-data class TestSedListenerRetryConfig(val initialRetryMillis: Long = 10L)
+@Component("sedHendelseBehandlerRetryConfig")
+data class TestSedHendelseBehandlerRetryConfig(val initialRetryMillis: Long = 10L)
