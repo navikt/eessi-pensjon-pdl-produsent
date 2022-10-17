@@ -32,7 +32,7 @@ class Adresseoppdatering(
     private val secureLogger = LoggerFactory.getLogger("secureLog")
 
     fun oppdaterUtenlandskKontaktadresse(sedHendelse: SedHendelse): Result {
-        require(erRelevantForEESSIPensjon(sedHendelse)) { return NoUpdate("SED ikke relevant for EESSI Pensjon") }
+        require(erRelevantForEESSIPensjon(sedHendelse)) { return NoUpdate("SED ikke relevant for EESSI Pensjon, buc: ${sedHendelse.bucType}, sed: ${sedHendelse.sedType}, sektor: ${sedHendelse.sektorKode}", "SED ikke relevant for EESSI Pensjon") }
 
         val sed = euxService.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId).also { secureLogger.debug("SED:\n$it") }
 
