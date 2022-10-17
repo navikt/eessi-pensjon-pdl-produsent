@@ -74,7 +74,7 @@ class SedListenerAdresse(
         backoff = Backoff(delayExpression = "@sedListenerRetryConfig.initialRetryMillis", maxDelay = 200000L, multiplier = 3.0),
         listeners  = ["sedListenerRetryLogger"]
     )
-    internal fun behandle(hendelse: String) {
+    fun behandle(hendelse: String) {
         val sedHendelse = SedHendelse.fromJson(hendelse)
 
         if (testDataInProd(sedHendelse)) {
