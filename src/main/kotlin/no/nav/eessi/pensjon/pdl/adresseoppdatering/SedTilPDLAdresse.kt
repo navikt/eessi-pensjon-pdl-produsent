@@ -81,12 +81,18 @@ class SedTilPDLAdresse(private val kodeverkClient: KodeverkClient) {
     @SuppressWarnings("kotlin:S1067") // enkel struktur gir lav kognitiv load
     fun isUtenlandskAdresseISEDMatchMedAdresseIPDL(sedAdresse: Adresse, pdlAdresse: UtenlandskAdresse?) =
         pdlAdresse != null
-                && sedAdresse.gate in listOf(pdlAdresse.adressenavnNummer, pdlAdresse.postboksNummerNavn)
-                && sedAdresse.bygning == pdlAdresse.bygningEtasjeLeilighet
-                && sedAdresse.by == pdlAdresse.bySted
-                && sedAdresse.postnummer == pdlAdresse.postkode
-                && sedAdresse.region == pdlAdresse.regionDistriktOmraade
+                && gateIAdresseNavnNummerEllerPostboksNummerNavn(sedAdresse.gate, pdlAdresse.adressenavnNummer, pdlAdresse.postboksNummerNavn)
+                && blankIfNull(sedAdresse.bygning) == blankIfNull(pdlAdresse.bygningEtasjeLeilighet)
+                && blankIfNull(sedAdresse.by) == blankIfNull(pdlAdresse.bySted)
+                && blankIfNull(sedAdresse.postnummer) == blankIfNull(pdlAdresse.postkode)
+                && blankIfNull(sedAdresse.region) == blankIfNull(pdlAdresse.regionDistriktOmraade)
                 && sedAdresse.land == pdlAdresse.landkode.let { kodeverkClient.finnLandkode(it) }
 
+    private fun gateIAdresseNavnNummerEllerPostboksNummerNavn(gate: String?, adresseNavnNummer: String?, postboksNummerNavn: String?) =
+        ((listOf(adresseNavnNummer, postboksNummerNavn).filter { it.isNullOrEmpty().not() }.isEmpty() && adresseNavnNummer.isNullOrEmpty())
+                || gate in listOf(adresseNavnNummer, postboksNummerNavn))
+
     private fun inneholderPostBoksInfo(gate: String) = postBoksInfo.any { gate.contains(it) }
+
+    fun blankIfNull(text: String?) = text?:""
 }

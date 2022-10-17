@@ -175,6 +175,30 @@ class SedTilPDLAdresseTest {
         assertTrue(SedTilPDLAdresse(kodeverkClient).isUtenlandskAdresseISEDMatchMedAdresseIPDL(adresse, utenlandskAdresse))
     }
 
+    @Test
+    fun `Gitt en utlandsadresse i SED saa sjekker vi om den finnes i PDL - men vi har nulls fra SED`(){
+        every { kodeverkClient.finnLandkode("SE") } returns "SWE"
+
+        val adresse = Adresse(
+            gate = "",
+            bygning = null,
+            by = null,
+            postnummer = "111",
+            region = null,
+            land ="SWE",
+            kontaktpersonadresse = null,
+        )
+        val utenlandskAdresse = UtenlandskAdresse(
+            adressenavnNummer = "",
+            landkode = "SE",
+            postkode = adresse.postnummer,
+            bySted = "",
+            bygningEtasjeLeilighet  = "",
+            regionDistriktOmraade = ""
+        )
+        assertTrue(SedTilPDLAdresse(kodeverkClient).isUtenlandskAdresseISEDMatchMedAdresseIPDL(adresse, utenlandskAdresse))
+    }
+
 
 
     private fun adresse(
