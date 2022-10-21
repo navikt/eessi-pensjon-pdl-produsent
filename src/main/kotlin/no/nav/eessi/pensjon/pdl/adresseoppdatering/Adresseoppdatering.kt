@@ -76,7 +76,10 @@ class Adresseoppdatering(
 
         logger.info("Vi har funnet en person fra PDL med samme norsk identifikator som bruker i SED")
 
-        if (sedTilPDLAdresse.isUtenlandskAdresseISEDMatchMedAdresseIPDL(adresseFra(sed)!!, personFraPDL.kontaktadresse?.utenlandskAdresse)) {
+        val utenlandskKontaktadresseRegistrertAvNAV =
+            personFraPDL.kontaktadresse?.let { if (it.metadata.master.uppercase().equals("FREG")) null else it  }?.utenlandskAdresse
+
+        if (sedTilPDLAdresse.isUtenlandskAdresseISEDMatchMedAdresseIPDL(adresseFra(sed)!!, utenlandskKontaktadresseRegistrertAvNAV)) {
             require(LocalDate.now() != personFraPDL.kontaktadresse!!.gyldigFraOgMed?.toLocalDate()) {
                 return NoUpdate("Adresse finnes allerede i PDL med dagens dato som gyldig-fra-dato, dropper oppdatering")
             }

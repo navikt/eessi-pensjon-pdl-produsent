@@ -218,6 +218,33 @@ internal class AdresseoppdateringTest {
     }
 
     @Test
+    fun `Gitt SED med gyldig utlandsadresse, og selv om denne finnes i PDL som en adresse fra FREG, så oppretter vi en ny kontaktadresse likevel`() {
+        every { euxService.hentSed(any(), any()) } returns sed(brukersAdresse = EDDY_ADRESSE_I_SED)
+        every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns
+                personFraPDL(
+                    utenlandskAdresse = EDDY_ADRESSE_FRA_PDL,
+                    metadataMaster = "Freg"
+                )
+        every { personMottakKlient.opprettPersonopplysning(any()) } returns true
+        val adresseoppdatering = Adresseoppdatering(personService, euxService, sedTilPDLAdresse)
+
+        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse(avsenderLand = EDDY_ADRESSE_LANDKODE))
+
+        val forventetPdlEndringsOpplysninger = pdlAdresseEndringsOpplysning(
+            endringsType = Endringstype.OPPRETT,
+            pdlAdresse = EDDY_ADRESSE_I_ENDRINGSMELDING,
+            kilde = "Utenlandsk Institusjon ($EDDY_ADRESSE_LANDKODE)",
+        )
+
+        assertEquals(
+            Update(
+                "Adressen i SED fra SE finnes ikke i PDL, sender OPPRETT endringsmelding",
+                forventetPdlEndringsOpplysninger, "Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding"
+            ), result
+        )
+    }
+
+    @Test
     fun `Gitt en sed med ustandard norsk ident så skal det likevel oppdateres`() {
         val norskFnr = FodselsnummerGenerator.generateFnrForTest(69)
         val norskFnrMedMellomrom = norskFnr.substring(0..5) + " " + norskFnr.substring(6)
@@ -643,7 +670,8 @@ internal class AdresseoppdateringTest {
         utenlandskAdresse: UtenlandskAdresse? = null,
         opplysningsId: String = "DummyOpplysningsId",
         gyldigFraOgMed: LocalDateTime = LocalDateTime.now().minusDays(10),
-        gyldigTilOgMed: LocalDateTime = LocalDateTime.now().plusDays(10)
+        gyldigTilOgMed: LocalDateTime = LocalDateTime.now().plusDays(10),
+        metadataMaster: String = "PDL"
     ) = Person(
         identer = listOf(IdentInformasjon(id, IdentGruppe.FOLKEREGISTERIDENT)),
         navn = null,
@@ -665,7 +693,7 @@ internal class AdresseoppdateringTest {
             metadata = Metadata(
                 endringer = emptyList(),
                 historisk = false,
-                master = "",
+                master = metadataMaster,
                 opplysningsId = opplysningsId
             ),
             type = KontaktadresseType.Utland,
