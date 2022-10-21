@@ -25,7 +25,7 @@ import org.springframework.kafka.support.Acknowledgment
 import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.*
 
 @SpringBootTest( classes = [KafkaTestConfig::class, IntegrationBase.TestConfig::class])
 @ActiveProfiles("integrationtest", "excludeKodeverk")
@@ -62,6 +62,7 @@ class IdentManglerEllerFeilTest : IntegrationBase() {
     fun `En sed hendelse uten UID vil resultere i en NoUpdate`() {
         every { norg2.hentArbeidsfordelingEnhet(any()) } returns Enhet.ID_OG_FORDELING
         every { personService.hentPerson(NorskIdent( fnr)) } returns mockedPerson
+        every { kodeverkClient.finnLandkode("NO") } returns "NOR"
 
         val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P15000, SedStatus.RECEIVED))
         val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_10, listOverSeder)
@@ -78,13 +79,13 @@ class IdentManglerEllerFeilTest : IntegrationBase() {
             mockHendelse(
                 bucType = BucType.P_BUC_10,
                 sedType = SedType.P15000,
-                avsenderLand = "NO",
+                avsenderLand = "SE",
                 docId = "eb938171a4cb4e658b3a6c011962d204"
             )
         )
         sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
 
-        assertTrue(isMessageInlog("NoUpdate(description=Bruker har ikke utenlandsk ident, metricTagValueOverride=null)"))
+        assertTrue(isMessageInlog("NoUpdate(description=Bruker har ikke utenlandsk ident fra avsenderland (SE), metricTagValueOverride=Bruker har ikke utenlandsk ident fra avsenderland)"))
     }
 
     @Test
@@ -103,7 +104,7 @@ class IdentManglerEllerFeilTest : IntegrationBase() {
         sendMeldingString(javaClass.getResource("/eux/hendelser/P_BUC_01_P2000-avsenderSE.json")!!.readText())
         sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
 
-        assertTrue(isMessageInlog("Avsenderland er ikke det samme som uidland"))
+        assertTrue(isMessageInlog("NoUpdate(description=Bruker har ikke utenlandsk ident fra avsenderland (SE), metricTagValueOverride=Bruker har ikke utenlandsk ident fra avsenderland)"))
 
         //sjekker at vi ikke har en ident oppdatering
         CustomMockServer().verifyRequest("/api/v1/endringer", 0)

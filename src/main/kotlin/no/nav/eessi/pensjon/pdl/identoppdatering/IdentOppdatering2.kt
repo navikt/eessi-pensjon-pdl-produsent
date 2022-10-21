@@ -11,6 +11,7 @@ import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
 import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
+import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
@@ -38,27 +39,35 @@ class IdentOppdatering2(
     private val secureLogger = LoggerFactory.getLogger("secureLog")
 
     fun oppdaterUtenlandskIdent(sedHendelse: SedHendelse): Result {
-        //require(erRelevantForEESSIPensjon(sedHendelse)) { return NoUpdate("Ikke relevant for eessipensjon") }
+        require(erRelevantForEESSIPensjon(sedHendelse)) { return NoUpdate("Ikke relevant for eessipensjon, buc: ${sedHendelse.bucType}, sed: ${sedHendelse.sedType}, sektor: ${sedHendelse.sektorKode}", "Ikke relevant for eessipensjon") }
 
         val sed = euxService.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId)
             .also { secureLogger.debug("SED:\n$it") }
-
-        val utenlandskPinItemFraSed = hentUtenlandskID(sed)
-        require(utenlandskPinItemFraSed != null) { return NoUpdate("Bruker har ikke utenlandsk ident") }
-
-        check(utenlandskPinItemFraSed.erPersonValidertPaaLand()) {
-            return NoUpdate("Utenlandsk id \"${utenlandskPinItemFraSed.id}\" er ikke på gyldig format for land " +
-                    "${utenlandskPinItemFraSed.land}", "Utenlandsk id er ikke på gyldig format")
-        }
 
         require(sedHendelse.avsenderLand.isNullOrEmpty().not()) {
             return NoUpdate("Avsenderland mangler")
         }
 
-        val pinItem = sed.nav?.bruker?.person?.pin?.firstOrNull { it.land == sedHendelse.avsenderLand }
+        val utenlandskeIderFraAvsenderLand = sed.nav?.bruker?.person?.pin?.filter { it.land == sedHendelse.avsenderLand && it.land != "NO" } ?: emptyList()
 
-        require(sedHendelse.avsenderLand == pinItem?.land) {
-            return NoUpdate("Avsenderland er ikke det samme som uidland")
+        check(utenlandskeIderFraAvsenderLand.isNotEmpty()) {
+            return NoUpdate("Bruker har ikke utenlandsk ident fra avsenderland (${sedHendelse.avsenderLand})", "Bruker har ikke utenlandsk ident fra avsenderland")
+        }
+
+        if(utenlandskeIderFraAvsenderLand.size >= 2) {
+            logger.info("Bruker har ${utenlandskeIderFraAvsenderLand.size} uider fra avsenderland (${sedHendelse.avsenderLand}) - Vi bruker den første.")
+        }
+
+        val pinItem = utenlandskeIderFraAvsenderLand.first()
+
+        val utenlandskPinItemFraSed = UtenlandskId(
+            landspesifikkValidering.normalisertPin(pinItem.identifikator!!, pinItem.land!!),
+            pinItem.land!!
+        )
+
+        check(utenlandskPinItemFraSed.erPersonValidertPaaLand()) {
+            return NoUpdate("Utenlandsk id \"${utenlandskPinItemFraSed.id}\" er ikke på gyldig format for land " +
+                    "${utenlandskPinItemFraSed.land}", "Utenlandsk id er ikke på gyldig format")
         }
 
         require(sedHendelse.avsenderNavn.isNullOrEmpty().not()) {
@@ -119,7 +128,7 @@ class IdentOppdatering2(
                 utenlandskPinFraSed,
                 identifisertPerson(normalisertNorskPINFraSed, personFraPDL)
             )) {
-            NoUpdate("Det finnes allerede en annen uid fra samme land (Oppgave)")
+            NoUpdate("Det finnes allerede en annen uid fra samme land (oppgave opprettes)")
         } else NoUpdate("Oppgave opprettet tidligere")
     }
 
@@ -139,17 +148,6 @@ class IdentOppdatering2(
         erDoed = personFraPDL.erDoed(),
         kontaktAdresse = personFraPDL.kontaktadresse
     )
-
-    private fun hentUtenlandskID(sed: SED): UtenlandskId? {
-        val pinitem = sed.nav?.bruker?.person?.pin?.firstOrNull { it.land != "NO" }
-
-        if (pinitem?.land.isNullOrEmpty() || pinitem?.identifikator.isNullOrEmpty()) return null
-
-        return UtenlandskId(
-            landspesifikkValidering.normalisertPin(pinitem?.identifikator!!, pinitem.land!!),
-            pinitem.land!!
-        )
-    }
 
     private fun normaliserNorskPin(norskPinFraSED: String) =
         Fodselsnummer.fraMedValidation(norskPinFraSED)!!.value

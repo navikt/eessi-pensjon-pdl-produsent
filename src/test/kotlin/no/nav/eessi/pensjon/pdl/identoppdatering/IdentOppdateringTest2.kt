@@ -2,6 +2,7 @@ package no.nav.eessi.pensjon.pdl.identoppdatering
 
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.eux.model.SedType
@@ -43,7 +44,6 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
@@ -95,11 +95,10 @@ internal class IdentOppdateringTest2 {
     }
 
     @Test
-    @Disabled
-    fun `Gitt at ingen identifiserte personer blir funnet saa gjoeres ingen oppdatrering`() {
+    fun `Gitt at sed som ikke er relevant for eessipensjon saa gjoeres ingen oppdatering`() {
 
         assertEquals(
-            NoUpdate("Ikke relevant for eessipensjon"),
+            NoUpdate("Ikke relevant for eessipensjon, buc: P_BUC_01, sed: X001, sektor: P", "Ikke relevant for eessipensjon"),
             identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = NORGE, sedType = SedType.X001))
         )
     }
@@ -119,8 +118,8 @@ internal class IdentOppdateringTest2 {
         every { euxService.hentSed(any(), any()) } returns sed(id = FNR, land = NORGE)
 
         assertEquals(
-            NoUpdate("Bruker har ikke utenlandsk ident"),
-            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = NORGE))
+            NoUpdate(description="Bruker har ikke utenlandsk ident fra avsenderland (SE)", metricTagValueOverride="Bruker har ikke utenlandsk ident fra avsenderland"),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = SVERIGE))
         )
     }
 
@@ -130,8 +129,8 @@ internal class IdentOppdateringTest2 {
         every { personService.hentPerson(NorskIdent(FNR)) } returns personFraPDL(id = FNR)
 
         assertEquals(
-            NoUpdate("Avsenderland er ikke det samme som uidland"),
-            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = NORGE))
+            NoUpdate(description="Bruker har ikke utenlandsk ident fra avsenderland (SE)", metricTagValueOverride="Bruker har ikke utenlandsk ident fra avsenderland"),
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = SVERIGE))
         )
     }
 
@@ -260,9 +259,11 @@ internal class IdentOppdateringTest2 {
         every { oppgaveHandler.opprettOppgaveForUid(any(), any(), any()) } returns true
 
         assertEquals(
-            NoUpdate("Det finnes allerede en annen uid fra samme land (Oppgave)"),
+            NoUpdate("Det finnes allerede en annen uid fra samme land (oppgave opprettes)"),
             identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = SVERIGE))
         )
+
+        verify(exactly = 1) { oppgaveHandler.opprettOppgaveForUid(any(), any(), any()) }
     }
 
     @Test

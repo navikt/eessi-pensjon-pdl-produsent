@@ -25,7 +25,7 @@ import org.springframework.kafka.support.Acknowledgment
 import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.*
 
 @SpringBootTest( classes = [KafkaTestConfig::class, IntegrationBase.TestConfig::class])
 @ActiveProfiles("integrationtest", "excludeKodeverk")
@@ -153,13 +153,13 @@ class OpprettMeldingEllerOppgaveIntegrationTest : IntegrationBase() {
             mockHendelse(
                 bucType = BucType.P_BUC_10,
                 sedType = SedType.P15000,
-                avsenderLand = "NO",
+                avsenderLand = "SE",
                 docId = "eb938171a4cb4e658b3a6c011962d204"
             )
         )
         sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
 
-        assertTrue(isMessageInlog("NoUpdate(description=Bruker har ikke utenlandsk ident, metricTagValueOverride=null)"))
+        assertTrue(isMessageInlog("NoUpdate(description=Bruker har ikke utenlandsk ident fra avsenderland (SE), metricTagValueOverride=Bruker har ikke utenlandsk ident fra avsenderland)"))
     }
 
     val mockedPerson = PersonMock.createWith(
