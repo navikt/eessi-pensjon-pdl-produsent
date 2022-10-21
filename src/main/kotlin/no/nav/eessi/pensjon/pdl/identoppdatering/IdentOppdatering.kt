@@ -2,89 +2,165 @@ package no.nav.eessi.pensjon.pdl.identoppdatering
 
 import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.UtenlandskId
-import no.nav.eessi.pensjon.eux.UtenlandskPersonIdentifisering
+import no.nav.eessi.pensjon.eux.model.sed.Bruker
+import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.models.EndringsmeldingUID
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
-import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
-import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering2.NoUpdate
-import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering2.Result
-import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering2.Update
+import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
 import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
-import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
+import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
+import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
+import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
+import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
+import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
+import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
+import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
-
 @Service
-class IdentOppdatering (
-    private val dokumentHelper: EuxService,
-    private val pdlFiltrering: PdlFiltrering,
+class IdentOppdatering(
+    private val euxService: EuxService,
     private val oppgaveHandler: OppgaveHandler,
     private val kodeverkClient: KodeverkClient,
-    private val personidentifiseringService: PersonidentifiseringService
+    private val personService: PersonService,
+    private val landspesifikkValidering: LandspesifikkValidering
 ) {
 
     private val logger = LoggerFactory.getLogger(IdentOppdatering::class.java)
     private val secureLogger = LoggerFactory.getLogger("secureLog")
 
     fun oppdaterUtenlandskIdent(sedHendelse: SedHendelse): Result {
-        require(erRelevantForEESSIPensjon(sedHendelse)) { return NoUpdate("Ikke relevant for eessipensjon") }
+        require(erRelevantForEESSIPensjon(sedHendelse)) { return NoUpdate("Ikke relevant for eessipensjon, buc: ${sedHendelse.bucType}, sed: ${sedHendelse.sedType}, sektor: ${sedHendelse.sektorKode}", "Ikke relevant for eessipensjon") }
 
-        val alleGyldigeSED = dokumentHelper.alleGyldigeSEDForBuc(sedHendelse.rinaSakId).also { secureLogger.debug("Alle gyldige seder: \n${it.toJson()}") }
+        val sed = euxService.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId)
+            .also { secureLogger.debug("SED:\n$it") }
 
-        val identifisertePersoner = personidentifiseringService.hentIdentifisertePersoner(alleGyldigeSED, sedHendelse.bucType!!)
-            .also { secureLogger.debug("Identifiserte personer:\n${it.toJson()}") }
-        require(identifisertePersoner.isNotEmpty()) { return NoUpdate("Ingen identifiserte FNR funnet") }
-        require(identifisertePersoner.size <= 1) { return NoUpdate("Antall identifiserte FNR er fler enn en") }
-
-        val utenlandskeIderFraSEDer = UtenlandskPersonIdentifisering.finnAlleUtenlandskeIDerIMottatteSed(alleGyldigeSED)
-                .also { secureLogger.debug("Utenlandske IDer fra mottatt sed:\n${it.toJson()}") }
-        require(utenlandskeIderFraSEDer.isNotEmpty()) { return NoUpdate("Ingen utenlandske IDer funnet i BUC") }
-        require(utenlandskeIderFraSEDer.size <= 1) { return NoUpdate("Antall utenlandske IDer er flere enn en") }
-        // Vi har utelukket at det er 0 eller flere enn 1
-        val utenlandskIdFraSed = utenlandskeIderFraSEDer.first()
-
-        //require(pdlValidering.avsenderLandHarVerdiOgErSammeSomUidLand(utenlandskIdFraSed, sedHendelse.avsenderLand)) {
-         //   return NoUpdate("Avsenderland mangler eller avsenderland er ikke det samme som uidland")
-        //}
-
-        val identifisertPersonFraPDL = identifisertePersoner.first()
-
-        require(!identifisertPersonFraPDL.erDoed) { return NoUpdate("Identifisert person registrert med doedsfall") }
-
-        //validering av uid korrekt format
-        //require(pdlValidering.erPersonValidertPaaLand(utenlandskIdFraSed.id, utenlandskIdFraSed.land)) { return NoUpdate("Ingen validerte identifiserte personer funnet") }
-
-        require(!pdlFiltrering.finnesUidFraSedIPDL(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) { return NoUpdate("PDLuid er identisk med SEDuid") }
-
-        if (pdlFiltrering.skalOppgaveOpprettes(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) {
-            //ytterligere sjekk om f.eks SWE fnr i PDL faktisk er identisk med sedUID (hvis så ikke opprett oppgave bare avslutt)
-            require(pdlFiltrering.uidIsedOgIPDLErFaktiskUlik(identifisertPersonFraPDL.uidFraPdl, utenlandskIdFraSed)) {
-                // Oppretter ikke oppgave, Det som finnes i PDL er faktisk likt det som finnes i SED, avslutter
-                return NoUpdate("PDLuid er identisk med SEDuid")
-            }
-            return if (oppgaveHandler.opprettOppgaveForUid(sedHendelse, utenlandskIdFraSed, identifisertPersonFraPDL)) {
-                NoUpdate("Det finnes allerede en annen uid fra samme land (Oppgave)")
-            } else {
-                NoUpdate("Oppgave opprettet tidligere")
-            }
+        require(sedHendelse.avsenderLand.isNullOrEmpty().not()) {
+            return NoUpdate("Avsenderland mangler")
         }
 
-        require(sedHendelse.avsenderNavn != null) { return NoUpdate("AvsenderNavn er ikke satt, kan derfor ikke lage endringsmelding") }
+        val utenlandskeIderFraAvsenderLand = sed.nav?.bruker?.person?.pin?.filter { it.land == sedHendelse.avsenderLand && it.land != "NO" } ?: emptyList()
+
+        check(utenlandskeIderFraAvsenderLand.isNotEmpty()) {
+            return NoUpdate("Bruker har ikke utenlandsk ident fra avsenderland (${sedHendelse.avsenderLand})", "Bruker har ikke utenlandsk ident fra avsenderland")
+        }
+
+        if(utenlandskeIderFraAvsenderLand.size >= 2) {
+            logger.info("Bruker har ${utenlandskeIderFraAvsenderLand.size} uider fra avsenderland (${sedHendelse.avsenderLand}) - Vi bruker den første.")
+        }
+
+        val pinItem = utenlandskeIderFraAvsenderLand.first()
+
+        val utenlandskPinItemFraSed = UtenlandskId(
+            landspesifikkValidering.normalisertPin(pinItem.identifikator!!, pinItem.land!!),
+            pinItem.land!!
+        )
+
+        check(utenlandskPinItemFraSed.erPersonValidertPaaLand()) {
+            return NoUpdate("Utenlandsk id \"${utenlandskPinItemFraSed.id}\" er ikke på gyldig format for land " +
+                    "${utenlandskPinItemFraSed.land}", "Utenlandsk id er ikke på gyldig format")
+        }
+
+        require(sedHendelse.avsenderNavn.isNullOrEmpty().not()) {
+            return NoUpdate("AvsenderNavn er ikke satt, kan derfor ikke lage endringsmelding")
+        }
+
+        check(sed.nav?.bruker?.person?.pin?.filter { it.land == "NO" }.isNullOrEmpty().not()) {
+            return NoUpdate("Bruker har ikke norsk pin i SED")
+        }
+
+        val normalisertNorskPINFraSed = try {
+            normaliserNorskPin(norskPin(brukerFra(sed))!!.identifikator!!)
+        } catch (ex: IllegalArgumentException) {
+            return NoUpdate("Brukers norske id fra SED validerer ikke")
+        }
+
+        val personFraPDL = try {
+            personService.hentPerson(NorskIdent(normalisertNorskPINFraSed)) ?: throw NullPointerException("hentPerson returnerte null")
+        } catch (ex: PersonoppslagException) {
+            if (ex.code == "not_found") {
+                return NoUpdate("Finner ikke bruker i PDL med angitt fnr i SED")
+            }
+            throw ex
+        }.also { secureLogger.debug("Person fra PDL:\n${it.toJson()}") }
+
+        require(!utenlandskPinFinnesIPdl(utenlandskPinItemFraSed, personFraPDL.utenlandskIdentifikasjonsnummer)) {
+            return NoUpdate("PDL uid er identisk med SED uid")
+        }
+
+        if (fraSammeLandMenUlikUid(personFraPDL, utenlandskPinItemFraSed)) {
+            return opprettOppgave(personFraPDL, utenlandskPinItemFraSed, sedHendelse, normalisertNorskPINFraSed)
+        }
 
         logger.info("Oppdaterer PDL med Ny Utenlandsk Ident fra ${sedHendelse.avsenderNavn}")
-        return Update(
-            "Innsending av endringsmelding",
-            pdlEndringOpplysning(identifisertPersonFraPDL.fnr!!.value, utenlandskIdFraSed, sedHendelse.avsenderNavn),
+        return Update("Innsending av endringsmelding", pdlEndringOpplysning(
+                personFraPDL.identer.firstOrNull()?.ident!!,
+                utenlandskPinItemFraSed,
+                sedHendelse.avsenderNavn!!
+            ),
         )
     }
+
+    private fun fraSammeLandMenUlikUid(personFraPDL: Person, utenlandskPinItemFraSed: UtenlandskId): Boolean {
+        return personFraPDL.utenlandskIdentifikasjonsnummer
+            .filter { it.identifikasjonsnummer != utenlandskPinItemFraSed.id }
+            .map { it.utstederland }
+            .contains(kodeverkClient.finnLandkode(utenlandskPinItemFraSed.land))
+    }
+
+    private fun opprettOppgave(
+        personFraPDL: Person,
+        utenlandskPinFraSed: UtenlandskId,
+        sedHendelse: SedHendelse,
+        normalisertNorskPINFraSed: String
+    ): Result {
+        return if (oppgaveHandler.opprettOppgaveForUid(
+                sedHendelse,
+                utenlandskPinFraSed,
+                identifisertPerson(normalisertNorskPINFraSed, personFraPDL)
+            )) {
+            NoUpdate("Det finnes allerede en annen uid fra samme land (oppgave opprettes)")
+        } else NoUpdate("Oppgave opprettet tidligere")
+    }
+
+    private fun utenlandskPinFinnesIPdl(utenlandskPin: UtenlandskId, utenlandskeUids: List<UtenlandskIdentifikasjonsnummer>) =
+        utenlandskeUids.map { Pair(it.identifikasjonsnummer, kodeverkClient.finnLandkode(it.utstederland)) }
+            .contains(Pair(utenlandskPin.id, utenlandskPin.land))
+
+    private fun identifisertPerson(normalisertNorskPIN: String,personFraPDL: Person) = IdentifisertPerson(
+        fnr = Fodselsnummer.fra(normalisertNorskPIN),
+        uidFraPdl = personFraPDL.utenlandskIdentifikasjonsnummer,
+        aktoerId = personFraPDL.identer.first { it.gruppe == IdentGruppe.AKTORID }.ident,
+        landkode = personFraPDL.landkode(),
+        geografiskTilknytning = personFraPDL.geografiskTilknytning?.gtKommune?: personFraPDL.geografiskTilknytning?.gtBydel,
+        harAdressebeskyttelse = false,
+        personListe = null,
+        personRelasjon = null,
+        erDoed = personFraPDL.erDoed(),
+        kontaktAdresse = personFraPDL.kontaktadresse
+    )
+
+    private fun normaliserNorskPin(norskPinFraSED: String) =
+        Fodselsnummer.fraMedValidation(norskPinFraSED)!!.value
+            .also {
+                if (it != norskPinFraSED) {
+                    logger.info("Fnr i SED på ustandard format - alt utenom tall fjernet")
+                }
+            }
+
+    private fun norskPin(bruker: Bruker?) =
+        bruker?.person?.pin?.firstOrNull { it.land == "NO" }
+
+    private fun brukerFra(sed: SED) = sed.nav?.bruker
 
     private fun pdlEndringOpplysning(norskFnr: String, utenlandskPin: UtenlandskId, kilde: String) =
         PdlEndringOpplysning(
@@ -104,11 +180,23 @@ class IdentOppdatering (
         )
 
     private fun konvertertTilPdlFormat(utenlandskPin: UtenlandskId): String {
-        val uid = utenlandskPin.id
         if (utenlandskPin.land == "SE") {
-            if (uid.length == 10) uid.replaceRange(5, 5, "-")
-            if (uid.length == 12) uid.replaceRange(7, 7, "-")
+            return landspesifikkValidering.formaterSvenskUID(utenlandskPin.id)
         }
-        return uid
+        return utenlandskPin.id
     }
+    private fun UtenlandskId.erPersonValidertPaaLand(): Boolean = landspesifikkValidering.validerLandsspesifikkUID(land, id)
+
+    sealed class Result {
+        abstract val description: String
+        abstract val metricTagValueOverride: String?
+
+        val metricTagValue: String
+            get() = metricTagValueOverride ?: description
+    }
+
+    data class Update(override val description: String, val pdlEndringsOpplysninger: PdlEndringOpplysning, override val metricTagValueOverride: String? = null, ): Result()
+    data class NoUpdate(override val description: String, override val metricTagValueOverride: String? = null): Result()
+
 }
+
