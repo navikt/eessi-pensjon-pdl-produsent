@@ -11,6 +11,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.utils.toJson
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
@@ -61,13 +62,13 @@ class SedHendelseBehandlerTest {
             sedHendelseBehandler.behandle(SedListenerAdresseIT.enSedHendelse().toJson())
         }
 
-        Assertions.assertEquals(HttpStatus.LOCKED, ex.statusCode)
+        assertEquals(HttpStatus.LOCKED, ex.statusCode)
 
         verify(exactly = 3) { personMottakKlient.opprettPersonopplysning(any()) }
     }
 
     @Test
-    fun `Gitt en at vi får 200 BAD REQUEST fra PDL så gjør vi ikke retry på prosessen`() {
+    fun `Gitt en at vi får 400 BAD REQUEST fra PDL så gjør vi ikke retry på prosessen`() {
         val fnr = FodselsnummerGenerator.generateFnrForTest(70)
         every { euxService.hentSed(eq("74389487"), eq("743982")) } returns SedListenerAdresseIT.enSedFraEux(fnr)
         every { euxService.alleGyldigeSEDForBuc(any()) } returns emptyList() // Dette er fordi vi ikke bryr oss om IdentListener
@@ -79,7 +80,7 @@ class SedHendelseBehandlerTest {
             sedHendelseBehandler.behandle(SedListenerAdresseIT.enSedHendelse().toJson())
         }
 
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, ex.statusCode)
+        assertEquals(HttpStatus.BAD_REQUEST, ex.statusCode)
 
         verify(exactly = 1) { personMottakKlient.opprettPersonopplysning(any()) }
     }
