@@ -152,6 +152,14 @@ class SedTilPDLAdresseTest {
     }
 
     @Test
+    fun `Adresse uten gatenavn og uten postboks gir valideringfeil`() {
+        val ex = assertThrows<IllegalArgumentException> {
+            SedTilPDLAdresse(kodeverkClient).konverter("some kilde", Adresse(postnummer = "1920", land = "DK"))
+        }
+        assertEquals("Ikke gyldig adresse, trenger enten adressenavnNummer eller postboksNummerNavn", ex.message)
+    }
+
+    @Test
     fun `Gitt en utlandsadresse i SED saa sjekker vi om den finnes i PDL`(){
         every { kodeverkClient.finnLandkode("SE") } returns "SWE"
 

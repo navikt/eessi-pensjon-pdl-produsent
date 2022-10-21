@@ -34,19 +34,25 @@ class SedTilPDLAdresse(private val kodeverkClient: KodeverkClient) {
                 postkode = postKodeFra(sedAdresse.postnummer),
                 regionDistriktOmraade = regionDistriktOmraadeFra(sedAdresse.region)
             )
-        ).also { // Denne er spesifisert av PDL, men slår ikke til etter at vi innførte krav om postkode
+        ).also {
+            // Denne er ikke spesifisert av PDL, men vi får valideringsfeil uten dette
             requireMinstEttFeltMedVerdi(listOf(
                 it.adresse!!.adressenavnNummer,
+                it.adresse.postboksNummerNavn)
+            ) { "Ikke gyldig adresse, trenger enten adressenavnNummer eller postboksNummerNavn" }
+            // Denne er spesifisert av PDL, men slår ikke til etter at vi innførte krav om postkode
+            requireMinstEttFeltMedVerdi(listOf(
+                it.adresse.adressenavnNummer,
                 it.adresse.bygningEtasjeLeilighet,
                 it.adresse.bySted,
                 it.adresse.postboksNummerNavn,
                 it.adresse.postkode,
                 it.adresse.regionDistriktOmraade)
-            )
-    }
+            ) { "Ikke gyldig adresse, har kun landkode" }
+        }
 
-    private fun requireMinstEttFeltMedVerdi(verdier: List<String?>) {
-        require(verdier.any { it.isNullOrEmpty().not() }) { "Ikke gyldig adresse, har kun landkode" }
+    private fun requireMinstEttFeltMedVerdi(verdier: List<String?>, lazyMessage: () -> Any) {
+        require(verdier.any { it.isNullOrEmpty().not() }, lazyMessage)
     }
 
     private fun postboksNummerNavnFra(gate: String?) =
