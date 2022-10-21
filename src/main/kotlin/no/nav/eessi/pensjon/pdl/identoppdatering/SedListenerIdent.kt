@@ -4,28 +4,25 @@ import io.micrometer.core.instrument.Metrics
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
-import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering2.NoUpdate
-import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering2.Update
+import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.NoUpdate
+import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.Update
 import no.nav.eessi.pensjon.utils.toJson
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.context.annotation.Profile
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.concurrent.CountDownLatch
+import java.util.concurrent.*
 import javax.annotation.PostConstruct
 
-@Profile("!prod") // Stoppet inntil videre i prod
 @Service
 class SedListenerIdent(
     private val personMottakKlient: PersonMottakKlient,
-    private val identOppdatering: IdentOppdatering2,
-    private val oldIdent: IdentOppdatering,
+    private val identOppdatering: IdentOppdatering,
     @Value("\${SPRING_PROFILES_ACTIVE:}") private val profile: String,
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
 ) {
@@ -77,12 +74,6 @@ class SedListenerIdent(
         logger.info("*** Starter pdl endringsmelding (IDENT) prosess for BucType: ${sedHendelse.bucType}, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
 
         val result = identOppdatering.oppdaterUtenlandskIdent(sedHendelse)
-        val resultFraOldIdent = oldIdent.oppdaterUtenlandskIdent(sedHendelse)
-
-        if(resultFraOldIdent.equals(result).not()){
-            logger.debug("Gammel implementasjon: ${resultFraOldIdent.toJson()}\n")
-            logger.debug("Ny implementasjon: ${result.toJson()}")
-        }
 
         if (result is Update) {
             personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
@@ -92,7 +83,7 @@ class SedListenerIdent(
         count(result.metricTagValue)
     }
 
-    private fun log(result: IdentOppdatering2.Result) {
+    private fun log(result: IdentOppdatering.Result) {
         when (result) {
             is Update -> {
                 secureLogger.debug("Update:\n${result.toJson()}")

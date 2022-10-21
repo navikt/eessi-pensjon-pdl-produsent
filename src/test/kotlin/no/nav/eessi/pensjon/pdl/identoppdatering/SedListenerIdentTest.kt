@@ -6,9 +6,7 @@ import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
-import no.nav.eessi.pensjon.pdl.filtrering.PdlFiltrering
 import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
-import no.nav.eessi.pensjon.personidentifisering.PersonidentifiseringService
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.junit.jupiter.api.BeforeEach
@@ -31,20 +29,14 @@ internal class SedListenerIdentTest {
 
     private val sedListenerIdent = SedListenerIdent(
         personMottakKlient,
-        identOppdatering = IdentOppdatering2(
+        identOppdatering = IdentOppdatering(
             euxService,
             oppgaveHandler,
             kodeverkClient,
             personService,
             landspesifikkValidering
         ),
-        oldIdent = IdentOppdatering(
-            euxService,
-            PdlFiltrering(kodeverkClient),
-            oppgaveHandler,
-            kodeverkClient,
-            PersonidentifiseringService(personService)
-        ),        "test"
+        "test"
     )
 
     @BeforeEach

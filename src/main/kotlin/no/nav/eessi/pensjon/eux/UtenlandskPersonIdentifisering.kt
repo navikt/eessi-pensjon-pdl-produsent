@@ -3,9 +3,12 @@ package no.nav.eessi.pensjon.eux
 import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.eux.model.sed.SED
-import no.nav.eessi.pensjon.personidentifisering.relasjoner.logger
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 object UtenlandskPersonIdentifisering {
+
+    private val logger: Logger by lazy { LoggerFactory.getLogger(UtenlandskPersonIdentifisering::class.java) }
 
     fun finnAlleUtenlandskeIDerIMottatteSed(seder: List<Pair<ForenkletSED, SED>>): List<UtenlandskId> =
         seder
