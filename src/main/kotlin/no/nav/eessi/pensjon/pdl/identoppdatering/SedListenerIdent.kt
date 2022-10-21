@@ -19,6 +19,7 @@ import java.util.*
 import java.util.concurrent.*
 import javax.annotation.PostConstruct
 
+@Profile("!prod") // Stoppet inntil videre i prod
 @Service
 class SedListenerIdent(
     private val personMottakKlient: PersonMottakKlient,
