@@ -359,7 +359,7 @@ internal class IdentOppdateringTest {
 
         assertEquals(
             Update("Innsending av endringsmelding", pdlEndringsMelding()),
-            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = SVERIGE)).also { println(it)}
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = SVERIGE))
         )
 
     }
@@ -383,7 +383,7 @@ internal class IdentOppdateringTest {
 
         assertEquals(
                 Update("Innsending av endringsmelding", pdlEndringsMelding()),
-                identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = SVERIGE)).also { println(it)}
+                identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = SVERIGE))
         )
 
     }
