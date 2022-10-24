@@ -103,7 +103,7 @@ class IdentOppdatering(
 
         logger.info("Oppdaterer PDL med Ny Utenlandsk Ident fra ${sedHendelse.avsenderNavn}")
         return Update("Innsending av endringsmelding", pdlEndringOpplysning(
-                personFraPDL.identer.firstOrNull()?.ident!!,
+                normalisertNorskPINFraSed,
                 utenlandskPinItemFraSed,
                 sedHendelse.avsenderNavn!!
             ),

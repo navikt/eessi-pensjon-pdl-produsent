@@ -359,8 +359,33 @@ internal class IdentOppdateringTest {
 
         assertEquals(
             Update("Innsending av endringsmelding", pdlEndringsMelding()),
-            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = SVERIGE))
+            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = SVERIGE)).also { println(it)}
         )
+
+    }
+
+    @Test
+    fun `Gitt at vi har en SED med norsk fnr som skal oppdateres til pdl, der PDL har en aktoerid inne i PDL saa skal Oppdateringsmeldingen til PDL ha norsk FNR og ikke aktoerid`() {
+        val identifisertPerson= identifisertPerson(uidFraPdl = listOf(utenlandskIdentifikasjonsnummer(SVENSK_FNR)))
+
+        every { personService.hentPerson(NorskIdent(FNR)) } returns
+                personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon("1234567891234", IdentGruppe.AKTORID), IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT)))
+                        .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer(FINSK_FNR).copy(utstederland = "FIN")))
+
+        every { euxService.hentSed(any(), any()) } returns
+                sed(id = FNR, land = NORGE, pinItem =  listOf(
+                        PinItem(identifikator = "5 12 020-1234", land = SVERIGE),
+                        PinItem(identifikator = FNR, land = NORGE))
+                )
+
+        every { oppgaveHandler.opprettOppgaveForUid(any(), UtenlandskId( SVENSK_FNR, SVERIGE), identifisertPerson) } returns false
+        every { oppgaveHandler.opprettOppgaveForUid(any(), any(), any()) } returns true
+
+        assertEquals(
+                Update("Innsending av endringsmelding", pdlEndringsMelding()),
+                identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = SVERIGE)).also { println(it)}
+        )
+
     }
 
     private fun pdlEndringsMelding() =
