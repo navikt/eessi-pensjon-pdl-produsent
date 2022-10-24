@@ -75,11 +75,11 @@ class SedListenerIdent(
 
         val result = identOppdatering.oppdaterUtenlandskIdent(sedHendelse)
 
+        log(result)
         if (result is Update) {
             personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
         }
 
-        log(result)
         count(result.metricTagValue)
     }
 
