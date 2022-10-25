@@ -48,27 +48,29 @@ class IdentOppdatering(
             return NoUpdate("Avsenderland mangler")
         }
 
-        val utenlandskeIderFraAvsenderLand = sed.nav?.bruker?.person?.pin?.filter { it.land == sedHendelse.avsenderLand && it.land != "NO" } ?: emptyList()
-
-        check(utenlandskeIderFraAvsenderLand.isNotEmpty()) {
-            return NoUpdate("Bruker har ikke utenlandsk ident fra avsenderland (${sedHendelse.avsenderLand})", "Bruker har ikke utenlandsk ident fra avsenderland")
-        }
-
-        if(utenlandskeIderFraAvsenderLand.size >= 2) {
-            logger.info("Bruker har ${utenlandskeIderFraAvsenderLand.size} uider fra avsenderland (${sedHendelse.avsenderLand}) - Vi bruker den første.")
-        }
-
-        val pinItem = utenlandskeIderFraAvsenderLand.first()
-
-        val utenlandskPinItemFraSed = UtenlandskId(
-            landspesifikkValidering.normalisertPin(pinItem.identifikator!!, pinItem.land!!),
-            pinItem.land!!
-        )
-
-        check(utenlandskPinItemFraSed.erPersonValidertPaaLand()) {
-            return NoUpdate("Utenlandsk id \"${utenlandskPinItemFraSed.id}\" er ikke på gyldig format for land " +
-                    "${utenlandskPinItemFraSed.land}", "Utenlandsk id er ikke på gyldig format")
-        }
+        val utenlandskPinItemFraSed =
+            (sed.nav?.bruker?.person?.pin?.filter { it.land == sedHendelse.avsenderLand && it.land != "NO" }?: emptyList())
+                .also {
+                    check(it.isNotEmpty()) {
+                        return NoUpdate("Bruker har ikke utenlandsk ident fra avsenderland (${sedHendelse.avsenderLand})", "Bruker har ikke utenlandsk ident fra avsenderland")
+                    }
+                }
+                .also {
+                    check(it.size < 2) {
+                        logger.info("Bruker har ${it.size} uider fra avsenderland (${sedHendelse.avsenderLand}) - Vi bruker den første.")
+                    }
+                }
+                .first()
+                .let {
+                    UtenlandskId(landspesifikkValidering.normalisertPin(it.identifikator!!, it.land!!), it.land!!)
+                }
+                .also {
+                    check(it.erPersonValidertPaaLand()) {
+                        return NoUpdate(
+                            "Utenlandsk id \"${it.id}\" er ikke på gyldig format for land ${it.land}",
+                            "Utenlandsk id er ikke på gyldig format")
+                    }
+                }
 
         require(sedHendelse.avsenderNavn.isNullOrEmpty().not()) {
             return NoUpdate("AvsenderNavn er ikke satt, kan derfor ikke lage endringsmelding")
@@ -93,29 +95,33 @@ class IdentOppdatering(
             throw ex
         }.also { secureLogger.debug("Person fra PDL:\n${it.toJson()}") }
 
+        val norskFnr = personFraPDL.identer.first { it.gruppe == IdentGruppe.FOLKEREGISTERIDENT }.ident
+
         require(!utenlandskPinFinnesIPdl(utenlandskPinItemFraSed, personFraPDL.utenlandskIdentifikasjonsnummer)) {
             return NoUpdate("PDL uid er identisk med SED uid")
         }
 
-        if (fraSammeLandMenUlikUid(personFraPDL, utenlandskPinItemFraSed)) {
-            return opprettOppgave(personFraPDL, utenlandskPinItemFraSed, sedHendelse, normalisertNorskPINFraSed)
+        if (fraSammeLandMenUlikUid(utenlandskPinItemFraSed, personFraPDL.utenlandskIdentifikasjonsnummer)) {
+            return opprettOppgave(personFraPDL, utenlandskPinItemFraSed, sedHendelse, normalisertNorskPINFraSed) // TODO: Burde vi ikke bruke norskFnr her?
         }
 
         logger.info("Oppdaterer PDL med Ny Utenlandsk Ident fra ${sedHendelse.avsenderNavn}")
         return Update("Innsending av endringsmelding", pdlEndringOpplysning(
-                personFraPDL.identer.first { it.gruppe == IdentGruppe.FOLKEREGISTERIDENT }.ident,
+            norskFnr,
                 utenlandskPinItemFraSed,
                 sedHendelse.avsenderNavn!!
             ),
         )
     }
 
-    private fun fraSammeLandMenUlikUid(personFraPDL: Person, utenlandskPinItemFraSed: UtenlandskId): Boolean {
-        return personFraPDL.utenlandskIdentifikasjonsnummer
+    private fun fraSammeLandMenUlikUid(
+        utenlandskPinItemFraSed: UtenlandskId,
+        utenlandskeIdentifikasjonsnummer: List<UtenlandskIdentifikasjonsnummer>): Boolean =
+
+        utenlandskeIdentifikasjonsnummer
             .filter { it.identifikasjonsnummer != utenlandskPinItemFraSed.id }
             .map { it.utstederland }
             .contains(kodeverkClient.finnLandkode(utenlandskPinItemFraSed.land))
-    }
 
     private fun opprettOppgave(
         personFraPDL: Person,
