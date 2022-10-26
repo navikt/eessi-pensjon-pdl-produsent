@@ -119,13 +119,13 @@ class IdentOppdatering(
     }
 
     private fun fraSammeLandMenUlikUid(
-        utenlandskPinItemFraSed: UtenlandskId,
-        utenlandskeIdentifikasjonsnummer: List<UtenlandskIdentifikasjonsnummer>): Boolean =
+        utenlandskIdFraSED: UtenlandskId,
+        utenlandskeIderFraPDL: List<UtenlandskIdentifikasjonsnummer>): Boolean =
 
-        utenlandskeIdentifikasjonsnummer
-            .filter { it.identifikasjonsnummer != utenlandskPinItemFraSed.id }
+        utenlandskeIderFraPDL
+            .filter { it.identifikasjonsnummer != utenlandskIdFraSED.id }
             .map { it.utstederland }
-            .contains(kodeverkClient.finnLandkode(utenlandskPinItemFraSed.land))
+            .contains(kodeverkClient.finnLandkode(utenlandskIdFraSED.land))
 
     private fun opprettOppgave(
         personFraPDL: Person,
