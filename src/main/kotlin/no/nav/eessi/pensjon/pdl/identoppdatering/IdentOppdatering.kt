@@ -48,29 +48,32 @@ class IdentOppdatering(
             return NoUpdate("Avsenderland mangler")
         }
 
-        val utenlandskPinItemFraSed =
+        val utenlandskIdFraSED =
             (sed.nav?.bruker?.person?.pin?.filter { it.land == sedHendelse.avsenderLand && it.land != "NO" }?: emptyList())
                 .also {
-                    check(it.isNotEmpty()) {
+                    if (it.isEmpty()) {
                         return NoUpdate("Bruker har ikke utenlandsk ident fra avsenderland (${sedHendelse.avsenderLand})", "Bruker har ikke utenlandsk ident fra avsenderland")
                     }
                 }
                 .also {
-                    if(it.size >= 2) {
-                        logger.info("Bruker har ${it.size} uider fra avsenderland (${sedHendelse.avsenderLand}) - Vi bruker den første.")
+                    if(it.size > 1) {
+                        logger.info("Bruker har ${it.size} uider fra avsenderland (${sedHendelse.avsenderLand}).")
                     }
                 }
-                .first()
-                .let {
+                .map {
                     UtenlandskId(landspesifikkValidering.normalisertPin(it.identifikator!!, it.land!!), it.land!!)
                 }
+                .toSet() // deduplication
+                .filter { it.erPersonValidertPaaLand() } // validering
                 .also {
-                    check(it.erPersonValidertPaaLand()) {
-                        return NoUpdate(
-                            "Utenlandsk id \"${it.id}\" er ikke på gyldig format for land ${it.land}",
-                            "Utenlandsk id er ikke på gyldig format")
+                    when (it.size) {
+                        0 -> return NoUpdate(
+                                "Utenlandsk(e) id(-er) er ikke på gyldig format for land ${sedHendelse.avsenderLand}",
+                                "Utenlandsk id er ikke på gyldig format")
+                        1 -> logger.info("Bruker har én utenlandsk id fra avsenderland (${sedHendelse.avsenderLand}) som validerer.")
+                        else -> logger.warn("Bruker har ${it.size} uider fra avsenderland (${sedHendelse.avsenderLand}) også etter deduplisering og validering. Bruker den første.")
                     }
-                }
+                }.first()
 
         require(sedHendelse.avsenderNavn.isNullOrEmpty().not()) {
             return NoUpdate("AvsenderNavn er ikke satt, kan derfor ikke lage endringsmelding")
@@ -101,18 +104,18 @@ class IdentOppdatering(
 
         val norskFnr = personFraPDL.identer.first { it.gruppe == IdentGruppe.FOLKEREGISTERIDENT }.ident
 
-        require(!utenlandskPinFinnesIPdl(utenlandskPinItemFraSed, personFraPDL.utenlandskIdentifikasjonsnummer)) {
+        require(!utenlandskPinFinnesIPdl(utenlandskIdFraSED, personFraPDL.utenlandskIdentifikasjonsnummer)) {
             return NoUpdate("PDL uid er identisk med SED uid")
         }
 
-        if (fraSammeLandMenUlikUid(utenlandskPinItemFraSed, personFraPDL.utenlandskIdentifikasjonsnummer)) {
-            return opprettOppgave(personFraPDL, utenlandskPinItemFraSed, sedHendelse) // TODO: Burde vi ikke bruke norskFnr her?
+        if (fraSammeLandMenUlikUid(utenlandskIdFraSED, personFraPDL.utenlandskIdentifikasjonsnummer)) {
+            return opprettOppgave(personFraPDL, utenlandskIdFraSED, sedHendelse) // TODO: Burde vi ikke bruke norskFnr her?
         }
 
         logger.info("Oppdaterer PDL med Ny Utenlandsk Ident fra ${sedHendelse.avsenderNavn}")
         return Update("Innsending av endringsmelding", pdlEndringOpplysning(
             norskFnr,
-                utenlandskPinItemFraSed,
+                utenlandskIdFraSED,
                 sedHendelse.avsenderNavn!!
             ),
         )
