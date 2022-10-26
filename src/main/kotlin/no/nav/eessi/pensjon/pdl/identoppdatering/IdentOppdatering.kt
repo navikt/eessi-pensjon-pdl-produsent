@@ -56,7 +56,7 @@ class IdentOppdatering(
                     }
                 }
                 .also {
-                    check(it.size < 2) {
+                    if(it.size >= 2) {
                         logger.info("Bruker har ${it.size} uider fra avsenderland (${sedHendelse.avsenderLand}) - Vi bruker den første.")
                     }
                 }
