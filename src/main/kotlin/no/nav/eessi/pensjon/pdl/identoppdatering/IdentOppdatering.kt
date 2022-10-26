@@ -102,7 +102,7 @@ class IdentOppdatering(
         }
 
         if (fraSammeLandMenUlikUid(utenlandskPinItemFraSed, personFraPDL.utenlandskIdentifikasjonsnummer)) {
-            return opprettOppgave(personFraPDL, utenlandskPinItemFraSed, sedHendelse, normalisertNorskPINFraSed) // TODO: Burde vi ikke bruke norskFnr her?
+            return opprettOppgave(personFraPDL, utenlandskPinItemFraSed, sedHendelse) // TODO: Burde vi ikke bruke norskFnr her?
         }
 
         logger.info("Oppdaterer PDL med Ny Utenlandsk Ident fra ${sedHendelse.avsenderNavn}")
@@ -126,13 +126,12 @@ class IdentOppdatering(
     private fun opprettOppgave(
         personFraPDL: Person,
         utenlandskPinFraSed: UtenlandskId,
-        sedHendelse: SedHendelse,
-        normalisertNorskPINFraSed: String
+        sedHendelse: SedHendelse
     ): Result {
         return if (oppgaveHandler.opprettOppgaveForUid(
                 sedHendelse,
                 utenlandskPinFraSed,
-                identifisertPerson(normalisertNorskPINFraSed, personFraPDL)
+                identifisertPerson(personFraPDL)
             )) {
             NoUpdate("Det finnes allerede en annen uid fra samme land (oppgave opprettes)")
         } else NoUpdate("Oppgave opprettet tidligere")
@@ -142,8 +141,8 @@ class IdentOppdatering(
         utenlandskeUids.map { Pair(it.identifikasjonsnummer, kodeverkClient.finnLandkode(it.utstederland)) }
             .contains(Pair(utenlandskPin.id, utenlandskPin.land))
 
-    private fun identifisertPerson(normalisertNorskPIN: String,personFraPDL: Person) = IdentifisertPerson(
-        fnr = Fodselsnummer.fra(normalisertNorskPIN),
+    private fun identifisertPerson(personFraPDL: Person) = IdentifisertPerson(
+        fnr = Fodselsnummer.fra(personFraPDL.identer.first { it.gruppe == IdentGruppe.FOLKEREGISTERIDENT }.ident),
         uidFraPdl = personFraPDL.utenlandskIdentifikasjonsnummer,
         aktoerId = personFraPDL.identer.first { it.gruppe == IdentGruppe.AKTORID }.ident,
         landkode = personFraPDL.landkode(),
