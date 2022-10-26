@@ -76,24 +76,28 @@ class IdentOppdatering(
             return NoUpdate("AvsenderNavn er ikke satt, kan derfor ikke lage endringsmelding")
         }
 
-        check(sed.nav?.bruker?.person?.pin?.filter { it.land == "NO" }.isNullOrEmpty().not()) {
-            return NoUpdate("Bruker har ikke norsk pin i SED")
-        }
-
-        val normalisertNorskPINFraSed = try {
-            normaliserNorskPin(norskPin(brukerFra(sed))!!.identifikator!!)
-        } catch (ex: IllegalArgumentException) {
-            return NoUpdate("Brukers norske id fra SED validerer ikke")
-        }
-
-        val personFraPDL = try {
-            personService.hentPerson(NorskIdent(normalisertNorskPINFraSed)) ?: throw NullPointerException("hentPerson returnerte null")
-        } catch (ex: PersonoppslagException) {
-            if (ex.code == "not_found") {
-                return NoUpdate("Finner ikke bruker i PDL med angitt fnr i SED")
-            }
-            throw ex
-        }.also { secureLogger.debug("Person fra PDL:\n${it.toJson()}") }
+        val personFraPDL =
+            (norskPin(brukerFra(sed)) ?: return NoUpdate("Bruker har ikke norsk pin i SED"))
+                .runCatching {
+                    normaliserNorskPin(this.identifikator!!)
+                }
+                .recoverCatching {
+                    if (it is IllegalArgumentException) return NoUpdate("Brukers norske id fra SED validerer ikke")
+                    throw it
+                }
+                .mapCatching {
+                    personService.hentPerson(NorskIdent(it)) ?: throw NullPointerException("hentPerson returnerte null")
+                }
+                .recoverCatching {
+                    if (it is PersonoppslagException && it.code == "not_found") {
+                        return NoUpdate("Finner ikke bruker i PDL med angitt fnr i SED")
+                    }
+                    throw it
+                }
+                .onSuccess {
+                    secureLogger.debug("Person fra PDL:\n${it.toJson()}")
+                }
+                .getOrThrow()
 
         val norskFnr = personFraPDL.identer.first { it.gruppe == IdentGruppe.FOLKEREGISTERIDENT }.ident
 
