@@ -27,20 +27,25 @@ internal class SedListenerIdentTest {
     private val personService  = mockk<PersonService>(relaxed = true)
     private val landspesifikkValidering = mockk<LandspesifikkValidering>(relaxed = true)
 
-    private val sedListenerIdent = SedListenerIdent(
-        personMottakKlient,
-        identOppdatering = IdentOppdatering(
-            euxService,
-            oppgaveHandler,
-            kodeverkClient,
-            personService,
-            landspesifikkValidering
-        ),
-        "test"
-    )
+    private lateinit var sedListenerIdent: SedListenerIdent
 
     @BeforeEach
     fun setup() {
+        val identOppdatering = IdentOppdatering(
+                euxService,
+                oppgaveHandler,
+                kodeverkClient,
+                personService,
+                landspesifikkValidering
+        )
+
+        sedListenerIdent = SedListenerIdent(
+                SedHendelseIdentBehandler(
+                        identOppdatering,
+                        personMottakKlient,
+                        "test"
+                ),
+        )
         sedListenerIdent.initMetrics()
     }
 
@@ -53,6 +58,7 @@ internal class SedListenerIdentTest {
 
     @Test
     fun `gitt en exception ved sedMottatt så kast exception`() {
+
         assertThrows<Exception> {
             sedListenerIdent.consumeSedMottatt("Explode!", cr, acknowledgment)
         }
