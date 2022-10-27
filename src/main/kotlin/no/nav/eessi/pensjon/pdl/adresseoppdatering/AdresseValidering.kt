@@ -8,7 +8,7 @@ object AdresseValidering {
     val ukjentFraser = listOf("ukjent", "vet ikke", "unknown", "not known").map { toCaseInsensitiveWordRegex(it) }
 
     fun erGyldigAdressenavnNummerEllerBygningEtg(tekst: String) =
-        tekst.matches(maaInneholdeMinstEnBokstav) && !inneholderPostboksFraser(tekst) && !inneholderUkjentFraser(tekst)
+        tekst.matches(maaInneholdeMinstEnBokstav) && !inneholderPostboksFraser(tekst) && !inneholderUkjentFraser(tekst) && !inneholderAnforselstegn(tekst)
 
     fun erGyldigByStedEllerRegion(tekst: String) =
         tekst.matches(maaInneholdeMinstEnBokstav) && !inneholderUkjentFraser(tekst)
@@ -18,6 +18,7 @@ object AdresseValidering {
 
     private fun inneholderPostboksFraser(tekst: String) = postboksFraser.any { tekst.contains(it) }
     private fun inneholderUkjentFraser(tekst: String) = ukjentFraser.any { tekst.contains(it) }
+    private fun inneholderAnforselstegn(tekst: String): Boolean = tekst.contains("\"")
 
     private fun toCaseInsensitiveWordRegex(tekst: String) =
         tekst

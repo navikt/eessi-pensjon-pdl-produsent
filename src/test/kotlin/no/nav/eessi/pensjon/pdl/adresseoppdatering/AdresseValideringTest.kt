@@ -19,10 +19,9 @@ internal class AdresseValideringTest() {
      */
 
     @ParameterizedTest
-    @CsvSource("postboks", "postb.", "po.box", "ukjent", "vet ikke", "1", "Unknown", "p.o.box")
+    @CsvSource("postboks", "postb.", "po.box", "ukjent", "vet ikke", "1", "Unknown", "p.o.box", "\"RATNIEKI\"")
     fun `UGYLDIGE Adressenavnnummer bygning eller etasje`(ugyldigVerdi: String) {
         assertFalse(AdresseValidering.erGyldigAdressenavnNummerEllerBygningEtg(ugyldigVerdi))
-
     }
     @ParameterizedTest
     @CsvSource("Strada Principala 34 Rimetea", "Antonína Čermáka 2a 160 68 Prague", "å", "Åmål", "Brannfjell", "Postbanken")
@@ -59,6 +58,5 @@ internal class AdresseValideringTest() {
     fun `GYLDIG postkode`(gyldigPostkode: String) {
         assertTrue(AdresseValidering.erGyldigPostKode(gyldigPostkode))
     }
-
 
 }
