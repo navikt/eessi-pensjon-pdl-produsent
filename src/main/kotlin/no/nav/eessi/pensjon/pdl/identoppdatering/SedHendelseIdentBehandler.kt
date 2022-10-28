@@ -57,7 +57,7 @@ class SedHendelseIdentBehandler(
         when (result) {
             is IdentOppdatering.Update -> {
                 secureLogger.debug("Update:\n${result.toJson()}")
-                logger.info("Update(${result.description}")
+                logger.info("Update(description=${result.description})")
             }
 
             is IdentOppdatering.NoUpdate -> {
