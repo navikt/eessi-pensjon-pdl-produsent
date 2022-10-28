@@ -71,7 +71,7 @@ class SedHendelseIdentBehandler(
 
     fun count(melding: String) {
         try {
-            Metrics.counter("PDLIdentOppdateringResultat",   "melding", melding).increment()
+            Metrics.counter("eessi_pensjon_pdl_produsent_identoppdatering", "melding", melding).increment()
         } catch (e: Exception) {
             logger.warn("Metrics feilet på enhet: $melding")
         }
