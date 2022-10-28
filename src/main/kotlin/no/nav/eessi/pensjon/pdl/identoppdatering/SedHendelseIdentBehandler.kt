@@ -3,7 +3,6 @@ package no.nav.eessi.pensjon.pdl.identoppdatering
 import io.micrometer.core.instrument.Metrics
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
-import no.nav.eessi.pensjon.pdl.adresseoppdatering.SedHendelseBehandler
 import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -23,7 +22,7 @@ class SedHendelseIdentBehandler(
         private val personMottakKlient: PersonMottakKlient,
         @Value("\${SPRING_PROFILES_ACTIVE:}") private val profile: String
 ) {
-    private val logger = LoggerFactory.getLogger(SedHendelseBehandler::class.java)
+    private val logger = LoggerFactory.getLogger(SedHendelseIdentBehandler::class.java)
     private val secureLogger = LoggerFactory.getLogger("secureLog")
 
     @Retryable( // Vi gjør retry når det er lås på PDL-objektet - gjøres langt opp i stacken for at vi skal gjøre nytt oppslag mot PDL
