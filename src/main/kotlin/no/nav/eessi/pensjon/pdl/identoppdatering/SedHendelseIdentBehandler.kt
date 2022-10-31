@@ -63,6 +63,10 @@ class SedHendelseIdentBehandler(
             is IdentOppdatering.IngenOppdatering -> {
                 logger.info(result.toString())
             }
+
+            is IdentOppdatering.Oppgave -> {
+                logger.info(result.toString())
+            }
         }
     }
 

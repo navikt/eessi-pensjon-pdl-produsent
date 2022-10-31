@@ -109,7 +109,14 @@ class IdentOppdatering(
         }
 
         if (fraSammeLandMenUlikUid(utenlandskIdFraSED, personFraPDL.utenlandskIdentifikasjonsnummer)) {
-            return opprettOppgave(personFraPDL, utenlandskIdFraSED, sedHendelse) // TODO: Burde vi ikke bruke norskFnr her?
+            return if (oppgaveHandler.opprettOppgaveForUid(
+                    sedHendelse,
+                    utenlandskIdFraSED,
+                    identifisertPerson(personFraPDL)
+                )
+            ) {
+                Oppgave("Det finnes allerede en annen uid fra samme land (oppgave opprettes)")
+            } else IngenOppdatering("Oppgave opprettet tidligere") // TODO: Burde vi ikke bruke norskFnr her?
         }
 
         logger.info("Oppdaterer PDL med Ny Utenlandsk Ident fra ${sedHendelse.avsenderNavn}")
@@ -129,20 +136,6 @@ class IdentOppdatering(
             .filter { it.identifikasjonsnummer != utenlandskIdFraSED.id }
             .map { it.utstederland }
             .contains(kodeverkClient.finnLandkode(utenlandskIdFraSED.land))
-
-    private fun opprettOppgave(
-        personFraPDL: Person,
-        utenlandskPinFraSed: UtenlandskId,
-        sedHendelse: SedHendelse
-    ): Result {
-        return if (oppgaveHandler.opprettOppgaveForUid(
-                sedHendelse,
-                utenlandskPinFraSed,
-                identifisertPerson(personFraPDL)
-            )) {
-            IngenOppdatering("Det finnes allerede en annen uid fra samme land (oppgave opprettes)")
-        } else IngenOppdatering("Oppgave opprettet tidligere")
-    }
 
     private fun utenlandskPinFinnesIPdl(utenlandskPin: UtenlandskId, utenlandskeUids: List<UtenlandskIdentifikasjonsnummer>) =
         utenlandskeUids.map { Pair(it.identifikasjonsnummer, kodeverkClient.finnLandkode(it.utstederland)) }
@@ -209,6 +202,9 @@ class IdentOppdatering(
 
     data class Oppdatering(override val description: String, val pdlEndringsOpplysninger: PdlEndringOpplysning, override val metricTagValueOverride: String? = null, ): Result()
     data class IngenOppdatering(override val description: String, override val metricTagValueOverride: String? = null): Result()
+
+    data class Oppgave(override val description: String, override val metricTagValueOverride: String? = null): Result()
+
 
 }
 

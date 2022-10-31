@@ -14,6 +14,7 @@ import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
 import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.IngenOppdatering
 import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.Oppdatering
+import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.Oppgave
 import no.nav.eessi.pensjon.pdl.identoppdatering.TestDataPDL.identifisertPerson
 import no.nav.eessi.pensjon.pdl.identoppdatering.TestDataPDL.personFraPDL
 import no.nav.eessi.pensjon.pdl.identoppdatering.TestDataPDL.sed
@@ -296,7 +297,7 @@ internal class IdentOppdateringTest {
         every { oppgaveHandler.opprettOppgaveForUid(any(), any(), any()) } returns true
 
         assertEquals(
-            IngenOppdatering("Det finnes allerede en annen uid fra samme land (oppgave opprettes)"),
+            Oppgave("Det finnes allerede en annen uid fra samme land (oppgave opprettes)"),
             identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
         )
 
