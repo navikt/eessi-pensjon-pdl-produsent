@@ -33,27 +33,27 @@ class Adresseoppdatering(
     private val secureLogger = LoggerFactory.getLogger("secureLog")
 
     fun oppdaterUtenlandskKontaktadresse(sedHendelse: SedHendelse): Result {
-        require(erRelevantForEESSIPensjon(sedHendelse)) { return NoUpdate("SED ikke relevant for EESSI Pensjon, buc: ${sedHendelse.bucType}, sed: ${sedHendelse.sedType}, sektor: ${sedHendelse.sektorKode}", "SED ikke relevant for EESSI Pensjon") }
+        require(erRelevantForEESSIPensjon(sedHendelse)) { return IngenOppdatering("SED ikke relevant for EESSI Pensjon, buc: ${sedHendelse.bucType}, sed: ${sedHendelse.sedType}, sektor: ${sedHendelse.sektorKode}", "SED ikke relevant for EESSI Pensjon") }
 
         val sed = euxService.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId).also { secureLogger.debug("SED:\n$it") }
 
-        require(adresseErIUtlandet(adresseFra(sed))) { return NoUpdate("Bruker har ikke utenlandsk adresse i SED") }
+        require(adresseErIUtlandet(adresseFra(sed))) { return IngenOppdatering("Bruker har ikke utenlandsk adresse i SED") }
         require(avsenderISedHendelse(sedHendelse)) { "Mangler avsenderNavn eller avsenderLand i sedHendelse - avslutter adresseoppdatering: $sedHendelse" }
         require(avsenderLandOgAdressensLandErSamme(sedHendelse, sed)) {
-            return NoUpdate(
+            return IngenOppdatering(
                 "Adressens landkode (${adresseFra(sed)?.land}) er ulik landkode på avsenderland (${sedHendelse.avsenderLand})",
                 "Adressens landkode er ulik landkode på avsenderland")
         }
 
         // Når det ikke finnes norsk ID så er det helt fint at dette tas av Id & Fordeling
-        require (hasNorskPin(brukerFra(sed))) { return NoUpdate("Bruker har ikke norsk pin i SED") }
+        require (hasNorskPin(brukerFra(sed))) { return IngenOppdatering("Bruker har ikke norsk pin i SED") }
 
         val personFraPDL = try {
 
             val normalisertNorskPIN = try {
                 normaliserNorskPin(norskPin(brukerFra(sed))!!.identifikator!!)
             } catch (ex: IllegalArgumentException) {
-                return NoUpdate(
+                return IngenOppdatering(
                     "Brukers norske id fra SED validerer ikke: \"${norskPin(brukerFra(sed))!!.identifikator!!}\" - ${ex.message}",
                     "Brukers norske id fra SED validerer ikke",
                 )
@@ -62,7 +62,7 @@ class Adresseoppdatering(
             personService.hentPerson(NorskIdent(normalisertNorskPIN)) ?: throw NullPointerException("hentPerson returnerte null")
         } catch (ex: PersonoppslagException) {
             if (ex.code == "not_found") {
-                return NoUpdate("Finner ikke bruker i PDL med angitt fnr i SED")
+                return IngenOppdatering("Finner ikke bruker i PDL med angitt fnr i SED")
             }
             throw ex
         }.also { secureLogger.debug("Person fra PDL:\n${it.toJson()}") }
@@ -72,7 +72,7 @@ class Adresseoppdatering(
                 .firstOrNull { it.gruppe == IdentGruppe.FOLKEREGISTERIDENT }?.ident
                 ?: personFraPDL.identer.first().ident
 
-        require(erUtenAdressebeskyttelse(personFraPDL.adressebeskyttelse)) { return NoUpdate("Ingen adresseoppdatering") }
+        require(erUtenAdressebeskyttelse(personFraPDL.adressebeskyttelse)) { return IngenOppdatering("Ingen adresseoppdatering") }
 
         logger.info("Vi har funnet en person fra PDL med samme norsk identifikator som bruker i SED")
 
@@ -81,9 +81,9 @@ class Adresseoppdatering(
 
         if (sedTilPDLAdresse.isUtenlandskAdresseISEDMatchMedAdresseIPDL(adresseFra(sed)!!, utenlandskKontaktadresseRegistrertAvNAV)) {
             require(LocalDate.now() != personFraPDL.kontaktadresse!!.gyldigFraOgMed?.toLocalDate()) {
-                return NoUpdate("Adresse finnes allerede i PDL med dagens dato som gyldig-fra-dato, dropper oppdatering")
+                return IngenOppdatering("Adresse finnes allerede i PDL med dagens dato som gyldig-fra-dato, dropper oppdatering")
             }
-            return Update(
+            return Oppdatering(
                 "Adressen fra ${sedHendelse.avsenderLand} finnes allerede i PDL, oppdaterer gyldig til og fra dato",
                 korrigerDatoEndringOpplysning(
                     norskFnr = norskFolkeregisterIdent,
@@ -97,13 +97,13 @@ class Adresseoppdatering(
         val endringsmelding = try {
             sedTilPDLAdresse.konverter(sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")", adresseFra(sed)!!)
         } catch (ex: IllegalArgumentException) {
-            return NoUpdate(
+            return IngenOppdatering(
                 "Adressen fra ${sedHendelse.avsenderLand} validerer ikke etter reglene til PDL: ${ex.message}",
                 "Adressen validerer ikke etter reglene til PDL"
             )
         }
 
-        return Update(
+        return Oppdatering(
             "Adressen i SED fra ${sedHendelse.avsenderLand} finnes ikke i PDL, sender OPPRETT endringsmelding",
             opprettAdresseEndringOpplysning(norskFolkeregisterIdent, endringsmelding),
             metricTagValueOverride = "Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding"
@@ -184,8 +184,8 @@ class Adresseoppdatering(
             get() = metricTagValueOverride ?: description
     }
 
-    data class Update(override val description: String, val pdlEndringsOpplysninger: PdlEndringOpplysning, override val metricTagValueOverride: String? = null): Result() {
-        override fun toString() = "Update(description=$description, pdlEndringsOpplysninger=[omitted], metricTagValueOverride=$metricTagValueOverride)"
+    data class Oppdatering(override val description: String, val pdlEndringsOpplysninger: PdlEndringOpplysning, override val metricTagValueOverride: String? = null): Result() {
+        override fun toString() = "Oppdatering(description=$description, pdlEndringsOpplysninger=[omitted], metricTagValueOverride=$metricTagValueOverride)"
     }
-    data class NoUpdate(override val description: String, override val metricTagValueOverride: String? = null): Result()
+    data class IngenOppdatering(override val description: String, override val metricTagValueOverride: String? = null): Result()
 }

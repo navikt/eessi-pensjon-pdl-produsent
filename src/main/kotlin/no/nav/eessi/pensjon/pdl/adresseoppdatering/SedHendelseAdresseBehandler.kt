@@ -43,7 +43,7 @@ class SedHendelseBehandler(
 
         val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse)
 
-        if (result is Adresseoppdatering.Update) {
+        if (result is Adresseoppdatering.Oppdatering) {
             personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
         }
 
@@ -61,7 +61,7 @@ class SedHendelseBehandler(
 
     private fun log(result: Adresseoppdatering.Result) {
         logger.info(result.toString())
-        if (result is Adresseoppdatering.Update) {
+        if (result is Adresseoppdatering.Oppdatering) {
             secureLogger.info("Oppdatering til PDL:\n${result.pdlEndringsOpplysninger.toJson()}")
         }
     }

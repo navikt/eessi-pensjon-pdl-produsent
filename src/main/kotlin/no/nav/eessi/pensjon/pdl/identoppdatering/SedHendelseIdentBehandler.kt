@@ -46,7 +46,7 @@ class SedHendelseIdentBehandler(
         val result = identOppdatering.oppdaterUtenlandskIdent(sedHendelse)
 
         log(result)
-        if (result is IdentOppdatering.Update) {
+        if (result is IdentOppdatering.Oppdatering) {
             personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
         }
 
@@ -55,12 +55,12 @@ class SedHendelseIdentBehandler(
 
     private fun log(result: IdentOppdatering.Result) {
         when (result) {
-            is IdentOppdatering.Update -> {
-                secureLogger.debug("Update:\n${result.toJson()}")
-                logger.info("Update(description=${result.description})")
+            is IdentOppdatering.Oppdatering -> {
+                secureLogger.debug("Oppdatering:\n${result.toJson()}")
+                logger.info("Oppdatering(description=${result.description})")
             }
 
-            is IdentOppdatering.NoUpdate -> {
+            is IdentOppdatering.IngenOppdatering -> {
                 logger.info(result.toString())
             }
         }
