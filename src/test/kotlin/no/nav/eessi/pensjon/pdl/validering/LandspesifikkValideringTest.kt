@@ -91,6 +91,7 @@ internal class LandspesifikkValideringTest {
         "SE, 7701131234, true",
         "SE, 7 7 0 1131234, true",
         "SE, 7 7% 1131234, false",
+        "SE, -, false",
         "DE, 56 120157 F 016, true",
         "DE, 02 140477 T 039, true",
         "DE, 02 140477 T 03%, false",
