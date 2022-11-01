@@ -111,7 +111,7 @@ class IdentOppdatering(
         }
 
         if (fraSammeLandMenUlikUid(utenlandskIdFraSED, personFraPDL.utenlandskIdentifikasjonsnummer)) {
-            return if (!oppgaveOppslag.finnesOppgavenAllerede(sedHendelse)) {
+            return if (!oppgaveOppslag.finnesOppgavenAllerede(sedHendelse.rinaSakId)) {
                 Oppgave(
                     "Det finnes allerede en annen uid fra samme land (oppgave opprettes)", OppgaveData(
                         sedHendelse,

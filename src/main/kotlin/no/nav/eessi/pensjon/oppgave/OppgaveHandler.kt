@@ -42,7 +42,7 @@ class OppgaveHandler(
 
     private fun opprettOppgaveForUid(sedHendelse: SedHendelse, identifisertePerson: IdentifisertPerson): Boolean {
         return oppgaveForUid.measure {
-            return@measure if (!finnesOppgavenAllerede(sedHendelse)) {
+            return@measure if (!finnesOppgavenAllerede(sedHendelse.rinaSakId)) {
                 val melding = OppgaveMelding(
                     aktoerId = identifisertePerson.aktoerId,
                     filnavn = null,
@@ -54,7 +54,7 @@ class OppgaveHandler(
                 )
 
                 opprettOppgaveMeldingPaaKafkaTopic(melding)
-                lagringsService.lagreHendelseMedSakId(sedHendelse)
+                lagringsService.lagreHendelseMedSakId(sedHendelse.rinaSakId)
                 logger.info("Opprett oppgave og lagret til s3")
                 true
             } else {
@@ -64,7 +64,7 @@ class OppgaveHandler(
         }
     }
 
-    override fun finnesOppgavenAllerede(sedHendelse: SedHendelse) = !lagringsService.kanHendelsenOpprettes(sedHendelse)
+    override fun finnesOppgavenAllerede(rinaSakId: String) = !lagringsService.kanHendelsenOpprettes(rinaSakId)
 
     private fun opprettOppgaveRuting(sedHendelse: SedHendelse, identifisertePerson : IdentifisertPerson) : Enhet {
         return oppgaveruting.route(OppgaveRoutingRequest.fra(
@@ -90,7 +90,7 @@ class OppgaveHandler(
 }
 
 interface OppgaveOppslag {
-    fun finnesOppgavenAllerede(sedHendelse: SedHendelse): Boolean
+    fun finnesOppgavenAllerede(rinaSakId: String): Boolean
 }
 
 data class OppgaveData(

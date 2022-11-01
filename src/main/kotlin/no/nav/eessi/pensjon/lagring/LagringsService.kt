@@ -10,11 +10,11 @@ class LagringsService (private val gcpStorageService: GcpStorageService) {
 
     private val logger = LoggerFactory.getLogger(LagringsService::class.java)
 
-    fun lagreHendelseMedSakId(hendelse: SedHendelse) {
-        val path = hentPathMedSakId(hendelse)
+    fun lagreHendelseMedSakId(rinaSakId: String) {
+        val path = hentPathMedSakId(rinaSakId)
 
         try {
-            val jsondata = hendelse.rinaSakId
+            val jsondata = rinaSakId
 
             logger.debug("Lagrer hendelse: $path, data: $jsondata")
             gcpStorageService.lagre(path, jsondata)
@@ -23,17 +23,17 @@ class LagringsService (private val gcpStorageService: GcpStorageService) {
         }
     }
 
-    fun kanHendelsenOpprettes(sedHendelse: SedHendelse) = hentHendelse(sedHendelse) == null
+    fun kanHendelsenOpprettes(rinaSakId: String) = hentHendelse(rinaSakId) == null
 
-    fun hentHendelse(hendelse: SedHendelse): String? {
-        val path = hentPathMedSakId(hendelse)
-        logger.info("Henter rinaSakId: ${hendelse.rinaSakId} from $path")
+    private fun hentHendelse(rinaSakId: String): String? {
+        val path = hentPathMedSakId(rinaSakId)
+        logger.info("Henter rinaSakId: $rinaSakId from $path")
 
         return try {
-            val rinaSakId = gcpStorageService.hent(path)
+            val rinaSakIdPayload = gcpStorageService.hent(path)
 
-            logger.debug("Henter hendelse fra: $path, data: $rinaSakId")
-            rinaSakId
+            logger.debug("Henter hendelse fra: $path, data: $rinaSakIdPayload")
+            rinaSakIdPayload
 
         } catch (ex: Exception) {
             logger.info("Feiler ved henting av data : $path")
@@ -41,8 +41,8 @@ class LagringsService (private val gcpStorageService: GcpStorageService) {
         }
     }
 
-    fun hentPathMedSakId(hendelse: SedHendelse): String {
-        val path = "rinaSakId-${hendelse.rinaSakId}.json"
+    fun hentPathMedSakId(rinaSakId: String): String {
+        val path = "rinaSakId-$rinaSakId.json"
         logger.info("Hendelsespath: $path")
         return path
     }

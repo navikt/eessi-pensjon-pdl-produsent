@@ -309,7 +309,7 @@ private class IdentOppdateringTest {
                 )
 
         val sedHendelse = sedHendelse(avsenderLand = "SE")
-        every { oppgaveOppslag.finnesOppgavenAllerede(eq(sedHendelse)) } returns false
+        every { oppgaveOppslag.finnesOppgavenAllerede(eq(sedHendelse.rinaSakId)) } returns false
 
         val actual = identoppdatering.oppdaterUtenlandskIdent(sedHendelse)
 
@@ -336,7 +336,7 @@ private class IdentOppdateringTest {
                 )
 
         val sedHendelse = sedHendelse(avsenderLand = "SE")
-        every { oppgaveOppslag.finnesOppgavenAllerede(eq(sedHendelse)) } returns true
+        every { oppgaveOppslag.finnesOppgavenAllerede(eq(sedHendelse.rinaSakId)) } returns true
 
         assertEquals(
             IngenOppdatering("Oppgave opprettet tidligere"),
@@ -363,7 +363,7 @@ private class IdentOppdateringTest {
                 )
 
         val sedHendelse = sedHendelse(avsenderLand = "SE")
-        every { oppgaveOppslag.finnesOppgavenAllerede(eq(sedHendelse)) } returns false
+        every { oppgaveOppslag.finnesOppgavenAllerede(eq(sedHendelse.rinaSakId)) } returns false
 
         val actual = identoppdatering.oppdaterUtenlandskIdent(sedHendelse)
 
