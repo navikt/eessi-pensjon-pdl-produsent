@@ -2,9 +2,7 @@ package no.nav.eessi.pensjon.pdl.identoppdatering
 
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import no.nav.eessi.pensjon.eux.EuxService
-import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.sed.Adresse
@@ -18,7 +16,7 @@ import no.nav.eessi.pensjon.models.EndringsmeldingUID
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelse
-import no.nav.eessi.pensjon.oppgave.OppgaveHandler
+import no.nav.eessi.pensjon.oppgave.OppgaveOppslag
 import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.IngenOppdatering
 import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.Oppdatering
 import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.Oppgave
@@ -44,6 +42,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -63,7 +62,7 @@ private class IdentOppdateringTest {
 
     var euxService: EuxService = mockk(relaxed = true)
     var kodeverkClient: KodeverkClient = mockk(relaxed = true)
-    var oppgaveHandler: OppgaveHandler = mockk()
+    var oppgaveOppslag: OppgaveOppslag = mockk()
     var personService: PersonService = mockk()
     var landspesifikkValidering = LandspesifikkValidering(kodeverkClient)
     lateinit var identoppdatering : IdentOppdatering
@@ -84,7 +83,7 @@ private class IdentOppdateringTest {
 
         identoppdatering = IdentOppdatering(
             euxService,
-            oppgaveHandler,
+            oppgaveOppslag,
             kodeverkClient,
             personService,
             landspesifikkValidering
@@ -286,8 +285,6 @@ private class IdentOppdateringTest {
                     )
                 )
 
-        every { oppgaveHandler.opprettOppgaveForUid(any(), any(), any()) } returns true
-
         assertEquals(
             IngenOppdatering("PDL uid er identisk med SED uid"),
             identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
@@ -311,14 +308,14 @@ private class IdentOppdateringTest {
                     )
                 )
 
-        every { oppgaveHandler.opprettOppgaveForUid(any(), any(), any()) } returns true
+        val sedHendelse = sedHendelse(avsenderLand = "SE")
+        every { oppgaveOppslag.finnesOppgavenAllerede(eq(sedHendelse)) } returns false
 
-        assertEquals(
-            Oppgave("Det finnes allerede en annen uid fra samme land (oppgave opprettes)"),
-            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
-        )
+        val actual = identoppdatering.oppdaterUtenlandskIdent(sedHendelse)
 
-        verify(exactly = 1) { oppgaveHandler.opprettOppgaveForUid(any(), any(), any()) }
+        assertTrue(actual is Oppgave)
+        assertEquals(sedHendelse, (actual as Oppgave).oppgaveData.sedHendelse)
+        assertEquals(AKTOERID, actual.oppgaveData.identifisertPerson.aktoerId)
     }
 
     @Test
@@ -339,8 +336,7 @@ private class IdentOppdateringTest {
                 )
 
         val sedHendelse = sedHendelse(avsenderLand = "SE")
-        every { oppgaveHandler.opprettOppgaveForUid(any(), any(), any()) } returns true
-        every { oppgaveHandler.opprettOppgaveForUid(eq(sedHendelse), any(), any()) } returns false
+        every { oppgaveOppslag.finnesOppgavenAllerede(eq(sedHendelse)) } returns true
 
         assertEquals(
             IngenOppdatering("Oppgave opprettet tidligere"),
@@ -367,19 +363,17 @@ private class IdentOppdateringTest {
                 )
 
         val sedHendelse = sedHendelse(avsenderLand = "SE")
-        every { oppgaveHandler.opprettOppgaveForUid(any(), any(), any()) } returns true
-        every { oppgaveHandler.opprettOppgaveForUid(eq(sedHendelse), any(), any()) } returns false
+        every { oppgaveOppslag.finnesOppgavenAllerede(eq(sedHendelse)) } returns false
 
-        assertEquals(
-            IngenOppdatering("Oppgave opprettet tidligere"),
-            identoppdatering.oppdaterUtenlandskIdent(sedHendelse)
-        )
+        val actual = identoppdatering.oppdaterUtenlandskIdent(sedHendelse)
+
+        assertTrue(actual is Oppgave)
+        assertEquals(sedHendelse, (actual as Oppgave).oppgaveData.sedHendelse)
+        assertEquals(AKTOERID, actual.oppgaveData.identifisertPerson.aktoerId)
     }
 
     @Test
     fun `Gitt at vi har en endringsmelding med en svensk uid, med riktig format saa skal det opprettes en endringsmelding`() {
-        val identifisertPerson= identifisertPerson(uidFraPdl = listOf(utenlandskIdentifikasjonsnummer(SVENSK_FNR)))
-
         every { personService.hentPerson(NorskIdent(FNR)) } returns
                 personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT)))
 
@@ -391,9 +385,6 @@ private class IdentOppdateringTest {
                     )
                 )
 
-        every { oppgaveHandler.opprettOppgaveForUid(any(), UtenlandskId(SVENSK_FNR, "SE"), identifisertPerson) } returns false
-        every { oppgaveHandler.opprettOppgaveForUid(any(), any(), any()) } returns true
-
         assertEquals(
             Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utstederland = "SWE")),
             (identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "SE")))
@@ -403,8 +394,6 @@ private class IdentOppdateringTest {
 
     @Test
     fun `Gitt at vi har en SED med svensk UID naar det allerede finnes en UID i PDL fra Finland saa skal det opprettes en endringsmelding`() {
-        val identifisertPerson= identifisertPerson(uidFraPdl = listOf(utenlandskIdentifikasjonsnummer(SVENSK_FNR)))
-
         every { personService.hentPerson(NorskIdent(FNR)) } returns
                 personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT)))
                     .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer(FINSK_FNR).copy(utstederland = "FIN")))
@@ -417,9 +406,6 @@ private class IdentOppdateringTest {
                     )
                 )
 
-        every { oppgaveHandler.opprettOppgaveForUid(any(), UtenlandskId(SVENSK_FNR, "SE"), identifisertPerson) } returns false
-        every { oppgaveHandler.opprettOppgaveForUid(any(), any(), any()) } returns true
-
         assertEquals(
             Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utstederland = "SWE")),
             identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
@@ -429,7 +415,6 @@ private class IdentOppdateringTest {
 
     @Test
     fun `Gitt at vi har en SED med norsk fnr som skal oppdateres til pdl, der PDL har en aktoerid inne i PDL saa skal Oppdateringsmeldingen til PDL ha norsk FNR og ikke aktoerid`() {
-        val identifisertPerson= identifisertPerson(uidFraPdl = listOf(utenlandskIdentifikasjonsnummer(SVENSK_FNR)))
 
         every { personService.hentPerson(NorskIdent(FNR)) } returns
                 personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon("1234567891234", IdentGruppe.AKTORID), IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT)))
@@ -442,9 +427,6 @@ private class IdentOppdateringTest {
                         PinItem(identifikator = FNR, land = "NO")
                     )
                 )
-
-        every { oppgaveHandler.opprettOppgaveForUid(any(), UtenlandskId(SVENSK_FNR, "SE"), identifisertPerson) } returns false
-        every { oppgaveHandler.opprettOppgaveForUid(any(), any(), any()) } returns true
 
         assertEquals(
                 Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utstederland = "SWE")),

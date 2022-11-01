@@ -2,6 +2,7 @@ package no.nav.eessi.pensjon.pdl.identoppdatering
 
 import io.micrometer.core.instrument.Metrics
 import no.nav.eessi.pensjon.models.SedHendelse
+import no.nav.eessi.pensjon.oppgave.OppgaveHandler
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.LoggerFactory
@@ -20,6 +21,7 @@ import org.springframework.web.client.HttpClientErrorException
 class SedHendelseIdentBehandler(
         private val identOppdatering: IdentOppdatering,
         private val personMottakKlient: PersonMottakKlient,
+        private val oppgaveHandler: OppgaveHandler,
         @Value("\${SPRING_PROFILES_ACTIVE:}") private val profile: String
 ) {
     private val logger = LoggerFactory.getLogger(SedHendelseIdentBehandler::class.java)
@@ -46,8 +48,15 @@ class SedHendelseIdentBehandler(
         val result = identOppdatering.oppdaterUtenlandskIdent(sedHendelse)
 
         log(result)
-        if (result is IdentOppdatering.Oppdatering) {
-            personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
+
+        when (result) {
+            is IdentOppdatering.Oppdatering -> {
+                personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
+            }
+            is IdentOppdatering.Oppgave -> {
+                oppgaveHandler.opprettOppgaveForUid(result.oppgaveData)
+            }
+            is IdentOppdatering.IngenOppdatering -> { /* NO-OP */ }
         }
 
         count(result.metricTagValue)
@@ -65,7 +74,7 @@ class SedHendelseIdentBehandler(
             }
 
             is IdentOppdatering.Oppgave -> {
-                logger.info(result.toString())
+                logger.info("Oppgave(description=${result.description}")
             }
         }
     }

@@ -1,6 +1,5 @@
 package no.nav.eessi.pensjon.oppgave
 
-import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.lagring.LagringsService
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.models.Enhet
@@ -24,7 +23,7 @@ class OppgaveHandler(
     private val lagringsService: LagringsService,
     private val oppgaveruting: OppgaveRoutingService,
     @Value("\${namespace}") var nameSpace: String,
-    @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest() ) {
+    @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest() ) : OppgaveOppslag {
 
     private val logger = LoggerFactory.getLogger(OppgaveHandler::class.java)
     private val X_REQUEST_ID = "x_request_id"
@@ -38,9 +37,12 @@ class OppgaveHandler(
         oppgaveForUid = metricsHelper.init("OppgaveForUid")
     }
 
-    fun opprettOppgaveForUid(sedHendelse: SedHendelse, utenlandskIdSed: UtenlandskId, identifisertePerson : IdentifisertPerson): Boolean {
+    fun opprettOppgaveForUid(oppgaveData: OppgaveData) =
+        opprettOppgaveForUid(oppgaveData.sedHendelse, oppgaveData.identifisertPerson)
+
+    private fun opprettOppgaveForUid(sedHendelse: SedHendelse, identifisertePerson: IdentifisertPerson): Boolean {
         return oppgaveForUid.measure {
-            return@measure if (lagringsService.kanHendelsenOpprettes(sedHendelse)) {
+            return@measure if (!finnesOppgavenAllerede(sedHendelse)) {
                 val melding = OppgaveMelding(
                     aktoerId = identifisertePerson.aktoerId,
                     filnavn = null,
@@ -61,6 +63,8 @@ class OppgaveHandler(
             }
         }
     }
+
+    override fun finnesOppgavenAllerede(sedHendelse: SedHendelse) = !lagringsService.kanHendelsenOpprettes(sedHendelse)
 
     private fun opprettOppgaveRuting(sedHendelse: SedHendelse, identifisertePerson : IdentifisertPerson) : Enhet {
         return oppgaveruting.route(OppgaveRoutingRequest.fra(
@@ -84,3 +88,12 @@ class OppgaveHandler(
         }
     }
 }
+
+interface OppgaveOppslag {
+    fun finnesOppgavenAllerede(sedHendelse: SedHendelse): Boolean
+}
+
+data class OppgaveData(
+    val sedHendelse: SedHendelse,
+    val identifisertPerson: IdentifisertPerson
+)

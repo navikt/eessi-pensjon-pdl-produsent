@@ -9,7 +9,8 @@ import no.nav.eessi.pensjon.models.EndringsmeldingUID
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelse
-import no.nav.eessi.pensjon.oppgave.OppgaveHandler
+import no.nav.eessi.pensjon.oppgave.OppgaveData
+import no.nav.eessi.pensjon.oppgave.OppgaveOppslag
 import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
 import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
@@ -24,12 +25,13 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 
 @Service
 class IdentOppdatering(
     private val euxService: EuxService,
-    private val oppgaveHandler: OppgaveHandler,
+    @Qualifier("oppgaveHandler") private val oppgaveOppslag: OppgaveOppslag,
     private val kodeverkClient: KodeverkClient,
     private val personService: PersonService,
     private val landspesifikkValidering: LandspesifikkValidering
@@ -109,14 +111,16 @@ class IdentOppdatering(
         }
 
         if (fraSammeLandMenUlikUid(utenlandskIdFraSED, personFraPDL.utenlandskIdentifikasjonsnummer)) {
-            return if (oppgaveHandler.opprettOppgaveForUid(
-                    sedHendelse,
-                    utenlandskIdFraSED,
-                    identifisertPerson(personFraPDL)
+            return if (!oppgaveOppslag.finnesOppgavenAllerede(sedHendelse)) {
+                Oppgave(
+                    "Det finnes allerede en annen uid fra samme land (oppgave opprettes)", OppgaveData(
+                        sedHendelse,
+                        identifisertPerson(personFraPDL)
+                    )
                 )
-            ) {
-                Oppgave("Det finnes allerede en annen uid fra samme land (oppgave opprettes)")
-            } else IngenOppdatering("Oppgave opprettet tidligere") // TODO: Burde vi ikke bruke norskFnr her?
+            } else {
+                IngenOppdatering("Oppgave opprettet tidligere")
+            }
         }
 
         logger.info("Oppdaterer PDL med Ny Utenlandsk Ident fra ${sedHendelse.avsenderNavn}")
@@ -202,8 +206,7 @@ class IdentOppdatering(
 
     data class Oppdatering(override val description: String, val pdlEndringsOpplysninger: PdlEndringOpplysning, override val metricTagValueOverride: String? = null, ): Result()
     data class IngenOppdatering(override val description: String, override val metricTagValueOverride: String? = null): Result()
-
-    data class Oppgave(override val description: String, override val metricTagValueOverride: String? = null): Result()
+    data class Oppgave(override val description: String, val oppgaveData: OppgaveData, override val metricTagValueOverride: String? = null): Result()
 
 
 }

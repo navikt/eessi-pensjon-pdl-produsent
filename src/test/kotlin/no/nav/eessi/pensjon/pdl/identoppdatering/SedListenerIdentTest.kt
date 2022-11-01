@@ -43,6 +43,7 @@ internal class SedListenerIdentTest {
                 SedHendelseIdentBehandler(
                         identOppdatering,
                         personMottakKlient,
+                        oppgaveHandler,
                         "test"
                 ),
         )
