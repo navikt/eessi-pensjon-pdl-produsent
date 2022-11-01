@@ -2,9 +2,11 @@ package no.nav.eessi.pensjon.pdl.identoppdatering
 
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.verify
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
+import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.utils.toJson
@@ -36,6 +38,32 @@ private class SedHendelseIdentBehandlerTest {
 
     @Autowired
     lateinit var sedHendelseIdentBehandler: SedHendelseIdentBehandler
+
+    @Test
+    fun `Gitt en Oppdatering så kaller vi opprettPersonopplysning`() {
+
+        every { identOppdatering.oppdaterUtenlandskIdent(any()) } returns
+                IdentOppdatering.Oppdatering("En oppdatering", PdlEndringOpplysning(listOf()))
+        every { personMottakKlient.opprettPersonopplysning(any()) } returns true
+
+        sedHendelseIdentBehandler.behandle(enSedHendelse())
+
+        verify(exactly = 1) { identOppdatering.oppdaterUtenlandskIdent(any()) }
+        verify(exactly = 1) { personMottakKlient.opprettPersonopplysning(any()) }
+    }
+
+    @Test
+    fun `Gitt IngenOppdatering så kaller vi IKKE opprettPersonopplysning`() {
+
+        every { identOppdatering.oppdaterUtenlandskIdent(any()) } returns
+                IdentOppdatering.IngenOppdatering("Ingen oppdatering")
+        every { personMottakKlient.opprettPersonopplysning(any()) } returns true
+
+        sedHendelseIdentBehandler.behandle(enSedHendelse())
+
+        verify(exactly = 1) { identOppdatering.oppdaterUtenlandskIdent(any()) }
+        verify(exactly = 0) { personMottakKlient.opprettPersonopplysning(any()) }
+    }
 
     @Test
     fun `Gitt en at vi får 423 LOCKED fra PDL så gjør vi retry på hele prosessen`() {
