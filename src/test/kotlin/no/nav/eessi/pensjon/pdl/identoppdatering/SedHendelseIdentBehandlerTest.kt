@@ -33,7 +33,7 @@ import org.springframework.web.client.HttpClientErrorException
 private class SedHendelseIdentBehandlerTest {
 
     @MockkBean
-    lateinit var identOppdatering: IdentOppdatering
+    lateinit var vurderIdentoppdatering: VurderIdentoppdatering
 
     @MockkBean
     lateinit var personMottakKlient: PersonMottakKlient
@@ -47,13 +47,13 @@ private class SedHendelseIdentBehandlerTest {
     @Test
     fun `Gitt en Oppdatering så kaller vi opprettPersonopplysning`() {
 
-        every { identOppdatering.oppdaterUtenlandskIdent(any()) } returns
-                IdentOppdatering.Oppdatering("En oppdatering", PdlEndringOpplysning(listOf()))
+        every { vurderIdentoppdatering.vurderUtenlandskIdent(any()) } returns
+                VurderIdentoppdatering.Oppdatering("En oppdatering", PdlEndringOpplysning(listOf()))
         every { personMottakKlient.opprettPersonopplysning(any()) } returns true
 
         sedHendelseIdentBehandler.behandle(enSedHendelseAsJson())
 
-        verify(exactly = 1) { identOppdatering.oppdaterUtenlandskIdent(any()) }
+        verify(exactly = 1) { vurderIdentoppdatering.vurderUtenlandskIdent(any()) }
         verify(exactly = 1) { personMottakKlient.opprettPersonopplysning(any()) }
         verify(exactly = 0) { oppgaveHandler.opprettOppgaveForUid(any()) }
     }
@@ -63,13 +63,13 @@ private class SedHendelseIdentBehandlerTest {
 
         val enSedHendelse = enSedHendelse()
 
-        every { identOppdatering.oppdaterUtenlandskIdent(any()) } returns
-                IdentOppdatering.Oppgave("Oppgave", OppgaveData(enSedHendelse, enIdentifisertPerson()))
+        every { vurderIdentoppdatering.vurderUtenlandskIdent(any()) } returns
+                VurderIdentoppdatering.Oppgave("Oppgave", OppgaveData(enSedHendelse, enIdentifisertPerson()))
         every { oppgaveHandler.opprettOppgaveForUid(any()) } returns true
 
         sedHendelseIdentBehandler.behandle(enSedHendelse.toJson())
 
-        verify(exactly = 1) { identOppdatering.oppdaterUtenlandskIdent(any()) }
+        verify(exactly = 1) { vurderIdentoppdatering.vurderUtenlandskIdent(any()) }
         verify(exactly = 0) { personMottakKlient.opprettPersonopplysning(any()) }
         verify(exactly = 1) { oppgaveHandler.opprettOppgaveForUid(any()) }
     }
@@ -77,7 +77,7 @@ private class SedHendelseIdentBehandlerTest {
     @Test
     fun `Gitt en at vi får 423 LOCKED fra PDL så gjør vi retry på hele prosessen`() {
 
-        every { identOppdatering.oppdaterUtenlandskIdent(any()) } throws HttpClientErrorException(HttpStatus.LOCKED)
+        every { vurderIdentoppdatering.vurderUtenlandskIdent(any()) } throws HttpClientErrorException(HttpStatus.LOCKED)
 
         val ex = org.junit.jupiter.api.assertThrows<HttpClientErrorException> {
             sedHendelseIdentBehandler.behandle(enSedHendelseAsJson())
@@ -85,7 +85,7 @@ private class SedHendelseIdentBehandlerTest {
 
         assertEquals(HttpStatus.LOCKED, ex.statusCode)
 
-        verify(exactly = 3) { identOppdatering.oppdaterUtenlandskIdent(any()) }
+        verify(exactly = 3) { vurderIdentoppdatering.vurderUtenlandskIdent(any()) }
         verify(exactly = 0) { personMottakKlient.opprettPersonopplysning(any()) }
         verify(exactly = 0) { oppgaveHandler.opprettOppgaveForUid(any()) }
     }

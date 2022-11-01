@@ -17,9 +17,9 @@ import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.oppgave.OppgaveOppslag
-import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.IngenOppdatering
-import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.Oppdatering
-import no.nav.eessi.pensjon.pdl.identoppdatering.IdentOppdatering.Oppgave
+import no.nav.eessi.pensjon.pdl.identoppdatering.VurderIdentoppdatering.IngenOppdatering
+import no.nav.eessi.pensjon.pdl.identoppdatering.VurderIdentoppdatering.Oppdatering
+import no.nav.eessi.pensjon.pdl.identoppdatering.VurderIdentoppdatering.Oppgave
 import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import no.nav.eessi.pensjon.personidentifisering.Relasjon
@@ -58,14 +58,14 @@ private const val FINSK_FNR = "130177-308T"
 private const val SOME_FNR = "1234567799"
 private const val AKTOERID = "32165498732"
 
-private class IdentOppdateringTest {
+private class VurderIdentoppdateringTest {
 
     var euxService: EuxService = mockk(relaxed = true)
     var kodeverkClient: KodeverkClient = mockk(relaxed = true)
     var oppgaveOppslag: OppgaveOppslag = mockk()
     var personService: PersonService = mockk()
     var landspesifikkValidering = LandspesifikkValidering(kodeverkClient)
-    lateinit var identoppdatering : IdentOppdatering
+    lateinit var identoppdatering : VurderIdentoppdatering
 
     @BeforeEach
     fun setup() {
@@ -81,7 +81,7 @@ private class IdentOppdateringTest {
         every { kodeverkClient.finnLandkode("FI") } returns "FIN"
         every { kodeverkClient.finnLandkode("FIN") } returns "FI"
 
-        identoppdatering = IdentOppdatering(
+        identoppdatering = VurderIdentoppdatering(
             euxService,
             oppgaveOppslag,
             kodeverkClient,
@@ -96,7 +96,7 @@ private class IdentOppdateringTest {
 
         assertEquals(
             IngenOppdatering("Ikke relevant for eessipensjon, buc: P_BUC_01, sed: X001, sektor: P", "Ikke relevant for eessipensjon"),
-            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "NO", sedType = SedType.X001))
+            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "NO", sedType = SedType.X001))
         )
     }
 
@@ -106,7 +106,7 @@ private class IdentOppdateringTest {
 
         assertEquals(
             IngenOppdatering("Bruker har ikke norsk pin i SED"),
-            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
+            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
         )
     }
 
@@ -116,7 +116,7 @@ private class IdentOppdateringTest {
 
         assertEquals(
             IngenOppdatering(description="Bruker har ikke utenlandsk ident fra avsenderland (SE)", metricTagValueOverride="Bruker har ikke utenlandsk ident fra avsenderland"),
-            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
+            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
         )
     }
 
@@ -127,7 +127,7 @@ private class IdentOppdateringTest {
 
         assertEquals(
             IngenOppdatering(description="Bruker har ikke utenlandsk ident fra avsenderland (SE)", metricTagValueOverride="Bruker har ikke utenlandsk ident fra avsenderland"),
-            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
+            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
         )
     }
 
@@ -139,7 +139,7 @@ private class IdentOppdateringTest {
 
         assertEquals(
             IngenOppdatering("AvsenderNavn er ikke satt, kan derfor ikke lage endringsmelding"),
-            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "PL", avsenderNavn = null))
+            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "PL", avsenderNavn = null))
         )
     }
 
@@ -161,7 +161,7 @@ private class IdentOppdateringTest {
                 description="Utenlandsk(e) id(-er) er ikke på gyldig format for land FI",
                 metricTagValueOverride = "Utenlandsk id er ikke på gyldig format"
             ),
-            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "FI"))
+            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "FI"))
         )
     }
 
@@ -183,7 +183,7 @@ private class IdentOppdateringTest {
 
         assertEquals(
             Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utstederland = "SWE")),
-            (identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "SE")))
+            (identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE")))
         )
     }
 
@@ -206,7 +206,7 @@ private class IdentOppdateringTest {
                 utenlandskId = "100177-2913",
                 utstederland = "DNK"
             )),
-            (identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "DK")))
+            (identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "DK")))
         )
     }
 
@@ -225,7 +225,7 @@ private class IdentOppdateringTest {
 
         assertEquals(
             IngenOppdatering("PDL uid er identisk med SED uid"),
-            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "FI"))
+            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "FI"))
         )
     }
 
@@ -242,7 +242,7 @@ private class IdentOppdateringTest {
 
         assertEquals(
             IngenOppdatering("Finner ikke bruker i PDL med angitt fnr i SED"),
-            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "FI"))
+            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "FI"))
         )
     }
 
@@ -258,7 +258,7 @@ private class IdentOppdateringTest {
                 )
 
         assertThrows<NullPointerException> {
-            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "FI"))
+            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "FI"))
         }
     }
 
@@ -287,7 +287,7 @@ private class IdentOppdateringTest {
 
         assertEquals(
             IngenOppdatering("PDL uid er identisk med SED uid"),
-            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
+            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
         )
     }
 
@@ -311,7 +311,7 @@ private class IdentOppdateringTest {
         val sedHendelse = sedHendelse(avsenderLand = "SE")
         every { oppgaveOppslag.finnesOppgavenAllerede(eq(sedHendelse.rinaSakId)) } returns false
 
-        val actual = identoppdatering.oppdaterUtenlandskIdent(sedHendelse)
+        val actual = identoppdatering.vurderUtenlandskIdent(sedHendelse)
 
         assertTrue(actual is Oppgave)
         assertEquals(sedHendelse, (actual as Oppgave).oppgaveData.sedHendelse)
@@ -340,7 +340,7 @@ private class IdentOppdateringTest {
 
         assertEquals(
             IngenOppdatering("Oppgave opprettet tidligere"),
-            identoppdatering.oppdaterUtenlandskIdent(sedHendelse)
+            identoppdatering.vurderUtenlandskIdent(sedHendelse)
         )
     }
 
@@ -365,7 +365,7 @@ private class IdentOppdateringTest {
         val sedHendelse = sedHendelse(avsenderLand = "SE")
         every { oppgaveOppslag.finnesOppgavenAllerede(eq(sedHendelse.rinaSakId)) } returns false
 
-        val actual = identoppdatering.oppdaterUtenlandskIdent(sedHendelse)
+        val actual = identoppdatering.vurderUtenlandskIdent(sedHendelse)
 
         assertTrue(actual is Oppgave)
         assertEquals(sedHendelse, (actual as Oppgave).oppgaveData.sedHendelse)
@@ -387,7 +387,7 @@ private class IdentOppdateringTest {
 
         assertEquals(
             Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utstederland = "SWE")),
-            (identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "SE")))
+            (identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE")))
         )
 
     }
@@ -408,7 +408,7 @@ private class IdentOppdateringTest {
 
         assertEquals(
             Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utstederland = "SWE")),
-            identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
+            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
         )
 
     }
@@ -430,7 +430,7 @@ private class IdentOppdateringTest {
 
         assertEquals(
                 Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utstederland = "SWE")),
-                identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
+                identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
         )
 
     }
@@ -451,7 +451,7 @@ private class IdentOppdateringTest {
 
         assertEquals(
                 Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utstederland = "SWE")),
-                identoppdatering.oppdaterUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
+                identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
         )
     }
 

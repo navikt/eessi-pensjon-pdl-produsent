@@ -29,7 +29,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 
 @Service
-class IdentOppdatering(
+class VurderIdentoppdatering(
     private val euxService: EuxService,
     @Qualifier("oppgaveHandler") private val oppgaveOppslag: OppgaveOppslag,
     private val kodeverkClient: KodeverkClient,
@@ -37,10 +37,10 @@ class IdentOppdatering(
     private val landspesifikkValidering: LandspesifikkValidering
 ) {
 
-    private val logger = LoggerFactory.getLogger(IdentOppdatering::class.java)
+    private val logger = LoggerFactory.getLogger(VurderIdentoppdatering::class.java)
     private val secureLogger = LoggerFactory.getLogger("secureLog")
 
-    fun oppdaterUtenlandskIdent(sedHendelse: SedHendelse): Result {
+    fun vurderUtenlandskIdent(sedHendelse: SedHendelse): Result {
         require(erRelevantForEESSIPensjon(sedHendelse)) { return IngenOppdatering("Ikke relevant for eessipensjon, buc: ${sedHendelse.bucType}, sed: ${sedHendelse.sedType}, sektor: ${sedHendelse.sektorKode}", "Ikke relevant for eessipensjon") }
 
         val sed = euxService.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId)

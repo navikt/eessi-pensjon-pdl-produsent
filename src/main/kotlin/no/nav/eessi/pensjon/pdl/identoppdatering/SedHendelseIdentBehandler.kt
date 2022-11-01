@@ -19,10 +19,10 @@ import org.springframework.web.client.HttpClientErrorException
 
 @Service
 class SedHendelseIdentBehandler(
-        private val identOppdatering: IdentOppdatering,
-        private val personMottakKlient: PersonMottakKlient,
-        private val oppgaveHandler: OppgaveHandler,
-        @Value("\${SPRING_PROFILES_ACTIVE:}") private val profile: String
+    private val vurderIdentoppdatering: VurderIdentoppdatering,
+    private val personMottakKlient: PersonMottakKlient,
+    private val oppgaveHandler: OppgaveHandler,
+    @Value("\${SPRING_PROFILES_ACTIVE:}") private val profile: String
 ) {
     private val logger = LoggerFactory.getLogger(SedHendelseIdentBehandler::class.java)
     private val secureLogger = LoggerFactory.getLogger("secureLog")
@@ -45,35 +45,35 @@ class SedHendelseIdentBehandler(
 
         logger.info("*** Starter pdl endringsmelding (IDENT) prosess for BucType: ${sedHendelse.bucType}, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
 
-        val result = identOppdatering.oppdaterUtenlandskIdent(sedHendelse)
+        val result = vurderIdentoppdatering.vurderUtenlandskIdent(sedHendelse)
 
         log(result)
 
         when (result) {
-            is IdentOppdatering.Oppdatering -> {
+            is VurderIdentoppdatering.Oppdatering -> {
                 personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
             }
-            is IdentOppdatering.Oppgave -> {
+            is VurderIdentoppdatering.Oppgave -> {
                 oppgaveHandler.opprettOppgaveForUid(result.oppgaveData)
             }
-            is IdentOppdatering.IngenOppdatering -> { /* NO-OP */ }
+            is VurderIdentoppdatering.IngenOppdatering -> { /* NO-OP */ }
         }
 
         count(result.metricTagValue)
     }
 
-    private fun log(result: IdentOppdatering.Result) {
+    private fun log(result: VurderIdentoppdatering.Result) {
         when (result) {
-            is IdentOppdatering.Oppdatering -> {
+            is VurderIdentoppdatering.Oppdatering -> {
                 secureLogger.debug("Oppdatering:\n${result.toJson()}")
                 logger.info("Oppdatering(description=${result.description})")
             }
 
-            is IdentOppdatering.IngenOppdatering -> {
+            is VurderIdentoppdatering.IngenOppdatering -> {
                 logger.info(result.toString())
             }
 
-            is IdentOppdatering.Oppgave -> {
+            is VurderIdentoppdatering.Oppgave -> {
                 logger.info("Oppgave(description=${result.description}")
             }
         }

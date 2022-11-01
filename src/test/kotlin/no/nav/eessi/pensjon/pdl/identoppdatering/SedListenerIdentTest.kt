@@ -31,7 +31,7 @@ internal class SedListenerIdentTest {
 
     @BeforeEach
     fun setup() {
-        val identOppdatering = IdentOppdatering(
+        val vurderIdentoppdatering = VurderIdentoppdatering(
                 euxService,
                 oppgaveHandler,
                 kodeverkClient,
@@ -41,7 +41,7 @@ internal class SedListenerIdentTest {
 
         sedListenerIdent = SedListenerIdent(
                 SedHendelseIdentBehandler(
-                        identOppdatering,
+                        vurderIdentoppdatering,
                         personMottakKlient,
                         oppgaveHandler,
                         "test"
