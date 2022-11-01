@@ -24,15 +24,15 @@ import org.springframework.stereotype.Service
 import java.time.LocalDate
 
 @Service
-class Adresseoppdatering(
+class VurderAdresseoppdatering(
     private val personService: PersonService,
     private val euxService: EuxService,
     private val sedTilPDLAdresse: SedTilPDLAdresse
 ) {
-    private val logger = LoggerFactory.getLogger(Adresseoppdatering::class.java)
+    private val logger = LoggerFactory.getLogger(VurderAdresseoppdatering::class.java)
     private val secureLogger = LoggerFactory.getLogger("secureLog")
 
-    fun oppdaterUtenlandskKontaktadresse(sedHendelse: SedHendelse): Result {
+    fun vurderUtenlandskKontaktadresse(sedHendelse: SedHendelse): Result {
         require(erRelevantForEESSIPensjon(sedHendelse)) { return IngenOppdatering("SED ikke relevant for EESSI Pensjon, buc: ${sedHendelse.bucType}, sed: ${sedHendelse.sedType}, sektor: ${sedHendelse.sektorKode}", "SED ikke relevant for EESSI Pensjon") }
 
         val sed = euxService.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId).also { secureLogger.debug("SED:\n$it") }

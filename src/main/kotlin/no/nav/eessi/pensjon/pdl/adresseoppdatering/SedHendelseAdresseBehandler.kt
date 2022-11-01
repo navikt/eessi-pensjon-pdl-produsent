@@ -18,7 +18,7 @@ import org.springframework.web.client.HttpClientErrorException
 
 @Service
 class SedHendelseBehandler(
-    private val adresseoppdatering: Adresseoppdatering,
+    private val adresseoppdatering: VurderAdresseoppdatering,
     private val personMottakKlient: PersonMottakKlient,
     @Value("\${SPRING_PROFILES_ACTIVE:}") private val profile: String
 ) {
@@ -41,9 +41,9 @@ class SedHendelseBehandler(
 
         logger.info("*** Starter pdl endringsmelding (ADRESSE) prosess for BucType: ${sedHendelse.bucType}, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
 
-        val result = adresseoppdatering.oppdaterUtenlandskKontaktadresse(sedHendelse)
+        val result = adresseoppdatering.vurderUtenlandskKontaktadresse(sedHendelse)
 
-        if (result is Adresseoppdatering.Oppdatering) {
+        if (result is VurderAdresseoppdatering.Oppdatering) {
             personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
         }
 
@@ -59,9 +59,9 @@ class SedHendelseBehandler(
         }
     }
 
-    private fun log(result: Adresseoppdatering.Result) {
+    private fun log(result: VurderAdresseoppdatering.Result) {
         logger.info(result.toString())
-        if (result is Adresseoppdatering.Oppdatering) {
+        if (result is VurderAdresseoppdatering.Oppdatering) {
             secureLogger.info("Oppdatering til PDL:\n${result.pdlEndringsOpplysninger.toJson()}")
         }
     }

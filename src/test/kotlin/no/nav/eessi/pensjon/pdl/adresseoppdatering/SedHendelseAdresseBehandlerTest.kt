@@ -30,7 +30,7 @@ import org.springframework.web.client.HttpClientErrorException
 class SedHendelseBehandlerTest {
 
     @MockkBean
-    lateinit var adresseoppdatering: Adresseoppdatering
+    lateinit var adresseoppdatering: VurderAdresseoppdatering
 
     @MockkBean
     lateinit var personMottakKlient: PersonMottakKlient
@@ -41,7 +41,7 @@ class SedHendelseBehandlerTest {
     @Test
     fun `Gitt en at vi får 423 LOCKED fra PDL så gjør vi retry på hele prosessen`() {
 
-        every { adresseoppdatering.oppdaterUtenlandskKontaktadresse(any()) } throws HttpClientErrorException(HttpStatus.LOCKED)
+        every { adresseoppdatering.vurderUtenlandskKontaktadresse(any()) } throws HttpClientErrorException(HttpStatus.LOCKED)
 
         val ex = assertThrows<HttpClientErrorException> {
             sedHendelseBehandler.behandle(enSedHendelse())
@@ -49,14 +49,14 @@ class SedHendelseBehandlerTest {
 
         assertEquals(HttpStatus.LOCKED, ex.statusCode)
 
-        verify(exactly = 3) { adresseoppdatering.oppdaterUtenlandskKontaktadresse(any()) }
+        verify(exactly = 3) { adresseoppdatering.vurderUtenlandskKontaktadresse(any()) }
         verify(exactly = 0) { personMottakKlient.opprettPersonopplysning(any()) }
     }
 
     @Test
     fun `Gitt en at vi får 400 BAD REQUEST fra PDL så gjør vi ikke retry på prosessen`() {
 
-        every { adresseoppdatering.oppdaterUtenlandskKontaktadresse(any()) } throws HttpClientErrorException(HttpStatus.BAD_REQUEST)
+        every { adresseoppdatering.vurderUtenlandskKontaktadresse(any()) } throws HttpClientErrorException(HttpStatus.BAD_REQUEST)
 
         val ex = assertThrows<HttpClientErrorException> {
             sedHendelseBehandler.behandle(enSedHendelse())
@@ -64,7 +64,7 @@ class SedHendelseBehandlerTest {
 
         assertEquals(HttpStatus.BAD_REQUEST, ex.statusCode)
 
-        verify(exactly = 1) { adresseoppdatering.oppdaterUtenlandskKontaktadresse(any()) }
+        verify(exactly = 1) { adresseoppdatering.vurderUtenlandskKontaktadresse(any()) }
         verify(exactly = 0) { personMottakKlient.opprettPersonopplysning(any()) }
     }
 
