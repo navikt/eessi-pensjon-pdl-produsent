@@ -28,8 +28,8 @@ class SedHendelseIdentBehandler(
     @Retryable( // Vi gjør retry når det er lås på PDL-objektet - gjøres langt opp i stacken for at vi skal gjøre nytt oppslag mot PDL
             include = [HttpClientErrorException::class],
             exceptionExpression = "statusCode.value == 423",
-            backoff = Backoff(delayExpression = "@identBehandlerRetryConfig.initialRetryMillis", maxDelay = 200000L, multiplier = 3.0),
-            listeners  = ["behandleIdentRetryLogger"]
+            backoff = Backoff(delayExpression = "@sedHendelseIdentBehandlerRetryConfig.initialRetryMillis", maxDelay = 200000L, multiplier = 3.0),
+            listeners  = ["sedHendelseIdentBehandlerRetryLogger"]
     )
     fun behandle(hendelse: String) {
         logger.debug(hendelse)
@@ -95,11 +95,11 @@ class SedHendelseIdentBehandler(
 
 @Profile("!retryConfigOverride")
 @Component
-data class IdentBehandlerRetryConfig(val initialRetryMillis: Long = 20000L)
+data class SedHendelseIdentBehandlerRetryConfig(val initialRetryMillis: Long = 20000L)
 
 @Component
-class BehandleIdentRetryLogger : RetryListenerSupport() {
-    private val logger = LoggerFactory.getLogger(BehandleIdentRetryLogger::class.java)
+class SedHendelseIdentBehandlerRetryLogger : RetryListenerSupport() {
+    private val logger = LoggerFactory.getLogger(SedHendelseIdentBehandlerRetryLogger::class.java)
     override fun <T : Any?, E : Throwable?> onError(context: RetryContext?, callback: RetryCallback<T, E>?, throwable: Throwable?) {
         logger.warn("Feil under behandling av sedHendelse - try #${context?.retryCount } - ${throwable?.toString()}", throwable)
     }
