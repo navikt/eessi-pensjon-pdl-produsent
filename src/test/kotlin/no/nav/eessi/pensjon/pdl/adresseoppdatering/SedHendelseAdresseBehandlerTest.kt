@@ -52,7 +52,6 @@ class SedHendelseBehandlerTest {
     fun `Gitt en at vi får 423 LOCKED fra PDL så gjør vi retry på hele prosessen`() {
         val fnr = FodselsnummerGenerator.generateFnrForTest(70)
         every { euxService.hentSed(eq("74389487"), eq("743982")) } returns SedListenerAdresseIT.enSedFraEux(fnr)
-        every { euxService.alleGyldigeSEDForBuc(any()) } returns emptyList() // Dette er fordi vi ikke bryr oss om IdentListener
         every { personService.hentPerson(NorskIdent(fnr)) } returns SedListenerAdresseIT.enPersonFraPDL(fnr)
         every { kodeverkClient.finnLandkode("SE") } returns "SWE"
         every { personMottakKlient.opprettPersonopplysning(any()) } throws HttpClientErrorException(HttpStatus.LOCKED)
@@ -70,7 +69,6 @@ class SedHendelseBehandlerTest {
     fun `Gitt en at vi får 400 BAD REQUEST fra PDL så gjør vi ikke retry på prosessen`() {
         val fnr = FodselsnummerGenerator.generateFnrForTest(70)
         every { euxService.hentSed(eq("74389487"), eq("743982")) } returns SedListenerAdresseIT.enSedFraEux(fnr)
-        every { euxService.alleGyldigeSEDForBuc(any()) } returns emptyList() // Dette er fordi vi ikke bryr oss om IdentListener
         every { personService.hentPerson(NorskIdent(fnr)) } returns SedListenerAdresseIT.enPersonFraPDL(fnr)
         every { kodeverkClient.finnLandkode("SE") } returns "SWE"
         every { personMottakKlient.opprettPersonopplysning(any()) } throws HttpClientErrorException(HttpStatus.BAD_REQUEST)
