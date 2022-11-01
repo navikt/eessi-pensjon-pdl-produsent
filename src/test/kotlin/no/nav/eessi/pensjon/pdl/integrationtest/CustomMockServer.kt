@@ -26,7 +26,7 @@ class CustomMockServer() {
                 HttpResponse.response()
                     .withHeader(Header("Content-Type", "application/json; charset=utf-8"))
                     .withStatusCode(HttpStatusCode.OK_200.code())
-                    .withBody(String(Files.readAllBytes(Paths.get(sedLocation))))
+                    .withBody(Files.readString(Paths.get(sedLocation)))
             )
     }
 

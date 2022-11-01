@@ -51,7 +51,7 @@ internal class SedListenerIdentTest {
 
     @Test
     fun `gitt en gyldig sedHendelse når sedMottatt hendelse konsumeres så ack melding`() {
-        sedListenerIdent.consumeSedMottatt(String(Files.readAllBytes(Paths.get("src/test/resources/eux/hendelser/P_BUC_01_P2000.json"))), cr, acknowledgment)
+        sedListenerIdent.consumeSedMottatt(Files.readString(Paths.get("src/test/resources/eux/hendelser/P_BUC_01_P2000.json")), cr, acknowledgment)
 
         verify(exactly = 1) { acknowledgment.acknowledge() }
     }
