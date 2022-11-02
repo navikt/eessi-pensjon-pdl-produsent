@@ -43,11 +43,12 @@ class SedHendelseBehandler(
 
         val result = adresseoppdatering.vurderUtenlandskKontaktadresse(sedHendelse)
 
+        log(result)
+
         if (result is VurderAdresseoppdatering.Oppdatering) {
             personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
         }
 
-        log(result)
         countForAddress(result.metricTagValue)
     }
 
