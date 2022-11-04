@@ -17,6 +17,7 @@ import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.oppgave.OppgaveOppslag
+import no.nav.eessi.pensjon.oppgaverouting.logger
 import no.nav.eessi.pensjon.pdl.identoppdatering.VurderIdentoppdatering.IngenOppdatering
 import no.nav.eessi.pensjon.pdl.identoppdatering.VurderIdentoppdatering.Oppdatering
 import no.nav.eessi.pensjon.pdl.identoppdatering.VurderIdentoppdatering.Oppgave
@@ -193,7 +194,7 @@ private class VurderIdentoppdateringTest {
         every { euxService.hentSed(any(), any()) } returns
                 sed(
                     id = FNR, land = "NO", pinItem = listOf(
-                        PinItem(identifikator = "1001772913", land = "DK"),
+                        PinItem(identifikator = "10017729135", land = "DK"),
                         PinItem(identifikator = "100177-2913", land = "DK"),
                         PinItem(identifikator = FNR, land = "NO")
                     )
@@ -207,6 +208,28 @@ private class VurderIdentoppdateringTest {
                 utstederland = "DNK"
             )),
             (identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "DK")))
+        )
+    }
+
+    @Test
+    fun `Gitt at SEDen inneholder en dansk UID på 10 siffer saa skal den validere og oppdatere PDL med riktig formatert UID ifht PDL-reglene`() {
+
+        every { euxService.hentSed(any(), any()) } returns
+                sed(
+                        id = FNR, land = "NO", pinItem = listOf(
+                        PinItem(identifikator = "1001772913", land = "DK"),
+                        PinItem(identifikator = FNR, land = "NO")
+                )
+                )
+        every { personService.hentPerson(NorskIdent(FNR)) } returns personFraPDL(id = FNR)
+
+        assertEquals(
+                Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(
+                        FNR,
+                        utenlandskId = "100177-2913",
+                        utstederland = "DNK"
+                )),
+                (identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "DK")))
         )
     }
 
