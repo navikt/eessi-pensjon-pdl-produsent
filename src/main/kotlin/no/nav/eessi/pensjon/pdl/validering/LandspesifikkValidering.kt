@@ -108,7 +108,27 @@ class LandspesifikkValidering(private val kodeverkClient: KodeverkClient) {
         return uidNew
     }
 
-    private fun danmarkIsland(uid: String) = uid.length == 11 && uid.checkDigitsLength(10) && uid.substring(6, 7) == "-" && uid.checkDigitsLength(IntRange(0,5), 6) && uid.checkDigitsLength(IntRange(7,10), 4)
+    private fun danmarkIsland(uid: String) : Boolean {
+        when (uid.length) {
+            11 -> if (uid.checkDigitsLength(10)
+                    && uid.substring(6, 7) == "-" || uid.substring(6, 7) == ""
+                    && uid.checkDigitsLength(IntRange(0, 5), 6)
+                    && uid.checkDigitsLength(IntRange(7, 10), 4))
+                return true
+
+            10 -> if (uid.checkDigitsLength(10)) return true
+        }
+        return false
+    }
+
+    fun formaterDanskEllerIslandskUID(uid: String): String {
+        var formatertNewUID = uid.trim().replace(" ", "").replace("-", "")
+        if (formatertNewUID.filter { it.isDigit() }.length == 10) {
+            formatertNewUID = formatertNewUID.replaceRange(6,6,"-")
+        }
+        return formatertNewUID
+    }
+
     private fun estlandLitauenPolen(uid: String) = uid.checkDigitsLength(11) && uid.length == 11
     private fun tyskland(uid: String): Boolean {
         return uid.length == 15 && uid.substring(2,3) == " " && uid.substring(9, 10) == " " && uid.substring(11,12) == " " &&

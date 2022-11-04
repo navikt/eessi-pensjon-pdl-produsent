@@ -192,6 +192,9 @@ class VurderIdentoppdatering(
         if (utenlandskPin.land == "SE") {
             return landspesifikkValidering.formaterSvenskUID(utenlandskPin.id)
         }
+        if (utenlandskPin.land == "DK" || utenlandskPin.land == "IS") {
+            return landspesifikkValidering.formaterDanskEllerIslandskUID(utenlandskPin.id)
+        }
         return utenlandskPin.id
     }
     private fun UtenlandskId.erPersonValidertPaaLand(): Boolean = landspesifikkValidering.validerLandsspesifikkUID(land, id)
