@@ -1,7 +1,11 @@
 package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
+import no.nav.eessi.pensjon.pdl.adresseoppdatering.AdresseValidering.erGyldigAdressenavnNummerEllerBygningEtg
+import no.nav.eessi.pensjon.pdl.adresseoppdatering.AdresseValidering.erGyldigByStedEllerRegion
+import no.nav.eessi.pensjon.pdl.adresseoppdatering.AdresseValidering.erGyldigPostKode
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
@@ -19,26 +23,38 @@ internal class AdresseValideringTest() {
      */
 
     @ParameterizedTest
-    @CsvSource("postboks", "postb.", "po.box", "ukjent", "vet ikke", "1", "Unknown", "p.o.box", "\"RATNIEKI\"")
+    @CsvSource("postboks", "postb.", "po.box", "ukjent", "vet ikke", "1", "Unknown", "p.o.box")
     fun `UGYLDIGE Adressenavnnummer bygning eller etasje`(ugyldigVerdi: String) {
-        assertFalse(AdresseValidering.erGyldigAdressenavnNummerEllerBygningEtg(ugyldigVerdi))
+        assertFalse(erGyldigAdressenavnNummerEllerBygningEtg(ugyldigVerdi))
     }
+
+    // CsvSource har issues med f eks whitespace i start/slutt av eksemplene så vi tester tegn for seg
+    @Test
+    fun `UGYLDIGE tegn i Adressenavnnummer bygning eller etasje`() {
+        listOf(
+            "\"RATNIEKI\"",
+            "\tTabbedalen",
+            "Tabbe\tdalen"
+        ).forEach { ugyldigVerdi ->
+            assertFalse(erGyldigAdressenavnNummerEllerBygningEtg(ugyldigVerdi), "$ugyldigVerdi burde IKKE godtas") }
+    }
+
     @ParameterizedTest
     @CsvSource("Strada Principala 34 Rimetea", "Antonína Čermáka 2a 160 68 Prague", "å", "Åmål", "Brannfjell", "Postbanken")
     fun `GYLDIG Adressenavnnummer bygning eller etasje`(gyldigeVerdier: String) {
-        assertTrue(AdresseValidering.erGyldigAdressenavnNummerEllerBygningEtg(gyldigeVerdier))
+        assertTrue(erGyldigAdressenavnNummerEllerBygningEtg(gyldigeVerdier))
     }
 
     @ParameterizedTest
     @CsvSource("ukjent", "ukjenT", "vet ikke", "1", "1+", "1", "!")
     fun `UGYLDIGE postkoder`(ugyldigVerdi: String) {
-        assertFalse(AdresseValidering.erGyldigByStedEllerRegion(ugyldigVerdi))
+        assertFalse(erGyldigByStedEllerRegion(ugyldigVerdi))
     }
 
     @ParameterizedTest
     @CsvSource("1a", "1a1a1", "München", "a", "Červená Řečice")
     fun `GYLDIGE by Sted eller region`(gyldigeVerdier: String) {
-        assertTrue(AdresseValidering.erGyldigByStedEllerRegion(gyldigeVerdier))
+        assertTrue(erGyldigByStedEllerRegion(gyldigeVerdier))
     }
 
     /**
@@ -50,13 +66,13 @@ internal class AdresseValideringTest() {
     @ParameterizedTest
     @CsvSource("ukjent", "Ukjent", "UKJENT", "vet ikke", "+", "!+", "\" \"")
     fun `UGYLDIGE postkoder i adresse`(ugyldigPostkode: String) {
-        assertFalse(AdresseValidering.erGyldigPostKode(ugyldigPostkode))
+        assertFalse(erGyldigPostKode(ugyldigPostkode))
     }
 
     @ParameterizedTest
     @CsvSource("a", "1", "1a", "a1", "a1sdkuryiev65", "a1-1", "a1-1 dfuigh 35", "1 ")
     fun `GYLDIG postkode`(gyldigPostkode: String) {
-        assertTrue(AdresseValidering.erGyldigPostKode(gyldigPostkode))
+        assertTrue(erGyldigPostKode(gyldigPostkode))
     }
 
 }
