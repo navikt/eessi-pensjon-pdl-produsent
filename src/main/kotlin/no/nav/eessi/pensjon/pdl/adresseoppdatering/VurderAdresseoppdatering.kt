@@ -159,7 +159,7 @@ class VurderAdresseoppdatering(
                 endringsmelding = EndringsmeldingKontaktAdresse(
                     kilde = kilde,
                     gyldigFraOgMed = LocalDate.now(),
-                    gyldigTilOgMed = LocalDate.now().plusYears(1),
+                    gyldigTilOgMed = LocalDate.now().plus(SedTilPDLAdresse.gyldighetsperiodeKontaktadresse),
                     coAdressenavn = kontaktadresse.coAdressenavn,
                     adresse = EndringsmeldingUtenlandskAdresse(
                         adressenavnNummer = kontaktadresse.utenlandskAdresse!!.adressenavnNummer,

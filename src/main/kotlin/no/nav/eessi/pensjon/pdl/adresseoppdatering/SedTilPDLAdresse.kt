@@ -11,10 +11,15 @@ import no.nav.eessi.pensjon.pdl.adresseoppdatering.AdresseValidering.erGyldigPos
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import org.springframework.stereotype.Component
 import java.time.LocalDate
+import java.time.Period
 
 @Component
 class SedTilPDLAdresse(private val kodeverkClient: KodeverkClient) {
     private val postBoksInfo = listOf("postboks", "postb", "postbox", "p.b", "po.box")
+
+    companion object {
+        val gyldighetsperiodeKontaktadresse = Period.ofYears(5)
+    }
 
     /**
      * @throws IllegalArgumentException ved valideringsfeil
@@ -23,7 +28,7 @@ class SedTilPDLAdresse(private val kodeverkClient: KodeverkClient) {
         EndringsmeldingKontaktAdresse(
             kilde = kilde,
             gyldigFraOgMed = LocalDate.now(),
-            gyldigTilOgMed = LocalDate.now().plusYears(1),
+            gyldigTilOgMed = LocalDate.now().plus(gyldighetsperiodeKontaktadresse),
             coAdressenavn = null,
             adresse = EndringsmeldingUtenlandskAdresse(
                 adressenavnNummer = adresseNavnNummerFra(sedAdresse.gate),
