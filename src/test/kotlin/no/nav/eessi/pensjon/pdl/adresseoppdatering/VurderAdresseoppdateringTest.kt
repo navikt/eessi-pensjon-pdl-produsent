@@ -104,7 +104,7 @@ internal class VurderAdresseoppdateringTest {
                     opplysningsId = "OpplysningsId",
                     kilde = "Utenlandsk Institusjon ($EDDY_ADRESSE_LANDKODE)",
                     gyldigFraOgMed = LocalDate.now(),
-                    gyldigTilOgMed = LocalDate.now().plusYears(1)
+                    gyldigTilOgMed = LocalDate.now().plusYears(5)
                 ), "Adressen finnes allerede i PDL, oppdaterer gyldig til og fra dato"
             ), result
         )
@@ -161,7 +161,7 @@ internal class VurderAdresseoppdateringTest {
                 pdlAdresse = TYSK_ADRESSE_I_SED_GJORT_OM_TIL_PDL_ADRESSE,
                 kilde = "$TYSK_INSTITUSJON ($TYSK_ADRESSE_LANDKODE)",
                 gyldigFraOgMed = LocalDate.now(),
-                gyldigTilOgMed = LocalDate.now().plusYears(1),
+                gyldigTilOgMed = LocalDate.now().plusYears(5),
                 endringsType = Endringstype.OPPRETT
             ), metricTagValueOverride = "Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding")
         , result)
@@ -450,7 +450,7 @@ internal class VurderAdresseoppdateringTest {
             pdlAdresse = EDDY_ADRESSE_I_ENDRINGSMELDING.copy(postboksNummerNavn = "Postboks 543", adressenavnNummer = null),
             kilde = "$SOME_UTENLANDSK_INSTITUSJON ($EDDY_ADRESSE_LANDKODE)",
             gyldigFraOgMed = LocalDate.now(),
-            gyldigTilOgMed = LocalDate.now().plusYears(1)),
+            gyldigTilOgMed = LocalDate.now().plusYears(5)),
             "Adressen finnes allerede i PDL, oppdaterer gyldig til og fra dato"
         ), result)
 
@@ -510,7 +510,7 @@ internal class VurderAdresseoppdateringTest {
                         ),
                     kilde = "$SOME_UTENLANDSK_INSTITUSJON ($EDDY_ADRESSE_LANDKODE)",
                     gyldigFraOgMed = LocalDate.now(),
-                    gyldigTilOgMed = LocalDate.now().plusYears(1),
+                    gyldigTilOgMed = LocalDate.now().plusYears(5),
                     endringsType = Endringstype.OPPRETT
                 ), metricTagValueOverride = "Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding"
             ), result)
@@ -570,7 +570,7 @@ internal class VurderAdresseoppdateringTest {
         pdlAdresse: EndringsmeldingUtenlandskAdresse,
         kilde: String,
         gyldigFraOgMed: LocalDate = LocalDate.now(),
-        gyldigTilOgMed: LocalDate = LocalDate.now().plusYears(1),
+        gyldigTilOgMed: LocalDate = LocalDate.now().plusYears(5),
         endringsType: Endringstype
     ) = PdlEndringOpplysning(
         listOf(

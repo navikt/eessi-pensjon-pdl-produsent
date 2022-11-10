@@ -44,7 +44,7 @@ class SedTilPDLAdresseTest {
             endringsmeldingKontaktAdresse(
                 kilde = "kilde",
                 gyldigFraOgMed = LocalDate.now(),
-                gyldigTilOgMed = LocalDate.now().plusYears(1),
+                gyldigTilOgMed = LocalDate.now().plusYears(5),
                 coAdressenavn = null,
                 adresse = endringsmeldingUtenlandskAdresse(
                     adressenavnNummer = "gate",
@@ -234,7 +234,7 @@ class SedTilPDLAdresseTest {
     private fun endringsmeldingKontaktAdresse(
         kilde: String = "some kilde",
         gyldigFraOgMed: LocalDate? = LocalDate.now(),
-        gyldigTilOgMed: LocalDate? = LocalDate.now().plusYears(1),
+        gyldigTilOgMed: LocalDate? = LocalDate.now().plusYears(5),
         coAdressenavn: String? = null,
         adresse: EndringsmeldingUtenlandskAdresse
     ) = EndringsmeldingKontaktAdresse(
