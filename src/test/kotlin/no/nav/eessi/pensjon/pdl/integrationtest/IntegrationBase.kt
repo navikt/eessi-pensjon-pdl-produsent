@@ -5,6 +5,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
+import no.nav.eessi.pensjon.eux.klient.EuxKlientLib
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
@@ -211,6 +212,9 @@ abstract class IntegrationBase {
         fun proxyOAuthRestTemplate(): RestTemplate? {
             return opprettRestTemplate()
         }
+
+        @Bean
+        fun euxKlientLib(): EuxKlientLib = EuxKlientLib(euxOAuthRestTemplate()!!)
 
         @Bean
         fun opprettRestTemplate(): RestTemplate {

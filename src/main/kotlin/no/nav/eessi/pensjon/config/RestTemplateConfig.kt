@@ -1,6 +1,7 @@
 package no.nav.eessi.pensjon.config
 
 import io.micrometer.core.instrument.MeterRegistry
+import no.nav.eessi.pensjon.eux.klient.EuxKlientLib
 import no.nav.eessi.pensjon.logging.RequestIdHeaderInterceptor
 import no.nav.eessi.pensjon.logging.RequestResponseLoggerInterceptor
 import no.nav.eessi.pensjon.metrics.RequestCountInterceptor
@@ -47,6 +48,9 @@ class RestTemplateConfig(
 
     @Bean
     fun personMottakRestTemplate(): RestTemplate = opprettRestTemplate(pdlMottakUrl, "pdl-mottak-credentials")
+
+    @Bean
+    fun euxKlient(): EuxKlientLib = EuxKlientLib(euxOAuthRestTemplate())
 
     private fun opprettRestTemplate(url: String, oAuthKey: String) : RestTemplate {
         return RestTemplateBuilder()

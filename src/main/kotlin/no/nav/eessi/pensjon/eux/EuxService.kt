@@ -1,6 +1,6 @@
 package no.nav.eessi.pensjon.eux
 
-import no.nav.eessi.pensjon.eux.klient.EuxKlient
+import no.nav.eessi.pensjon.eux.klient.EuxKlientLib
 import no.nav.eessi.pensjon.eux.model.buc.Buc
 import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
@@ -14,7 +14,7 @@ import javax.annotation.PostConstruct
 
 @Service
 class EuxService(
-    private val euxKlient: EuxKlient,
+    private val euxKlient: EuxKlientLib,
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
 ) {
     private val logger = LoggerFactory.getLogger(EuxService::class.java)
