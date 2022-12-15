@@ -19,7 +19,7 @@ class CustomMockServer() {
     fun medSed(bucPath: String, sedLocation: String) = apply {
         MockServerClient("localhost", serverPort).`when`(
             request()
-                .withMethod(HttpMethod.GET.name())
+                .withMethod(HttpMethod.GET.name)
                 .withPath(bucPath)
         )
             .respond(
@@ -33,7 +33,7 @@ class CustomMockServer() {
     fun medMockSed(bucPath: String, mockSed: String) = apply {
         MockServerClient("localhost", serverPort).`when`(
             request()
-                .withMethod(HttpMethod.GET.name())
+                .withMethod(HttpMethod.GET.name)
                 .withPath(bucPath)
         )
             .respond(
@@ -47,7 +47,7 @@ class CustomMockServer() {
     fun medEndring() = apply {
         MockServerClient("localhost", serverPort).`when`(
             request()
-                .withMethod(HttpMethod.POST.name())
+                .withMethod(HttpMethod.POST.name)
                 .withPath("/api/v1/endringer")
         )
             .respond(
@@ -61,7 +61,7 @@ class CustomMockServer() {
     fun medMockBuc(bucPath: String, mockBuc: String) = apply {
         MockServerClient("localhost", serverPort).`when`(
             request()
-                .withMethod(HttpMethod.GET.name())
+                .withMethod(HttpMethod.GET.name)
                 .withPath(bucPath)
         )
             .respond(
@@ -87,7 +87,7 @@ class CustomMockServer() {
         MockServerClient("localhost", serverPort)
             .verify(
                 request()
-                    .withMethod(HttpMethod.POST.name())
+                    .withMethod(HttpMethod.POST.name)
                     .withPath(path)
                     .withBody(body.trimIndent())
                 ,

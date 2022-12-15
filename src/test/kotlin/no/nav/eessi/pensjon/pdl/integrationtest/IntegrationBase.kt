@@ -14,12 +14,9 @@ import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
 import no.nav.eessi.pensjon.utils.typeRefs
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient
-import org.apache.hc.client5.http.impl.classic.HttpClients
-import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder
-import org.apache.hc.client5.http.io.HttpClientConnectionManager
-import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory
-import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder
+import org.apache.http.conn.ssl.NoopHostnameVerifier
+import org.apache.http.impl.client.CloseableHttpClient
+import org.apache.http.impl.client.HttpClients
 import org.apache.http.ssl.SSLContexts
 import org.apache.http.ssl.TrustStrategy
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -221,21 +218,15 @@ abstract class IntegrationBase {
 
         @Bean
         fun opprettRestTemplate(): RestTemplate {
-
             val acceptingTrustStrategy = TrustStrategy { _: Array<X509Certificate?>?, _: String? -> true }
 
-            val sslcontext: SSLContext = SSLContexts.custom()
+            val sslContext: SSLContext = SSLContexts.custom()
                 .loadTrustMaterial(null, acceptingTrustStrategy)
-                .build()
-            val sslSocketFactory: SSLConnectionSocketFactory = SSLConnectionSocketFactoryBuilder.create()
-                .setSslContext(sslcontext)
-                .build()
-            val cm: HttpClientConnectionManager = PoolingHttpClientConnectionManagerBuilder.create()
-                .setSSLSocketFactory(sslSocketFactory)
                 .build()
 
             val httpClient: CloseableHttpClient = HttpClients.custom()
-                .setConnectionManager(cm)
+                .setSSLContext(sslContext)
+                .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
                 .build()
 
             val customRequestFactory = HttpComponentsClientHttpRequestFactory()
