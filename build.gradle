@@ -48,7 +48,7 @@ dependencies {
 	implementation "org.springframework.kafka:spring-kafka:$springKafkaVersion"
 
 	// Micrometer
-	implementation("io.micrometer:micrometer-registry-prometheus")
+	implementation("io.micrometer:micrometer-registry-prometheus:1.10.2")
 
 	// Eessi pensjon biblioteker
 	implementation("no.nav.eessi.pensjon:ep-metrics:${epMetricsVersion}")
