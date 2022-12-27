@@ -13,7 +13,6 @@ import no.nav.eessi.pensjon.klienter.norg2.Norg2Service
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
-import no.nav.eessi.pensjon.utils.typeRefs
 import org.apache.http.conn.ssl.NoopHostnameVerifier
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClients
@@ -158,7 +157,7 @@ abstract class IntegrationBase {
           "land" : "$land"
         }
         """.trimIndent()
-        return mapJsonToAny(pinjson, typeRefs())
+        return mapJsonToAny(pinjson)
     }
 
     fun mockSedUtenPensjon(sedType: SedType, pin: List<PinItem>, fornavn: String = "Fornavn", krav: String = "01"): String {

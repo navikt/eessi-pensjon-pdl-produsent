@@ -5,9 +5,8 @@ import no.nav.eessi.pensjon.models.Enhet
 import no.nav.eessi.pensjon.models.HendelseType
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
-import no.nav.eessi.pensjon.utils.typeRefs
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
 internal class OppgaveMeldingSerdeTest {
 
@@ -26,7 +25,7 @@ internal class OppgaveMeldingSerdeTest {
 
         val serialized = melding.toJson()
 
-        val deserialized = mapJsonToAny(serialized, typeRefs<OppgaveMelding>())
+        val deserialized = mapJsonToAny<OppgaveMelding>(serialized)
 
         assertEquals(melding.sedType, deserialized.sedType)
         assertEquals(melding.journalpostId, deserialized.journalpostId)
@@ -53,7 +52,7 @@ internal class OppgaveMeldingSerdeTest {
 
         val serialized = melding.toJson()
 
-        val deserialized = mapJsonToAny(serialized, typeRefs<OppgaveMelding>())
+        val deserialized = mapJsonToAny<OppgaveMelding>(serialized)
 
         assertEquals(melding.sedType, deserialized.sedType)
         assertEquals(melding.journalpostId, deserialized.journalpostId)

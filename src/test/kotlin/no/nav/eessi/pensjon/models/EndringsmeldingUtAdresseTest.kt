@@ -1,9 +1,7 @@
 package no.nav.eessi.pensjon.models
 
-import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
-import no.nav.eessi.pensjon.utils.typeRefs
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -50,7 +48,7 @@ internal class EndringsmeldingUtAdresseTest() {
             }
         """.trimIndent()
         assertEquals(expected, model.toJson().also { println(it) })
-        assertEquals(model, mapJsonToAny<EndringsmeldingKontaktAdresse>(model.toJson(), typeRefs()))
+        assertEquals(model, mapJsonToAny<EndringsmeldingKontaktAdresse>(model.toJson()))
     }
 }
 
