@@ -34,6 +34,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.web.client.RestTemplate
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 
@@ -46,6 +47,9 @@ import java.util.concurrent.TimeUnit
     topics = ["eessi-basis-sedMottatt-v1"]
 )
 class SedListenerAdresseIT : IntegrationBase() {
+
+    @MockkBean(name = "pdlRestTemplate")
+    private lateinit var pdlRestTemplate: RestTemplate
 
     @Autowired
     lateinit var adresseListener: SedListenerAdresse

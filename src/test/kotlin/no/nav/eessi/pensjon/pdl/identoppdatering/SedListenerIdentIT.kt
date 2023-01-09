@@ -25,6 +25,7 @@ import org.springframework.kafka.support.Acknowledgment
 import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.web.client.RestTemplate
 import java.util.concurrent.TimeUnit
 
 @SpringBootTest( classes = [KafkaTestConfig::class, IntegrationBase.TestConfig::class])
@@ -38,6 +39,9 @@ class SedListenerIdentIT : IntegrationBase() {
 
     private val acknowledgment = mockk<Acknowledgment>(relaxUnitFun = true)
     private val cr = mockk<ConsumerRecord<String, String>>(relaxed = true)
+
+    @MockkBean(name = "pdlRestTemplate")
+    lateinit var pdlRestTemplate: RestTemplate
 
     @Autowired
     lateinit var sedListenerIdent: SedListenerIdent
