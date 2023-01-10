@@ -1,11 +1,11 @@
 package no.nav.eessi.pensjon.oppgaverouting
 
+import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.models.HendelseType
 import no.nav.eessi.pensjon.models.SakInformasjon
 import no.nav.eessi.pensjon.models.Saktype
-import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import java.time.LocalDate
 

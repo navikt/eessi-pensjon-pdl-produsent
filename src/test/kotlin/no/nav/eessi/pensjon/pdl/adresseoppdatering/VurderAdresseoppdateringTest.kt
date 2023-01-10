@@ -3,6 +3,7 @@ package no.nav.eessi.pensjon.pdl.adresseoppdatering
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.eessi.pensjon.eux.EuxService
+import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.sed.Adresse
 import no.nav.eessi.pensjon.eux.model.sed.Bruker
@@ -15,7 +16,6 @@ import no.nav.eessi.pensjon.models.EndringsmeldingKontaktAdresse
 import no.nav.eessi.pensjon.models.EndringsmeldingUtenlandskAdresse
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
-import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.adresseoppdatering.VurderAdresseoppdatering.IngenOppdatering
 import no.nav.eessi.pensjon.pdl.adresseoppdatering.VurderAdresseoppdatering.Oppdatering
@@ -33,6 +33,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
+import no.nav.eessi.pensjon.utils.mapJsonToAny
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -598,7 +599,7 @@ internal class VurderAdresseoppdateringTest {
         avsenderLand: String? = "IT",
         rinaDokumentId: String = SOME_DOKUMENT_ID,
         sedType: String = "P2100"
-    ) = SedHendelse.fromJson(
+    ) = mapJsonToAny<SedHendelse>(
         """{
                     "id" : 0,
                     

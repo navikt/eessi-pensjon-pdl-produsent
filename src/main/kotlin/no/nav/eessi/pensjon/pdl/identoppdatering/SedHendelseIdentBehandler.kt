@@ -1,9 +1,10 @@
 package no.nav.eessi.pensjon.pdl.identoppdatering
 
 import io.micrometer.core.instrument.Metrics
-import no.nav.eessi.pensjon.models.SedHendelse
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
+import no.nav.eessi.pensjon.eux.model.SedHendelse
+import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -91,7 +92,7 @@ class SedHendelseIdentBehandler(
     }
 
     fun sedHendelseMapping(hendelse: String): SedHendelse {
-        val sedHendelseTemp = SedHendelse.fromJson(hendelse)
+        val sedHendelseTemp = mapJsonToAny<SedHendelse>(hendelse)
 
         //støtte avsenderland SE i testmiljø Q2
         return if (profile != "prod" && profile != "integrationtest") {

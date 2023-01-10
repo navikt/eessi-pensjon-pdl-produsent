@@ -1,6 +1,8 @@
 package no.nav.eessi.pensjon.models
 
-import no.nav.eessi.pensjon.eux.model.buc.BucType
+import no.nav.eessi.pensjon.eux.model.SedHendelse
+import no.nav.eessi.pensjon.eux.model.buc.BucType.R_BUC_02
+import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -12,10 +14,10 @@ internal class SedHendelseSerDeTest {
 
     @Test
     fun `Sjekk at serialisering virker`() {
-        val model = SedHendelse(rinaSakId = "123456", rinaDokumentId = "1234", sektorKode = "R", bucType = BucType.R_BUC_02, rinaDokumentVersjon = "1")
+        val model = SedHendelse(rinaSakId = "123456", rinaDokumentId = "1234", sektorKode = "R", bucType = R_BUC_02, rinaDokumentVersjon = "1")
         val serialized = model.toJson()
 
-        val result = SedHendelse.fromJson(serialized)
+        val result = mapJsonToAny<SedHendelse>(serialized)
 
         assertEquals(model, result)
     }
@@ -39,7 +41,7 @@ internal class SedHendelseSerDeTest {
             "sedType" : null
         }""".trimMargin()
 
-        val model = SedHendelse.fromJson(json)
+        val model = mapJsonToAny<SedHendelse>(json)
 
         val result = model.toJson()
         JSONAssert.assertEquals(json, result, JSONCompareMode.LENIENT)
@@ -65,7 +67,7 @@ internal class SedHendelseSerDeTest {
             "navBruker" : null
         }""".trimMargin()
 
-        val model = SedHendelse.fromJson(json)
+        val model = mapJsonToAny<SedHendelse>(json)
 
         assertEquals("R", model.sektorKode)
         assertNull(model.bucType)
@@ -91,7 +93,7 @@ internal class SedHendelseSerDeTest {
             "navBruker" : "22117320034"
         }""".trimMargin()
 
-        val model = SedHendelse.fromJson(json)
+        val model = mapJsonToAny<SedHendelse>(json)
 
         assertEquals("123456", model.rinaSakId)
     }

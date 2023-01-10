@@ -1,7 +1,6 @@
 package no.nav.eessi.pensjon.lagring
 
 import no.nav.eessi.pensjon.gcp.GcpStorageService
-import no.nav.eessi.pensjon.models.SedHendelse
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 

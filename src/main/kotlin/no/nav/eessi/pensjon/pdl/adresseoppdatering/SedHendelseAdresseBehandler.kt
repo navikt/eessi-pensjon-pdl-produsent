@@ -1,8 +1,9 @@
 package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
 import io.micrometer.core.instrument.Metrics
-import no.nav.eessi.pensjon.models.SedHendelse
+import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
+import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -32,7 +33,7 @@ class SedHendelseBehandler(
         listeners  = ["sedHendelseBehandlerRetryLogger"]
     )
     fun behandle(hendelse: String) {
-        val sedHendelse = SedHendelse.fromJson(hendelse)
+        val sedHendelse = mapJsonToAny<SedHendelse>(hendelse)
 
         if (testDataInProd(sedHendelse)) {
             logger.error("Avsender id er ${sedHendelse.avsenderId}. Dette er testdata i produksjon!!!\n$sedHendelse")
