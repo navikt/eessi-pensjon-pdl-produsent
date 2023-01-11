@@ -1,6 +1,6 @@
 package no.nav.eessi.pensjon.pdl.integrationtest
 
-import no.nav.eessi.pensjon.eux.model.buc.BucType
+import no.nav.eessi.pensjon.eux.model.BucType
 import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.utils.toJson
 import org.mockserver.client.MockServerClient

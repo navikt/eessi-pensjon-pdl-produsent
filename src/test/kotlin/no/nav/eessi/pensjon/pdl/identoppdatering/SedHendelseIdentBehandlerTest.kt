@@ -3,9 +3,9 @@ package no.nav.eessi.pensjon.pdl.identoppdatering
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
 import io.mockk.verify
+import no.nav.eessi.pensjon.eux.model.BucType.*
 import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.SedType
-import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.oppgave.OppgaveData
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
@@ -94,7 +94,7 @@ private class SedHendelseIdentBehandlerTest {
 
     private fun enSedHendelse() = SedHendelse(
             sektorKode = "P",
-            bucType = BucType.P_BUC_01,
+            bucType = P_BUC_01,
             sedType = SedType.P2100,
             rinaSakId = "74389487",
             rinaDokumentId = "743982",

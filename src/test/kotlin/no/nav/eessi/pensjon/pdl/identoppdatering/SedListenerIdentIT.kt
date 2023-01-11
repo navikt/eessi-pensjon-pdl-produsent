@@ -3,8 +3,9 @@ package no.nav.eessi.pensjon.pdl.identoppdatering
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
 import io.mockk.mockk
+import no.nav.eessi.pensjon.eux.model.BucType.P_BUC_02
+import no.nav.eessi.pensjon.eux.model.BucType.P_BUC_10
 import no.nav.eessi.pensjon.eux.model.SedType
-import no.nav.eessi.pensjon.eux.model.buc.BucType
 import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
@@ -69,7 +70,7 @@ class SedListenerIdentIT : IntegrationBase() {
         every { kodeverkClient.finnLandkode("NO") } returns "NOR"
 
         val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P15000, SedStatus.RECEIVED))
-        val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_10, listOverSeder)
+        val mockBuc = CustomMockServer.mockBuc("147729", P_BUC_10, listOverSeder)
 
         val mockNorskPin = mockPin(fnr, "NO")
         val mockSed = mockSedUtenPensjon(sedType = SedType.P15000, pin = listOf(mockNorskPin))
@@ -81,7 +82,7 @@ class SedListenerIdentIT : IntegrationBase() {
 
         sendMeldingString(
             mockHendelse(
-                bucType = BucType.P_BUC_10,
+                bucType = P_BUC_10,
                 sedType = SedType.P15000,
                 avsenderLand = "SE",
                 docId = "eb938171a4cb4e658b3a6c011962d204"
@@ -99,7 +100,7 @@ class SedListenerIdentIT : IntegrationBase() {
         every { kodeverkClient.finnLandkode("DE") } returns "DEU"
 
         val listOverSeder = listOf(ForenkletSED("b12e06dda2c7474b9998c7139c841646", SedType.P8000, SedStatus.RECEIVED))
-        val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_02, listOverSeder)
+        val mockBuc = CustomMockServer.mockBuc("147729", P_BUC_02, listOverSeder)
 
         CustomMockServer()
             .medSed("/buc/147729/sed/b12e06dda2c7474b9998c7139c841646", "src/test/resources/eux/sed/P8000-TyskPIN.json")
@@ -121,7 +122,7 @@ class SedListenerIdentIT : IntegrationBase() {
         every { kodeverkClient.finnLandkode("DK") } returns "DNK"
 
         val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SedType.P15000, SedStatus.RECEIVED))
-        val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_10, listOverSeder)
+        val mockBuc = CustomMockServer.mockBuc("147729", P_BUC_10, listOverSeder)
 
         CustomMockServer()
             .medSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", "src/test/resources/eux/sed/P2100-PinDK-NAV.json")
@@ -130,7 +131,7 @@ class SedListenerIdentIT : IntegrationBase() {
 
         sendMeldingString(
             mockHendelse(
-                bucType = BucType.P_BUC_10,
+                bucType = P_BUC_10,
                 sedType = SedType.P15000,
                 avsenderLand = "DK",
                 avsenderNavn = "",
@@ -157,7 +158,7 @@ class SedListenerIdentIT : IntegrationBase() {
             ForenkletSED("eb938171a4cb4e658b3a6c011962d504", SedType.P7000, SedStatus.RECEIVED),
             ForenkletSED("eb938171a4cb4e658b3a6c011962d205", SedType.H120, SedStatus.RECEIVED)
         )
-        val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_02, listOverSeder)
+        val mockBuc = CustomMockServer.mockBuc("147729", P_BUC_02, listOverSeder)
 
         every { personService.hentPerson(NorskIdent("28105424630")) } returns null
 
@@ -170,7 +171,7 @@ class SedListenerIdentIT : IntegrationBase() {
 
         sendMeldingString(
             mockHendelse(
-                bucType = BucType.P_BUC_02,
+                bucType = P_BUC_02,
                 sedType = SedType.P7000,
                 avsenderLand = "DK",
                 docId = "eb938171a4cb4e658b3a6c011962d504"
@@ -210,7 +211,7 @@ class SedListenerIdentIT : IntegrationBase() {
         every { kodeverkClient.finnLandkode("DK") }.returns("DNK")
 
         val listOverSeder = listOf(ForenkletSED("b12e06dda2c7474b9998c7139c841646", SedType.P2100, SedStatus.RECEIVED))
-        val mockBuc = CustomMockServer.mockBuc("147729", BucType.P_BUC_02, listOverSeder)
+        val mockBuc = CustomMockServer.mockBuc("147729", P_BUC_02, listOverSeder)
 
         CustomMockServer()
             .medEndring()
