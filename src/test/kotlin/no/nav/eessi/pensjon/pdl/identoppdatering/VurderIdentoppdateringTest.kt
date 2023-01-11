@@ -3,9 +3,10 @@ package no.nav.eessi.pensjon.pdl.identoppdatering
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.eessi.pensjon.eux.EuxService
-import no.nav.eessi.pensjon.eux.model.BucType
 import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.SedType
+import no.nav.eessi.pensjon.eux.model.buc.BucType
+import no.nav.eessi.pensjon.eux.model.buc.BucType.*
 import no.nav.eessi.pensjon.eux.model.sed.*
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.models.EndringsmeldingUID
@@ -517,7 +518,7 @@ private class VurderIdentoppdateringTest {
     )
 
     private fun sedHendelse(
-        bucType: BucType = BucType.P_BUC_01,
+        bucType: BucType = P_BUC_01,
         sedType: SedType = SedType.P2000,
         avsenderLand: String = "SE",
         avsenderNavn: String? = "Utenlandsk institusjon"

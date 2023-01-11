@@ -1,6 +1,6 @@
 package no.nav.eessi.pensjon.personoppslag.pdl.model
 
-import no.nav.eessi.pensjon.personoppslag.Fodselsnummer
+import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import java.time.LocalDateTime
 
 object PersonMock {
