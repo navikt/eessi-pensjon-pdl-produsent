@@ -55,7 +55,7 @@ dependencies {
 	implementation("no.nav.eessi.pensjon:ep-logging:${epLoggingVersion}")
 	implementation("no.nav.eessi.pensjon:ep-kodeverk:3.1.53")
 	implementation("no.nav.eessi.pensjon:ep-personoppslag:${epPersonoppslagVersion}")
-	implementation("no.nav.eessi.pensjon:ep-eux:1.4.5")
+	implementation("no.nav.eessi.pensjon:ep-eux:1.4.8")
 
 	// Logging
 	implementation("net.logstash.logback:logstash-logback-encoder:${logstashLogbackVersion}")
