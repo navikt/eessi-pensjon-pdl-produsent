@@ -1,9 +1,9 @@
 package no.nav.eessi.pensjon.oppgaverouting
 
+import no.nav.eessi.pensjon.eux.model.buc.SakType
 import no.nav.eessi.pensjon.models.Enhet
 import no.nav.eessi.pensjon.models.HendelseType
 import no.nav.eessi.pensjon.models.SakInformasjon
-import no.nav.eessi.pensjon.models.Saktype
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 import no.nav.eessi.pensjon.personidentifisering.Relasjon
 
@@ -79,7 +79,7 @@ class Pbuc05 : BucTilEnhetHandler {
                 logger.info("Router ${request.hendelseType} ${request.sedType} i ${request.bucType} til ${Enhet.ID_OG_FORDELING} på grunn av personen er gjenlevende men saksinformasjon mangler")
                 Enhet.ID_OG_FORDELING
             }
-            request.sakInformasjon.sakType == Saktype.GENRL -> enhetFraAlderOgLand(request)
+            request.sakInformasjon.sakType == SakType.GENRL -> enhetFraAlderOgLand(request)
             else -> {
                 automatiskJournalforingLogging(request.sedType, request.bucType, Enhet.AUTOMATISK_JOURNALFORING)
                 Enhet.AUTOMATISK_JOURNALFORING
@@ -125,9 +125,9 @@ class Pbuc05 : BucTilEnhetHandler {
         }
 
         return when (request.sakInformasjon.sakType) {
-            Saktype.ALDER,
-            Saktype.UFOREP,
-            Saktype.OMSORG -> {
+            SakType.ALDER,
+            SakType.UFOREP,
+            SakType.OMSORG -> {
                 automatiskJournalforingLogging(request.sedType, request.bucType, Enhet.AUTOMATISK_JOURNALFORING)
                 Enhet.AUTOMATISK_JOURNALFORING
             }
@@ -150,7 +150,7 @@ class Pbuc05 : BucTilEnhetHandler {
      */
     private fun enhetForRelasjonForsorger(request: OppgaveRoutingRequest): Enhet {
         return when (request.saktype) {
-            null, Saktype.GENRL -> enhetFraAlderOgLand(request)
+            null, SakType.GENRL -> enhetFraAlderOgLand(request)
             else -> {
                 automatiskJournalforingLogging(request.sedType, request.bucType, Enhet.AUTOMATISK_JOURNALFORING)
                 Enhet.AUTOMATISK_JOURNALFORING

@@ -1,7 +1,7 @@
 package no.nav.eessi.pensjon.personidentifisering
 
 import no.nav.eessi.pensjon.eux.model.SedType
-import no.nav.eessi.pensjon.models.Saktype
+import no.nav.eessi.pensjon.eux.model.buc.SakType
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Kontaktadresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.SokKriterier
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
@@ -33,7 +33,7 @@ data class UtenlandskPin(
 data class SEDPersonRelasjon(
     val fnr: Fodselsnummer?,
     val relasjon: Relasjon,
-    val saktype: Saktype? = null,
+    val saktype: SakType? = null,
     val sedType: SedType? = null,
     val sokKriterier: SokKriterier? = null,
     val fdato: LocalDate? = null,

@@ -1,9 +1,9 @@
 package no.nav.eessi.pensjon.oppgaverouting
 
 import no.nav.eessi.pensjon.eux.model.SedType
+import no.nav.eessi.pensjon.eux.model.buc.SakType
 import no.nav.eessi.pensjon.models.Enhet
 import no.nav.eessi.pensjon.models.HendelseType
-import no.nav.eessi.pensjon.models.Saktype
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
 
 /**
@@ -38,11 +38,11 @@ class Rbuc02 : BucTilEnhetHandler {
             Enhet.ID_OG_FORDELING
         } else {
             when (request.saktype) {
-                Saktype.ALDER -> {
+                SakType.ALDER -> {
                     logger.info("Router ${request.sedType} i ${request.bucType} til ${Enhet.PENSJON_UTLAND.enhetsNr} på grunn av traff ingen særregler og SED er mottatt med sakstype: alder")
                     Enhet.PENSJON_UTLAND
                 }
-                Saktype.UFOREP -> {
+                SakType.UFOREP -> {
                     logger.info("Router ${request.sedType} i ${request.bucType} til ${Enhet.UFORE_UTLAND.enhetsNr} på grunn av traff ingen særregler og SED er mottatt med sakstype: uføre")
                     Enhet.UFORE_UTLAND
                 }
