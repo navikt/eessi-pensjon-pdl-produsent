@@ -14,11 +14,14 @@ import no.nav.eessi.pensjon.klienter.norg2.Norg2Service
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
-import org.apache.http.conn.ssl.NoopHostnameVerifier
-import org.apache.http.impl.client.CloseableHttpClient
-import org.apache.http.impl.client.HttpClients
-import org.apache.http.ssl.SSLContexts
-import org.apache.http.ssl.TrustStrategy
+import org.apache.hc.client5.http.impl.classic.HttpClients
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder
+import org.apache.hc.client5.http.io.HttpClientConnectionManager
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder
+import org.apache.hc.core5.ssl.SSLContexts
+import org.apache.hc.core5.ssl.TrustStrategy
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -205,32 +208,38 @@ abstract class IntegrationBase {
 
         @Bean
         fun euxOAuthRestTemplate(): RestTemplate? {
-            return opprettRestTemplate()
+            return opprettSSLRestTemplate()
         }
 
         @Bean
         fun proxyOAuthRestTemplate(): RestTemplate? {
-            return opprettRestTemplate()
+            return opprettSSLRestTemplate()
         }
 
         @Bean
         fun euxKlientLib(): EuxKlientLib = EuxKlientLib(euxOAuthRestTemplate()!!)
 
         @Bean
-        fun opprettRestTemplate(): RestTemplate {
+        fun opprettSSLRestTemplate(): RestTemplate {
             val acceptingTrustStrategy = TrustStrategy { _: Array<X509Certificate?>?, _: String? -> true }
 
-            val sslContext: SSLContext = SSLContexts.custom()
+            val sslcontext: SSLContext = SSLContexts.custom()
                 .loadTrustMaterial(null, acceptingTrustStrategy)
                 .build()
-
-            val httpClient: CloseableHttpClient = HttpClients.custom()
-                .setSSLContext(sslContext)
-                .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
+            val sslSocketFactory: SSLConnectionSocketFactory = SSLConnectionSocketFactoryBuilder.create()
+                .setSslContext(sslcontext)
+                .setHostnameVerifier(NoopHostnameVerifier.INSTANCE)
+                .build()
+            val connectionManager: HttpClientConnectionManager = PoolingHttpClientConnectionManagerBuilder.create()
+                .setSSLSocketFactory(sslSocketFactory)
+                .build()
+            val httpClient = HttpClients.custom()
+                .setConnectionManager(connectionManager)
                 .build()
 
             val customRequestFactory = HttpComponentsClientHttpRequestFactory()
             customRequestFactory.httpClient = httpClient
+
             return RestTemplateBuilder()
                 .rootUri("https://localhost:${System.getProperty("mockserverport")}")
                 .build().apply {
@@ -238,5 +247,4 @@ abstract class IntegrationBase {
                 }
         }
     }
-
 }
