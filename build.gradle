@@ -42,7 +42,7 @@ dependencies {
 	implementation 'org.jetbrains.kotlin:kotlin-reflect'
 
 	// Micrometer
-	implementation("io.micrometer:micrometer-registry-prometheus:1.10.2")
+	implementation("io.micrometer:micrometer-registry-prometheus:1.10.4")
 
 	// Eessi pensjon biblioteker
 	implementation("no.nav.eessi.pensjon:ep-metrics:2.0.0")
