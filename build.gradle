@@ -49,7 +49,7 @@ dependencies {
 	implementation("no.nav.eessi.pensjon:ep-logging:2.0.4")
 	implementation("no.nav.eessi.pensjon:ep-kodeverk:4.0.6")
 	implementation("no.nav.eessi.pensjon:ep-personoppslag:13.0.0")
-	implementation("no.nav.eessi.pensjon:ep-eux:2.0.1")
+	implementation("no.nav.eessi.pensjon:ep-eux:2.0.7")
 
 	// Logging
 	implementation("net.logstash.logback:logstash-logback-encoder:${logstashLogbackVersion}")
