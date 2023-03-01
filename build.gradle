@@ -44,11 +44,11 @@ dependencies {
 	implementation("io.micrometer:micrometer-registry-prometheus:1.10.4")
 
 	// Eessi pensjon biblioteker
-	implementation("no.nav.eessi.pensjon:ep-metrics:2.0.6")
-	implementation("no.nav.eessi.pensjon:ep-logging:2.0.5")
-	implementation("no.nav.eessi.pensjon:ep-kodeverk:4.0.10")
-	implementation("no.nav.eessi.pensjon:ep-personoppslag:13.0.11")
-	implementation("no.nav.eessi.pensjon:ep-eux:2.1.6")
+	implementation("no.nav.eessi.pensjon:ep-metrics:2.0.7")
+	implementation("no.nav.eessi.pensjon:ep-logging:2.0.7")
+	implementation("no.nav.eessi.pensjon:ep-kodeverk:4.0.11")
+	implementation("no.nav.eessi.pensjon:ep-personoppslag:13.0.12")
+	implementation("no.nav.eessi.pensjon:ep-eux:2.1.7")
 
 	// Logging
 	implementation("net.logstash.logback:logstash-logback-encoder:7.3")
