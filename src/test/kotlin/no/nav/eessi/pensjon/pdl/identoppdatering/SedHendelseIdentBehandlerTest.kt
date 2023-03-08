@@ -10,7 +10,7 @@ import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.oppgave.OppgaveData
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
-import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
+import no.nav.eessi.pensjon.personidentifisering.IdentifisertPersonPDL
 import no.nav.eessi.pensjon.utils.toJson
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -104,7 +104,7 @@ private class SedHendelseIdentBehandlerTest {
         )
 
     private fun enIdentifisertPerson() =
-        IdentifisertPerson(uidFraPdl = emptyList(), aktoerId = "000", erDoed = false, harAdressebeskyttelse = false, landkode = null, fnr = null, personListe = null, personRelasjon = null, geografiskTilknytning = null, kontaktAdresse = null)
+        IdentifisertPersonPDL(uidFraPdl = emptyList(), aktoerId = "000", erDoed = false, harAdressebeskyttelse = false, landkode = null, fnr = null, personListe = null, personRelasjon = null, geografiskTilknytning = null, kontaktAdresse = null)
 
 }
 

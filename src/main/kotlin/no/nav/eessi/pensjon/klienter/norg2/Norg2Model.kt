@@ -2,7 +2,7 @@ package no.nav.eessi.pensjon.klienter.norg2
 
 import com.fasterxml.jackson.annotation.JsonValue
 import no.nav.eessi.pensjon.eux.model.buc.SakType
-import no.nav.eessi.pensjon.personidentifisering.SEDPersonRelasjon
+import no.nav.eessi.pensjon.personoppslag.pdl.model.SEDPersonRelasjon
 
 
 data class NorgKlientRequest(val harAdressebeskyttelse: Boolean = false,

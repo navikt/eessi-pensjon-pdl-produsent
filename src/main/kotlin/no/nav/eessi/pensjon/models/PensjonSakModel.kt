@@ -1,3 +1,4 @@
+/*
 package no.nav.eessi.pensjon.models
 
 import com.fasterxml.jackson.annotation.JsonIgnore
@@ -19,4 +20,4 @@ data class SakInformasjon(
     fun harGenerellSakTypeMedTilknyttetSaker() : Boolean {
         return sakType == SakType.GENRL && tilknyttedeSaker.isNotEmpty()
     }
-}
+}*/

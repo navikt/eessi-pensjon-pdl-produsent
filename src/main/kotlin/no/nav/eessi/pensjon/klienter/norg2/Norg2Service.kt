@@ -3,8 +3,8 @@ package no.nav.eessi.pensjon.klienter.norg2
 import no.nav.eessi.pensjon.eux.model.buc.SakType
 import no.nav.eessi.pensjon.klienter.norg2.BehandlingType.BOSATT_NORGE
 import no.nav.eessi.pensjon.klienter.norg2.BehandlingType.BOSATT_UTLAND
-import no.nav.eessi.pensjon.models.Enhet
-import no.nav.eessi.pensjon.personidentifisering.SEDPersonRelasjon
+import no.nav.eessi.pensjon.oppgaverouting.Enhet
+import no.nav.eessi.pensjon.personoppslag.pdl.model.SEDPersonRelasjon
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 

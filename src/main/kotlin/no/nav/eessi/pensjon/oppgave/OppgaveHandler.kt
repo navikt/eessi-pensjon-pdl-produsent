@@ -3,11 +3,11 @@ package no.nav.eessi.pensjon.oppgave
 import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.lagring.LagringsService
 import no.nav.eessi.pensjon.metrics.MetricsHelper
-import no.nav.eessi.pensjon.models.Enhet
-import no.nav.eessi.pensjon.models.HendelseType
+import no.nav.eessi.pensjon.oppgaverouting.Enhet
+import no.nav.eessi.pensjon.oppgaverouting.HendelseType
 import no.nav.eessi.pensjon.oppgaverouting.OppgaveRoutingRequest
 import no.nav.eessi.pensjon.oppgaverouting.OppgaveRoutingService
-import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
+import no.nav.eessi.pensjon.personidentifisering.IdentifisertPersonPDL
 import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
@@ -40,7 +40,7 @@ class OppgaveHandler(
     fun opprettOppgaveForUid(oppgaveData: OppgaveData) =
         opprettOppgaveForUid(oppgaveData.sedHendelse, oppgaveData.identifisertPerson)
 
-    private fun opprettOppgaveForUid(sedHendelse: SedHendelse, identifisertePerson: IdentifisertPerson): Boolean {
+    private fun opprettOppgaveForUid(sedHendelse: SedHendelse, identifisertePerson: IdentifisertPersonPDL): Boolean {
         return oppgaveForUid.measure {
             return@measure if (!finnesOppgavenAllerede(sedHendelse.rinaSakId)) {
                 val melding = OppgaveMelding(
@@ -66,7 +66,7 @@ class OppgaveHandler(
 
     override fun finnesOppgavenAllerede(rinaSakId: String) = !lagringsService.kanHendelsenOpprettes(rinaSakId)
 
-    private fun opprettOppgaveRuting(sedHendelse: SedHendelse, identifisertePerson : IdentifisertPerson) : Enhet {
+    private fun opprettOppgaveRuting(sedHendelse: SedHendelse, identifisertePerson : IdentifisertPersonPDL) : Enhet {
         return oppgaveruting.route(OppgaveRoutingRequest.fra(
             identifisertePerson,
             identifisertePerson.fnr!!.getBirthDate(),
@@ -95,5 +95,5 @@ interface OppgaveOppslag {
 
 data class OppgaveData(
     val sedHendelse: SedHendelse,
-    val identifisertPerson: IdentifisertPerson
+    val identifisertPerson: IdentifisertPersonPDL
 )

@@ -13,8 +13,7 @@ import no.nav.eessi.pensjon.oppgave.OppgaveData
 import no.nav.eessi.pensjon.oppgave.OppgaveOppslag
 import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
 import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
-import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
-import no.nav.eessi.pensjon.shared.person.Fodselsnummer
+import no.nav.eessi.pensjon.personidentifisering.IdentifisertPersonPDL
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
@@ -23,6 +22,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
+import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
@@ -145,7 +145,7 @@ class VurderIdentoppdatering(
         utenlandskeUids.map { Pair(it.identifikasjonsnummer, kodeverkClient.finnLandkode(it.utstederland)) }
             .contains(Pair(utenlandskPin.id, utenlandskPin.land))
 
-    private fun identifisertPerson(personFraPDL: Person) = IdentifisertPerson(
+    private fun identifisertPerson(personFraPDL: Person) = IdentifisertPersonPDL(
         fnr = Fodselsnummer.fra(personFraPDL.identer.first { it.gruppe == IdentGruppe.FOLKEREGISTERIDENT }.ident),
         uidFraPdl = personFraPDL.utenlandskIdentifikasjonsnummer,
         aktoerId = personFraPDL.identer.first { it.gruppe == IdentGruppe.AKTORID }.ident,

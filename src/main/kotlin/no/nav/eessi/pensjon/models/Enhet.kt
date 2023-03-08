@@ -1,7 +1,8 @@
-package no.nav.eessi.pensjon.models
+/*package no.nav.eessi.pensjon.models
 
-import com.fasterxml.jackson.annotation.JsonValue
+import com.fasterxml.jackson.annotation.JsonValue*/
 
+/*
 enum class Enhet(
         @JsonValue val enhetsNr: String
 ) {
@@ -20,4 +21,4 @@ enum class Enhet(
     companion object {
         fun getEnhet(enhetsNr: String): Enhet? = values().find { it.enhetsNr == enhetsNr }
     }
-}
+}*/

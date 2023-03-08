@@ -22,9 +22,7 @@ import no.nav.eessi.pensjon.pdl.identoppdatering.VurderIdentoppdatering.IngenOpp
 import no.nav.eessi.pensjon.pdl.identoppdatering.VurderIdentoppdatering.Oppdatering
 import no.nav.eessi.pensjon.pdl.identoppdatering.VurderIdentoppdatering.Oppgave
 import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
-import no.nav.eessi.pensjon.personidentifisering.IdentifisertPerson
-import no.nav.eessi.pensjon.personidentifisering.Relasjon
-import no.nav.eessi.pensjon.personidentifisering.SEDPersonRelasjon
+import no.nav.eessi.pensjon.personidentifisering.IdentifisertPersonPDL
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
 import no.nav.eessi.pensjon.personoppslag.pdl.model.AdressebeskyttelseGradering
@@ -39,6 +37,8 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.Metadata
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Relasjon
+import no.nav.eessi.pensjon.personoppslag.pdl.model.SEDPersonRelasjon
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import no.nav.eessi.pensjon.shared.person.Fodselsnummer
@@ -501,7 +501,7 @@ private class VurderIdentoppdateringTest {
 
     private fun identifisertPerson(
         erDoed: Boolean = false, uidFraPdl: List<UtenlandskIdentifikasjonsnummer> = emptyList()
-    ) = IdentifisertPerson(
+    ) = IdentifisertPersonPDL(
         fnr = Fodselsnummer.fra(FNR),
         uidFraPdl = uidFraPdl,
         aktoerId = "123456789351",
