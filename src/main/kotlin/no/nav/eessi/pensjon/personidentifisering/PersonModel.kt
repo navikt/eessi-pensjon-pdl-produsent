@@ -19,9 +19,3 @@ data class IdentifisertPersonPDL(
     val kontaktAdresse: Kontaktadresse?
 
 ) : IdentifisertPerson
-
-data class UtenlandskPin(
-    val kilde: String,
-    val identifikasjonsnummer: String,
-    val utstederland: String
-)
