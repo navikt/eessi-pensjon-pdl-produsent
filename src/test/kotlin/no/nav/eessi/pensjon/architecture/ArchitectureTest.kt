@@ -9,7 +9,6 @@ import com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices
 import no.nav.eessi.pensjon.EessiPensjonApplication
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
@@ -42,14 +41,12 @@ internal class ArchitectureTest {
         slices().matching("..$root.klienter.(**)").should().notDependOnEachOther().check(classesToAnalyze)
     }
 
-    @Test @Disabled("TODO Fix when we have found a good structure")
+    @Test
     fun `Check architecture`() {
         // Root packages
         val config = "Config"
         val health = "Health"
-        val eux = "EUX"
         val gcp = "GCP"
-        val pdlOppdatering = "PdlOppdatering"
         val klienter = "Klienter"
         val validering = "Validering"
         val oppgaveRouting = "Oppgaverouting"
@@ -60,9 +57,7 @@ internal class ArchitectureTest {
                 //Define components
                 .layer(config).definedBy("$root.config")
                 .layer(health).definedBy("$root.health")
-                .layer(eux).definedBy("$root.handler")
                 .layer(gcp).definedBy("$root.gcp")
-                .layer(pdlOppdatering).definedBy("$root.pdl.oppdatering")
                 .layer(klienter).definedBy("$root.klienter..")
                 .layer(oppgaveRouting).definedBy("$root.oppgaverouting")
                 .layer(personidentifisering).definedBy("$root.personidentifisering")
@@ -70,8 +65,7 @@ internal class ArchitectureTest {
                 //define rules
                 .whereLayer(config).mayNotBeAccessedByAnyLayer()
                 .whereLayer(health).mayNotBeAccessedByAnyLayer()
-                .whereLayer(pdlOppdatering).mayNotBeAccessedByAnyLayer()
-                .whereLayer(klienter).mayOnlyBeAccessedByLayers(pdlOppdatering, oppgaveRouting, validering)
+                .whereLayer(klienter).mayOnlyBeAccessedByLayers(oppgaveRouting, validering)
                 //Verify rules
                 .check(classesToAnalyze)
     }
