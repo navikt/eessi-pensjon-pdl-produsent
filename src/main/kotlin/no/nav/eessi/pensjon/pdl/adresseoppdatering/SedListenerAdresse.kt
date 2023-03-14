@@ -37,7 +37,6 @@ class SedListenerAdresse(
         MDC.putCloseable("x_request_id", UUID.randomUUID().toString()).use {
             adresseMetric.measure {
                 logger.info("SED-hendelse mottatt i partisjon: ${cr.partition()}, med offset: ${cr.offset()} ")
-                secureLogger.debug("Hendelse mottatt:\n$hendelse")
 
                 val offsetToSkip = listOf<Long>(386664)
                 if (cr.offset() in offsetToSkip) {
@@ -49,7 +48,8 @@ class SedListenerAdresse(
                         logger.info("Acket sedMottatt melding med offset: ${cr.offset()} i partisjon ${cr.partition()}")
                         latch.countDown()
                     } catch (ex: Exception) {
-                        logger.error("Noe gikk galt under behandling av SED-hendelse for adresse:\n$hendelse\n", ex)
+                        logger.error("Noe gikk galt under behandling av SED-hendelse for adresse", ex)
+                        secureLogger.info("Hendelse mottatt:\n$hendelse")
                         throw ex
                     }
                 }
