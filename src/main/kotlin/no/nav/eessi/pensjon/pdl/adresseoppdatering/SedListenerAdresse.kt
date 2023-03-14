@@ -38,7 +38,7 @@ class SedListenerAdresse(
             adresseMetric.measure {
                 logger.info("SED-hendelse mottatt i partisjon: ${cr.partition()}, med offset: ${cr.offset()} ")
 
-                val offsetToSkip = listOf<Long>(386664)
+                val offsetToSkip = listOf<Long>(386664, 386665)
                 if (cr.offset() in offsetToSkip) {
                     logger.warn("Hopper over offset: ${cr.offset()}")
                 }
@@ -49,7 +49,7 @@ class SedListenerAdresse(
                         latch.countDown()
                     } catch (ex: Exception) {
                         logger.error("Noe gikk galt under behandling av SED-hendelse for adresse", ex)
-                        secureLogger.info("Hendelse mottatt:\n$hendelse")
+                        secureLogger.info("Noe gikk galt under behandling av SED-hendelse for adresse:\n$hendelse")
                         throw ex
                     }
                 }
