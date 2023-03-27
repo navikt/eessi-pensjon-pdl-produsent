@@ -51,6 +51,9 @@ kafka:
   sedMottatt:
     topic: ${KAFKA_SEDMOTTATT_TOPIC}
     groupid: eessi-pensjon-pdl-produsent-group
+  sedGjenlevMottatt:
+    topic: ${KAFKA_SEDMOTTATT_TOPIC}
+    groupid: eessi-pensjon-pdl-produsent-gjenlev-group
   utenlandskAdresse:
     topic: ${KAFKA_SEDMOTTATT_TOPIC}
     groupid: eessi-pensjon-pdl-adresse-group

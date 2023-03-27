@@ -19,7 +19,6 @@ import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.adresseoppdatering.VurderAdresseoppdatering.IngenOppdatering
 import no.nav.eessi.pensjon.pdl.adresseoppdatering.VurderAdresseoppdatering.Oppdatering
-import no.nav.eessi.pensjon.shared.person.FodselsnummerGenerator
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
 import no.nav.eessi.pensjon.personoppslag.pdl.model.AdressebeskyttelseGradering
@@ -33,6 +32,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
+import no.nav.eessi.pensjon.shared.person.FodselsnummerGenerator
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue

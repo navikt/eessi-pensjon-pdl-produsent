@@ -42,6 +42,7 @@ internal class SedListenerIdentTest {
         sedListenerIdent = SedListenerIdent(
                 SedHendelseIdentBehandler(
                         vurderIdentoppdatering,
+                    null,
                         personMottakKlient,
                         oppgaveHandler,
                         "test"

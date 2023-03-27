@@ -21,6 +21,7 @@ import org.springframework.web.client.HttpClientErrorException
 @Service
 class SedHendelseIdentBehandler(
     private val vurderIdentoppdatering: VurderIdentoppdatering,
+    private val vurderIdentoppdateringGjenlev: VurderGjenlevOppdateringIdent?,
     private val personMottakKlient: PersonMottakKlient,
     private val oppgaveHandler: OppgaveHandler,
     @Value("\${SPRING_PROFILES_ACTIVE:}") private val profile: String
@@ -62,6 +63,36 @@ class SedHendelseIdentBehandler(
 
         count(result.metricTagValue)
     }
+
+    fun behandlenGjenlevHendelse(hendelse: String) {
+        logger.debug(hendelse)
+        logger.debug("Profile: $profile")
+        val sedHendelse = sedHendelseMapping(hendelse).also { secureLogger.debug("Sedhendelse:\n${it.toJson()}") }
+
+        if (testHendelseIProd(sedHendelse)) {
+            logger.error("Avsender id er ${sedHendelse.avsenderId}. Dette er testdata i produksjon!!!\n$sedHendelse")
+            return
+        }
+
+        logger.info("*** Starter pdl endringsmelding (IDENT) prosess for BucType: ${sedHendelse.bucType}, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
+
+        val result = vurderIdentoppdatering.vurderUtenlandskIdent(sedHendelse)
+
+        log(result)
+
+        when (result) {
+            is VurderIdentoppdatering.Oppdatering -> {
+                personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
+            }
+            is VurderIdentoppdatering.Oppgave -> {
+                oppgaveHandler.opprettOppgaveForUid(result.oppgaveData)
+            }
+            is VurderIdentoppdatering.IngenOppdatering -> { /* NO-OP */ }
+        }
+
+        count(result.metricTagValue)
+    }
+
 
     private fun log(result: VurderIdentoppdatering.Result) {
         when (result) {
