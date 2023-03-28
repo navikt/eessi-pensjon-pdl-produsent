@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 
-@Service
+//@Service
 class VurderGjenlevOppdateringIdent(
     private val euxService: EuxService,
     @Qualifier("oppgaveHandler") private val oppgaveOppslag: OppgaveOppslag,
