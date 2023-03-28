@@ -4,7 +4,13 @@ KAFKA_SEDMOTTATT_ADRESSE_GROUP: 'eessi-pensjon-pdl-adresse-group'
 KAFKA_OPPGAVE_TOPIC: 'eessi-pensjon-oppgave-v1'
 KAFKA_OPPGAVE_GROUP: 'eessi-pensjon-pdl-produsent-group'
 
+GCP_BUCKET_NAME: 'something'
+METRICS_REQUESTFILTER_ENABLE: 'true'
+
 kafka:
+  utenlandskAdresse:
+    topic: "dummy"
+    groupid: "groupID"
   sedMottatt:
     topic: ${KAFKA_SEDMOTTATT_TOPIC}
     groupid: ${KAFKA_SEDMOTTATT_IDENT_GROUP}

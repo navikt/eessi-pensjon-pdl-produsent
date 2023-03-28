@@ -1,7 +1,10 @@
 package no.nav.eessi.pensjon.config
 
+import com.google.cloud.storage.Storage
+import com.google.cloud.storage.StorageOptions
 import io.micrometer.core.instrument.MeterRegistry
 import no.nav.eessi.pensjon.eux.klient.EuxKlientLib
+import no.nav.eessi.pensjon.gcp.GcpStorageService
 import no.nav.eessi.pensjon.logging.RequestIdHeaderInterceptor
 import no.nav.eessi.pensjon.logging.RequestResponseLoggerInterceptor
 import no.nav.eessi.pensjon.metrics.RequestCountInterceptor
