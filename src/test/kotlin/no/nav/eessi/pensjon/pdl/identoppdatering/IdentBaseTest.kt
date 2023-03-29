@@ -44,24 +44,24 @@ open class IdentBaseTest {
             )
         )
 
-    fun identifisertPerson(
-        erDoed: Boolean = false, uidFraPdl: List<UtenlandskIdentifikasjonsnummer> = emptyList()
-    ) = IdentifisertPersonPDL(
-        fnr = Fodselsnummer.fra(FNR),
-        uidFraPdl = uidFraPdl,
-        aktoerId = "123456789351",
-        landkode = null,
-        geografiskTilknytning = null,
-        harAdressebeskyttelse = erDoed,
-        personListe = null,
-        personRelasjon = SEDPersonRelasjon(
-            relasjon = Relasjon.ANNET,
-            fnr = Fodselsnummer.fra(FNR),
-            rinaDocumentId = "12345"
-        ),
-        erDoed = erDoed,
-        kontaktAdresse = null,
-    )
+//    fun identifisertPerson(
+//        erDoed: Boolean = false, uidFraPdl: List<UtenlandskIdentifikasjonsnummer> = emptyList()
+//    ) = IdentifisertPersonPDL(
+//        fnr = Fodselsnummer.fra(FNR),
+//        uidFraPdl = uidFraPdl,
+//        aktoerId = "123456789351",
+//        landkode = null,
+//        geografiskTilknytning = null,
+//        harAdressebeskyttelse = erDoed,
+//        personListe = null,
+//        personRelasjon = SEDPersonRelasjon(
+//            relasjon = Relasjon.ANNET,
+//            fnr = Fodselsnummer.fra(FNR),
+//            rinaDocumentId = "12345"
+//        ),
+//        erDoed = erDoed,
+//        kontaktAdresse = null,
+//    )
 
     fun utenlandskIdentifikasjonsnummer(fnr: String) = UtenlandskIdentifikasjonsnummer(
         identifikasjonsnummer = fnr,

@@ -23,6 +23,7 @@ class SedHendelseIdentBehandler(
     private val vurderIdentoppdatering: VurderIdentoppdatering,
     private val personMottakKlient: PersonMottakKlient,
     private val oppgaveHandler: OppgaveHandler,
+    private val vurderGjenlevOppdateringIdent: VurderGjenlevOppdateringIdent,
     @Value("\${SPRING_PROFILES_ACTIVE:}") private val profile: String
 ) {
     private val logger = LoggerFactory.getLogger(SedHendelseIdentBehandler::class.java)
@@ -78,7 +79,7 @@ class SedHendelseIdentBehandler(
         val result = vurderIdentoppdatering.vurderUtenlandskIdent(sedHendelse)
 
         log(result)
-
+        //TODO: VurderGjenlevIdentoppdatering
         when (result) {
             is VurderIdentoppdatering.Oppdatering -> {
                 personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)

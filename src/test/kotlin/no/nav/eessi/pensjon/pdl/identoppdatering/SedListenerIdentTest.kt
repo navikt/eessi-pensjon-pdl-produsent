@@ -39,11 +39,20 @@ internal class SedListenerIdentTest {
                 landspesifikkValidering
         )
 
+        val vurderGjenlevOppdateringIdent = VurderGjenlevOppdateringIdent(
+            euxService,
+            oppgaveHandler,
+            kodeverkClient,
+            personService,
+            landspesifikkValidering
+        )
+
         sedListenerIdent = SedListenerIdent(
                 SedHendelseIdentBehandler(
                         vurderIdentoppdatering,
                         personMottakKlient,
                         oppgaveHandler,
+                        vurderGjenlevOppdateringIdent,
                         "test"
                 ),
         )

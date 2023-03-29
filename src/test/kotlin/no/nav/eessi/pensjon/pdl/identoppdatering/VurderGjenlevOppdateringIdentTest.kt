@@ -61,7 +61,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
                 )
 
         assertEquals(
-            VurderIdentoppdatering.Oppdatering(
+            VurderGjenlevOppdateringIdent.Oppdatering(
                 "Innsending av endringsmelding",
                 pdlEndringsMelding(FNR, utstederland = "SWE")
             ),
