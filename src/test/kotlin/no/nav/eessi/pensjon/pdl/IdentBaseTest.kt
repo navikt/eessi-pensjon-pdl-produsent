@@ -1,4 +1,4 @@
-package no.nav.eessi.pensjon.pdl.identoppdatering
+package no.nav.eessi.pensjon.pdl
 
 import no.nav.eessi.pensjon.eux.model.BucType
 import no.nav.eessi.pensjon.eux.model.SedHendelse

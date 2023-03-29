@@ -1,4 +1,4 @@
-package no.nav.eessi.pensjon.pdl.identoppdatering
+package no.nav.eessi.pensjon.pdl.identOppdateringGjenlev
 
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -12,9 +12,9 @@ import java.util.*
 import java.util.concurrent.CountDownLatch
 import javax.annotation.PostConstruct
 
-//@Service
+@Service
 class SedListenerGjenlevIdent(
-        private val behandleIdentHendelse: SedHendelseIdentBehandler,
+        private val behandleIdentHendelse: SedHendelseGjenlevIdentBehandler,
         @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
 ) {
 
@@ -42,7 +42,7 @@ class SedListenerGjenlevIdent(
                 try {
                     behandleIdentHendelse.behandlenGjenlevHendelse(hendelse)
                     acknowledgment.acknowledge()
-                    logger.info("Acket sedMottatt melding med offset: ${cr.offset()} i partisjon ${cr.partition()}")
+                    logger.info("Acket sedGjenlevMottatt melding med offset: ${cr.offset()} i partisjon ${cr.partition()}")
                     latch.countDown()
                 } catch (ex: Exception) {
                     logger.error("Noe gikk galt under behandling av SED-hendelse", ex)

@@ -1,4 +1,4 @@
-package no.nav.eessi.pensjon.pdl.identoppdatering
+package no.nav.eessi.pensjon.pdl.identOppdateringGjenlev
 
 import io.micrometer.core.instrument.Metrics
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
@@ -19,22 +19,16 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.HttpClientErrorException
 
 @Service
-class SedHendelseIdentBehandler(
-    private val vurderIdentoppdatering: VurderIdentoppdatering,
+class SedHendelseGjenlevIdentBehandler(
+    private val vurderGjenlevOppdateringIdent: VurderGjenlevOppdateringIdent,
     private val personMottakKlient: PersonMottakKlient,
     private val oppgaveHandler: OppgaveHandler,
     @Value("\${SPRING_PROFILES_ACTIVE:}") private val profile: String
 ) {
-    private val logger = LoggerFactory.getLogger(SedHendelseIdentBehandler::class.java)
+    private val logger = LoggerFactory.getLogger(SedHendelseGjenlevIdentBehandler::class.java)
     private val secureLogger = LoggerFactory.getLogger("secureLog")
 
-    @Retryable( // Vi gjør retry når det er lås på PDL-objektet - gjøres langt opp i stacken for at vi skal gjøre nytt oppslag mot PDL
-            include = [HttpClientErrorException::class],
-            exceptionExpression = "statusCode.value == 423",
-            backoff = Backoff(delayExpression = "@sedHendelseIdentBehandlerRetryConfig.initialRetryMillis", maxDelay = 200000L, multiplier = 3.0),
-            listeners  = ["sedHendelseIdentBehandlerRetryLogger"]
-    )
-    fun behandle(hendelse: String) {
+    fun behandlenGjenlevHendelse(hendelse: String) {
         logger.debug(hendelse)
         logger.debug("Profile: $profile")
         val sedHendelse = sedHendelseMapping(hendelse).also { secureLogger.debug("Sedhendelse:\n${it.toJson()}") }
@@ -46,35 +40,36 @@ class SedHendelseIdentBehandler(
 
         logger.info("*** Starter pdl endringsmelding (IDENT) prosess for BucType: ${sedHendelse.bucType}, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
 
-        val result = vurderIdentoppdatering.vurderUtenlandskIdent(sedHendelse)
+        val result = vurderGjenlevOppdateringIdent.vurderUtenlandskGjenlevIdent(sedHendelse)
 
         log(result)
-
         when (result) {
-            is VurderIdentoppdatering.Oppdatering -> {
-                personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
+            is VurderGjenlevOppdateringIdent.Oppdatering -> {
+//                personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
+                logger.debug("Her kommer det en opprettelse av personopplysning")
             }
-            is VurderIdentoppdatering.Oppgave -> {
-                oppgaveHandler.opprettOppgaveForUid(result.oppgaveData)
+            is VurderGjenlevOppdateringIdent.Oppgave -> {
+//                oppgaveHandler.opprettOppgaveForUid(result.oppgaveData)
+                logger.debug("Her kommer det en opprettelse av oppgave for UID")
             }
-            is VurderIdentoppdatering.IngenOppdatering -> { /* NO-OP */ }
+            is VurderGjenlevOppdateringIdent.IngenOppdatering -> { /* NO-OP */ }
         }
 
         count(result.metricTagValue)
     }
 
-    private fun log(result: VurderIdentoppdatering.Result) {
+    private fun log(result: VurderGjenlevOppdateringIdent.Result) {
         when (result) {
-            is VurderIdentoppdatering.Oppdatering -> {
+            is VurderGjenlevOppdateringIdent.Oppdatering -> {
                 secureLogger.debug("Oppdatering:\n${result.toJson()}")
                 logger.info("Oppdatering(description=${result.description})")
             }
 
-            is VurderIdentoppdatering.IngenOppdatering -> {
+            is VurderGjenlevOppdateringIdent.IngenOppdatering -> {
                 logger.info(result.toString())
             }
 
-            is VurderIdentoppdatering.Oppgave -> {
+            is VurderGjenlevOppdateringIdent.Oppgave -> {
                 logger.info("Oppgave(description=${result.description}")
             }
         }
@@ -101,16 +96,5 @@ class SedHendelseIdentBehandler(
             sedHendelseTemp
         }
     }
-}
 
-@Profile("!retryConfigOverride")
-@Component
-data class SedHendelseIdentBehandlerRetryConfig(val initialRetryMillis: Long = 20000L)
-
-@Component
-class SedHendelseIdentBehandlerRetryLogger : RetryListenerSupport() {
-    private val logger = LoggerFactory.getLogger(SedHendelseIdentBehandlerRetryLogger::class.java)
-    override fun <T : Any?, E : Throwable?> onError(context: RetryContext?, callback: RetryCallback<T, E>?, throwable: Throwable?) {
-        logger.warn("Feil under behandling av sedHendelse - try #${context?.retryCount } - ${throwable?.toString()}", throwable)
-    }
 }

@@ -1,4 +1,4 @@
-package no.nav.eessi.pensjon.pdl.identoppdatering
+package no.nav.eessi.pensjon.pdl.identOppdateringGjenlev
 
 import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.UtenlandskId
