@@ -10,9 +10,9 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.retry.RetryCallback
 import org.springframework.retry.RetryContext
+import org.springframework.retry.RetryListener
 import org.springframework.retry.annotation.Backoff
 import org.springframework.retry.annotation.Retryable
-import org.springframework.retry.listener.RetryListenerSupport
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import org.springframework.web.client.HttpClientErrorException
@@ -79,7 +79,7 @@ class SedHendelseBehandler(
 data class SedHendelseBehandlerRetryConfig(val initialRetryMillis: Long = 20000L)
 
 @Component
-class SedHendelseBehandlerRetryLogger : RetryListenerSupport() {
+class SedHendelseBehandlerRetryLogger : RetryListener {
     private val logger = LoggerFactory.getLogger(SedHendelseBehandlerRetryLogger::class.java)
     override fun <T : Any?, E : Throwable?> onError(context: RetryContext?, callback: RetryCallback<T, E>?, throwable: Throwable?) {
         logger.warn("Feil under behandling av sedHendelse - try #${context?.retryCount } - ${throwable?.toString()}", throwable)

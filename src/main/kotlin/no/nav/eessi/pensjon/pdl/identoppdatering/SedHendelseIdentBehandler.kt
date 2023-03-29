@@ -1,9 +1,9 @@
 package no.nav.eessi.pensjon.pdl.identoppdatering
 
 import io.micrometer.core.instrument.Metrics
+import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
-import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.LoggerFactory
@@ -11,9 +11,9 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.retry.RetryCallback
 import org.springframework.retry.RetryContext
+import org.springframework.retry.RetryListener
 import org.springframework.retry.annotation.Backoff
 import org.springframework.retry.annotation.Retryable
-import org.springframework.retry.listener.RetryListenerSupport
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import org.springframework.web.client.HttpClientErrorException
@@ -108,7 +108,7 @@ class SedHendelseIdentBehandler(
 data class SedHendelseIdentBehandlerRetryConfig(val initialRetryMillis: Long = 20000L)
 
 @Component
-class SedHendelseIdentBehandlerRetryLogger : RetryListenerSupport() {
+class SedHendelseIdentBehandlerRetryLogger : RetryListener {
     private val logger = LoggerFactory.getLogger(SedHendelseIdentBehandlerRetryLogger::class.java)
     override fun <T : Any?, E : Throwable?> onError(context: RetryContext?, callback: RetryCallback<T, E>?, throwable: Throwable?) {
         logger.warn("Feil under behandling av sedHendelse - try #${context?.retryCount } - ${throwable?.toString()}", throwable)
