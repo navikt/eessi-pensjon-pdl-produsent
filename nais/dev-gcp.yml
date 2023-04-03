@@ -16,11 +16,11 @@ spec:
   accessPolicy:
     outbound:
       external:
-        - host: eessi-pensjon-onprem-proxy-q2.dev-fss-pub.nais.io
-        - host: eux-rina-api-eessibasis.dev-fss-pub.nais.io
-        - host: pdl-mottak.dev-fss-pub.nais.io
-        - host: kodeverk.dev-fss-pub.nais.io
         - host: pdl-api.dev-fss-pub.nais.io
+        - host: kodeverk.dev-fss-pub.nais.io
+        - host: pdl-mottak.dev-fss-pub.nais.io
+        - host: eux-rina-api-eessibasis.dev-fss-pub.nais.io
+        - host: eessi-pensjon-onprem-proxy-q2.dev-fss-pub.nais.io
   webproxy: true
   kafka:
     pool: nav-dev

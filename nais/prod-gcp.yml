@@ -16,7 +16,11 @@ spec:
   accessPolicy:
     outbound:
       external:
-        - host: https://eessi-pensjon-pdl-produsent.intern.nav.no
+        - host: pdl-api.prod-fss-pub.nais.io
+        - host: kodeverk.prod-fss-pub.nais.io
+        - host: pdl-mottak.prod-fss-pub.nais.io
+        - host: eux-rina-api.prod-fss-pub.nais.io
+        - host: eessi-pensjon-onprem-proxy.prod-fss-pub
   webproxy: true
   kafka:
     pool: nav-prod
