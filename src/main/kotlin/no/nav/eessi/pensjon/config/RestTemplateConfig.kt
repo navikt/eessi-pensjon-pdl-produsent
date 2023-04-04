@@ -34,17 +34,17 @@ class RestTemplateConfig(
     @Value("\${EUX_RINA_API_V1_URL}")
     lateinit var euxUrl: String
 
+    @Value("\${EESSI_PEN_ONPREM_PROXY_URL}")
+    lateinit var proxyUrl: String
+
     @Value("\${PDL_MOTTAK_URL}")
     lateinit var pdlMottakUrl: String
-
-    @Value("\${NORG2_URL}")
-    lateinit var norg2Url: String
 
     @Bean
     fun euxOAuthRestTemplate(): RestTemplate = opprettRestTemplate(euxUrl, "eux-credentials")
 
     @Bean
-    fun norg2RestTemplate(): RestTemplate = opprettRestTemplate(norg2Url, "norg2-credentials")
+    fun proxyOAuthRestTemplate(): RestTemplate = opprettRestTemplate(proxyUrl, "proxy-credentials")
 
     @Bean
     fun personMottakRestTemplate(): RestTemplate = opprettRestTemplate(pdlMottakUrl, "pdl-mottak-credentials")
