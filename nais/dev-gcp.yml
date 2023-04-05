@@ -20,7 +20,7 @@ spec:
         - host: kodeverk.dev-fss-pub.nais.io
         - host: pdl-mottak.dev-fss-pub.nais.io
         - host: eux-rina-api-eessibasis.dev-fss-pub.nais.io
-        - host: eessi-pensjon-onprem-proxy-q2.dev-fss-pub.nais.io
+        - host: norg2.dev-fss-pub.nais.io
   webproxy: true
   kafka:
     pool: nav-dev
@@ -36,21 +36,19 @@ spec:
     - name: PDL_MOTTAK_URL
       value: https://pdl-mottak.dev-fss-pub.nais.io
     - name: NORG2_URL
-      value: https://eessi-pensjon-onprem-proxy-q2.dev-fss-pub.nais.io/api/v1/arbeidsfordeling
+      value: https://norg2.dev-fss-pub.nais.io/api/v1/arbeidsfordeling
     - name: KAFKA_SEDMOTTATT_TOPIC
       value: eessibasis.sedmottatt-v1-q2
     - name: KAFKA_OPPGAVE_TOPIC
       value: eessipensjon.privat-oppgave-q2
     - name: KODEVERK_URL
       value: https://kodeverk.dev-fss-pub.nais.io
-    - name: EESSI_PEN_ONPREM_PROXY_URL
-      value: https://eessi-pensjon-onprem-proxy-q2.dev-fss-pub.nais.io
     - name: AZURE_APP_KODEVERK_CLIENT_ID
       value: dev-fss.org.kodeverk
     - name: AZURE_APP_EUX_CLIENT_ID
       value: dev-fss.eessibasis.eux-rina-api-q2
-    - name: AZURE_APP_PROXY_CLIENT_ID
-      value: dev-fss.eessipensjon.eessi-pensjon-onprem-proxy-q2
+    - name: AZURE_APP_NORG2_CLIENT_ID
+      value: dev-fss.org.norg2
     - name: AZURE_APP_PDL_CLIENT_ID
       value: dev-fss.pdl.pdl-api
     - name: AZURE_APP_PDL_MOTTAK_CLIENT_ID

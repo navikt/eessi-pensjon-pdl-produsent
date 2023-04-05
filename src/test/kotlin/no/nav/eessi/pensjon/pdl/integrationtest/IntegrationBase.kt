@@ -212,7 +212,7 @@ abstract class IntegrationBase {
         }
 
         @Bean
-        fun proxyOAuthRestTemplate(): RestTemplate? {
+        fun norg2RestTemplate(): RestTemplate? {
             return opprettSSLRestTemplate()
         }
 
