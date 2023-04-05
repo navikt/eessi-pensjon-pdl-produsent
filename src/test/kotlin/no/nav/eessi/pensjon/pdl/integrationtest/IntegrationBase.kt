@@ -12,6 +12,7 @@ import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.klienter.norg2.Norg2Service
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
+import no.nav.eessi.pensjon.shared.retry.IOExceptionRetryInterceptor
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
 import org.apache.hc.client5.http.impl.classic.HttpClients
@@ -213,7 +214,7 @@ abstract class IntegrationBase {
 
         @Bean
         fun norg2RestTemplate(): RestTemplate? {
-            return opprettSSLRestTemplate()
+            return opprettSTSRestTemplate()
         }
 
         @Bean
@@ -245,6 +246,13 @@ abstract class IntegrationBase {
                 .build().apply {
                     requestFactory = customRequestFactory
                 }
+        }
+
+        @Bean
+        fun opprettSTSRestTemplate(): RestTemplate {
+            return RestTemplateBuilder()
+                .additionalInterceptors(IOExceptionRetryInterceptor())
+                .build()
         }
     }
 }

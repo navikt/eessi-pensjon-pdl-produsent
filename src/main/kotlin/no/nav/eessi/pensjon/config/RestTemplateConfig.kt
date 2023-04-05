@@ -5,6 +5,8 @@ import no.nav.eessi.pensjon.eux.klient.EuxKlientLib
 import no.nav.eessi.pensjon.logging.RequestIdHeaderInterceptor
 import no.nav.eessi.pensjon.logging.RequestResponseLoggerInterceptor
 import no.nav.eessi.pensjon.metrics.RequestCountInterceptor
+import no.nav.eessi.pensjon.security.sts.STSService
+import no.nav.eessi.pensjon.security.sts.UsernameToOidcInterceptor
 import no.nav.eessi.pensjon.shared.retry.IOExceptionRetryInterceptor
 import no.nav.security.token.support.client.core.ClientProperties
 import no.nav.security.token.support.client.core.oauth2.OAuth2AccessTokenService
@@ -26,10 +28,11 @@ import org.springframework.web.client.RestTemplate
 @Configuration
 @Profile("prod", "test")
 class RestTemplateConfig(
-        private val clientConfigurationProperties: ClientConfigurationProperties,
-        private val oAuth2AccessTokenService: OAuth2AccessTokenService?,
-        private val meterRegistry: MeterRegistry,
-        ) {
+    private val clientConfigurationProperties: ClientConfigurationProperties,
+    private val oAuth2AccessTokenService: OAuth2AccessTokenService?,
+    private val meterRegistry: MeterRegistry,
+    private val securityTokenExchangeService: STSService
+) {
 
     @Value("\${EUX_RINA_API_V1_URL}")
     lateinit var euxUrl: String
@@ -44,7 +47,7 @@ class RestTemplateConfig(
     fun euxOAuthRestTemplate(): RestTemplate = opprettRestTemplate(euxUrl, "eux-credentials")
 
     @Bean
-    fun norg2RestTemplate(): RestTemplate = opprettRestTemplate(norg2Url, "norg2-credentials")
+    fun norg2RestTemplate(): RestTemplate = buildRestTemplate(norg2Url)
 
     @Bean
     fun personMottakRestTemplate(): RestTemplate = opprettRestTemplate(pdlMottakUrl, "pdl-mottak-credentials")
@@ -69,6 +72,21 @@ class RestTemplateConfig(
                     .apply { setOutputStreaming(false) }
                 )
             }
+    }
+
+    private fun buildRestTemplate(url: String): RestTemplate {
+        return RestTemplateBuilder()
+            .rootUri(url)
+            .errorHandler(DefaultResponseErrorHandler())
+            .additionalInterceptors(
+                RequestIdHeaderInterceptor(),
+                RequestResponseLoggerInterceptor(),
+                UsernameToOidcInterceptor(securityTokenExchangeService)
+            )
+            .build().apply {
+                requestFactory = BufferingClientHttpRequestFactory(SimpleClientHttpRequestFactory())
+            }
+
     }
 
     private fun clientProperties(oAuthKey: String): ClientProperties = clientConfigurationProperties.registration[oAuthKey] ?: throw RuntimeException("could not find oauth2 client config for $oAuthKey")
