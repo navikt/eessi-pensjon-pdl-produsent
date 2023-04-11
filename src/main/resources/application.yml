@@ -44,6 +44,9 @@ no.nav.security.jwt:
 
 METRICS_REQUESTFILTER_ENABLE: true
 
+securityTokenService:
+  discoveryUrl: ${SECURITY_TOKEN_SERVICE_OPENID_CONFIGURATION_URL}
+
 kafka:
   oppgave:
     topic: ${KAFKA_OPPGAVE_TOPIC}
