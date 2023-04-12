@@ -5,8 +5,6 @@ import no.nav.eessi.pensjon.eux.klient.EuxKlientLib
 import no.nav.eessi.pensjon.logging.RequestIdHeaderInterceptor
 import no.nav.eessi.pensjon.logging.RequestResponseLoggerInterceptor
 import no.nav.eessi.pensjon.metrics.RequestCountInterceptor
-import no.nav.eessi.pensjon.security.sts.STSService
-import no.nav.eessi.pensjon.security.sts.UsernameToOidcInterceptor
 import no.nav.eessi.pensjon.shared.retry.IOExceptionRetryInterceptor
 import no.nav.security.token.support.client.core.ClientProperties
 import no.nav.security.token.support.client.core.oauth2.OAuth2AccessTokenService
@@ -30,8 +28,7 @@ import org.springframework.web.client.RestTemplate
 class RestTemplateConfig(
     private val clientConfigurationProperties: ClientConfigurationProperties,
     private val oAuth2AccessTokenService: OAuth2AccessTokenService?,
-    private val meterRegistry: MeterRegistry,
-    private val securityTokenExchangeService: STSService
+    private val meterRegistry: MeterRegistry
 ) {
 
     @Value("\${EUX_RINA_API_V1_URL}")
@@ -80,8 +77,7 @@ class RestTemplateConfig(
             .errorHandler(DefaultResponseErrorHandler())
             .additionalInterceptors(
                 RequestIdHeaderInterceptor(),
-                RequestResponseLoggerInterceptor(),
-                UsernameToOidcInterceptor(securityTokenExchangeService)
+                RequestResponseLoggerInterceptor()
             )
             .build().apply {
                 requestFactory = BufferingClientHttpRequestFactory(SimpleClientHttpRequestFactory())
