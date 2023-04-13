@@ -40,9 +40,6 @@ class RestTemplateConfig(
     @Value("\${NORG2_URL}")
     lateinit var norg2Url: String
 
-    @Value("\${EESSI_PEN_ONPREM_PROXY_URL}")
-    lateinit var proxyUrl: String
-
     @Bean
     fun euxOAuthRestTemplate(): RestTemplate = opprettRestTemplate(euxUrl, "eux-credentials")
 

@@ -40,7 +40,7 @@ spec:
     - name: PDL_MOTTAK_URL
       value: https://pdl-mottak.prod-fss-pub.nais.io
     - name: NORG2_URL
-      value: https://norg2.prod-fss-pub.nais.io/api/v1/arbeidsfordeling
+      value: https://norg2.prod-fss-pub.nais.io/norg2
     - name: KAFKA_SEDMOTTATT_TOPIC
       value: eessibasis.sedmottatt-v1
     - name: KAFKA_OPPGAVE_TOPIC
