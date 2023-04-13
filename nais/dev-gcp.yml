@@ -20,7 +20,7 @@ spec:
         - host: kodeverk.dev-fss-pub.nais.io
         - host: pdl-mottak.dev-fss-pub.nais.io
         - host: eux-rina-api-eessibasis.dev-fss-pub.nais.io
-        - host: norg2.dev-fss-pub.nais.io
+        - host: app-q4.adeo.no
   webproxy: true
   kafka:
     pool: nav-dev
@@ -40,7 +40,7 @@ spec:
     - name: PDL_MOTTAK_URL
       value: https://pdl-mottak.dev-fss-pub.nais.io
     - name: NORG2_URL
-      value: https://norg2.dev-fss-pub.nais.io
+      value: https://app-q4.adeo.no/norg2
     - name: KAFKA_SEDMOTTATT_TOPIC
       value: eessibasis.sedmottatt-v1-q2
     - name: KAFKA_OPPGAVE_TOPIC
