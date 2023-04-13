@@ -26,10 +26,10 @@ import org.springframework.web.client.RestTemplate
 @Configuration
 @Profile("prod", "test")
 class RestTemplateConfig(
-    private val clientConfigurationProperties: ClientConfigurationProperties,
-    private val oAuth2AccessTokenService: OAuth2AccessTokenService?,
-    private val meterRegistry: MeterRegistry
-) {
+        private val clientConfigurationProperties: ClientConfigurationProperties,
+        private val oAuth2AccessTokenService: OAuth2AccessTokenService?,
+        private val meterRegistry: MeterRegistry,
+        ) {
 
     @Value("\${EUX_RINA_API_V1_URL}")
     lateinit var euxUrl: String
@@ -39,6 +39,9 @@ class RestTemplateConfig(
 
     @Value("\${NORG2_URL}")
     lateinit var norg2Url: String
+
+    @Value("\${EESSI_PEN_ONPREM_PROXY_URL}")
+    lateinit var proxyUrl: String
 
     @Bean
     fun euxOAuthRestTemplate(): RestTemplate = opprettRestTemplate(euxUrl, "eux-credentials")

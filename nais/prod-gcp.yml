@@ -29,6 +29,10 @@ spec:
       value: prod
     - name: NAMESPACE
       value: p
+    - name: SECURITY_TOKEN_SERVICE_OPENID_CONFIGURATION_URL
+      value: https://security-token-service.nais.adeo.no/rest/v1/sts/.well-known/openid-configuration
+    - name: SECURITYTOKENSERVICE_URL
+      value: https://sts.adeo.no/SecurityTokenServiceProvider/
     - name: EUX_RINA_API_V1_URL
       value: https://eux-rina-api.prod-fss-pub.nais.io/cpi
     - name: PDL_URL
@@ -43,6 +47,10 @@ spec:
       value: eessipensjon.privat-oppgave
     - name: KODEVERK_URL
       value: https://kodeverk.prod-fss-pub.nais.io
+    - name: EESSI_PEN_ONPREM_PROXY_URL
+      value: https://eessi-pensjon-onprem-proxy.prod-fss-pub.nais.io
+    - name: AZURE_APP_PROXY_CLIENT_ID
+      value: prod-fss.eessipensjon.eessi-pensjon-onprem-proxy
     - name: AZURE_APP_KODEVERK_CLIENT_ID
       value: prod-fss.org.kodeverk
     - name: AZURE_APP_EUX_CLIENT_ID
