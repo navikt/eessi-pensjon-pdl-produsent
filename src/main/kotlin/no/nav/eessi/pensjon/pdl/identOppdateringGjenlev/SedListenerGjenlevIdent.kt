@@ -1,4 +1,4 @@
-package no.nav.eessi.pensjon.pdl.identoppdatering
+package no.nav.eessi.pensjon.pdl.identOppdateringGjenlev
 
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -14,7 +14,7 @@ import javax.annotation.PostConstruct
 
 @Service
 class SedListenerGjenlevIdent(
-        private val behandleIdentHendelse: SedHendelseIdentBehandler,
+        private val behandleIdentHendelse: SedHendelseGjenlevIdentBehandler,
         @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
 ) {
 
@@ -38,11 +38,11 @@ class SedListenerGjenlevIdent(
     fun consumeSedMottatt(hendelse: String, cr: ConsumerRecord<String, String>, acknowledgment: Acknowledgment) {
         MDC.putCloseable("x_request_id", UUID.randomUUID().toString()).use {
             consumeIncomingSed.measure {
-                logger.info("SedMottatt i partisjon: ${cr.partition()}, med offset: ${cr.offset()}")
+                logger.info("SedGjenlevMottatt i partisjon: ${cr.partition()}, med offset: ${cr.offset()}")
                 try {
-//                    behandleIdentHendelse.behandlenGjenlevHendelse(hendelse)
+                    behandleIdentHendelse.behandlenGjenlevHendelse(hendelse)
                     acknowledgment.acknowledge()
-                    logger.info("Acket sedMottatt melding med offset: ${cr.offset()} i partisjon ${cr.partition()}")
+                    logger.info("Acket sedGjenlevMottatt melding med offset: ${cr.offset()} i partisjon ${cr.partition()}")
                     latch.countDown()
                 } catch (ex: Exception) {
                     logger.error("Noe gikk galt under behandling av SED-hendelse", ex)

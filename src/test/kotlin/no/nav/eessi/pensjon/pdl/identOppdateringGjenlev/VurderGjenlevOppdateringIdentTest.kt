@@ -1,4 +1,4 @@
-package no.nav.eessi.pensjon.pdl.identoppdatering
+package no.nav.eessi.pensjon.pdl.identOppdateringGjenlev
 
 import io.mockk.every
 import io.mockk.mockk
@@ -6,6 +6,8 @@ import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.oppgave.OppgaveOppslag
+import no.nav.eessi.pensjon.pdl.FNR
+import no.nav.eessi.pensjon.pdl.IdentBaseTest
 import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
@@ -61,7 +63,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
                 )
 
         assertEquals(
-            VurderIdentoppdatering.Oppdatering(
+            VurderGjenlevOppdateringIdent.Oppdatering(
                 "Innsending av endringsmelding",
                 pdlEndringsMelding(FNR, utstederland = "SWE")
             ),
