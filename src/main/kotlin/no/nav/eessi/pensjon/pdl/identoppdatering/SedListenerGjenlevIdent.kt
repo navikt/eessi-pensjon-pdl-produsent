@@ -12,7 +12,7 @@ import java.util.*
 import java.util.concurrent.CountDownLatch
 import javax.annotation.PostConstruct
 
-//@Service
+@Service
 class SedListenerGjenlevIdent(
         private val behandleIdentHendelse: SedHendelseIdentBehandler,
         @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
