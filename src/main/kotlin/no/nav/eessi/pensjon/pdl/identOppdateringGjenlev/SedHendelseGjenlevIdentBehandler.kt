@@ -1,22 +1,14 @@
 package no.nav.eessi.pensjon.pdl.identOppdateringGjenlev
 
 import io.micrometer.core.instrument.Metrics
+import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
-import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.context.annotation.Profile
-import org.springframework.retry.RetryCallback
-import org.springframework.retry.RetryContext
-import org.springframework.retry.annotation.Backoff
-import org.springframework.retry.annotation.Retryable
-import org.springframework.retry.listener.RetryListenerSupport
-import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
-import org.springframework.web.client.HttpClientErrorException
 
 @Service
 class SedHendelseGjenlevIdentBehandler(
@@ -38,7 +30,7 @@ class SedHendelseGjenlevIdentBehandler(
             return
         }
 
-        logger.info("*** Starter pdl endringsmelding (IDENT) prosess for BucType: ${sedHendelse.bucType}, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
+        logger.info("*** Starter pdl endringsmelding (GJENLEV) prosess for BucType: ${sedHendelse.bucType}, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
 
         val result = vurderGjenlevOppdateringIdent.vurderUtenlandskGjenlevIdent(sedHendelse)
 
