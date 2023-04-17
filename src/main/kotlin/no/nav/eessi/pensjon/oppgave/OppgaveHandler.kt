@@ -17,6 +17,9 @@ import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
 import javax.annotation.PostConstruct
 
+private const val LAGRING_IDENT = "_IDENT"
+private const val LAGRING_GJENLEV = "_GJENLEV"
+
 @Service
 class OppgaveHandler(
     private val oppgaveKafkaTemplate: KafkaTemplate<String, String>,
@@ -39,15 +42,15 @@ class OppgaveHandler(
 
     fun opprettOppgave(oppgaveData: OppgaveData): Boolean {
         return if(oppgaveData is OppgaveDataUID){
-            opprettOppgave(oppgaveData.sedHendelse, oppgaveData.identifisertPerson, "IDENT")
+            opprettOppgave(oppgaveData.sedHendelse, oppgaveData.identifisertPerson, LAGRING_IDENT)
         } else {
-            opprettOppgave(oppgaveData.sedHendelse, oppgaveData.identifisertPerson, "GJENLEV")
+            opprettOppgave(oppgaveData.sedHendelse, oppgaveData.identifisertPerson, LAGRING_GJENLEV)
         }
     }
 
     private fun opprettOppgave(sedHendelse: SedHendelse, identifisertePerson: IdentifisertPersonPDL, lagringsPathPostfix: String): Boolean {
         return oppgaveForUid.measure {
-            return@measure if (!finnesOppgavenAllerede(sedHendelse.rinaSakId)) {
+            return@measure if (!finnesOppgavenAllerede(sedHendelse.rinaSakId.plus(lagringsPathPostfix))) {
                 val melding = OppgaveMelding(
                     aktoerId = identifisertePerson.aktoerId,
                     filnavn = null,
@@ -70,6 +73,8 @@ class OppgaveHandler(
     }
 
     override fun finnesOppgavenAllerede(rinaSakId: String) = !lagringsService.kanHendelsenOpprettes(rinaSakId)
+    override fun finnesOppgavenAlleredeForUID(rinaSakId: String) = !lagringsService.kanHendelsenOpprettes(rinaSakId.plus(LAGRING_IDENT))
+    override fun finnesOppgavenAlleredeGJENLEV(rinaSakId: String) = !lagringsService.kanHendelsenOpprettes(rinaSakId.plus(LAGRING_GJENLEV))
 
     private fun opprettOppgaveRuting(sedHendelse: SedHendelse, identifisertePerson : IdentifisertPersonPDL) : Enhet {
         return oppgaveruting.route(OppgaveRoutingRequest.fra(
@@ -96,6 +101,8 @@ class OppgaveHandler(
 
 interface OppgaveOppslag {
     fun finnesOppgavenAllerede(rinaSakId: String): Boolean
+    fun finnesOppgavenAlleredeForUID(rinaSakId: String): Boolean
+    fun finnesOppgavenAlleredeGJENLEV(rinaSakId: String): Boolean
 }
 
 interface OppgaveData {
