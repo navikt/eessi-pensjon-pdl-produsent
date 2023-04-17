@@ -7,7 +7,7 @@ import no.nav.eessi.pensjon.eux.model.BucType.*
 import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
-import no.nav.eessi.pensjon.oppgave.OppgaveData
+import no.nav.eessi.pensjon.oppgave.OppgaveDataUID
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPersonPDL
@@ -55,7 +55,7 @@ private class SedHendelseIdentBehandlerTest {
 
         verify(exactly = 1) { vurderIdentoppdatering.vurderUtenlandskIdent(any()) }
         verify(exactly = 1) { personMottakKlient.opprettPersonopplysning(any()) }
-        verify(exactly = 0) { oppgaveHandler.opprettOppgaveForUid(any()) }
+        verify(exactly = 0) { oppgaveHandler.opprettOppgave(any()) }
     }
 
     @Test
@@ -64,14 +64,14 @@ private class SedHendelseIdentBehandlerTest {
         val enSedHendelse = enSedHendelse()
 
         every { vurderIdentoppdatering.vurderUtenlandskIdent(any()) } returns
-                VurderIdentoppdatering.Oppgave("Oppgave", OppgaveData(enSedHendelse, enIdentifisertPerson()))
-        every { oppgaveHandler.opprettOppgaveForUid(any()) } returns true
+                VurderIdentoppdatering.Oppgave("Oppgave", OppgaveDataUID(enSedHendelse, enIdentifisertPerson()))
+        every { oppgaveHandler.opprettOppgave(any()) } returns true
 
         sedHendelseIdentBehandler.behandle(enSedHendelse.toJson())
 
         verify(exactly = 1) { vurderIdentoppdatering.vurderUtenlandskIdent(any()) }
         verify(exactly = 0) { personMottakKlient.opprettPersonopplysning(any()) }
-        verify(exactly = 1) { oppgaveHandler.opprettOppgaveForUid(any()) }
+        verify(exactly = 1) { oppgaveHandler.opprettOppgave(any()) }
     }
 
     @Test
@@ -87,7 +87,7 @@ private class SedHendelseIdentBehandlerTest {
 
         verify(exactly = 3) { vurderIdentoppdatering.vurderUtenlandskIdent(any()) }
         verify(exactly = 0) { personMottakKlient.opprettPersonopplysning(any()) }
-        verify(exactly = 0) { oppgaveHandler.opprettOppgaveForUid(any()) }
+        verify(exactly = 0) { oppgaveHandler.opprettOppgave(any()) }
     }
 
     private fun enSedHendelseAsJson() = enSedHendelse().toJson()

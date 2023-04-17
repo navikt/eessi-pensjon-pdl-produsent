@@ -1,9 +1,9 @@
 package no.nav.eessi.pensjon.pdl.identoppdatering
 
 import io.micrometer.core.instrument.Metrics
+import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
-import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.LoggerFactory
@@ -55,7 +55,7 @@ class SedHendelseIdentBehandler(
                 personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
             }
             is VurderIdentoppdatering.Oppgave -> {
-                oppgaveHandler.opprettOppgaveForUid(result.oppgaveData)
+                oppgaveHandler.opprettOppgave(result.oppgaveData)
             }
             is VurderIdentoppdatering.IngenOppdatering -> { /* NO-OP */ }
         }

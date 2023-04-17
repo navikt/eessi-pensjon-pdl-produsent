@@ -10,6 +10,7 @@ import no.nav.eessi.pensjon.models.EndringsmeldingUID
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.oppgave.OppgaveData
+import no.nav.eessi.pensjon.oppgave.OppgaveDataGjenlevUID
 import no.nav.eessi.pensjon.oppgave.OppgaveOppslag
 import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
 import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
@@ -108,7 +109,7 @@ class VurderGjenlevOppdateringIdent(
         if (fraSammeLandMenUlikUid(uidGjenlevendeFraSed, personFraPDL.utenlandskIdentifikasjonsnummer)) {
             return if (!oppgaveOppslag.finnesOppgavenAllerede(sedHendelse.rinaSakId)) {
                 Oppgave(
-                    "Det finnes allerede en annen uid fra samme land (oppgave opprettes)", OppgaveData(
+                    "Det finnes allerede en annen uid fra samme land (oppgave opprettes)", OppgaveDataGjenlevUID(
                         sedHendelse,
                         identifisertPerson(personFraPDL)
                     )

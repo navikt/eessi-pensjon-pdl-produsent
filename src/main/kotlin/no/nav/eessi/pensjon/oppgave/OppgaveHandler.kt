@@ -37,10 +37,15 @@ class OppgaveHandler(
         oppgaveForUid = metricsHelper.init("OppgaveForUid")
     }
 
-    fun opprettOppgaveForUid(oppgaveData: OppgaveData) =
-        opprettOppgaveForUid(oppgaveData.sedHendelse, oppgaveData.identifisertPerson)
+    fun opprettOppgave(oppgaveData: OppgaveData): Boolean {
+        return if(oppgaveData is OppgaveDataUID){
+            opprettOppgave(oppgaveData.sedHendelse, oppgaveData.identifisertPerson, "IDENT")
+        } else {
+            opprettOppgave(oppgaveData.sedHendelse, oppgaveData.identifisertPerson, "GJENLEV")
+        }
+    }
 
-    private fun opprettOppgaveForUid(sedHendelse: SedHendelse, identifisertePerson: IdentifisertPersonPDL): Boolean {
+    private fun opprettOppgave(sedHendelse: SedHendelse, identifisertePerson: IdentifisertPersonPDL, lagringsPathPostfix: String): Boolean {
         return oppgaveForUid.measure {
             return@measure if (!finnesOppgavenAllerede(sedHendelse.rinaSakId)) {
                 val melding = OppgaveMelding(
@@ -54,7 +59,7 @@ class OppgaveHandler(
                 )
 
                 opprettOppgaveMeldingPaaKafkaTopic(melding)
-                lagringsService.lagreHendelseMedSakId(sedHendelse.rinaSakId)
+                lagringsService.lagreHendelseMedSakId(sedHendelse.rinaSakId.plus("_").plus(lagringsPathPostfix))
                 logger.info("Opprett oppgave og lagret til s3")
                 true
             } else {
@@ -93,7 +98,17 @@ interface OppgaveOppslag {
     fun finnesOppgavenAllerede(rinaSakId: String): Boolean
 }
 
-data class OppgaveData(
-    val sedHendelse: SedHendelse,
+interface OppgaveData {
+    val sedHendelse: SedHendelse
     val identifisertPerson: IdentifisertPersonPDL
-)
+}
+
+data class OppgaveDataUID(
+    override val sedHendelse: SedHendelse,
+    override val identifisertPerson: IdentifisertPersonPDL
+) : OppgaveData
+
+data class OppgaveDataGjenlevUID(
+    override val sedHendelse: SedHendelse,
+    override val identifisertPerson: IdentifisertPersonPDL
+) : OppgaveData
