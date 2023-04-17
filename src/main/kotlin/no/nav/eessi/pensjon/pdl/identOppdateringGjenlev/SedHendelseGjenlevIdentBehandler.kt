@@ -37,7 +37,7 @@ class SedHendelseGjenlevIdentBehandler(
         log(result)
         when (result) {
             is VurderGjenlevOppdateringIdent.Oppdatering -> {
-//                personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
+                personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
                 logger.debug("Her kommer det en opprettelse av personopplysning")
             }
             is VurderGjenlevOppdateringIdent.Oppgave -> {
