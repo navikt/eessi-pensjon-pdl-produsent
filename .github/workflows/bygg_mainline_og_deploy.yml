@@ -52,10 +52,6 @@ jobs:
 #          export TZ=CET
 #         echo "DATE=$(date "+%Y-%m-%d--%H-%M-%S")" >> $GITHUB_ENV
 #          echo "COMMIT_HASH=$(git rev-parse HEAD)" >> $GITHUB_ENV
-
-
-
-
       #     - name: 'Bygg og publiser docker image'
 
 #       run: |
@@ -65,8 +61,8 @@ jobs:
 #         docker login ghcr.io -u ${GITHUB_REPOSITORY} -p ${{ secrets.GITHUB_TOKEN }}
 #         docker push ${{ env.IMAGE }}
 
-      - name: 'Setter Image'
-        run: echo "IMAGE=europe-north1-docker.pkg.dev/${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}/${{ github.repository }}/eessi-pensjon-pdl-produsent:${{ github.event.client_payload.image }}" >> $GITHUB_ENV
+      - name: 'Deploy image'
+        run: echo "IMAGE=${{ steps.docker-push.outputs.image }}"
       - name: 'Deploy to DEV'
         uses: nais/deploy/actions/deploy@v1
         env:
