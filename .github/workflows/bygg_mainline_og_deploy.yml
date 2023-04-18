@@ -84,4 +84,4 @@ jobs:
           token: ${{ secrets.DISPATCH_TOKEN }}
           repository: ${{ github.repository }}
           event-type: deploy-prod
-          client-payload: '{"image": "${{ env.IMAGE }}"}'
+          client-payload: '{"image": "${{ steps.docker-push.outputs.image }}"}'
