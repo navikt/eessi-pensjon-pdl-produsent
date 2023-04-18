@@ -66,7 +66,7 @@ jobs:
 #         docker push ${{ env.IMAGE }}
 
       - name: 'Setter Image'
-        run: echo "IMAGE=europe-north1-docker.pkg.dev/${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}/${{ github.repository }}/eessi-pensjon-pdl-produsent:${{ github.event.client_payload.slash_command.arg1 }}" >> $GITHUB_ENV
+        run: echo "IMAGE=europe-north1-docker.pkg.dev/${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}/${{ github.repository }}/eessi-pensjon-pdl-produsent:${{ github.event.client_payload.image }}" >> $GITHUB_ENV
       - name: 'Deploy to DEV'
         uses: nais/deploy/actions/deploy@v1
         env:
