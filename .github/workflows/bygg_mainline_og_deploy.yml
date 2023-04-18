@@ -38,7 +38,7 @@ jobs:
           pull: true
           dockerfile: Dockerfile
           docker_context: . # optional, default .a
-          image_suffix: ${{ env.package }}:${{ env.DATE }}---${{ env.COMMIT_HASH }} # optional, default empty
+          image_suffix: ${{ env.DATE }}-${{ env.COMMIT_HASH }} # optional, default empty
           cache_from: type=gha # optional, default type=gha
           cache_to: type=gha,mode=max # optional, default type=gha,mode=max
           build_secrets:
@@ -53,8 +53,6 @@ jobs:
 #         echo "DATE=$(date "+%Y-%m-%d--%H-%M-%S")" >> $GITHUB_ENV
 #          echo "COMMIT_HASH=$(git rev-parse HEAD)" >> $GITHUB_ENV
 
-      - name: 'Setter Image'
-        run: echo "IMAGE=europe-north1-docker.pkg.dev/${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}/${{ github.repository }}/eessi-pensjon-pdl-produsent:${{ github.event.client_payload.slash_command.arg1 }}"
 
 
 
@@ -67,6 +65,8 @@ jobs:
 #         docker login ghcr.io -u ${GITHUB_REPOSITORY} -p ${{ secrets.GITHUB_TOKEN }}
 #         docker push ${{ env.IMAGE }}
 
+      - name: 'Setter Image'
+        run: echo "IMAGE=europe-north1-docker.pkg.dev/${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}/${{ github.repository }}/eessi-pensjon-pdl-produsent:${{ github.event.client_payload.slash_command.arg1 }}" >> $GITHUB_ENV
       - name: 'Deploy to DEV'
         uses: nais/deploy/actions/deploy@v1
         env:
