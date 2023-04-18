@@ -38,7 +38,7 @@ jobs:
           pull: true
           dockerfile: Dockerfile
           docker_context: . # optional, default .a
-          image_suffix: ${{ env.DATE }}-${{ env.COMMIT_HASH }} # optional, default empty
+          image_suffix: ${{ env.DATE }}${{ env.COMMIT_HASH }} # optional, default empty
           cache_from: type=gha # optional, default type=gha
           cache_to: type=gha,mode=max # optional, default type=gha,mode=max
           build_secrets:
