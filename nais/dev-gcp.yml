@@ -76,7 +76,7 @@ spec:
         uniformBucketLevelAccess: true
   image: {{ image }}
   ingresses:
-    - https://eessi-pensjon-pdl-produsent-q2.dev.intern.nav.no
+    - https://eessi-pensjon-pdl-produsent-q2.intern.dev.nav.no
   liveness:
     path: /internal/isalive
     port: 8080
