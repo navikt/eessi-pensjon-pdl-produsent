@@ -16,7 +16,11 @@ spec:
   accessPolicy:
     outbound:
       external:
-        - host: https://eessi-pensjon-pdl-produsent.intern.nav.no
+        - host: pdl-api.prod-fss-pub.nais.io
+        - host: kodeverk.prod-fss-pub.nais.io
+        - host: pdl-mottak.prod-fss-pub.nais.io
+        - host: eux-rina-api.prod-fss-pub.nais.io
+        - host: norg2.prod-fss-pub.nais.io
   webproxy: true
   kafka:
     pool: nav-prod
@@ -25,6 +29,10 @@ spec:
       value: prod
     - name: NAMESPACE
       value: p
+    - name: SECURITY_TOKEN_SERVICE_OPENID_CONFIGURATION_URL
+      value: https://security-token-service.nais.adeo.no/rest/v1/sts/.well-known/openid-configuration
+    - name: SECURITYTOKENSERVICE_URL
+      value: https://sts.adeo.no/SecurityTokenServiceProvider/
     - name: EUX_RINA_API_V1_URL
       value: https://eux-rina-api.prod-fss-pub.nais.io/cpi
     - name: PDL_URL
@@ -32,7 +40,7 @@ spec:
     - name: PDL_MOTTAK_URL
       value: https://pdl-mottak.prod-fss-pub.nais.io
     - name: NORG2_URL
-      value: https://eessi-pensjon-onprem-proxy.prod-fss-pub.nais.io/api/v1/arbeidsfordeling
+      value: https://norg2.prod-fss-pub.nais.io/norg2
     - name: KAFKA_SEDMOTTATT_TOPIC
       value: eessibasis.sedmottatt-v1
     - name: KAFKA_OPPGAVE_TOPIC
@@ -41,12 +49,14 @@ spec:
       value: https://kodeverk.prod-fss-pub.nais.io
     - name: EESSI_PEN_ONPREM_PROXY_URL
       value: https://eessi-pensjon-onprem-proxy.prod-fss-pub.nais.io
+    - name: AZURE_APP_PROXY_CLIENT_ID
+      value: prod-fss.eessipensjon.eessi-pensjon-onprem-proxy
     - name: AZURE_APP_KODEVERK_CLIENT_ID
       value: prod-fss.org.kodeverk
     - name: AZURE_APP_EUX_CLIENT_ID
       value: prod-fss.eessibasis.eux-rina-api
-    - name: AZURE_APP_PROXY_CLIENT_ID
-      value: prod-fss.eessipensjon.eessi-pensjon-onprem-proxy
+    - name: AZURE_APP_NORG2_CLIENT_ID
+      value: prod-fss.org.norg2
     - name: AZURE_APP_PDL_CLIENT_ID
       value: prod-fss.pdl.pdl-api
     - name: AZURE_APP_PDL_MOTTAK_CLIENT_ID

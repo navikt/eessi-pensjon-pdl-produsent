@@ -15,7 +15,7 @@ import org.springframework.web.client.RestTemplate
 import javax.annotation.PostConstruct
 
 @Component
-class Norg2Klient(private val proxyOAuthRestTemplate: RestTemplate,
+class Norg2Klient(private val norg2RestTemplate: RestTemplate,
                   @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()) {
 
     private val logger = LoggerFactory.getLogger(Norg2Klient::class.java)
@@ -36,7 +36,7 @@ class Norg2Klient(private val proxyOAuthRestTemplate: RestTemplate,
                 val httpEntity = HttpEntity(request.toJson(), headers)
 
                 logger.info("Kaller NORG med : ${request.toJson()}")
-                val responseEntity = proxyOAuthRestTemplate.exchange(
+                val responseEntity = norg2RestTemplate.exchange(
                         "/api/v1/arbeidsfordeling",
                         HttpMethod.POST,
                         httpEntity,

@@ -37,17 +37,17 @@ class RestTemplateConfig(
     @Value("\${EUX_RINA_API_V1_URL}")
     lateinit var euxUrl: String
 
-    @Value("\${EESSI_PEN_ONPREM_PROXY_URL}")
-    lateinit var proxyUrl: String
-
     @Value("\${PDL_MOTTAK_URL}")
     lateinit var pdlMottakUrl: String
+
+    @Value("\${NORG2_URL}")
+    lateinit var norg2Url: String
 
     @Bean
     fun euxOAuthRestTemplate(): RestTemplate = opprettRestTemplate(euxUrl, "eux-credentials")
 
     @Bean
-    fun proxyOAuthRestTemplate(): RestTemplate = opprettRestTemplate(proxyUrl, "proxy-credentials")
+    fun norg2RestTemplate(): RestTemplate = buildRestTemplate(norg2Url)
 
     @Bean
     fun personMottakRestTemplate(): RestTemplate = opprettRestTemplate(pdlMottakUrl, "pdl-mottak-credentials")
@@ -72,6 +72,20 @@ class RestTemplateConfig(
                     .apply { setOutputStreaming(false) }
                 )
             }
+    }
+
+    private fun buildRestTemplate(url: String): RestTemplate {
+        return RestTemplateBuilder()
+            .rootUri(url)
+            .errorHandler(DefaultResponseErrorHandler())
+            .additionalInterceptors(
+                RequestIdHeaderInterceptor(),
+                RequestResponseLoggerInterceptor()
+            )
+            .build().apply {
+                requestFactory = BufferingClientHttpRequestFactory(SimpleClientHttpRequestFactory())
+            }
+
     }
 
     private fun clientProperties(oAuthKey: String): ClientProperties = clientConfigurationProperties.registration[oAuthKey] ?: throw RuntimeException("could not find oauth2 client config for $oAuthKey")

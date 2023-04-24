@@ -16,7 +16,6 @@
         <logger name="no.nav" level="INFO"/>
         <logger name="no.nav.security" level="ERROR"/>
         <logger name="no.nav.eessi" level="INFO"/>
-        <logger name="no.nav.eessi.pensjon.logging.RequestResponseLoggerInterceptor" level="OFF"/>
         <logger name="no.nav.security.token.support.core.validation" level="ERROR"/>
         <root level="info">
             <appender-ref ref="stdout_json"/>
@@ -38,6 +37,13 @@
         </appender>
 
         <logger name="secureLog" level="DEBUG" additivity="false">
+            <appender-ref ref="secureLog"/>
+        </logger>
+
+        <logger name="no.nav.eessi.pensjon.logging.RequestResponseLoggerInterceptor" level="OFF" additivity="false">
+            <appender-ref ref="secureLog"/>
+        </logger>
+        <logger name="no.nav.eessi.pensjon.logging.RequestResponseLoggerFilter" level="OFF" additivity="false">
             <appender-ref ref="secureLog"/>
         </logger>
     </springProfile>
@@ -80,6 +86,13 @@
         </appender>
 
         <logger name="secureLog" level="DEBUG" additivity="false">
+            <appender-ref ref="secureLog"/>
+        </logger>
+
+        <logger name="no.nav.eessi.pensjon.logging.RequestResponseLoggerInterceptor" level="DEBUG" additivity="false">
+            <appender-ref ref="secureLog"/>
+        </logger>
+        <logger name="no.nav.eessi.pensjon.logging.RequestResponseLoggerFilter" level="DEBUG" additivity="false">
             <appender-ref ref="secureLog"/>
         </logger>
     </springProfile>
