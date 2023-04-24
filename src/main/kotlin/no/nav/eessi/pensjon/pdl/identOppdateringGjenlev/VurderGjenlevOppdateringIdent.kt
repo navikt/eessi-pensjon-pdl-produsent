@@ -77,8 +77,8 @@ class VurderGjenlevOppdateringIdent(
             return IngenOppdatering("AvsenderNavn er ikke satt, kan derfor ikke lage endringsmelding")
         }
 
-        val personFraPDL =
-            (norskPin(brukerFra(sed)) ?: return IngenOppdatering("Gjenlevende bruker har ikke norsk pin i SED"))
+        val personGjenlevFraPDL =
+            (norskPinGjenlev(sed) ?: return IngenOppdatering("Gjenlevende bruker har ikke norsk pin i SED"))
                 .runCatching {
                     normaliserNorskPin(this.identifikator!!)
                 }
@@ -100,18 +100,18 @@ class VurderGjenlevOppdateringIdent(
                 }
                 .getOrThrow()
 
-        val norskFnr = personFraPDL.identer.first { it.gruppe == IdentGruppe.FOLKEREGISTERIDENT }.ident
+        val gjenlevNorskIdent = sed.pensjon?.gjenlevende?.person?.pin?.first { it.land == "NO" }?.identifikator
 
-        require(!utenlandskPinFinnesIPdl(uidGjenlevendeFraSed, personFraPDL.utenlandskIdentifikasjonsnummer)) {
+        require(!utenlandskPinFinnesIPdl(uidGjenlevendeFraSed, personGjenlevFraPDL.utenlandskIdentifikasjonsnummer)) {
             return IngenOppdatering("PDL uid er identisk med SED uid")
         }
 
-        if (fraSammeLandMenUlikUid(uidGjenlevendeFraSed, personFraPDL.utenlandskIdentifikasjonsnummer)) {
+        if (fraSammeLandMenUlikUid(uidGjenlevendeFraSed, personGjenlevFraPDL.utenlandskIdentifikasjonsnummer)) {
             return if (!oppgaveOppslag.finnesOppgavenAllerede(sedHendelse.rinaSakId)) {
                 Oppgave(
                     "Det finnes allerede en annen uid fra samme land (oppgave opprettes)", OppgaveDataGjenlevUID(
                         sedHendelse,
-                        identifisertPerson(personFraPDL)
+                        identifisertPerson(personGjenlevFraPDL)
                     )
                 )
             } else {
@@ -123,7 +123,7 @@ class VurderGjenlevOppdateringIdent(
         return Oppdatering(
             "Innsending av endringsmelding",
             pdlEndringOpplysning(
-                norskFnr,
+                gjenlevNorskIdent!!,
                 uidGjenlevendeFraSed,
                 sedHendelse.avsenderNavn!!
             ),
@@ -167,7 +167,14 @@ class VurderGjenlevOppdateringIdent(
     private fun norskPin(bruker: Bruker?) =
         bruker?.person?.pin?.firstOrNull { it.land == "NO" }
 
+    private fun norskPinGjenlev(sed: SED?) =
+        sed?.pensjon?.gjenlevende?.person?.pin?.firstOrNull { it.land == "NO" }
+
     private fun brukerFra(sed: SED) = sed.nav?.bruker
+
+
+    private fun personFraGjenlev(sed: SED) = sed.pensjon?.gjenlevende?.person
+
 
     private fun pdlEndringOpplysning(norskFnr: String, utenlandskPin: UtenlandskId, kilde: String) =
         PdlEndringOpplysning(

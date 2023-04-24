@@ -7,20 +7,17 @@ import no.nav.eessi.pensjon.eux.model.sed.*
 import no.nav.eessi.pensjon.models.EndringsmeldingUID
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
-import no.nav.eessi.pensjon.personidentifisering.IdentifisertPersonPDL
 import no.nav.eessi.pensjon.personoppslag.pdl.model.*
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Metadata
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
-import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 
- const val FNR = "11067122781"
+const val FNR = "11067122781"
  const val DNR = "51077403071"
  const val SVENSK_FNR = "512020-1234"
  const val FINSK_FNR = "130177-308T"
- const val SOME_FNR = "1234567799"
+ const val SOME_FNR = "51077403071"
  const val AKTOERID = "32165498732"
 open class IdentBaseTest {
     fun pdlEndringsMelding(
@@ -43,25 +40,6 @@ open class IdentBaseTest {
                 )
             )
         )
-
-//    fun identifisertPerson(
-//        erDoed: Boolean = false, uidFraPdl: List<UtenlandskIdentifikasjonsnummer> = emptyList()
-//    ) = IdentifisertPersonPDL(
-//        fnr = Fodselsnummer.fra(FNR),
-//        uidFraPdl = uidFraPdl,
-//        aktoerId = "123456789351",
-//        landkode = null,
-//        geografiskTilknytning = null,
-//        harAdressebeskyttelse = erDoed,
-//        personListe = null,
-//        personRelasjon = SEDPersonRelasjon(
-//            relasjon = Relasjon.ANNET,
-//            fnr = Fodselsnummer.fra(FNR),
-//            rinaDocumentId = "12345"
-//        ),
-//        erDoed = erDoed,
-//        kontaktAdresse = null,
-//    )
 
     fun utenlandskIdentifikasjonsnummer(fnr: String) = UtenlandskIdentifikasjonsnummer(
         identifikasjonsnummer = fnr,

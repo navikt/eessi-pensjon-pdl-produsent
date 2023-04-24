@@ -8,6 +8,7 @@ import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.oppgave.OppgaveOppslag
 import no.nav.eessi.pensjon.pdl.FNR
 import no.nav.eessi.pensjon.pdl.IdentBaseTest
+import no.nav.eessi.pensjon.pdl.SOME_FNR
 import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
@@ -54,18 +55,21 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
         every { personService.hentPerson(NorskIdent(FNR)) } returns
                 personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT)))
 
+        every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns
+                personFraPDL(id = SOME_FNR).copy(identer = listOf(IdentInformasjon(SOME_FNR, IdentGruppe.FOLKEREGISTERIDENT)))
+
         every { euxService.hentSed(any(), any()) } returns
                 sedGjenlevende(
-                    id = FNR, land = "NO", pinItem = listOf(
+                    id = SOME_FNR, land = "NO", pinItem = listOf(
                         PinItem(identifikator = "5 12 020-1234", land = "SE"),
-                        PinItem(identifikator = FNR, land = "NO")
+                        PinItem(identifikator = SOME_FNR, land = "NO")
                     )
                 )
 
         assertEquals(
             VurderGjenlevOppdateringIdent.Oppdatering(
                 "Innsending av endringsmelding",
-                pdlEndringsMelding(FNR, utstederland = "SWE")
+                pdlEndringsMelding(SOME_FNR, utstederland = "SWE")
             ),
             (identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = "SE")))
         )
