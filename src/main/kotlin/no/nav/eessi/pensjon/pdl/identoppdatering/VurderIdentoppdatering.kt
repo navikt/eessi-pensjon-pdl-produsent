@@ -6,6 +6,7 @@ import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.sed.Bruker
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
+import no.nav.eessi.pensjon.kodeverk.KodeverkClient.Companion.toJson
 import no.nav.eessi.pensjon.models.EndringsmeldingUID
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
@@ -45,7 +46,7 @@ class VurderIdentoppdatering(
         require(erRelevantForEESSIPensjon(sedHendelse)) { return IngenOppdatering("Ikke relevant for eessipensjon, buc: ${sedHendelse.bucType}, sed: ${sedHendelse.sedType}, sektor: ${sedHendelse.sektorKode}", "Ikke relevant for eessipensjon") }
 
         val sed = euxService.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId)
-            .also { secureLogger.debug("SED:\n$it") }
+            .also { secureLogger.debug("SED:\n${it}") }
 
         require(sedHendelse.avsenderLand.isNullOrEmpty().not()) {
             return IngenOppdatering("Avsenderland mangler")
@@ -101,7 +102,7 @@ class VurderIdentoppdatering(
                     throw it
                 }
                 .onSuccess {
-                    secureLogger.debug("Person fra PDL:\n${it.toJson()}")
+                    secureLogger.debug("Person fra PDL:\n${it}")
                 }
                 .getOrThrow()
 

@@ -9,6 +9,7 @@ import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.personoppslag.pdl.model.*
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
+import no.nav.eessi.pensjon.utils.mapJsonToAny
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -191,4 +192,17 @@ open class IdentBaseTest {
         utenlandskIdentifikasjonsnummer = listOf()
     )
 
+    fun convertFromSedTypeToSED(json: String, sedType: SedType): SED {
+        return when (sedType) {
+            SedType.P4000 -> mapJsonToAny<P4000>(json)
+            SedType.P5000 -> mapJsonToAny<P5000>(json)
+            SedType.P6000 -> mapJsonToAny<P6000>(json)
+            SedType.P7000 -> mapJsonToAny<P7000>(json)
+            SedType.P8000 -> mapJsonToAny<P8000>(json)
+            SedType.P9000 -> mapJsonToAny<P9000>(json)
+            SedType.P10000 -> mapJsonToAny<P10000>(json)
+            SedType.P15000 -> mapJsonToAny<P15000>(json)
+            else -> SED.fromJson(json)
+        }
+    }
 }

@@ -3,8 +3,7 @@ package no.nav.eessi.pensjon.pdl.identOppdateringGjenlev
 import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.eux.model.SedHendelse
-import no.nav.eessi.pensjon.eux.model.sed.Bruker
-import no.nav.eessi.pensjon.eux.model.sed.SED
+import no.nav.eessi.pensjon.eux.model.sed.*
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.models.EndringsmeldingUID
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
@@ -18,6 +17,7 @@ import no.nav.eessi.pensjon.personidentifisering.IdentifisertPersonPDL
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
 import no.nav.eessi.pensjon.personoppslag.pdl.model.*
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.LoggerFactory
@@ -46,8 +46,11 @@ class VurderGjenlevOppdateringIdent(
             return IngenOppdatering("Avsenderland mangler")
         }
 
+        val gjenlevendeFraSed = getGjenlev(sed)
+        val gjenlevendeUid = gjenlevendeFraSed?.person?.pin?.filter { it.land == sedHendelse.avsenderLand && it.land != "NO" }
+
         val uidGjenlevendeFraSed  =
-            (sed.pensjon?.gjenlevende?.person?.pin?.filter { it.land == sedHendelse.avsenderLand && it.land != "NO" }?: emptyList())
+            (gjenlevendeUid ?: emptyList())
                 .also {
                     if (it.isEmpty()) {
                         return IngenOppdatering("Gjenlevende bruker har ikke utenlandsk ident fra avsenderland (${sedHendelse.avsenderLand})", "Gjenlevende bruker har ikke utenlandsk ident fra avsenderland")
@@ -77,10 +80,11 @@ class VurderGjenlevOppdateringIdent(
             return IngenOppdatering("AvsenderNavn er ikke satt, kan derfor ikke lage endringsmelding")
         }
 
+        val gjenlevNorskIdent = gjenlevendeFraSed?.person?.pin?.first { it.land == "NO" }?.identifikator
         val personGjenlevFraPDL =
-            (norskPinGjenlev(sed) ?: return IngenOppdatering("Gjenlevende bruker har ikke norsk pin i SED"))
+            (gjenlevNorskIdent ?: return IngenOppdatering("Gjenlevende bruker har ikke norsk pin i SED"))
                 .runCatching {
-                    normaliserNorskPin(this.identifikator!!)
+                    normaliserNorskPin(this)
                 }
                 .recoverCatching {
                     if (it is IllegalArgumentException) return IngenOppdatering("Gjenlevende brukers norske id fra SED validerer ikke")
@@ -99,8 +103,6 @@ class VurderGjenlevOppdateringIdent(
                     secureLogger.debug("Person fra PDL:\n${it.toJson()}")
                 }
                 .getOrThrow()
-
-        val gjenlevNorskIdent = sed.pensjon?.gjenlevende?.person?.pin?.first { it.land == "NO" }?.identifikator
 
         require(!utenlandskPinFinnesIPdl(uidGjenlevendeFraSed, personGjenlevFraPDL.utenlandskIdentifikasjonsnummer)) {
             return IngenOppdatering("PDL uid er identisk med SED uid")
@@ -123,11 +125,25 @@ class VurderGjenlevOppdateringIdent(
         return Oppdatering(
             "Innsending av endringsmelding",
             pdlEndringOpplysning(
-                gjenlevNorskIdent!!,
+                gjenlevNorskIdent,
                 uidGjenlevendeFraSed,
                 sedHendelse.avsenderNavn!!
             ),
         )
+    }
+
+    private fun getGjenlev(sed: SED): Bruker? {
+        return when(sed) {
+            is P4000 -> sed.p4000Pensjon?.gjenlevende
+            is P5000 -> sed.p5000Pensjon?.gjenlevende
+            is P6000 -> sed.p6000Pensjon?.gjenlevende
+            is P7000 -> sed.p7000Pensjon?.gjenlevende
+            is P8000 -> sed.p8000Pensjon?.gjenlevende
+            is P9000 -> sed.pensjon?.gjenlevende
+            is P10000 -> sed.pensjon?.gjenlevende
+            is P15000 -> sed.p15000Pensjon?.gjenlevende
+            else -> null
+        }
     }
 
     private fun fraSammeLandMenUlikUid(
@@ -163,18 +179,6 @@ class VurderGjenlevOppdateringIdent(
                     logger.info("Fnr i SED på ustandard format - alt utenom tall fjernet")
                 }
             }
-
-    private fun norskPin(bruker: Bruker?) =
-        bruker?.person?.pin?.firstOrNull { it.land == "NO" }
-
-    private fun norskPinGjenlev(sed: SED?) =
-        sed?.pensjon?.gjenlevende?.person?.pin?.firstOrNull { it.land == "NO" }
-
-    private fun brukerFra(sed: SED) = sed.nav?.bruker
-
-
-    private fun personFraGjenlev(sed: SED) = sed.pensjon?.gjenlevende?.person
-
 
     private fun pdlEndringOpplysning(norskFnr: String, utenlandskPin: UtenlandskId, kilde: String) =
         PdlEndringOpplysning(
