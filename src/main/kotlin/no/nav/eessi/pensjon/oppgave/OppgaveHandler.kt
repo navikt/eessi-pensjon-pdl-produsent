@@ -62,7 +62,7 @@ class OppgaveHandler(
                 )
 
                 opprettOppgaveMeldingPaaKafkaTopic(melding)
-                lagringsService.lagreHendelseMedSakId(sedHendelse.rinaSakId.plus("_").plus(lagringsPathPostfix))
+                lagringsService.lagreHendelseMedSakId(sedHendelse.rinaSakId.plus(lagringsPathPostfix))
                 logger.info("Opprett oppgave og lagret til s3")
                 true
             } else {
