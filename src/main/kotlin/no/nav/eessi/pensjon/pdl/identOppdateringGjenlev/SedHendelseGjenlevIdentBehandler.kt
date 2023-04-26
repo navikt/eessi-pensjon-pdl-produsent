@@ -41,7 +41,7 @@ class SedHendelseGjenlevIdentBehandler(
                 logger.debug("Her kommer det en opprettelse av personopplysning")
             }
             is VurderGjenlevOppdateringIdent.Oppgave -> {
-//                oppgaveHandler.opprettOppgaveForUid(result.oppgaveData)
+                oppgaveHandler.opprettOppgave(result.oppgaveData)
                 logger.debug("Her kommer det en opprettelse av oppgave for UID")
             }
             is VurderGjenlevOppdateringIdent.IngenOppdatering -> { /* NO-OP */ }
