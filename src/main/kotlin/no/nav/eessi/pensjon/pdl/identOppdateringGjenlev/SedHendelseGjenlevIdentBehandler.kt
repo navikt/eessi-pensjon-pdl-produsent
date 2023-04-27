@@ -44,7 +44,9 @@ class SedHendelseGjenlevIdentBehandler(
                 oppgaveHandler.opprettOppgave(result.oppgaveData)
                 logger.debug("Her kommer det en opprettelse av oppgave for UID")
             }
-            is VurderGjenlevOppdateringIdent.IngenOppdatering -> { /* NO-OP */ }
+            is VurderGjenlevOppdateringIdent.IngenOppdatering -> {
+                logger.debug("Ingen oppgave")
+            }
         }
 
         count(result.metricTagValue)
