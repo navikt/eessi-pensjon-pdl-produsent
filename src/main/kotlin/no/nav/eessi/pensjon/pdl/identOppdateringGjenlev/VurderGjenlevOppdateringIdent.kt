@@ -48,6 +48,7 @@ class VurderGjenlevOppdateringIdent(
 
         val gjenlevendeFraSed = getGjenlev(sed)
         val gjenlevendeUid = gjenlevendeFraSed?.person?.pin?.filter { it.land == sedHendelse.avsenderLand && it.land != "NO" }
+        secureLogger.debug("Gjenlevende person pin: ${gjenlevendeFraSed?.person?.pin} gjenlevende uid: $gjenlevendeUid")
 
         val uidGjenlevendeFraSed  =
             (gjenlevendeUid ?: emptyList())
