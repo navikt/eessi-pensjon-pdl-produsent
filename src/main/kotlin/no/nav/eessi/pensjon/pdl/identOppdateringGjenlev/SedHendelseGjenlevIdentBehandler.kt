@@ -85,7 +85,7 @@ class SedHendelseGjenlevIdentBehandler(
 
         //støtte avsenderland SE i testmiljø Q2
         return if (profile != "prod" && profile != "integrationtest") {
-            sedHendelseTemp.copy(avsenderLand = "DK", avsenderNavn = "DK:test")
+            sedHendelseTemp.copy(avsenderLand = "SE", avsenderNavn = "SE:test")
         } else {
             sedHendelseTemp
         }
