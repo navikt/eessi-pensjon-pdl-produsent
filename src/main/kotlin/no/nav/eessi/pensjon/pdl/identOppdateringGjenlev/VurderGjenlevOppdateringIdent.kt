@@ -145,7 +145,7 @@ class VurderGjenlevOppdateringIdent(
             is P10000 -> sed.pensjon?.gjenlevende
             is P15000 -> sed.p15000Pensjon?.gjenlevende
             else -> {
-                logger.warn("Sed: ${sed.type} er ikke en del av vurdering av gjenlevende ident")
+                logger.warn("Sed: ${sed.type} er ikke en del av vurdering for gjenlevende ident")
                 null
             }
         }
