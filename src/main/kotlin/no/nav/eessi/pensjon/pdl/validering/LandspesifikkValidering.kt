@@ -109,14 +109,15 @@ class LandspesifikkValidering(private val kodeverkClient: KodeverkClient) {
     }
 
     private fun danmarkIsland(uid: String) : Boolean {
-        when (uid.length) {
-            11 -> if (uid.checkDigitsLength(10)
-                    && uid.substring(6, 7) == "-" || uid.substring(6, 7) == ""
-                    && uid.checkDigitsLength(IntRange(0, 5), 6)
-                    && uid.checkDigitsLength(IntRange(7, 10), 4))
+        var uidNew = uid.trim().replace(" ", "")
+        when (uidNew.length) {
+            11 -> if (uidNew.checkDigitsLength(10)
+                    && uidNew.substring(6, 7) == "-" || uid.substring(6, 7) == ""
+                    && uidNew.checkDigitsLength(IntRange(0, 5), 6)
+                    && uidNew.checkDigitsLength(IntRange(7, 10), 4))
                 return true
 
-            10 -> if (uid.checkDigitsLength(10)) return true
+            10 -> if (uidNew.checkDigitsLength(10)) return true
         }
         return false
     }
