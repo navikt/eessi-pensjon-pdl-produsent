@@ -135,6 +135,7 @@ class VurderGjenlevOppdateringIdent(
 
     private fun getGjenlev(sed: SED): Bruker? {
         return when(sed) {
+            is P2100 -> sed.pensjon?.gjenlevende
             is P4000 -> sed.p4000Pensjon?.gjenlevende
             is P5000 -> sed.p5000Pensjon?.gjenlevende
             is P6000 -> sed.p6000Pensjon?.gjenlevende
@@ -143,7 +144,10 @@ class VurderGjenlevOppdateringIdent(
             is P9000 -> sed.pensjon?.gjenlevende
             is P10000 -> sed.pensjon?.gjenlevende
             is P15000 -> sed.p15000Pensjon?.gjenlevende
-            else -> null
+            else -> {
+                logger.warn("Sed: ${sed.type} er ikke en del av vurdering av gjenlevende ident")
+                null
+            }
         }
     }
 
