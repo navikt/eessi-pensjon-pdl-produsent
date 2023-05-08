@@ -40,11 +40,17 @@ class RestTemplateConfig(
     @Value("\${NORG2_URL}")
     lateinit var norg2Url: String
 
+    @Value("\${BESTEMSAK_URL}")
+    lateinit var bestemSakUrl: String
+
     @Bean
     fun euxOAuthRestTemplate(): RestTemplate = opprettRestTemplate(euxUrl, "eux-credentials")
 
     @Bean
     fun norg2RestTemplate(): RestTemplate = buildRestTemplate(norg2Url)
+
+    @Bean
+    fun bestemSakOidcRestTemplate(): RestTemplate = opprettRestTemplate(bestemSakUrl, "proxy-credentials")
 
     @Bean
     fun personMottakRestTemplate(): RestTemplate = opprettRestTemplate(pdlMottakUrl, "pdl-mottak-credentials")

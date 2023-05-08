@@ -14,6 +14,7 @@ import no.nav.eessi.pensjon.eux.model.sed.Pensjon
 import no.nav.eessi.pensjon.eux.model.sed.Person
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.eux.model.sed.SED
+import no.nav.eessi.pensjon.klienter.pesys.BestemSakKlient
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.integrationtest.IntegrationBase
@@ -63,9 +64,13 @@ class SedListenerAdresseIT : IntegrationBase() {
     @MockkBean
     lateinit var personMottakKlient: PersonMottakKlient
 
+    @MockkBean
+    lateinit var bestemSakKlient: BestemSakKlient
+
     @Test
     fun `Gitt en sed hendelse som kommer på riktig topic og group_id så skal den konsumeres av adresseListener`() {
         val fnr = FodselsnummerGenerator.generateFnrForTest(70)
+
         every { euxService.hentSed(eq("74389487"), eq("743982")) } returns enSedFraEux(fnr)
         every { euxService.alleGyldigeSEDForBuc(any()) } returns emptyList() // Dette er fordi vi ikke bryr oss om IdentListener
         every { personService.hentPerson(NorskIdent(fnr)) } returns enPersonFraPDL(fnr)
