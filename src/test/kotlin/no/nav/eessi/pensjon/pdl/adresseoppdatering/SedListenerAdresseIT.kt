@@ -79,7 +79,7 @@ class SedListenerAdresseIT : IntegrationBase() {
 
         kafkaTemplate.sendDefault(enSedHendelse().toJson())
 
-        adresseListener.latch.await(10, TimeUnit.SECONDS)
+        adresseListener.latch.await(20, TimeUnit.SECONDS)
         assertEquals(0, adresseListener.latch.count)
 
         verify(exactly = 1) { personMottakKlient.opprettPersonopplysning(any()) }

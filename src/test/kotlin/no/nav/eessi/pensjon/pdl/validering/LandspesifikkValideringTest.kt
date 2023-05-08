@@ -61,6 +61,7 @@ internal class LandspesifikkValideringTest {
         "DK, 130177-1234, true",
         "DK, 1301771234, true",
         "DK, 130177-12341, false",
+        "DK, 130177 2341, true",
         "DK, 13017712341, false",
         "ET, 37701132722, true",
         "ET, 377A1132722, false",

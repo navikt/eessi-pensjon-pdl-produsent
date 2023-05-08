@@ -43,12 +43,12 @@ internal class OppgaveHandlerTest{
     @Test
     fun `gitt en sedhendelse og en identifisert person, så skal det opprettes en oppgavemelding`() {
         val identifisertPerson = identifisertPerson()
-        val oppgave = OppgaveData(enSedHendelse(), identifisertPerson)
+        val oppgave = OppgaveDataUID(enSedHendelse(), identifisertPerson)
 
         val meldingSlot = slot<String>()
         every { kafkaTemplate.sendDefault(any(), capture(meldingSlot)).get() } returns mockk()
 
-        oppgaveHandler.opprettOppgaveForUid(oppgave)
+        oppgaveHandler.opprettOppgave(oppgave)
 
         val forventetMelding = """{
           "sedType" : null,

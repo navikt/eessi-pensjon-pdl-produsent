@@ -17,6 +17,9 @@ import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
 import javax.annotation.PostConstruct
 
+private const val LAGRING_IDENT = "_IDENT"
+private const val LAGRING_GJENLEV = "_GJENLEV"
+
 @Service
 class OppgaveHandler(
     private val oppgaveKafkaTemplate: KafkaTemplate<String, String>,
@@ -37,12 +40,17 @@ class OppgaveHandler(
         oppgaveForUid = metricsHelper.init("OppgaveForUid")
     }
 
-    fun opprettOppgaveForUid(oppgaveData: OppgaveData) =
-        opprettOppgaveForUid(oppgaveData.sedHendelse, oppgaveData.identifisertPerson)
+    fun opprettOppgave(oppgaveData: OppgaveData): Boolean {
+        return if(oppgaveData is OppgaveDataUID){
+            opprettOppgave(oppgaveData.sedHendelse, oppgaveData.identifisertPerson, LAGRING_IDENT)
+        } else {
+            opprettOppgave(oppgaveData.sedHendelse, oppgaveData.identifisertPerson, LAGRING_GJENLEV)
+        }
+    }
 
-    private fun opprettOppgaveForUid(sedHendelse: SedHendelse, identifisertePerson: IdentifisertPersonPDL): Boolean {
+    private fun opprettOppgave(sedHendelse: SedHendelse, identifisertePerson: IdentifisertPersonPDL, lagringsPathPostfix: String): Boolean {
         return oppgaveForUid.measure {
-            return@measure if (!finnesOppgavenAllerede(sedHendelse.rinaSakId)) {
+            return@measure if (!finnesOppgavenAllerede(sedHendelse.rinaSakId.plus(lagringsPathPostfix))) {
                 val melding = OppgaveMelding(
                     aktoerId = identifisertePerson.aktoerId,
                     filnavn = null,
@@ -54,7 +62,7 @@ class OppgaveHandler(
                 )
 
                 opprettOppgaveMeldingPaaKafkaTopic(melding)
-                lagringsService.lagreHendelseMedSakId(sedHendelse.rinaSakId)
+                lagringsService.lagreHendelseMedSakId(sedHendelse.rinaSakId.plus(lagringsPathPostfix))
                 logger.info("Opprett oppgave og lagret til s3")
                 true
             } else {
@@ -65,6 +73,8 @@ class OppgaveHandler(
     }
 
     override fun finnesOppgavenAllerede(rinaSakId: String) = !lagringsService.kanHendelsenOpprettes(rinaSakId)
+    override fun finnesOppgavenAlleredeForUID(rinaSakId: String) = !lagringsService.kanHendelsenOpprettes(rinaSakId.plus(LAGRING_IDENT))
+    override fun finnesOppgavenAlleredeGJENLEV(rinaSakId: String) = !lagringsService.kanHendelsenOpprettes(rinaSakId.plus(LAGRING_GJENLEV))
 
     private fun opprettOppgaveRuting(sedHendelse: SedHendelse, identifisertePerson : IdentifisertPersonPDL) : Enhet {
         return oppgaveruting.route(OppgaveRoutingRequest.fra(
@@ -91,9 +101,21 @@ class OppgaveHandler(
 
 interface OppgaveOppslag {
     fun finnesOppgavenAllerede(rinaSakId: String): Boolean
+    fun finnesOppgavenAlleredeForUID(rinaSakId: String): Boolean
+    fun finnesOppgavenAlleredeGJENLEV(rinaSakId: String): Boolean
 }
 
-data class OppgaveData(
-    val sedHendelse: SedHendelse,
+interface OppgaveData {
+    val sedHendelse: SedHendelse
     val identifisertPerson: IdentifisertPersonPDL
-)
+}
+
+data class OppgaveDataUID(
+    override val sedHendelse: SedHendelse,
+    override val identifisertPerson: IdentifisertPersonPDL
+) : OppgaveData
+
+data class OppgaveDataGjenlevUID(
+    override val sedHendelse: SedHendelse,
+    override val identifisertPerson: IdentifisertPersonPDL
+) : OppgaveData

@@ -48,6 +48,7 @@ dependencies {
 	implementation("no.nav.eessi.pensjon:ep-metrics:2.0.17")
 	implementation("no.nav.eessi.pensjon:ep-logging:2.1.12")
 
+
 	implementation("no.nav.eessi.pensjon:ep-kodeverk:4.0.40"){
 		exclude module: 'ep-metrics'
 		exclude module: 'ep-logging'
@@ -83,6 +84,7 @@ dependencies {
 		exclude module: "junit-vintage-engine"
 	}
 	testImplementation "org.springframework.kafka:spring-kafka-test:$springKafkaVersion"
+	testImplementation("no.nav.security:token-validation-spring-test:${tokenSupportVersion}")
 
 	testImplementation(platform("org.junit:junit-bom:5.9.3"))
 	testImplementation("org.junit.jupiter:junit-jupiter")
