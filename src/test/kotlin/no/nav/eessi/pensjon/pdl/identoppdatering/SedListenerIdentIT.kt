@@ -8,7 +8,6 @@ import no.nav.eessi.pensjon.eux.model.BucType.P_BUC_10
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
-import no.nav.eessi.pensjon.klienter.pesys.BestemSakKlient
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.oppgaverouting.Enhet
 import no.nav.eessi.pensjon.pdl.integrationtest.CustomMockServer
@@ -50,9 +49,6 @@ class SedListenerIdentIT : IntegrationBase() {
 
     @MockkBean
     lateinit var kodeverkClient: KodeverkClient
-
-    @MockkBean
-    lateinit var bestemSakKlient: BestemSakKlient
 
     val fnr = "11067122781"
 
