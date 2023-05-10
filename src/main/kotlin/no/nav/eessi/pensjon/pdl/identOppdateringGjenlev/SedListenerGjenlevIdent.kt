@@ -40,7 +40,7 @@ class SedListenerGjenlevIdent(
             consumeIncomingSed.measure {
                 logger.info("SedGjenlevMottatt i partisjon: ${cr.partition()}, med offset: ${cr.offset()}")
                 try {
-                    behandleIdentHendelse.behandlenGjenlevHendelse(hendelse)
+//                    behandleIdentHendelse.behandlenGjenlevHendelse(hendelse)
                     acknowledgment.acknowledge()
                     logger.info("Acket sedGjenlevMottatt melding med offset: ${cr.offset()} i partisjon ${cr.partition()}")
                     latch.countDown()
