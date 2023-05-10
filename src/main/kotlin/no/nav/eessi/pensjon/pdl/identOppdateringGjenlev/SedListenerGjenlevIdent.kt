@@ -5,7 +5,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
 import java.util.*
@@ -30,11 +29,11 @@ class SedListenerGjenlevIdent(
         consumeIncomingSed = metricsHelper.init("consumeIncomingSed")
     }
 
-    @KafkaListener(
+/*    @KafkaListener(
         containerFactory = "sedKafkaListenerContainerFactory",
         topics = ["\${kafka.sedMottatt.topic}"],
         groupId = "\${kafka.sedGjenlevMottatt.groupid}"
-    )
+    )*/
     fun consumeSedMottatt(hendelse: String, cr: ConsumerRecord<String, String>, acknowledgment: Acknowledgment) {
         MDC.putCloseable("x_request_id", UUID.randomUUID().toString()).use {
             consumeIncomingSed.measure {
