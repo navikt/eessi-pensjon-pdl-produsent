@@ -8,9 +8,9 @@ import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.models.EndringsmeldingUID
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
-import no.nav.eessi.pensjon.oppgave.OppgaveData
 import no.nav.eessi.pensjon.oppgave.OppgaveDataGjenlevUID
 import no.nav.eessi.pensjon.oppgave.OppgaveOppslag
+import no.nav.eessi.pensjon.pdl.OppgaveModel
 import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
 import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPersonPDL
@@ -31,7 +31,7 @@ class VurderGjenlevOppdateringIdent(
     private val kodeverkClient: KodeverkClient,
     private val personService: PersonService,
     private val landspesifikkValidering: LandspesifikkValidering
-) {
+): OppgaveModel() {
 
     private val logger = LoggerFactory.getLogger(VurderGjenlevOppdateringIdent::class.java)
     private val secureLogger = LoggerFactory.getLogger("secureLog")
@@ -111,7 +111,7 @@ class VurderGjenlevOppdateringIdent(
 
         if (fraSammeLandMenUlikUid(uidGjenlevendeFraSed, personGjenlevFraPDL.utenlandskIdentifikasjonsnummer)) {
             return if (!oppgaveOppslag.finnesOppgavenAllerede(sedHendelse.rinaSakId)) {
-                Oppgave(
+                OppgaveGjenlev(
                     "Det finnes allerede en annen uid fra samme land (oppgave opprettes)", OppgaveDataGjenlevUID(
                         sedHendelse,
                         identifisertPerson(personGjenlevFraPDL)
@@ -213,17 +213,6 @@ class VurderGjenlevOppdateringIdent(
     }
     private fun UtenlandskId.erPersonValidertPaaLand(): Boolean = landspesifikkValidering.validerLandsspesifikkUID(land, id)
 
-    sealed class Result {
-        abstract val description: String
-        abstract val metricTagValueOverride: String?
-
-        val metricTagValue: String
-            get() = metricTagValueOverride ?: description
-    }
-
-    data class Oppdatering(override val description: String, val pdlEndringsOpplysninger: PdlEndringOpplysning, override val metricTagValueOverride: String? = null, ): Result()
-    data class IngenOppdatering(override val description: String, override val metricTagValueOverride: String? = null): Result()
-    data class Oppgave(override val description: String, val oppgaveData: OppgaveData, override val metricTagValueOverride: String? = null): Result()
 
 }
 

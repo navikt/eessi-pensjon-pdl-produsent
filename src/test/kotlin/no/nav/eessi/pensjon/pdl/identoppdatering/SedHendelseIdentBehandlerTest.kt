@@ -9,6 +9,7 @@ import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.oppgave.OppgaveDataUID
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
+import no.nav.eessi.pensjon.pdl.OppgaveModel.*
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPersonPDL
 import no.nav.eessi.pensjon.utils.toJson
@@ -48,7 +49,7 @@ private class SedHendelseIdentBehandlerTest {
     fun `Gitt en Oppdatering så kaller vi opprettPersonopplysning`() {
 
         every { vurderIdentoppdatering.vurderUtenlandskIdent(any()) } returns
-                VurderIdentoppdatering.Oppdatering("En oppdatering", PdlEndringOpplysning(listOf()))
+                Oppdatering("En oppdatering", PdlEndringOpplysning(listOf()))
         every { personMottakKlient.opprettPersonopplysning(any()) } returns true
 
         sedHendelseIdentBehandler.behandle(enSedHendelseAsJson())
@@ -64,7 +65,7 @@ private class SedHendelseIdentBehandlerTest {
         val enSedHendelse = enSedHendelse()
 
         every { vurderIdentoppdatering.vurderUtenlandskIdent(any()) } returns
-                VurderIdentoppdatering.Oppgave("Oppgave", OppgaveDataUID(enSedHendelse, enIdentifisertPerson()))
+                Oppgave("Oppgave", OppgaveDataUID(enSedHendelse, enIdentifisertPerson()))
         every { oppgaveHandler.opprettOppgave(any()) } returns true
 
         sedHendelseIdentBehandler.behandle(enSedHendelse.toJson())

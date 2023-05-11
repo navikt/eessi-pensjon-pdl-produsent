@@ -9,10 +9,15 @@ import no.nav.eessi.pensjon.models.EndringsmeldingKontaktAdresse
 import no.nav.eessi.pensjon.models.EndringsmeldingUtenlandskAdresse
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
+import no.nav.eessi.pensjon.pdl.OppgaveModel
 import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
-import no.nav.eessi.pensjon.personoppslag.pdl.model.*
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
+import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Kontaktadresse
+import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
 import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.LoggerFactory
@@ -24,7 +29,7 @@ class VurderAdresseoppdatering(
     private val personService: PersonService,
     private val euxService: EuxService,
     private val sedTilPDLAdresse: SedTilPDLAdresse
-) {
+) : OppgaveModel() {
     private val logger = LoggerFactory.getLogger(VurderAdresseoppdatering::class.java)
     private val secureLogger = LoggerFactory.getLogger("secureLog")
 
@@ -172,7 +177,7 @@ class VurderAdresseoppdatering(
             )
         ))
 
-    sealed class Result {
+/*    sealed class Result {
         abstract val description: String
         abstract val metricTagValueOverride: String?
 
@@ -183,5 +188,5 @@ class VurderAdresseoppdatering(
     data class Oppdatering(override val description: String, val pdlEndringsOpplysninger: PdlEndringOpplysning, override val metricTagValueOverride: String? = null): Result() {
         override fun toString() = "Oppdatering(description=$description, pdlEndringsOpplysninger=[omitted], metricTagValueOverride=$metricTagValueOverride)"
     }
-    data class IngenOppdatering(override val description: String, override val metricTagValueOverride: String? = null): Result()
+    data class IngenOppdatering(override val description: String, override val metricTagValueOverride: String? = null): Result()*/
 }

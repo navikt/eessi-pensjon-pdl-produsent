@@ -3,6 +3,7 @@ package no.nav.eessi.pensjon.pdl.identoppdatering
 import io.micrometer.core.instrument.Metrics
 import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
+import no.nav.eessi.pensjon.pdl.OppgaveModel
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
@@ -24,7 +25,7 @@ class SedHendelseIdentBehandler(
     private val personMottakKlient: PersonMottakKlient,
     private val oppgaveHandler: OppgaveHandler,
     @Value("\${SPRING_PROFILES_ACTIVE:}") private val profile: String
-) {
+) : OppgaveModel() {
     private val logger = LoggerFactory.getLogger(SedHendelseIdentBehandler::class.java)
     private val secureLogger = LoggerFactory.getLogger("secureLog")
 
@@ -51,30 +52,33 @@ class SedHendelseIdentBehandler(
         log(result)
 
         when (result) {
-            is VurderIdentoppdatering.Oppdatering -> {
+            is Oppdatering -> {
                 personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
             }
-            is VurderIdentoppdatering.Oppgave -> {
+            is Oppgave -> {
                 oppgaveHandler.opprettOppgave(result.oppgaveData)
             }
-            is VurderIdentoppdatering.IngenOppdatering -> { /* NO-OP */ }
+
+            else -> {
+                /* NO-OP */
+            }
         }
 
         count(result.metricTagValue)
     }
 
-    private fun log(result: VurderIdentoppdatering.Result) {
+    private fun log(result: Result) {
         when (result) {
-            is VurderIdentoppdatering.Oppdatering -> {
+            is Oppdatering -> {
                 secureLogger.debug("Oppdatering:\n${result.toJson()}")
                 logger.info("Oppdatering(description=${result.description})")
             }
 
-            is VurderIdentoppdatering.IngenOppdatering -> {
+            is IngenOppdatering -> {
                 logger.info(result.toString())
             }
 
-            is VurderIdentoppdatering.Oppgave -> {
+            else -> {
                 logger.info("Oppgave(description=${result.description}")
             }
         }

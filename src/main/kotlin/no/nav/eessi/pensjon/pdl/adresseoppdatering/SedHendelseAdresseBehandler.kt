@@ -2,6 +2,7 @@ package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
 import io.micrometer.core.instrument.Metrics
 import no.nav.eessi.pensjon.eux.model.SedHendelse
+import no.nav.eessi.pensjon.pdl.OppgaveModel
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
@@ -22,7 +23,7 @@ class SedHendelseBehandler(
     private val adresseoppdatering: VurderAdresseoppdatering,
     private val personMottakKlient: PersonMottakKlient,
     @Value("\${SPRING_PROFILES_ACTIVE:}") private val profile: String
-) {
+) : OppgaveModel() {
     private val logger = LoggerFactory.getLogger(SedHendelseBehandler::class.java)
     private val secureLogger = LoggerFactory.getLogger("secureLog")
 
@@ -46,7 +47,7 @@ class SedHendelseBehandler(
 
         log(result)
 
-        if (result is VurderAdresseoppdatering.Oppdatering) {
+        if (result is OppgaveModel.Oppdatering) {
             personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
         }
 
@@ -61,9 +62,9 @@ class SedHendelseBehandler(
         }
     }
 
-    private fun log(result: VurderAdresseoppdatering.Result) {
+    private fun log(result: Result) {
         logger.info(result.toString())
-        if (result is VurderAdresseoppdatering.Oppdatering) {
+        if (result is OppgaveModel.Oppdatering) {
             secureLogger.info("Oppdatering til PDL:\n${result.pdlEndringsOpplysninger.toJson()}")
         }
     }

@@ -16,9 +16,9 @@ import no.nav.eessi.pensjon.models.EndringsmeldingKontaktAdresse
 import no.nav.eessi.pensjon.models.EndringsmeldingUtenlandskAdresse
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
+import no.nav.eessi.pensjon.pdl.OppgaveModel.IngenOppdatering
+import no.nav.eessi.pensjon.pdl.OppgaveModel.Oppdatering
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
-import no.nav.eessi.pensjon.pdl.adresseoppdatering.VurderAdresseoppdatering.IngenOppdatering
-import no.nav.eessi.pensjon.pdl.adresseoppdatering.VurderAdresseoppdatering.Oppdatering
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
 import no.nav.eessi.pensjon.personoppslag.pdl.model.AdressebeskyttelseGradering
@@ -157,14 +157,17 @@ internal class VurderAdresseoppdateringTest {
 
         val result = adresseoppdatering.vurderUtenlandskKontaktadresse(sedHendelse(avsenderNavn = TYSK_INSTITUSJON, avsenderLand = TYSK_ADRESSE_LANDKODE))
 
-        assertEquals(Oppdatering("Adressen i SED fra $TYSK_ADRESSE_LANDKODE finnes ikke i PDL, sender OPPRETT endringsmelding",
-            pdlAdresseEndringsOpplysning(
-                pdlAdresse = TYSK_ADRESSE_I_SED_GJORT_OM_TIL_PDL_ADRESSE,
-                kilde = "$TYSK_INSTITUSJON ($TYSK_ADRESSE_LANDKODE)",
-                gyldigFraOgMed = LocalDate.now(),
-                gyldigTilOgMed = LocalDate.now().plusYears(5),
-                endringsType = Endringstype.OPPRETT
-            ), metricTagValueOverride = "Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding")
+        assertEquals(
+            Oppdatering(
+                "Adressen i SED fra $TYSK_ADRESSE_LANDKODE finnes ikke i PDL, sender OPPRETT endringsmelding",
+                pdlAdresseEndringsOpplysning(
+                    pdlAdresse = TYSK_ADRESSE_I_SED_GJORT_OM_TIL_PDL_ADRESSE,
+                    kilde = "$TYSK_INSTITUSJON ($TYSK_ADRESSE_LANDKODE)",
+                    gyldigFraOgMed = LocalDate.now(),
+                    gyldigTilOgMed = LocalDate.now().plusYears(5),
+                    endringsType = Endringstype.OPPRETT
+                ), metricTagValueOverride = "Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding"
+            )
         , result)
     }
 
@@ -209,13 +212,15 @@ internal class VurderAdresseoppdateringTest {
 
         val result = adresseoppdatering.vurderUtenlandskKontaktadresse(sedHendelse(avsenderNavn = TYSK_INSTITUSJON, avsenderLand = TYSK_ADRESSE_LANDKODE))
 
-        assertEquals(Oppdatering("Adressen i SED fra $TYSK_ADRESSE_LANDKODE finnes ikke i PDL, sender OPPRETT endringsmelding",
-            pdlAdresseEndringsOpplysning(
-                pdlAdresse = TYSK_ADRESSE_I_SED_GJORT_OM_TIL_PDL_ADRESSE,
-                kilde = "$TYSK_INSTITUSJON ($TYSK_ADRESSE_LANDKODE)",
-                endringsType = Endringstype.OPPRETT
-            ), "Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding"
-        ), result)
+        assertEquals(
+            Oppdatering(
+                "Adressen i SED fra $TYSK_ADRESSE_LANDKODE finnes ikke i PDL, sender OPPRETT endringsmelding",
+                pdlAdresseEndringsOpplysning(
+                    pdlAdresse = TYSK_ADRESSE_I_SED_GJORT_OM_TIL_PDL_ADRESSE,
+                    kilde = "$TYSK_INSTITUSJON ($TYSK_ADRESSE_LANDKODE)",
+                    endringsType = Endringstype.OPPRETT
+                ), "Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding"
+            ), result)
     }
 
     @Test
@@ -281,10 +286,11 @@ internal class VurderAdresseoppdateringTest {
 
         val result = adresseoppdatering.vurderUtenlandskKontaktadresse(sedHendelse(avsenderNavn = TYSK_INSTITUSJON, avsenderLand = TYSK_ADRESSE_LANDKODE))
 
-        assertEquals(IngenOppdatering(
-            "Brukers norske id fra SED validerer ikke: \"$norskFnr\" - Ikke et gyldig fødselsnummer: ",
-            "Brukers norske id fra SED validerer ikke"
-        ), result)
+        assertEquals(
+            IngenOppdatering(
+                "Brukers norske id fra SED validerer ikke: \"$norskFnr\" - Ikke et gyldig fødselsnummer: ",
+                "Brukers norske id fra SED validerer ikke"
+            ), result)
     }
 
     @Test

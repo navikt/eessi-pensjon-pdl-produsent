@@ -4,26 +4,24 @@ import io.mockk.every
 import io.mockk.mockk
 import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.model.SedType
-import no.nav.eessi.pensjon.eux.model.sed.*
+import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.oppgave.OppgaveOppslag
 import no.nav.eessi.pensjon.pdl.FNR
 import no.nav.eessi.pensjon.pdl.IdentBaseTest
+import no.nav.eessi.pensjon.pdl.OppgaveModel
 import no.nav.eessi.pensjon.pdl.SOME_FNR
 import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentInformasjon
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
-import no.nav.eessi.pensjon.utils.mapJsonToAny
-import no.nav.eessi.pensjon.utils.typeRefs
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.junit.jupiter.params.provider.EnumSource
 
 class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
 
@@ -82,7 +80,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
                 )
 
         assertEquals(
-            VurderGjenlevOppdateringIdent.Oppdatering(
+            OppgaveModel.Oppdatering(
                 "Innsending av endringsmelding",
                 pdlEndringsMelding(SOME_FNR, utstederland = "SWE")
             ),
@@ -115,7 +113,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
         every { euxService.hentSed(any(), any()) } returns convertFromSedTypeToSED(sed, SedType.from(sedType)!!)
 
         assertEquals(
-            VurderGjenlevOppdateringIdent.Oppdatering(
+            OppgaveModel.Oppdatering(
                 "Innsending av endringsmelding",
                 pdlEndringsMelding(FNR, gjenlevUid, utstederland = "DNK")
             ),

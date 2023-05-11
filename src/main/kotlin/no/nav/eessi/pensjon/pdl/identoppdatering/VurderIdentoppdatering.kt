@@ -6,13 +6,12 @@ import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.sed.Bruker
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
-import no.nav.eessi.pensjon.kodeverk.KodeverkClient.Companion.toJson
 import no.nav.eessi.pensjon.models.EndringsmeldingUID
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.models.Personopplysninger
-import no.nav.eessi.pensjon.oppgave.OppgaveData
 import no.nav.eessi.pensjon.oppgave.OppgaveDataUID
 import no.nav.eessi.pensjon.oppgave.OppgaveOppslag
+import no.nav.eessi.pensjon.pdl.OppgaveModel
 import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
 import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPersonPDL
@@ -25,7 +24,6 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import no.nav.eessi.pensjon.shared.person.Fodselsnummer
-import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
@@ -37,7 +35,7 @@ class VurderIdentoppdatering(
     private val kodeverkClient: KodeverkClient,
     private val personService: PersonService,
     private val landspesifikkValidering: LandspesifikkValidering
-) {
+) : OppgaveModel() {
 
     private val logger = LoggerFactory.getLogger(VurderIdentoppdatering::class.java)
     private val secureLogger = LoggerFactory.getLogger("secureLog")
@@ -200,19 +198,6 @@ class VurderIdentoppdatering(
         return utenlandskPin.id
     }
     private fun UtenlandskId.erPersonValidertPaaLand(): Boolean = landspesifikkValidering.validerLandsspesifikkUID(land, id)
-
-    sealed class Result {
-        abstract val description: String
-        abstract val metricTagValueOverride: String?
-
-        val metricTagValue: String
-            get() = metricTagValueOverride ?: description
-    }
-
-    data class Oppdatering(override val description: String, val pdlEndringsOpplysninger: PdlEndringOpplysning, override val metricTagValueOverride: String? = null, ): Result()
-    data class IngenOppdatering(override val description: String, override val metricTagValueOverride: String? = null): Result()
-    data class Oppgave(override val description: String, val oppgaveData: OppgaveData, override val metricTagValueOverride: String? = null): Result()
-
 
 }
 
