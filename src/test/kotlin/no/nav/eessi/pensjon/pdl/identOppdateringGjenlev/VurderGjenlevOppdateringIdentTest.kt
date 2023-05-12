@@ -12,6 +12,8 @@ import no.nav.eessi.pensjon.pdl.IdentBaseTest
 import no.nav.eessi.pensjon.pdl.OppgaveModel
 import no.nav.eessi.pensjon.pdl.SOME_FNR
 import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
+import no.nav.eessi.pensjon.pensjonsinformasjon.clients.PensjonsinformasjonClient
+import no.nav.eessi.pensjon.pensjonsinformasjon.models.Pensjontype
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentInformasjon
@@ -29,6 +31,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
     var kodeverkClient: KodeverkClient = mockk(relaxed = true)
     var oppgaveOppslag: OppgaveOppslag = mockk()
     var personService: PersonService = mockk()
+    var pensjonsinformasjonClient: PensjonsinformasjonClient = mockk()
     var landspesifikkValidering = LandspesifikkValidering(kodeverkClient)
     lateinit var identoppdatering: VurderGjenlevOppdateringIdent
 
@@ -51,6 +54,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
             oppgaveOppslag,
             kodeverkClient,
             personService,
+            pensjonsinformasjonClient,
             landspesifikkValidering
         )
     }
@@ -111,6 +115,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
             sedType = sedType
         )
         every { euxService.hentSed(any(), any()) } returns convertFromSedTypeToSED(sed, SedType.from(sedType)!!)
+        every { pensjonsinformasjonClient.hentKunSakTypeForFnr("123456479867", "11067122781") } returns Pensjontype("1", "GJENLEV")
 
         assertEquals(
             OppgaveModel.Oppdatering(

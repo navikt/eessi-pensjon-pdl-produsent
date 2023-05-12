@@ -33,6 +33,8 @@ spec:
       value: https://security-token-service.nais.adeo.no/rest/v1/sts/.well-known/openid-configuration
     - name: SECURITYTOKENSERVICE_URL
       value: https://sts.adeo.no/SecurityTokenServiceProvider/
+    - name: PENSJONSINFORMASJON_URL
+      value: https://eessi-pensjon-onprem-proxy.prod-fss-pub.nais.io/pen/api/pensjonsinformasjon/v1
     - name: EUX_RINA_API_V1_URL
       value: https://eux-rina-api.prod-fss-pub.nais.io/cpi
     - name: PDL_URL

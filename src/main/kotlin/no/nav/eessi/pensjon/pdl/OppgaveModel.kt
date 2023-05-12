@@ -1,5 +1,6 @@
 package no.nav.eessi.pensjon.pdl;
 
+import no.nav.eessi.pensjon.eux.model.buc.SakType
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.oppgave.OppgaveData
 
@@ -17,6 +18,11 @@ open class OppgaveModel {
     data class IngenOppdatering(override val description: String, override val metricTagValueOverride: String? = null): Result()
     data class Oppgave(override val description: String, val oppgaveData: OppgaveData, override val metricTagValueOverride: String? = null): Result()
 
-    data class OppgaveGjenlev(override val description: String, val oppgaveData: OppgaveData, override val metricTagValueOverride: String? = null): Result()
+    data class OppgaveGjenlev(
+        override val description: String,
+        val oppgaveData: OppgaveData,
+        override val metricTagValueOverride: String? = null,
+        val sakType: SakType?
+    ): Result()
 
 }

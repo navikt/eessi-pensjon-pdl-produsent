@@ -3,6 +3,7 @@ package no.nav.eessi.pensjon.pdl.identOppdateringGjenlev
 import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.eux.model.SedHendelse
+import no.nav.eessi.pensjon.eux.model.buc.SakType
 import no.nav.eessi.pensjon.eux.model.sed.*
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.models.EndringsmeldingUID
@@ -13,6 +14,7 @@ import no.nav.eessi.pensjon.oppgave.OppgaveOppslag
 import no.nav.eessi.pensjon.pdl.OppgaveModel
 import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
 import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
+import no.nav.eessi.pensjon.pensjonsinformasjon.clients.PensjonsinformasjonClient
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPersonPDL
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
@@ -30,6 +32,7 @@ class VurderGjenlevOppdateringIdent(
     @Qualifier("oppgaveHandler") private val oppgaveOppslag: OppgaveOppslag,
     private val kodeverkClient: KodeverkClient,
     private val personService: PersonService,
+    private val pensjonsinformasjonClient: PensjonsinformasjonClient,
     private val landspesifikkValidering: LandspesifikkValidering
 ): OppgaveModel() {
 
@@ -109,13 +112,15 @@ class VurderGjenlevOppdateringIdent(
             return IngenOppdatering("PDL uid er identisk med SED uid")
         }
 
+        val saktypeForBuc = pensjonsinformasjonClient.hentKunSakTypeForFnr(sakId = sedHendelse.rinaSakId, fnr = gjenlevNorskIdent).sakType
+
         if (fraSammeLandMenUlikUid(uidGjenlevendeFraSed, personGjenlevFraPDL.utenlandskIdentifikasjonsnummer)) {
             return if (!oppgaveOppslag.finnesOppgavenAllerede(sedHendelse.rinaSakId)) {
                 OppgaveGjenlev(
                     "Det finnes allerede en annen uid fra samme land (oppgave opprettes)", OppgaveDataGjenlevUID(
                         sedHendelse,
                         identifisertPerson(personGjenlevFraPDL)
-                    )
+                    ), sakType = SakType.valueOf(saktypeForBuc)
                 )
             } else {
                 IngenOppdatering("Oppgave opprettet tidligere")

@@ -12,6 +12,7 @@ import no.nav.eessi.pensjon.shared.retry.IOExceptionRetryInterceptor
 import no.nav.security.token.support.client.core.ClientProperties
 import no.nav.security.token.support.client.core.oauth2.OAuth2AccessTokenService
 import no.nav.security.token.support.client.spring.ClientConfigurationProperties
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.context.annotation.Bean
@@ -23,7 +24,9 @@ import org.springframework.http.client.ClientHttpRequestExecution
 import org.springframework.http.client.ClientHttpRequestInterceptor
 import org.springframework.http.client.SimpleClientHttpRequestFactory
 import org.springframework.web.client.DefaultResponseErrorHandler
+import org.springframework.web.client.ResponseErrorHandler
 import org.springframework.web.client.RestTemplate
+import java.time.Duration
 
 
 @Configuration
@@ -34,6 +37,8 @@ class RestTemplateConfig(
         private val meterRegistry: MeterRegistry,
         ) {
 
+    private val logger = LoggerFactory.getLogger(RestTemplateConfig::class.java)
+
     @Value("\${EUX_RINA_API_V1_URL}")
     lateinit var euxUrl: String
 
@@ -42,6 +47,9 @@ class RestTemplateConfig(
 
     @Value("\${NORG2_URL}")
     lateinit var norg2Url: String
+
+    @Value("\${PENSJONSINFORMASJON_URL}")
+    lateinit var pensjonUrl: String
 
     @Bean
     fun euxOAuthRestTemplate(): RestTemplate = opprettRestTemplate(euxUrl, "eux-credentials")
@@ -53,7 +61,31 @@ class RestTemplateConfig(
     fun personMottakRestTemplate(): RestTemplate = opprettRestTemplate(pdlMottakUrl, "pdl-mottak-credentials")
 
     @Bean
+    fun pensjoninformasjonRestTemplate() = restTemplate(pensjonUrl, oAuth2BearerTokenInterceptor(clientProperties("proxy-credentials"), oAuth2AccessTokenService!!))
+
+    @Bean
     fun euxKlient(): EuxKlientLib = EuxKlientLib(euxOAuthRestTemplate())
+
+    private fun restTemplate(url: String, tokenIntercetor: ClientHttpRequestInterceptor?, defaultErrorHandler: ResponseErrorHandler = DefaultResponseErrorHandler()) : RestTemplate {
+        logger.info("init restTemplate: $url")
+        return RestTemplateBuilder()
+            .rootUri(url)
+            .errorHandler(defaultErrorHandler)
+            .setReadTimeout(Duration.ofSeconds(120))
+            .setConnectTimeout(Duration.ofSeconds(120))
+            .additionalInterceptors(
+                RequestIdHeaderInterceptor(),
+                IOExceptionRetryInterceptor(),
+                RequestCountInterceptor(meterRegistry),
+                RequestResponseLoggerInterceptor(),
+                tokenIntercetor
+            )
+            .build().apply {
+                requestFactory = BufferingClientHttpRequestFactory(SimpleClientHttpRequestFactory()
+                    .apply { setOutputStreaming(false) }
+                )
+            }
+    }
 
     private fun opprettRestTemplate(url: String, oAuthKey: String) : RestTemplate {
         return RestTemplateBuilder()
@@ -86,6 +118,17 @@ class RestTemplateConfig(
                 requestFactory = BufferingClientHttpRequestFactory(SimpleClientHttpRequestFactory())
             }
 
+    }
+
+    private fun oAuth2BearerTokenInterceptor(
+        clientProperties: ClientProperties,
+        oAuth2AccessTokenService: OAuth2AccessTokenService
+    ): ClientHttpRequestInterceptor {
+        return ClientHttpRequestInterceptor { request: HttpRequest, body: ByteArray?, execution: ClientHttpRequestExecution ->
+            val response = oAuth2AccessTokenService.getAccessToken(clientProperties)
+            request.headers.setBearerAuth(response.accessToken)
+            execution.execute(request, body!!)
+        }
     }
 
     private fun clientProperties(oAuthKey: String): ClientProperties = clientConfigurationProperties.registration[oAuthKey] ?: throw RuntimeException("could not find oauth2 client config for $oAuthKey")
