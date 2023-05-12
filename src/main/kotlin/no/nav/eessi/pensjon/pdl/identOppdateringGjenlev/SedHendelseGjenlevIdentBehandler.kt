@@ -3,6 +3,7 @@ package no.nav.eessi.pensjon.pdl.identOppdateringGjenlev
 import io.micrometer.core.instrument.Metrics
 import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
+import no.nav.eessi.pensjon.pdl.OppgaveModel.*
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
@@ -36,15 +37,20 @@ class SedHendelseGjenlevIdentBehandler(
 
         log(result)
         when (result) {
-            is VurderGjenlevOppdateringIdent.Oppdatering -> {
+            is Oppdatering -> {
                 personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
                 logger.debug("Her kommer det en opprettelse av personopplysning")
             }
-            is VurderGjenlevOppdateringIdent.Oppgave -> {
+            is Oppgave -> {
                 oppgaveHandler.opprettOppgave(result.oppgaveData)
                 logger.debug("Her kommer det en opprettelse av oppgave for UID")
             }
-            is VurderGjenlevOppdateringIdent.IngenOppdatering -> {
+            is OppgaveGjenlev -> {
+                oppgaveHandler.opprettOppgave(result.oppgaveData)
+                logger.debug("Her kommer det en opprettelse av oppgave for Gjenlev")
+            }
+
+            is IngenOppdatering -> {
                 logger.debug("Ingen oppgave")
             }
         }
@@ -52,18 +58,18 @@ class SedHendelseGjenlevIdentBehandler(
         count(result.metricTagValue)
     }
 
-    private fun log(result: VurderGjenlevOppdateringIdent.Result) {
+    private fun log(result: Result) {
         when (result) {
-            is VurderGjenlevOppdateringIdent.Oppdatering -> {
+            is Oppdatering -> {
                 secureLogger.debug("Oppdatering:\n${result.toJson()}")
                 logger.info("Oppdatering(description=${result.description})")
             }
 
-            is VurderGjenlevOppdateringIdent.IngenOppdatering -> {
+            is IngenOppdatering -> {
                 logger.info(result.toString())
             }
 
-            is VurderGjenlevOppdateringIdent.Oppgave -> {
+            else -> {
                 logger.info("Oppgave(description=${result.description}")
             }
         }

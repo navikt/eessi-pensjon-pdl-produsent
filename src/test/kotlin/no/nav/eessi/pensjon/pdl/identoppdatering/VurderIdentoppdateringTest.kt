@@ -7,8 +7,15 @@ import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.oppgave.OppgaveOppslag
-import no.nav.eessi.pensjon.pdl.*
-import no.nav.eessi.pensjon.pdl.identoppdatering.VurderIdentoppdatering.*
+import no.nav.eessi.pensjon.pdl.AKTOERID
+import no.nav.eessi.pensjon.pdl.DNR
+import no.nav.eessi.pensjon.pdl.FINSK_FNR
+import no.nav.eessi.pensjon.pdl.FNR
+import no.nav.eessi.pensjon.pdl.IdentBaseTest
+import no.nav.eessi.pensjon.pdl.OppgaveModel.IngenOppdatering
+import no.nav.eessi.pensjon.pdl.OppgaveModel.Oppdatering
+import no.nav.eessi.pensjon.pdl.OppgaveModel.Oppgave
+import no.nav.eessi.pensjon.pdl.SVENSK_FNR
 import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
@@ -61,7 +68,10 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
     fun `Gitt at sed som ikke er relevant for eessipensjon saa gjoeres ingen oppdatering`() {
 
         assertEquals(
-            IngenOppdatering("Ikke relevant for eessipensjon, buc: P_BUC_01, sed: X001, sektor: P", "Ikke relevant for eessipensjon"),
+            IngenOppdatering(
+                "Ikke relevant for eessipensjon, buc: P_BUC_01, sed: X001, sektor: P",
+                "Ikke relevant for eessipensjon"
+            ),
             identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "NO", sedType = SedType.X001))
         )
     }
