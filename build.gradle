@@ -76,7 +76,7 @@ dependencies {
 
 	//GCP
 	implementation(platform("com.google.cloud:libraries-bom:26.14.0"))
-	implementation("com.google.cloud:google-cloud-storage:2.22.1")
+	implementation("com.google.cloud:google-cloud-storage:2.22.2")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test") {
 		exclude module: 'junit'
