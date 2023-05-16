@@ -49,11 +49,11 @@ dependencies {
 	implementation("no.nav.eessi.pensjon:ep-logging:2.1.14")
 
 
-	implementation("no.nav.eessi.pensjon:ep-kodeverk:4.0.42"){
+	implementation("no.nav.eessi.pensjon:ep-kodeverk:4.0.44"){
 		exclude module: 'ep-metrics'
 		exclude module: 'ep-logging'
 	}
-	implementation("no.nav.eessi.pensjon:ep-personoppslag:13.0.60"){
+	implementation("no.nav.eessi.pensjon:ep-personoppslag:13.0.61"){
 		exclude module: 'ep-metrics'
 		exclude module: 'ep-logging'
 	}
