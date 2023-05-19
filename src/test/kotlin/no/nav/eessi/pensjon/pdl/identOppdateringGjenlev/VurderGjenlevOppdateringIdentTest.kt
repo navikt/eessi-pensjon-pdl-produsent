@@ -7,6 +7,7 @@ import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.oppgave.OppgaveOppslag
+import no.nav.eessi.pensjon.pdl.AKTOERID
 import no.nav.eessi.pensjon.pdl.FNR
 import no.nav.eessi.pensjon.pdl.IdentBaseTest
 import no.nav.eessi.pensjon.pdl.OppgaveModel
@@ -119,6 +120,32 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
             ),
             (identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = "DK")))
         )
+    }
+
+    @Test
+    fun `En SED med to ulike PIN fra samme land skal opprette en OppgaveGjenlev`() {
+
+        every { oppgaveOppslag.finnesOppgavenAllerede(any()) } returns false
+
+        every { personService.hentPerson(NorskIdent(FNR)) } returns
+                personFraPDL(id = FNR).copy(
+                    identer = listOf(IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT), IdentInformasjon(AKTOERID, IdentGruppe.AKTORID)),
+                    utenlandskIdentifikasjonsnummer = listOf((utenlandskIdentifikasjonsnummer(fnr = FNR).copy(utstederland = "DNK")))
+                )
+
+        val gjenlevUid = "120281-6547"
+        val sed = sedMedGjenlevende(
+            gjenlevFNR = FNR,
+            gjenlevUid = gjenlevUid,
+            forsikretFnr = SOME_FNR,
+            sedType = SedType.P4000.name
+        )
+        every { euxService.hentSed(any(), any()) } returns convertFromSedTypeToSED(sed, SedType.P4000)
+
+        val result = identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = "DK"))
+        result is OppgaveModel.OppgaveGjenlev
+        assertEquals(result.description, "Det finnes allerede en annen uid fra samme land (oppgave opprettes)")
+        assertEquals((result as OppgaveModel.OppgaveGjenlev).oppgaveData.identifisertPerson.fnr?.value, "11067122781")
     }
 
     private fun sedMedGjenlevende(gjenlevFNR: String, forsikretFnr: String, gjenlevUid: String, sedType: String): String {
