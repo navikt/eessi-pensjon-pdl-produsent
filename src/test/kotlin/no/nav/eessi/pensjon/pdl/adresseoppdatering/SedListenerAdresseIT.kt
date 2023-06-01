@@ -7,24 +7,13 @@ import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.model.BucType.P_BUC_01
 import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.SedType
-import no.nav.eessi.pensjon.eux.model.sed.Adresse
-import no.nav.eessi.pensjon.eux.model.sed.Bruker
-import no.nav.eessi.pensjon.eux.model.sed.Nav
-import no.nav.eessi.pensjon.eux.model.sed.Pensjon
+import no.nav.eessi.pensjon.eux.model.sed.*
 import no.nav.eessi.pensjon.eux.model.sed.Person
-import no.nav.eessi.pensjon.eux.model.sed.PinItem
-import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.integrationtest.IntegrationBase
 import no.nav.eessi.pensjon.pdl.integrationtest.KafkaTestConfig
-import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
-import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentInformasjon
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Kontaktadresse
-import no.nav.eessi.pensjon.personoppslag.pdl.model.KontaktadresseType
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Metadata
-import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
-import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
+import no.nav.eessi.pensjon.personoppslag.pdl.model.*
 import no.nav.eessi.pensjon.shared.person.FodselsnummerGenerator
 import no.nav.eessi.pensjon.utils.toJson
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -46,6 +35,7 @@ import java.util.concurrent.TimeUnit
     controlledShutdown = true,
     topics = ["eessi-basis-sedMottatt-v1"]
 )
+
 class SedListenerAdresseIT : IntegrationBase() {
 
     @MockkBean(name = "pdlRestTemplate")

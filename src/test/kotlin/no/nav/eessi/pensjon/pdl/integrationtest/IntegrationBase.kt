@@ -5,12 +5,16 @@ import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
+import io.mockk.mockk
 import no.nav.eessi.pensjon.eux.klient.EuxKlientLib
 import no.nav.eessi.pensjon.eux.model.BucType
 import no.nav.eessi.pensjon.eux.model.BucType.P_BUC_01
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.klienter.norg2.Norg2Service
+import no.nav.eessi.pensjon.pdl.identOppdateringGjenlev.SedHendelseGjenlevIdentBehandler
+import no.nav.eessi.pensjon.pdl.identOppdateringGjenlev.VurderGjenlevOppdateringIdent
+import no.nav.eessi.pensjon.pensjonsinformasjon.clients.PensjonsinformasjonClient
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.shared.retry.IOExceptionRetryInterceptor
 import no.nav.eessi.pensjon.utils.mapJsonToAny
@@ -218,7 +222,21 @@ abstract class IntegrationBase {
         }
 
         @Bean
-        fun euxKlientLib(): EuxKlientLib = EuxKlientLib(euxOAuthRestTemplate()!!)
+        fun pensjoninformasjonRestTemplate(): RestTemplate? {
+            return opprettSTSRestTemplate()
+        }
+        @Bean
+        fun pensjonsinformasjonClient() = PensjonsinformasjonClient(pensjoninformasjonRestTemplate()!!, mockk())
+
+        @Bean
+        fun vurderGjenlevOppdateringIdent() = VurderGjenlevOppdateringIdent(mockk(), mockk(), mockk(), mockk(), pensjonsinformasjonClient(), mockk())
+
+
+        @Bean
+        fun sedHendelseGjenlevIdentBehandler() = SedHendelseGjenlevIdentBehandler(vurderGjenlevOppdateringIdent(), mockk(), mockk(), "test")
+
+        @Bean
+        fun euxKlientLib() = EuxKlientLib(euxOAuthRestTemplate()!!)
 
         @Bean
         fun opprettSSLRestTemplate(): RestTemplate {
@@ -255,4 +273,5 @@ abstract class IntegrationBase {
                 .build()
         }
     }
+
 }

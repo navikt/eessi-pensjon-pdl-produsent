@@ -31,7 +31,7 @@ import org.springframework.web.client.RestTemplate
     MockkBean(name = "kodeverkClient", classes = [KodeverkClient::class], relaxed = true),
     MockkBean(name = "oppgaveOppslag", classes = [OppgaveOppslag::class]),
     MockkBean(name = "personService", classes = [PersonService::class]),
-    MockkBean(name = "pdlRestTemplate", classes = [RestTemplate::class]),
+    MockkBean(name = "pdlRestTemplate", classes = [RestTemplate::class])
 )
 class SedHendelseGjenlevIdentBehandlerTest : IntegrationBase(){
 
