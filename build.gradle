@@ -75,7 +75,7 @@ dependencies {
 	implementation("no.nav.security:token-validation-test-support:2.0.5")
 
 	//GCP
-	implementation(platform("com.google.cloud:libraries-bom:26.15.0"))
+	implementation(platform("com.google.cloud:libraries-bom:26.16.0"))
 	implementation("com.google.cloud:google-cloud-storage:2.22.3")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test") {
