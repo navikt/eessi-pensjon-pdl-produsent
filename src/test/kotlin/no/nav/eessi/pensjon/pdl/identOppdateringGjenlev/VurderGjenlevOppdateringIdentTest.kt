@@ -4,26 +4,29 @@ import io.mockk.every
 import io.mockk.mockk
 import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.model.SedType
+import no.nav.eessi.pensjon.eux.model.sed.P2100
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.oppgave.OppgaveOppslag
-import no.nav.eessi.pensjon.pdl.AKTOERID
+import no.nav.eessi.pensjon.pdl.*
 import no.nav.eessi.pensjon.pdl.FNR
-import no.nav.eessi.pensjon.pdl.IdentBaseTest
-import no.nav.eessi.pensjon.pdl.OppgaveModel
-import no.nav.eessi.pensjon.pdl.SOME_FNR
+import no.nav.eessi.pensjon.pdl.OppgaveModel.*
 import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentInformasjon
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
+import no.nav.eessi.pensjon.utils.mapJsonToAny
+import no.nav.eessi.pensjon.utils.toJson
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.skyscreamer.jsonassert.JSONAssert
 
+const val FNR_GJENLEVENDE = "51077403071"
 class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
 
     var euxService: EuxService = mockk(relaxed = true)
@@ -81,7 +84,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
                 )
 
         assertEquals(
-            OppgaveModel.Oppdatering(
+            Oppdatering(
                 "Innsending av endringsmelding",
                 pdlEndringsMelding(SOME_FNR, utstederland = "SWE")
             ),
@@ -114,12 +117,26 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
         every { euxService.hentSed(any(), any()) } returns convertFromSedTypeToSED(sed, SedType.from(sedType)!!)
 
         assertEquals(
-            OppgaveModel.Oppdatering(
+            Oppdatering(
                 "Innsending av endringsmelding",
                 pdlEndringsMelding(FNR, gjenlevUid, utstederland = "DNK")
             ),
             (identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = "DK")))
         )
+    }
+
+    @Test
+    fun `Gitt en P2100 med en gjenlevende som har avdode sitt fnr som sitt fnr saa skal fdato på gjenlevende sjekkes og hvis ikke lik saa skal oppdateringen stoppe opp`() {
+        val p2100 = javaClass.getResource("/P2100.json")!!.readText()
+
+        every { euxService.hentSed(any(), any()) } returns mapJsonToAny<P2100>(p2100)
+
+        JSONAssert.assertEquals(
+            IngenOppdatering("Gjenlevende fdato stemmer ikke overens med fnr",
+                "Gjenlevende fdato stemmer ikke overens med fnr").toJson(),
+            identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = "SE")).toJson(), false
+        )
+
     }
 
     @Test
@@ -143,9 +160,9 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
         every { euxService.hentSed(any(), any()) } returns convertFromSedTypeToSED(sed, SedType.P4000)
 
         val result = identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = "DK"))
-        result is OppgaveModel.OppgaveGjenlev
+        result is OppgaveGjenlev
         assertEquals(result.description, "Det finnes allerede en annen uid fra samme land (oppgave opprettes)")
-        assertEquals((result as OppgaveModel.OppgaveGjenlev).oppgaveData.identifisertPerson.fnr?.value, "11067122781")
+        assertEquals((result as OppgaveGjenlev).oppgaveData.identifisertPerson.fnr?.value, "11067122781")
     }
 
     private fun sedMedGjenlevende(gjenlevFNR: String, forsikretFnr: String, gjenlevUid: String, sedType: String): String {
@@ -184,7 +201,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
                                   "land":"NO"
                                }
                             ],
-                            "foedselsdato":"1981-02-12",
+                            "foedselsdato":"1971-06-11",
                             "etternavn":"gg",
                             "fornavn":"gg",
                             "kjoenn":"M"

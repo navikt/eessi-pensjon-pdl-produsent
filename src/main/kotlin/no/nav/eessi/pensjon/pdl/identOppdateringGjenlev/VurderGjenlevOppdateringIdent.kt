@@ -23,6 +23,8 @@ import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Service
 class VurderGjenlevOppdateringIdent(
@@ -47,6 +49,10 @@ class VurderGjenlevOppdateringIdent(
         }
 
         val gjenlevendeFraSed = getGjenlev(sed)
+        val gjenlevendeNorskPin = gjenlevendeFraSed?.person?.pin?.firstOrNull { it.land == "NO" }?.identifikator
+        if (gjenlevFdatoErLikGjenlevFnr(gjenlevendeNorskPin, gjenlevendeFraSed))
+            return IngenOppdatering("Gjenlevende fdato stemmer ikke overens med fnr", "Gjenlevende fdato stemmer ikke overens med fnr")
+
         val gjenlevendeUid = gjenlevendeFraSed?.person?.pin?.filter { it.land == sedHendelse.avsenderLand && it.land != "NO" }
         secureLogger.debug("Gjenlevende person pin: ${gjenlevendeFraSed?.person?.pin} gjenlevende uid: $gjenlevendeUid")
 
@@ -132,6 +138,15 @@ class VurderGjenlevOppdateringIdent(
             ),
         )
     }
+
+    private fun gjenlevFdatoErLikGjenlevFnr(
+        gjenlevendeNorskPin: String?,
+        gjenlevendeFraSed: Bruker?
+    ) =
+        Fodselsnummer.fra(gjenlevendeNorskPin)?.getBirthDate() != LocalDate.parse(
+            gjenlevendeFraSed?.person?.foedselsdato,
+            DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        )
 
     private fun getGjenlev(sed: SED): Bruker? {
         return when(sed) {
