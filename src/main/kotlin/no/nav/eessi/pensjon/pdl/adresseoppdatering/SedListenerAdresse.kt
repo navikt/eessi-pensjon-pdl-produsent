@@ -5,9 +5,13 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatusCode
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
+import org.springframework.web.client.HttpClientErrorException
+import org.springframework.web.client.HttpStatusCodeException
 import java.util.*
 import java.util.concurrent.CountDownLatch
 import javax.annotation.PostConstruct
@@ -47,6 +51,9 @@ class SedListenerAdresse(
                         sedHendelseBehandler.behandle(hendelse)
                         logger.info("Acket sedMottatt melding med offset: ${cr.offset()} i partisjon ${cr.partition()}")
                         latch.countDown()
+                    } catch (ex: HttpClientErrorException) {
+                        if (ex.statusCode == HttpStatus.LOCKED)
+                            logger.error("Det pågår allerede en adresseoppdatering på bruker", ex)
                     } catch (ex: Exception) {
                         logger.error("Noe gikk galt under behandling av SED-hendelse for adresse", ex)
                         secureLogger.info("Noe gikk galt under behandling av SED-hendelse for adresse:\n$hendelse")

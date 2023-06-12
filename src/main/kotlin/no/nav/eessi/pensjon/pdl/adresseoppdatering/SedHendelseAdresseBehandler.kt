@@ -47,7 +47,7 @@ class SedHendelseBehandler(
 
         log(result)
 
-        if (result is OppgaveModel.Oppdatering) {
+        if (result is Oppdatering) {
             personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
         }
 
@@ -64,7 +64,7 @@ class SedHendelseBehandler(
 
     private fun log(result: Result) {
         logger.info(result.toString())
-        if (result is OppgaveModel.Oppdatering) {
+        if (result is Oppdatering) {
             secureLogger.info("Oppdatering til PDL:\n${result.pdlEndringsOpplysninger.toJson()}")
         }
     }
