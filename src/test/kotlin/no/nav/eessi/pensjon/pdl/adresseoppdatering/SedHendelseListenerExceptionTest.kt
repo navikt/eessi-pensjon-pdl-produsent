@@ -24,7 +24,8 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.web.client.HttpClientErrorException
 
-@SpringBootTest( classes = [KafkaTestConfig::class, IntegrationBase.TestConfig::class, TestSedHendelseBehandlerRetryConfig::class, SedHendelseBehandler::class, SedListenerAdresse::class, SedHendelseBehandlerRetryLogger::class])
+@SpringBootTest( classes = [KafkaTestConfig::class, IntegrationBase.TestConfig::class,
+    TestSedHendelseBehandlerRetryConfig::class, SedHendelseBehandler::class, SedListenerAdresse::class, SedHendelseBehandlerRetryLogger::class])
 @ActiveProfiles("retryConfigOverride")
 @DirtiesContext
 @EnableRetry
