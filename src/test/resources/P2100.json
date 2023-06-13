@@ -1,0 +1,109 @@
+{
+  "sed" : "P2100",
+  "nav" : {
+    "eessisak" : null,
+    "bruker" : {
+      "mor" : null,
+      "far" : null,
+      "person" : {
+        "pin" : [ {
+          "institusjonsnavn" : null,
+          "institusjonsid" : null,
+          "sektor" : null,
+          "identifikator" : "63516725224",
+          "land" : "NO",
+          "institusjon" : null
+        }, {
+          "institusjonsnavn" : null,
+          "institusjonsid" : null,
+          "sektor" : null,
+          "identifikator" : "671123 1234",
+          "land" : "SE",
+          "institusjon" : null
+        } ],
+        "pinland" : null,
+        "statsborgerskap" : [ {
+          "land" : "SE"
+        } ],
+        "etternavn" : "Sivilisert",
+        "etternavnvedfoedsel" : "3. forsøk ",
+        "fornavn" : "Vårkrokus",
+        "fornavnvedfoedsel" : null,
+        "tidligerefornavn" : null,
+        "tidligereetternavn" : null,
+        "kjoenn" : "K",
+        "foedested" : null,
+        "foedselsdato" : "1965-06-12",
+        "sivilstand" : null,
+        "relasjontilavdod" : null,
+        "rolle" : null,
+        "kontakt" : null
+      },
+      "adresse" : null,
+      "arbeidsforhold" : null,
+      "bank" : null
+    },
+    "ektefelle" : null,
+    "barn" : null,
+    "verge" : null,
+    "krav" : {
+      "dato" : "2023-05-26",
+      "type" : null
+    },
+    "annenperson" : null
+  },
+  "pensjon" : {
+    "gjenlevende" : {
+      "mor" : null,
+      "far" : null,
+      "person" : {
+        "pin" : [ {
+          "institusjonsnavn" : null,
+          "institusjonsid" : null,
+          "sektor" : null,
+          "identifikator" : "51077403071",
+          "land" : "NO",
+          "institusjon" : null
+        }, {
+          "institusjonsnavn" : null,
+          "institusjonsid" : null,
+          "sektor" : null,
+          "identifikator" : "650612 5678",
+          "land" : "SE",
+          "institusjon" : null
+        } ],
+        "pinland" : null,
+        "statsborgerskap" : [ {
+          "land" : "SE"
+        } ],
+        "etternavn" : "Selvhjulpen",
+        "etternavnvedfoedsel" : null,
+        "fornavn" : "Öra",
+        "fornavnvedfoedsel" : null,
+        "tidligerefornavn" : null,
+        "tidligereetternavn" : null,
+        "kjoenn" : "M",
+        "foedested" : null,
+        "foedselsdato" : "1965-06-12",
+        "sivilstand" : [ {
+          "fradato" : "2023-05-25",
+          "status" : "enke_enkemann"
+        } ],
+        "relasjontilavdod" : null,
+        "rolle" : null,
+        "kontakt" : null
+      },
+      "adresse" : null,
+      "arbeidsforhold" : null,
+      "bank" : null
+    },
+    "angitidligstdato" : null,
+    "utsettelse" : null,
+    "ytelser" : null,
+    "forespurtstartdato" : null,
+    "kravDato" : null,
+    "landspesifikk" : null
+  },
+  "sedGVer" : "4",
+  "sedVer" : "2"
+}
