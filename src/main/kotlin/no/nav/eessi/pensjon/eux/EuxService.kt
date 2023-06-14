@@ -17,8 +17,6 @@ class EuxService(
     private val euxKlient: EuxKlientLib,
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
 ) {
-    private val logger = LoggerFactory.getLogger(EuxService::class.java)
-
     private lateinit var hentBuc: MetricsHelper.Metric
     private lateinit var hentSed: MetricsHelper.Metric
 
@@ -42,23 +40,5 @@ class EuxService(
             SED.fromJsonToConcrete(json)
         }
     }
-
-    /**
-     * Henter Buc fra Rina.
-     */
-    fun hentBuc(rinaSakId: String): Buc =
-        hentBuc.measure {
-            euxKlient.hentBuc(rinaSakId) ?: throw RuntimeException("Ingen BUC")
-        }
-
-    fun alleGyldigeSEDForBuc(rinaSakId: String): List<Pair<ForenkletSED, SED>> = // TODO Hvorfor henter vi "alle"?
-        (hentBuc(rinaSakId).documents ?: emptyList())
-            .filter { it.id != null }
-            .map { ForenkletSED(it.id!!, it.type, SedStatus.fra(it.status)) }
-            .filter { it.harGyldigStatus() }  // TODO "Gyldig" ? - skal vi ikke bare vurdere innkomne?
-            .filter { it.type.erGyldig() } // TODO - logikken her er kopiert fra Journalføring(?) - er det rett?
-            .also { logger.info("Fant ${it.size} dokumenter i BUC: $it") }
-            .map { forenkletSED -> Pair(forenkletSED, hentSed(rinaSakId, forenkletSED.id)) }
-            .onEach { (forenkletSED, _) -> logger.debug("SED av type: ${forenkletSED.type}, status: ${forenkletSED.status}") }
 
 }

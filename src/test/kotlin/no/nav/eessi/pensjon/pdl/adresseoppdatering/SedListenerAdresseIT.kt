@@ -67,7 +67,6 @@ class SedListenerAdresseIT : IntegrationBase() {
     fun `Gitt en sed hendelse som kommer på riktig topic og group_id så skal den konsumeres av adresseListener`() {
         val fnr = FodselsnummerGenerator.generateFnrForTest(70)
         every { euxService.hentSed(eq("74389487"), eq("743982")) } returns enSedFraEux(fnr)
-        every { euxService.alleGyldigeSEDForBuc(any()) } returns emptyList() // Dette er fordi vi ikke bryr oss om IdentListener
         every { personService.hentPerson(NorskIdent(fnr)) } returns enPersonFraPDL(fnr)
         every { kodeverkClient.finnLandkode("SE") } returns "SWE"
         every { personMottakKlient.opprettPersonopplysning(any()) } returns true
