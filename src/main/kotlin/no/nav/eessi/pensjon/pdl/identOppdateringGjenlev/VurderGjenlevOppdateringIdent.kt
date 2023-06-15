@@ -49,12 +49,15 @@ class VurderGjenlevOppdateringIdent(
         }
 
         val gjenlevendeFraSed = getGjenlev(sed)
-        val gjenlevendeNorskPin = gjenlevendeFraSed?.person?.pin?.firstOrNull { it.land == "NO" }?.identifikator
+        require(gjenlevendeFraSed != null ) {
+            IngenOppdatering("Gjenlevende bruker finnes ikke i seden, ingen oppdatering", "Gjenlevende bruker finnes ikke i seden, ingen oppdatering")
+        }
+        val gjenlevendeNorskPin = gjenlevendeFraSed.person?.pin?.firstOrNull { it.land == "NO" }?.identifikator
         if (gjenlevFdatoErLikGjenlevFnr(gjenlevendeNorskPin, gjenlevendeFraSed))
             return IngenOppdatering("Gjenlevende fdato stemmer ikke overens med fnr", "Gjenlevende fdato stemmer ikke overens med fnr")
 
-        val gjenlevendeUid = gjenlevendeFraSed?.person?.pin?.filter { it.land == sedHendelse.avsenderLand && it.land != "NO" }
-        secureLogger.debug("Gjenlevende person pin: ${gjenlevendeFraSed?.person?.pin} gjenlevende uid: $gjenlevendeUid")
+        val gjenlevendeUid = gjenlevendeFraSed.person?.pin?.filter { it.land == sedHendelse.avsenderLand && it.land != "NO" }
+        secureLogger.debug("Gjenlevende person pin: ${gjenlevendeFraSed.person?.pin} gjenlevende uid: $gjenlevendeUid")
 
         val uidGjenlevendeFraSed  =
             (gjenlevendeUid ?: emptyList())
