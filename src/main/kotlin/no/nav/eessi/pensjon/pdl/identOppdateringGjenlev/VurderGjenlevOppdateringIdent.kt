@@ -52,6 +52,7 @@ class VurderGjenlevOppdateringIdent(
         require(gjenlevendeFraSed != null ) {
             return IngenOppdatering("Gjenlevende bruker finnes ikke i seden, ingen oppdatering", "Gjenlevende bruker finnes ikke i seden, ingen oppdatering")
         }
+
         val gjenlevendeNorskPin = gjenlevendeFraSed.person?.pin?.firstOrNull { it.land == "NO" }?.identifikator
         if (gjenlevFdatoErLikGjenlevFnr(gjenlevendeNorskPin, gjenlevendeFraSed))
             return IngenOppdatering("Gjenlevende fdato stemmer ikke overens med fnr", "Gjenlevende fdato stemmer ikke overens med fnr")

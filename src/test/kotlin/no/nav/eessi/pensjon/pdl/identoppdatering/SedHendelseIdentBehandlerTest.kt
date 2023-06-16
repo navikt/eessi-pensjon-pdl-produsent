@@ -56,7 +56,7 @@ private class SedHendelseIdentBehandlerTest {
 
         verify(exactly = 1) { vurderIdentoppdatering.vurderUtenlandskIdent(any()) }
         verify(exactly = 1) { personMottakKlient.opprettPersonopplysning(any()) }
-        verify(exactly = 0) { oppgaveHandler.opprettOppgave(any()) }
+        verify(exactly = 0) { oppgaveHandler.skalOppgaveOpprettes(any()) }
     }
 
     @Test
@@ -66,13 +66,13 @@ private class SedHendelseIdentBehandlerTest {
 
         every { vurderIdentoppdatering.vurderUtenlandskIdent(any()) } returns
                 Oppgave("Oppgave", OppgaveDataUID(enSedHendelse, enIdentifisertPerson()))
-        every { oppgaveHandler.opprettOppgave(any()) } returns true
+        every { oppgaveHandler.skalOppgaveOpprettes(any()) } returns true
 
         sedHendelseIdentBehandler.behandle(enSedHendelse.toJson())
 
         verify(exactly = 1) { vurderIdentoppdatering.vurderUtenlandskIdent(any()) }
         verify(exactly = 0) { personMottakKlient.opprettPersonopplysning(any()) }
-        verify(exactly = 1) { oppgaveHandler.opprettOppgave(any()) }
+        verify(exactly = 1) { oppgaveHandler.skalOppgaveOpprettes(any()) }
     }
 
     @Test
@@ -88,7 +88,7 @@ private class SedHendelseIdentBehandlerTest {
 
         verify(exactly = 3) { vurderIdentoppdatering.vurderUtenlandskIdent(any()) }
         verify(exactly = 0) { personMottakKlient.opprettPersonopplysning(any()) }
-        verify(exactly = 0) { oppgaveHandler.opprettOppgave(any()) }
+        verify(exactly = 0) { oppgaveHandler.skalOppgaveOpprettes(any()) }
     }
 
     private fun enSedHendelseAsJson() = enSedHendelse().toJson()

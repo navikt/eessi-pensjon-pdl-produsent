@@ -40,15 +40,15 @@ class OppgaveHandler(
         oppgaveForUid = metricsHelper.init("OppgaveForUid")
     }
 
-    fun opprettOppgave(oppgaveData: OppgaveData): Boolean {
+    fun skalOppgaveOpprettes(oppgaveData: OppgaveData): Boolean {
         return if(oppgaveData is OppgaveDataUID){
-            opprettOppgave(oppgaveData.sedHendelse, oppgaveData.identifisertPerson, LAGRING_IDENT)
+            skalOppgaveOpprettes(oppgaveData.sedHendelse, oppgaveData.identifisertPerson, LAGRING_IDENT)
         } else {
-            opprettOppgave(oppgaveData.sedHendelse, oppgaveData.identifisertPerson, LAGRING_GJENLEV)
+            skalOppgaveOpprettes(oppgaveData.sedHendelse, oppgaveData.identifisertPerson, LAGRING_GJENLEV)
         }
     }
 
-    private fun opprettOppgave(sedHendelse: SedHendelse, identifisertePerson: IdentifisertPersonPDL, lagringsPathPostfix: String): Boolean {
+    private fun skalOppgaveOpprettes(sedHendelse: SedHendelse, identifisertePerson: IdentifisertPersonPDL, lagringsPathPostfix: String): Boolean {
         return oppgaveForUid.measure {
             return@measure if (!finnesOppgavenAllerede(sedHendelse.rinaSakId.plus(lagringsPathPostfix))) {
                 val melding = OppgaveMelding(

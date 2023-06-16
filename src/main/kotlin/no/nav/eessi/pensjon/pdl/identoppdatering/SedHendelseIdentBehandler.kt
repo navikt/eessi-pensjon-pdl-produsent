@@ -56,7 +56,7 @@ class SedHendelseIdentBehandler(
                 personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
             }
             is Oppgave -> {
-                oppgaveHandler.opprettOppgave(result.oppgaveData)
+                oppgaveHandler.skalOppgaveOpprettes(result.oppgaveData)
             }
 
             else -> {

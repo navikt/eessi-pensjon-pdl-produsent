@@ -39,15 +39,15 @@ class SedHendelseGjenlevIdentBehandler(
         when (result) {
             is Oppdatering -> {
                 personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
-                logger.debug("Her kommer det en opprettelse av personopplysning")
+                logger.debug("Her kommer det en opprettelse av personopplysning resultat: $result")
             }
             is Oppgave -> {
-                oppgaveHandler.opprettOppgave(result.oppgaveData)
-                logger.debug("Her kommer det en opprettelse av oppgave for UID")
+                val skalOppgOpprettes =oppgaveHandler.skalOppgaveOpprettes(result.oppgaveData)
+                logger.debug("Her kommer det en opprettelse av oppgave for UID: $skalOppgOpprettes resultat: $result")
             }
             is OppgaveGjenlev -> {
-                oppgaveHandler.opprettOppgave(result.oppgaveData)
-                logger.debug("Her kommer det en opprettelse av oppgave for Gjenlev")
+                val opprettesOppgave = oppgaveHandler.skalOppgaveOpprettes(result.oppgaveData)
+                logger.debug("Her kommer det en opprettelse av oppgave for Gjenlev: $opprettesOppgave resultat: $result")
             }
 
             is IngenOppdatering -> {

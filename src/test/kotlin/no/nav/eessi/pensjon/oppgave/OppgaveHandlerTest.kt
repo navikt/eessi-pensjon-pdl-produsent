@@ -48,7 +48,7 @@ internal class OppgaveHandlerTest{
         val meldingSlot = slot<String>()
         every { kafkaTemplate.sendDefault(any(), capture(meldingSlot)).get() } returns mockk()
 
-        oppgaveHandler.opprettOppgave(oppgave)
+        oppgaveHandler.skalOppgaveOpprettes(oppgave)
 
         val forventetMelding = """{
           "sedType" : null,
