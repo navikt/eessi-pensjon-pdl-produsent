@@ -90,7 +90,7 @@ class VurderGjenlevOppdateringIdent(
             return IngenOppdatering("AvsenderNavn er ikke satt, kan derfor ikke lage endringsmelding")
         }
 
-        val gjenlevNorskIdent = gjenlevendeFraSed?.person?.pin?.first { it.land == "NO" }?.identifikator
+        val gjenlevNorskIdent = gjenlevendeFraSed.person?.pin?.first { it.land == "NO" }?.identifikator
         val personGjenlevFraPDL =
             (gjenlevNorskIdent ?: return IngenOppdatering("Gjenlevende bruker har ikke norsk pin i SED"))
                 .runCatching {
