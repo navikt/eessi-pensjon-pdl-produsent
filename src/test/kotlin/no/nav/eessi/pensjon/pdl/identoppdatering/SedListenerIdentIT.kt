@@ -44,6 +44,9 @@ class SedListenerIdentIT : IntegrationBase() {
     @MockkBean(name = "pdlRestTemplate")
     lateinit var pdlRestTemplate: RestTemplate
 
+    @MockkBean(name = "safGraphQlOidcRestTemplate")
+    lateinit var safGraphQlOidcRestTemplate: RestTemplate
+
     @Autowired
     lateinit var sedListenerIdent: SedListenerIdent
 
