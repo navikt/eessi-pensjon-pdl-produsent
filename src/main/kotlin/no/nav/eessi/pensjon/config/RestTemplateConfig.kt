@@ -1,10 +1,7 @@
 package no.nav.eessi.pensjon.config
 
-import com.google.cloud.storage.Storage
-import com.google.cloud.storage.StorageOptions
 import io.micrometer.core.instrument.MeterRegistry
 import no.nav.eessi.pensjon.eux.klient.EuxKlientLib
-import no.nav.eessi.pensjon.gcp.GcpStorageService
 import no.nav.eessi.pensjon.logging.RequestIdHeaderInterceptor
 import no.nav.eessi.pensjon.logging.RequestResponseLoggerInterceptor
 import no.nav.eessi.pensjon.metrics.RequestCountInterceptor
@@ -12,6 +9,7 @@ import no.nav.eessi.pensjon.shared.retry.IOExceptionRetryInterceptor
 import no.nav.security.token.support.client.core.ClientProperties
 import no.nav.security.token.support.client.core.oauth2.OAuth2AccessTokenService
 import no.nav.security.token.support.client.spring.ClientConfigurationProperties
+import no.nav.security.token.support.core.context.TokenValidationContextHolder
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.context.annotation.Bean
@@ -29,9 +27,10 @@ import org.springframework.web.client.RestTemplate
 @Configuration
 @Profile("prod", "test")
 class RestTemplateConfig(
-        private val clientConfigurationProperties: ClientConfigurationProperties,
-        private val oAuth2AccessTokenService: OAuth2AccessTokenService?,
-        private val meterRegistry: MeterRegistry,
+    private val clientConfigurationProperties: ClientConfigurationProperties,
+    private val oAuth2AccessTokenService: OAuth2AccessTokenService?,
+    private val tokenValidationContextHolder: TokenValidationContextHolder,
+    private val meterRegistry: MeterRegistry,
         ) {
 
     @Value("\${EUX_RINA_API_V1_URL}")
@@ -42,6 +41,12 @@ class RestTemplateConfig(
 
     @Value("\${NORG2_URL}")
     lateinit var norg2Url: String
+
+    @Value("\${AZURE_APP_SAF_CLIENT_ID}")
+    lateinit var safClientId: String
+
+    @Value("\${SAF_GRAPHQL_URL}")
+    lateinit var graphQlUrl: String
 
     @Bean
     fun euxOAuthRestTemplate(): RestTemplate = opprettRestTemplate(euxUrl, "eux-credentials")
@@ -54,6 +59,9 @@ class RestTemplateConfig(
 
     @Bean
     fun euxKlient(): EuxKlientLib = EuxKlientLib(euxOAuthRestTemplate())
+
+    @Bean
+    fun safGraphQlOidcRestTemplate() = restTemplate(graphQlUrl, oAuth2BearerTokenInterceptor(clientProperties("saf-credentials"), oAuth2AccessTokenService))
 
     private fun opprettRestTemplate(url: String, oAuthKey: String) : RestTemplate {
         return RestTemplateBuilder()
@@ -88,12 +96,13 @@ class RestTemplateConfig(
 
     }
 
-    private fun clientProperties(oAuthKey: String): ClientProperties = clientConfigurationProperties.registration[oAuthKey] ?: throw RuntimeException("could not find oauth2 client config for $oAuthKey")
+    private fun clientProperties(oAuthKey: String): ClientProperties = clientConfigurationProperties.registration[oAuthKey]
+        ?: throw RuntimeException("could not find oauth2 client config for $oAuthKey")
 
     private fun bearerTokenInterceptor(
         clientProperties: ClientProperties,
         oAuth2AccessTokenService: OAuth2AccessTokenService
-    ): ClientHttpRequestInterceptor? {
+    ): ClientHttpRequestInterceptor {
         return ClientHttpRequestInterceptor { request: HttpRequest, body: ByteArray?, execution: ClientHttpRequestExecution ->
             val response = oAuth2AccessTokenService.getAccessToken(clientProperties)
             request.headers.setBearerAuth(response.accessToken)
