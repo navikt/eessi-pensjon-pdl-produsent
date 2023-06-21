@@ -23,6 +23,7 @@ import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
+import org.springframework.web.client.RestTemplate
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -32,7 +33,8 @@ class VurderGjenlevOppdateringIdent(
     @Qualifier("oppgaveHandler") private val oppgaveOppslag: OppgaveOppslag,
     private val kodeverkClient: KodeverkClient,
     private val personService: PersonService,
-    private val landspesifikkValidering: LandspesifikkValidering
+    private val landspesifikkValidering: LandspesifikkValidering,
+    private val safGraphQlOidcRestTemplate: RestTemplate
 ): OppgaveModel() {
 
     private val logger = LoggerFactory.getLogger(VurderGjenlevOppdateringIdent::class.java)

@@ -61,7 +61,7 @@ class RestTemplateConfig(
     fun euxKlient(): EuxKlientLib = EuxKlientLib(euxOAuthRestTemplate())
 
     @Bean
-    fun safGraphQlOidcRestTemplate() = restTemplate(graphQlUrl, oAuth2BearerTokenInterceptor(clientProperties("saf-credentials"), oAuth2AccessTokenService))
+    fun safGraphQlOidcRestTemplate() = opprettRestTemplate(graphQlUrl, "saf-credentials")
 
     private fun opprettRestTemplate(url: String, oAuthKey: String) : RestTemplate {
         return RestTemplateBuilder()
