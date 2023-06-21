@@ -51,6 +51,9 @@ class SedListenerAdresseIT : IntegrationBase() {
     @MockkBean(name = "pdlRestTemplate")
     private lateinit var pdlRestTemplate: RestTemplate
 
+    @MockkBean(name = "safGraphQlOidcRestTemplate")
+    private lateinit var safGraphQlOidcRestTemplate: RestTemplate
+
     @Autowired
     lateinit var adresseListener: SedListenerAdresse
 

@@ -55,7 +55,8 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
             oppgaveOppslag,
             kodeverkClient,
             personService,
-            landspesifikkValidering
+            landspesifikkValidering,
+            mockk()
         )
     }
 
