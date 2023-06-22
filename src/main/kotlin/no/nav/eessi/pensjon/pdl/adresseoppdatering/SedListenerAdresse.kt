@@ -6,12 +6,10 @@ import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
-import org.springframework.http.HttpStatusCode
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
 import org.springframework.web.client.HttpClientErrorException
-import org.springframework.web.client.HttpStatusCodeException
 import java.util.*
 import java.util.concurrent.CountDownLatch
 import javax.annotation.PostConstruct
@@ -42,7 +40,7 @@ class SedListenerAdresse(
             adresseMetric.measure {
                 logger.info("SED-hendelse mottatt i partisjon: ${cr.partition()}, med offset: ${cr.offset()} ")
 
-                val offsetToSkip = listOf(386664, 386665, 386666, 437852, 437861, 521570L, 529077L, 530286L, 532780L, 533008L, 534633L, 534634L, 535434L, 541905L, 542460L, 542499L)
+                val offsetToSkip = listOf(386664, 386665, 386666, 437852, 437861, 521570L, 529077L, 530286L, 532780L, 533008L, 534633L, 534634L, 535434L, 541905L, 542460L, 542499L, 563319L)
                 if (cr.offset() in offsetToSkip) {
                     logger.warn("Hopper over offset: ${cr.offset()}")
                 }
