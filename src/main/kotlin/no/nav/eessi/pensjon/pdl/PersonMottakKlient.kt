@@ -31,10 +31,11 @@ class PersonMottakKlient(private val personMottakRestTemplate: RestTemplate) {
             )
             // Siden vi bruker DefaultResponseErrorHandler vil vi ikke komme hit dersom kallet over returnerer 4xx eller 5xx
             // - da vil det kastes exception, se DefaultResponseErrorHandler.handleError
-            logger.info("Endringresponse StatusCode: ${response.statusCode}, Body: ${response.body}")
+            logger.info("Endringresponse StatusCode: ${response.statusCode}")
             return response.statusCode.is2xxSuccessful
         } catch (ex: HttpClientErrorException) {
-            if (ex.statusCode.value() == 409 && Opplysningstype.KONTAKTADRESSE == foersteEndring.opplysningstype ) {
+            if (ex.statusCode.value() == 409 && Opplysningstype.KONTAKTADRESSE == foersteEndring.opplysningstype && (ex.message != null && ex.message!!.contains("Kontaktadressen er allerede registrert som bostedsadresse"))) {
+                logger.warn("Kontaktadressen er allerede registrert som bostedsadresse, Ingen Oppdatering")
                 return true
             }
             throw ex
