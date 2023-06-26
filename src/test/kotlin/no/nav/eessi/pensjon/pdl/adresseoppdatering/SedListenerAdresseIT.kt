@@ -14,6 +14,7 @@ import no.nav.eessi.pensjon.eux.model.sed.Pensjon
 import no.nav.eessi.pensjon.eux.model.sed.Person
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.eux.model.sed.SED
+import no.nav.eessi.pensjon.klienter.SafClient.SafClient
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.integrationtest.IntegrationBase
@@ -65,6 +66,9 @@ class SedListenerAdresseIT : IntegrationBase() {
 
     @MockkBean
     lateinit var personMottakKlient: PersonMottakKlient
+
+    @MockkBean
+    lateinit var safClient: SafClient
 
     @Test
     fun `Gitt en sed hendelse som kommer på riktig topic og group_id så skal den konsumeres av adresseListener`() {

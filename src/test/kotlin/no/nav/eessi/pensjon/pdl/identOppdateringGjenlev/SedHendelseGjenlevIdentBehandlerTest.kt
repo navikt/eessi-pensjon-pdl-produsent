@@ -4,6 +4,7 @@ import com.ninjasquad.springmockk.MockkBean
 import com.ninjasquad.springmockk.MockkBeans
 import io.mockk.every
 import no.nav.eessi.pensjon.eux.EuxService
+import no.nav.eessi.pensjon.klienter.SafClient.SafClient
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.lagring.LagringsService
 import no.nav.eessi.pensjon.oppgave.OppgaveOppslag
@@ -28,6 +29,7 @@ import org.springframework.web.client.RestTemplate
 )
 @MockkBeans(
     MockkBean(name = "euxService", classes = [EuxService::class], relaxed = true),
+    MockkBean(name = "safClient", classes = [SafClient::class], relaxed = true),
     MockkBean(name = "kodeverkClient", classes = [KodeverkClient::class], relaxed = true),
     MockkBean(name = "oppgaveOppslag", classes = [OppgaveOppslag::class]),
     MockkBean(name = "personService", classes = [PersonService::class]),

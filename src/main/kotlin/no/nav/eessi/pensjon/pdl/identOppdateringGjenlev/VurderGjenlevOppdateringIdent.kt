@@ -4,6 +4,8 @@ import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.sed.*
+import no.nav.eessi.pensjon.klienter.SafClient.Journalpost
+import no.nav.eessi.pensjon.klienter.SafClient.SafClient
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.models.EndringsmeldingUID
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
@@ -19,11 +21,9 @@ import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
 import no.nav.eessi.pensjon.personoppslag.pdl.model.*
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import no.nav.eessi.pensjon.shared.person.Fodselsnummer
-import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
-import org.springframework.web.client.RestTemplate
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -34,7 +34,7 @@ class VurderGjenlevOppdateringIdent(
     private val kodeverkClient: KodeverkClient,
     private val personService: PersonService,
     private val landspesifikkValidering: LandspesifikkValidering,
-    private val safGraphQlOidcRestTemplate: RestTemplate
+    private val safClient: SafClient
 ): OppgaveModel() {
 
     private val logger = LoggerFactory.getLogger(VurderGjenlevOppdateringIdent::class.java)
@@ -109,7 +109,7 @@ class VurderGjenlevOppdateringIdent(
                     throw it
                 }
                 .onSuccess {
-                    secureLogger.debug("Person fra PDL:\n${it.toJson()}")
+                    secureLogger.debug("Person fra PDL:\n${it}")
                 }
                 .getOrThrow()
 
@@ -118,8 +118,10 @@ class VurderGjenlevOppdateringIdent(
         }
 
         if (fraSammeLandMenUlikUid(uidGjenlevendeFraSed, personGjenlevFraPDL.utenlandskIdentifikasjonsnummer)) {
-            return if (!oppgaveOppslag.finnesOppgavenAllerede(sedHendelse.rinaSakId)) {
-                OppgaveGjenlev(
+            if (!oppgaveOppslag.finnesOppgavenAllerede(sedHendelse.rinaSakId)) {
+                val hentJournalpostForRinasak = hentJournalpostForRinasak(hentRinasakerForAktoerId(normaliserNorskPin(gjenlevNorskIdent)), sedHendelse.rinaSakId)
+                logger.info("Journalpost : ${hentJournalpostForRinasak.toString()}")
+                return OppgaveGjenlev(
                     "Det finnes allerede en annen uid fra samme land (oppgave opprettes)", OppgaveDataGjenlevUID(
                         sedHendelse,
                         identifisertPerson(personGjenlevFraPDL)
@@ -139,6 +141,21 @@ class VurderGjenlevOppdateringIdent(
                 sedHendelse.avsenderNavn!!
             ),
         )
+    }
+
+    private fun hentJournalpostForRinasak(listeOverJournalposterForAktoerId: List<Journalpost>, rinaSakId:String) : Journalpost? {
+        return listeOverJournalposterForAktoerId.filter {
+            journalpost -> journalpost.tilleggsopplysninger.any {
+                it.containsKey("eessi_pensjon_bucid")
+                it.containsValue(rinaSakId)
+            }
+        }.distinctBy { it.behandlingstema }.firstOrNull()
+    }
+
+    private fun hentRinasakerForAktoerId(aktoerId: String): List<Journalpost> {
+        val hentMetadataResponse = safClient.hentDokumentMetadata(aktoerId)
+        return hentMetadataResponse.data.dokumentoversiktBruker.journalposter
+
     }
 
     private fun gjenlevFdatoErLikGjenlevFnr(

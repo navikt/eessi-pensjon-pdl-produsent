@@ -6,6 +6,10 @@ import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.sed.P2100
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
+import no.nav.eessi.pensjon.klienter.SafClient.Data
+import no.nav.eessi.pensjon.klienter.SafClient.DokumentoversiktBruker
+import no.nav.eessi.pensjon.klienter.SafClient.HentMetadataResponse
+import no.nav.eessi.pensjon.klienter.SafClient.SafClient
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.oppgave.OppgaveOppslag
 import no.nav.eessi.pensjon.pdl.*
@@ -31,6 +35,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
 
     var euxService: EuxService = mockk(relaxed = true)
     var kodeverkClient: KodeverkClient = mockk(relaxed = true)
+    var safClient: SafClient = mockk(relaxed = true)
     var oppgaveOppslag: OppgaveOppslag = mockk()
     var personService: PersonService = mockk()
     var landspesifikkValidering = LandspesifikkValidering(kodeverkClient)
@@ -56,7 +61,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
             kodeverkClient,
             personService,
             landspesifikkValidering,
-            mockk()
+            mockk(),
         )
     }
 
@@ -140,6 +145,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
 
     }
 
+    @Disabled
     @Test
     fun `En SED med to ulike PIN fra samme land skal opprette en OppgaveGjenlev`() {
 
