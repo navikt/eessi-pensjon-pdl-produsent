@@ -6,10 +6,7 @@ import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.sed.P2100
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
-import no.nav.eessi.pensjon.klienter.SafClient.Data
-import no.nav.eessi.pensjon.klienter.SafClient.DokumentoversiktBruker
-import no.nav.eessi.pensjon.klienter.SafClient.HentMetadataResponse
-import no.nav.eessi.pensjon.klienter.SafClient.SafClient
+import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.oppgave.OppgaveOppslag
 import no.nav.eessi.pensjon.pdl.*

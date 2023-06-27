@@ -1,4 +1,4 @@
-package no.nav.eessi.pensjon.klienter.SafClient
+package no.nav.eessi.pensjon.klienter.saf
 
 import no.nav.eessi.pensjon.utils.mapAnyToJson
 
@@ -29,9 +29,9 @@ data class SafRequest(
 }
 
 data class Variables(
-        val brukerId: BrukerId,
-        val foerste: Int,
-        val journalstatuser: List<String> = listOf("JOURNALFOERT", "FERDIGSTILT", "EKSPEDERT", "MOTTATT")
+    val brukerId: BrukerId,
+    val foerste: Int,
+    val journalstatuser: List<String> = listOf("JOURNALFOERT", "FERDIGSTILT", "EKSPEDERT", "MOTTATT")
 )
 
 
@@ -68,15 +68,15 @@ data class Data(val dokumentoversiktBruker: DokumentoversiktBruker)
 data class DokumentoversiktBruker(val journalposter: List<Journalpost>)
 
 data class Journalpost(
-        val tilleggsopplysninger: List<Map<String, String>>,
-        val journalpostId: String,
-        val datoOpprettet: String,
-        val tittel: String?,
-        val journalforendeEnhet: String?,
-        val tema: String,
-        val dokumenter: List<Dokument>? = null,
-        val enhet: String,
-        val behandlingstema: String
+    val tilleggsopplysninger: List<Map<String, String>>,
+    val journalpostId: String,
+    val datoOpprettet: String,
+    val tittel: String?,
+    val journalforendeEnhet: String?,
+    val tema: String,
+    val dokumenter: List<Dokument>? = null,
+    val enhet: String,
+    val behandlingstema: String
 )
 
 data class Dokument(

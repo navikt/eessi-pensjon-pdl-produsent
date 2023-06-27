@@ -4,8 +4,8 @@ import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.sed.*
-import no.nav.eessi.pensjon.klienter.SafClient.Journalpost
-import no.nav.eessi.pensjon.klienter.SafClient.SafClient
+import no.nav.eessi.pensjon.klienter.saf.Journalpost
+import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.models.EndringsmeldingUID
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning

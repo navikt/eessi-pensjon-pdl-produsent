@@ -1,4 +1,4 @@
-package no.nav.eessi.pensjon.klienter.SafClient
+package no.nav.eessi.pensjon.klienter.saf
 
 import jakarta.annotation.PostConstruct
 import no.nav.eessi.pensjon.metrics.MetricsHelper

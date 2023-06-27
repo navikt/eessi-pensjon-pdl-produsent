@@ -4,7 +4,7 @@ import com.ninjasquad.springmockk.MockkBean
 import com.ninjasquad.springmockk.MockkBeans
 import io.mockk.every
 import no.nav.eessi.pensjon.eux.EuxService
-import no.nav.eessi.pensjon.klienter.SafClient.SafClient
+import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.lagring.LagringsService
 import no.nav.eessi.pensjon.oppgave.OppgaveOppslag
