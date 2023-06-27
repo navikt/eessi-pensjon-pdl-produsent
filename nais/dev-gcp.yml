@@ -69,6 +69,8 @@ spec:
       value: dev-fss.teamdokumenthandtering.saf
     - name: SAF_GRAPHQL_URL
       value: https://saf-q2.dev-fss-pub.nais.io/graphql
+    - name: SAF_HENTDOKUMENT_URL
+      value: https://saf-q2.dev-fss-pub.nais.io/rest/hentdokument
 
   gcp:
     buckets:
