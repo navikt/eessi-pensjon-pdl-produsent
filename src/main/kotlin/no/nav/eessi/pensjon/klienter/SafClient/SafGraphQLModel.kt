@@ -17,7 +17,7 @@ data class SafRequest(
                     "journalpostId " +
                     "datoOpprettet " +
                     "tittel " +
-                    "journalfoerendeEnhet" +
+                    "journalfoerendeEnhet " +
                     "tema " +
                     "behandlingstema " +
                 "}}}",
