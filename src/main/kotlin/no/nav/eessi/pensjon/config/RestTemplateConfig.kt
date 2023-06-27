@@ -73,6 +73,7 @@ class RestTemplateConfig(
     @Bean
     fun safGraphQlOidcRestTemplate() = restTemplate(graphQlUrl, bearerTokenInterceptor(clientProperties("saf-credentials"), oAuth2AccessTokenService!!))
 
+    @Bean
     fun safRestOidcRestTemplate() = restTemplate(hentRestUrl, onBehalfOfBearerTokenInterceptor(safClientId))
 
 
