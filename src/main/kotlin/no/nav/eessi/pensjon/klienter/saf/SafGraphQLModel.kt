@@ -72,10 +72,9 @@ data class Journalpost(
     val journalpostId: String,
     val datoOpprettet: String,
     val tittel: String?,
-    val journalforendeEnhet: String?,
+    val journalfoerendeEnhet: String?,
     val tema: String,
     val dokumenter: List<Dokument>? = null,
-    val enhet: String,
     val behandlingstema: String
 )
 
