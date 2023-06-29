@@ -16,10 +16,9 @@ class SafClientTest {
                             journalpostId = "",
                             datoOpprettet = "",
                             tittel = "",
-                            journalforendeEnhet = "",
+                            journalfoerendeEnhet = "",
                             tema = "",
                             dokumenter = null,
-                            enhet = "",
                             behandlingstema = ""
                         )
                     )
@@ -44,10 +43,9 @@ class SafClientTest {
                     "journalpostId" : "",
                     "datoOpprettet" : "",
                     "tittel" : "",
-                    "journalforendeEnhet" : "",
+                    "journalfoerendeEnhet" : "",
                     "tema" : "",
                     "dokumenter" : null,
-                    "enhet" : "",
                     "behandlingstema" : ""
                   } ]
                 }
