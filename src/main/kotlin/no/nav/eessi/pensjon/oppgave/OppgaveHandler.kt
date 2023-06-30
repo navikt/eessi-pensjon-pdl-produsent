@@ -84,7 +84,7 @@ class OppgaveHandler(
             sedHendelse,
             HendelseType.MOTTATT,
             null,
-            identifisertePerson.harAdressebeskyttelse
+            identifisertePerson.harAdressebeskyttelse!!
         ))
     }
 
