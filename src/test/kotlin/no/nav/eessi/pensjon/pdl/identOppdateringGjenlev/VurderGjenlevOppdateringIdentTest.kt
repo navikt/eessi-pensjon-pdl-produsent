@@ -27,7 +27,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.skyscreamer.jsonassert.JSONAssert
 
-const val FNR_GJENLEVENDE = "51077403071"
 class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
 
     var euxService: EuxService = mockk(relaxed = true)
@@ -78,18 +77,19 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
                     )
                 )
 
-        every { euxService.hentSed(any(), any()) } returns
-                sedGjenlevende(
-                    id = SOME_FNR, land = "NO", pinItem = listOf(
-                        PinItem(identifikator = "5 12 020-1234", land = "SE"),
-                        PinItem(identifikator = SOME_FNR, land = "NO")
-                    )
-                )
+        val sed = sedGjenlevende(
+            id = FNR, land = "NO", pinItem = listOf(
+                PinItem(identifikator = "5 12 020-1234", land = "SE"),
+                PinItem(identifikator = FNR, land = "NO")
+            )
+        )
+        val p2100 = P2100(SedType.P2100, nav = sed.nav, pensjon = sed.pensjon)
+        every { euxService.hentSed(any(), any()) } returns p2100
 
         assertEquals(
             Oppdatering(
                 "Innsending av endringsmelding",
-                pdlEndringsMelding(SOME_FNR, utstederland = "SWE")
+                pdlEndringsMelding(FNR, utstederland = "SWE")
             ),
             (identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = "SE")))
         )
@@ -142,7 +142,6 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
 
     }
 
-    @Disabled
     @Test
     fun `En SED med to ulike PIN fra samme land skal opprette en OppgaveGjenlev`() {
 

@@ -7,53 +7,145 @@ import io.mockk.slot
 import no.nav.eessi.pensjon.eux.model.BucType
 import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.SedType
+import no.nav.eessi.pensjon.eux.model.buc.SakType
+import no.nav.eessi.pensjon.klienter.saf.*
 import no.nav.eessi.pensjon.lagring.LagringsService
+import no.nav.eessi.pensjon.oppgave.Behandlingstema.*
 import no.nav.eessi.pensjon.oppgaverouting.Enhet
+import no.nav.eessi.pensjon.oppgaverouting.Enhet.*
+import no.nav.eessi.pensjon.oppgaverouting.Enhet.Companion.getEnhet
 import no.nav.eessi.pensjon.oppgaverouting.OppgaveRoutingService
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPersonPDL
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Relasjon
 import no.nav.eessi.pensjon.personoppslag.pdl.model.SEDPersonRelasjon
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
 import no.nav.eessi.pensjon.shared.person.Fodselsnummer
+import no.nav.eessi.pensjon.utils.mapJsonToAny
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.kafka.core.KafkaTemplate
 
 private const val FNR = "11067122781"
+private const val AKTOER_ID = "123456789351"
+private const val RINA_ID = "74389487"
+
+private const val AUTOMATISK_JOURNALFORENDE_ENHET = "9999"
+private const val BOSATT_NORGE = "NO"
+
 internal class OppgaveHandlerTest{
 
     private val kafkaTemplate  = mockk<KafkaTemplate<String, String>>()
     private val lagringsService = mockk<LagringsService>()
     private val oppgaveRoutingService = mockk<OppgaveRoutingService>()
+    private val safClient = mockk<SafClient>()
     lateinit var oppgaveHandler: OppgaveHandler
 
     @BeforeEach
     fun setup() {
         every { lagringsService.kanHendelsenOpprettes(any()) } returns true
         every { kafkaTemplate.defaultTopic } returns "someTopic"
-        every { oppgaveRoutingService.route(any()) } returns Enhet.AUTOMATISK_JOURNALFORING
+        every { oppgaveRoutingService.route(any()) } returns AUTOMATISK_JOURNALFORING
 
         justRun { lagringsService.lagreHendelseMedSakId(any()) }
 
-        oppgaveHandler = OppgaveHandler(kafkaTemplate, lagringsService, oppgaveRoutingService, "Q2")
+        oppgaveHandler = OppgaveHandler(kafkaTemplate, lagringsService, oppgaveRoutingService, safClient, "Q2")
         oppgaveHandler.initMetrics()
     }
 
     @Test
-    fun `gitt en sedhendelse og en identifisert person, så skal det opprettes en oppgavemelding`() {
-        val identifisertPerson = identifisertPerson()
-        val oppgave = OppgaveDataUID(enSedHendelse(), identifisertPerson)
+    fun `Gitt at vi får inn en P2100 med gjenlevende som er bosatt Norge så skal vi route gjenlevUid oppgave til 4862 NFP UTLAND AALESUND`() {
+        val identifisertPerson = identifisertPerson(BOSATT_NORGE)
+        val oppgaveData = OppgaveDataGjenlevUID(enSedHendelse(SedType.P2200, BucType.P_BUC_02), identifisertPerson)
+        val hentMetadataResponse = HentMetadataResponse(
+            data = Data(
+                dokumentoversiktBruker = DokumentoversiktBruker(
+                    journalposter = listOf(
+                        journalpost(BARNEP, AUTOMATISK_JOURNALFORENDE_ENHET)
+                    )
+                )
+            )
+        )
 
         val meldingSlot = slot<String>()
         every { kafkaTemplate.sendDefault(any(), capture(meldingSlot)).get() } returns mockk()
+        every { safClient.hentDokumentMetadata(any()) } returns hentMetadataResponse
+
+        val actual = oppgaveHandler.opprettOppgave(oppgaveData)
+
+        val melding = mapJsonToAny<OppgaveMelding>(meldingSlot.captured)
+        assertEquals(NFP_UTLAND_AALESUND, melding.tildeltEnhetsnr)
+        assertTrue(actual)
+
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = Enhet::class,
+        names = ["UGYLDIG_ARKIV_TYPE", "OKONOMI_PENSJON", "DISKRESJONSKODE", "AUTOMATISK_JOURNALFORING"],
+        mode = EnumSource.Mode.EXCLUDE
+    )
+    fun `Gitt at vi får inn en P2100 med gjenlevende som ikke er bosatt Norge så skal vi route gjenlevUid oppgave til 0001 PENSJON UTLAND`(enhet: Enhet) {
+        val identifisertPerson = identifisertPerson(landkode = BOSATT_NORGE)
+        val oppgaveData = OppgaveDataGjenlevUID(enSedHendelse(SedType.P2200, BucType.P_BUC_02), identifisertPerson)
+
+        val hentMetadataResponse = HentMetadataResponse(
+            data = Data(
+                dokumentoversiktBruker = DokumentoversiktBruker(
+                    journalposter = listOf(
+                        journalpost(BARNEP, enhet.enhetsNr)
+                    )
+                )
+            )
+        )
+
+        val meldingSlot = slot<String>()
+        every { kafkaTemplate.sendDefault(any(), capture(meldingSlot)).get() } returns mockk()
+        every { safClient.hentDokumentMetadata(any()) } returns hentMetadataResponse
+
+        val actual = oppgaveHandler.opprettOppgave(oppgaveData)
+
+        val melding = mapJsonToAny<OppgaveMelding>(meldingSlot.captured)
+        assertEquals(enhet, melding.tildeltEnhetsnr)
+        assertTrue(actual)
+
+    }
+
+    private fun journalpost(behandlingstema: Behandlingstema, enhet: String) = Journalpost(
+        tilleggsopplysninger = listOf(mapOf(Pair("eessi_pensjon_bucid", RINA_ID))),
+        journalpostId = "11111",
+        datoOpprettet = "",
+        tittel = "",
+        journalfoerendeEnhet = enhet,
+        tema = "PEN",
+        dokumenter = null,
+        behandlingstema = behandlingstema.name
+    )
+
+    @Test
+    fun `gitt en sedhendelse og en identifisert person, så skal det opprettes en oppgavemelding`() {
+        val identifisertPerson = identifisertPerson(landkode = BOSATT_NORGE)
+        val oppgave = OppgaveDataUID(enSedHendelse(SedType.P2100, BucType.P_BUC_01), identifisertPerson)
+
+        val meldingSlot = slot<String>()
+        every { kafkaTemplate.sendDefault(any(), capture(meldingSlot)).get() } returns mockk()
+        val mockEnhet = mockk<HentMetadataResponse>()
+        val journalPost = mockk<Journalpost>()
+        every { journalPost.journalfoerendeEnhet } returns "0001"
+        every { journalPost.behandlingstema } returns ALDERSPENSJON.name
+        every { journalPost.tilleggsopplysninger } returns listOf(mapOf(Pair("eessi_pensjon_bucid", RINA_ID)))
+        every { mockEnhet.data.dokumentoversiktBruker.journalposter } returns listOf(journalPost)
+        every { safClient.hentDokumentMetadata(any()) } returns mockEnhet
 
         oppgaveHandler.opprettOppgave(oppgave)
 
         val forventetMelding = """{
           "sedType" : null,
           "journalpostId" : null,
-          "tildeltEnhetsnr" : "9999",
+          "tildeltEnhetsnr" : "0001",
           "aktoerId" : "123456789351",
           "rinaSakId" : "74389487",
           "hendelseType" : "MOTTATT",
@@ -64,11 +156,11 @@ internal class OppgaveHandlerTest{
         JSONAssert.assertEquals(forventetMelding, meldingSlot.captured, false)
 
     }
-    fun enSedHendelse() = SedHendelse(
+    fun enSedHendelse(sedType: SedType, bucType: BucType) = SedHendelse(
         sektorKode = "P",
-        bucType = BucType.P_BUC_01,
-        sedType = SedType.P2100,
-        rinaSakId = "74389487",
+        bucType = bucType,
+        sedType = sedType,
+        rinaSakId = RINA_ID,
         rinaDokumentId = "743982",
         rinaDokumentVersjon = "1",
         avsenderNavn = "Svensk institusjon",
@@ -76,12 +168,12 @@ internal class OppgaveHandlerTest{
     )
 
     private fun identifisertPerson(
-        erDoed: Boolean = false, uidFraPdl: List<UtenlandskIdentifikasjonsnummer> = emptyList()
+        landkode: String, erDoed: Boolean = false, uidFraPdl: List<UtenlandskIdentifikasjonsnummer> = emptyList()
     ) = IdentifisertPersonPDL(
         fnr = Fodselsnummer.fra(FNR),
         uidFraPdl = uidFraPdl,
-        aktoerId = "123456789351",
-        landkode = null,
+        aktoerId = AKTOER_ID,
+        landkode = landkode,
         geografiskTilknytning = null,
         harAdressebeskyttelse = erDoed,
         personListe = null,

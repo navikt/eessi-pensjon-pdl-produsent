@@ -119,8 +119,6 @@ class VurderGjenlevOppdateringIdent(
 
         if (fraSammeLandMenUlikUid(uidGjenlevendeFraSed, personGjenlevFraPDL.utenlandskIdentifikasjonsnummer)) {
             if (!oppgaveOppslag.finnesOppgavenAllerede(sedHendelse.rinaSakId)) {
-                val hentJournalpostForRinasak = hentJournalpostForRinasak(hentRinasakerForAktoerId(normaliserNorskPin(gjenlevNorskIdent)), sedHendelse.rinaSakId)
-                logger.info("Journalpost : ${hentJournalpostForRinasak.toString()}")
                 return OppgaveGjenlev(
                     "Det finnes allerede en annen uid fra samme land (oppgave opprettes)", OppgaveDataGjenlevUID(
                         sedHendelse,
@@ -141,21 +139,6 @@ class VurderGjenlevOppdateringIdent(
                 sedHendelse.avsenderNavn!!
             ),
         )
-    }
-
-    private fun hentJournalpostForRinasak(listeOverJournalposterForAktoerId: List<Journalpost>, rinaSakId:String) : Journalpost? {
-        return listeOverJournalposterForAktoerId.filter {
-            journalpost -> journalpost.tilleggsopplysninger.any {
-                it.containsKey("eessi_pensjon_bucid")
-                it.containsValue(rinaSakId)
-            }
-        }.distinctBy { it.behandlingstema }.firstOrNull()
-    }
-
-    private fun hentRinasakerForAktoerId(aktoerId: String): List<Journalpost> {
-        val hentMetadataResponse = safClient.hentDokumentMetadata(aktoerId)
-        return hentMetadataResponse.data.dokumentoversiktBruker.journalposter
-
     }
 
     private fun gjenlevFdatoErLikGjenlevFnr(
