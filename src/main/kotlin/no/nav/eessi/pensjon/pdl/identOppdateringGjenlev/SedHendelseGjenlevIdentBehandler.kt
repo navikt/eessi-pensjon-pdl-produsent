@@ -38,23 +38,17 @@ class SedHendelseGjenlevIdentBehandler(
         log(result)
         when (result) {
             is Oppdatering -> {
-                personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
+//                personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
                 logger.debug("Her kommer det en opprettelse av personopplysning")
             }
-            is Oppgave -> {
-                oppgaveHandler.opprettOppgave(result.oppgaveData)
-                logger.debug("Her kommer det en opprettelse av oppgave for UID")
-            }
             is OppgaveGjenlev -> {
-                oppgaveHandler.opprettOppgave(result.oppgaveData)
+//                oppgaveHandler.opprettOppgave(result.oppgaveData)
                 logger.debug("Her kommer det en opprettelse av oppgave for Gjenlev")
             }
-
             is IngenOppdatering -> {
                 logger.debug("Ingen oppgave")
             }
         }
-
         count(result.metricTagValue)
     }
 
