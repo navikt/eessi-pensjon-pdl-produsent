@@ -7,14 +7,12 @@ import io.mockk.slot
 import no.nav.eessi.pensjon.eux.model.BucType
 import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.SedType
-import no.nav.eessi.pensjon.eux.model.buc.SakType
 import no.nav.eessi.pensjon.klienter.saf.*
 import no.nav.eessi.pensjon.lagring.LagringsService
-import no.nav.eessi.pensjon.oppgave.Behandlingstema.*
+import no.nav.eessi.pensjon.oppgave.Behandlingstema.ALDERSPENSJON
+import no.nav.eessi.pensjon.oppgave.Behandlingstema.BARNEP
 import no.nav.eessi.pensjon.oppgaverouting.Enhet
-import no.nav.eessi.pensjon.oppgaverouting.Enhet.*
-import no.nav.eessi.pensjon.oppgaverouting.Enhet.Companion.getEnhet
-import no.nav.eessi.pensjon.oppgaverouting.OppgaveRoutingService
+import no.nav.eessi.pensjon.oppgaverouting.Enhet.NFP_UTLAND_AALESUND
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPersonPDL
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Relasjon
 import no.nav.eessi.pensjon.personoppslag.pdl.model.SEDPersonRelasjon
@@ -41,7 +39,6 @@ internal class OppgaveHandlerTest{
 
     private val kafkaTemplate  = mockk<KafkaTemplate<String, String>>()
     private val lagringsService = mockk<LagringsService>()
-    private val oppgaveRoutingService = mockk<OppgaveRoutingService>()
     private val safClient = mockk<SafClient>()
     lateinit var oppgaveHandler: OppgaveHandler
 
@@ -49,11 +46,10 @@ internal class OppgaveHandlerTest{
     fun setup() {
         every { lagringsService.kanHendelsenOpprettes(any()) } returns true
         every { kafkaTemplate.defaultTopic } returns "someTopic"
-        every { oppgaveRoutingService.route(any()) } returns AUTOMATISK_JOURNALFORING
 
         justRun { lagringsService.lagreHendelseMedSakId(any()) }
 
-        oppgaveHandler = OppgaveHandler(kafkaTemplate, lagringsService, oppgaveRoutingService, safClient, "Q2")
+        oppgaveHandler = OppgaveHandler(kafkaTemplate, lagringsService, safClient)
         oppgaveHandler.initMetrics()
     }
 

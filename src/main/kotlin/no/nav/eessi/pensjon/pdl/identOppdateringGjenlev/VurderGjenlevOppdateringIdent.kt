@@ -4,7 +4,6 @@ import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.sed.*
-import no.nav.eessi.pensjon.klienter.saf.Journalpost
 import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.models.EndringsmeldingUID
@@ -52,6 +51,10 @@ class VurderGjenlevOppdateringIdent(
 
         val gjenlevendeFraSed = getGjenlev(sed)
         val gjenlevendeNorskPin = gjenlevendeFraSed?.person?.pin?.firstOrNull { it.land == "NO" }?.identifikator
+        require((gjenlevendeFraSed == null || gjenlevendeNorskPin == null).not()) {
+            return IngenOppdatering("Seden har ingen gjenlevende")
+        }
+
         if (gjenlevFdatoErLikGjenlevFnr(gjenlevendeNorskPin, gjenlevendeFraSed))
             return IngenOppdatering("Gjenlevende fdato stemmer ikke overens med fnr", "Gjenlevende fdato stemmer ikke overens med fnr")
 
@@ -144,11 +147,17 @@ class VurderGjenlevOppdateringIdent(
     private fun gjenlevFdatoErLikGjenlevFnr(
         gjenlevendeNorskPin: String?,
         gjenlevendeFraSed: Bruker?
-    ) =
-        Fodselsnummer.fra(gjenlevendeNorskPin)?.getBirthDate() != LocalDate.parse(
-            gjenlevendeFraSed?.person?.foedselsdato,
-            DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        )
+    ) : Boolean {
+        return try {
+            Fodselsnummer.fra(gjenlevendeNorskPin)?.getBirthDate() !=
+                    LocalDate.parse(
+                        gjenlevendeFraSed?.person?.foedselsdato,
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                    )
+        } catch (ex: Exception) {
+            false
+        }
+    }
 
     private fun getGjenlev(sed: SED): Bruker? {
         return when(sed) {
