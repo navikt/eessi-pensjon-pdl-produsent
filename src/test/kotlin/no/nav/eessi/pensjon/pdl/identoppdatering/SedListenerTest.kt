@@ -12,6 +12,7 @@ import no.nav.eessi.pensjon.oppgave.OppgaveHandler
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.integrationtest.IntegrationBase
 import no.nav.eessi.pensjon.pdl.integrationtest.KafkaTestConfig
+import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import no.nav.eessi.pensjon.utils.toJson
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -68,6 +69,7 @@ class SedListenerTest {
     @Test
     fun `Sjekk om brukers fnr stemmer overens med brukers fdato foer vi vuderer aa oppdatere UID på bruker`() {
 
+        println("FDATO: ${Fodselsnummer.fra("47429133544")?.getBirthDate()}")
         val ack = mockk<Acknowledgment>()
         justRun { ack.acknowledge() }
 

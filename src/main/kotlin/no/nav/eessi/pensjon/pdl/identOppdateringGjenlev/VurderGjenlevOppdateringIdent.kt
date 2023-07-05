@@ -4,6 +4,7 @@ import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.sed.*
+import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.models.EndringsmeldingUID
 import no.nav.eessi.pensjon.models.PdlEndringOpplysning
@@ -19,7 +20,6 @@ import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
 import no.nav.eessi.pensjon.personoppslag.pdl.model.*
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import no.nav.eessi.pensjon.shared.person.Fodselsnummer
-import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
@@ -32,7 +32,8 @@ class VurderGjenlevOppdateringIdent(
     @Qualifier("oppgaveHandler") private val oppgaveOppslag: OppgaveOppslag,
     private val kodeverkClient: KodeverkClient,
     private val personService: PersonService,
-    private val landspesifikkValidering: LandspesifikkValidering
+    private val landspesifikkValidering: LandspesifikkValidering,
+    private val safClient: SafClient
 ): OppgaveModel() {
 
     private val logger = LoggerFactory.getLogger(VurderGjenlevOppdateringIdent::class.java)
@@ -50,6 +51,10 @@ class VurderGjenlevOppdateringIdent(
 
         val gjenlevendeFraSed = getGjenlev(sed)
         val gjenlevendeNorskPin = gjenlevendeFraSed?.person?.pin?.firstOrNull { it.land == "NO" }?.identifikator
+        require((gjenlevendeFraSed == null || gjenlevendeNorskPin == null).not()) {
+            return IngenOppdatering("Seden har ingen gjenlevende")
+        }
+
         if (gjenlevFdatoErLikGjenlevFnr(gjenlevendeNorskPin, gjenlevendeFraSed))
             return IngenOppdatering("Gjenlevende fdato stemmer ikke overens med fnr", "Gjenlevende fdato stemmer ikke overens med fnr")
 
@@ -107,7 +112,7 @@ class VurderGjenlevOppdateringIdent(
                     throw it
                 }
                 .onSuccess {
-                    secureLogger.debug("Person fra PDL:\n${it.toJson()}")
+                    secureLogger.debug("Person fra PDL:\n${it}")
                 }
                 .getOrThrow()
 
@@ -116,8 +121,8 @@ class VurderGjenlevOppdateringIdent(
         }
 
         if (fraSammeLandMenUlikUid(uidGjenlevendeFraSed, personGjenlevFraPDL.utenlandskIdentifikasjonsnummer)) {
-            return if (!oppgaveOppslag.finnesOppgavenAllerede(sedHendelse.rinaSakId)) {
-                OppgaveGjenlev(
+            if (!oppgaveOppslag.finnesOppgavenAllerede(sedHendelse.rinaSakId)) {
+                return OppgaveGjenlev(
                     "Det finnes allerede en annen uid fra samme land (oppgave opprettes)", OppgaveDataGjenlevUID(
                         sedHendelse,
                         identifisertPerson(personGjenlevFraPDL)
@@ -142,11 +147,17 @@ class VurderGjenlevOppdateringIdent(
     private fun gjenlevFdatoErLikGjenlevFnr(
         gjenlevendeNorskPin: String?,
         gjenlevendeFraSed: Bruker?
-    ) =
-        Fodselsnummer.fra(gjenlevendeNorskPin)?.getBirthDate() != LocalDate.parse(
-            gjenlevendeFraSed?.person?.foedselsdato,
-            DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        )
+    ) : Boolean {
+        return try {
+            Fodselsnummer.fra(gjenlevendeNorskPin)?.getBirthDate() !=
+                    LocalDate.parse(
+                        gjenlevendeFraSed?.person?.foedselsdato,
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                    )
+        } catch (ex: Exception) {
+            false
+        }
+    }
 
     private fun getGjenlev(sed: SED): Bruker? {
         return when(sed) {

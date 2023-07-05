@@ -21,7 +21,6 @@ spec:
         - host: pdl-mottak.prod-fss-pub.nais.io
         - host: eux-rina-api.prod-fss-pub.nais.io
         - host: norg2.prod-fss-pub.nais.io
-        - host: saf.prod-fss-pub.nais.ioa
   webproxy: true
   kafka:
     pool: nav-prod
@@ -70,6 +69,7 @@ spec:
       value: https://saf.prod-fss-pub.nais.io/graphql
     - name: SAF_HENTDOKUMENT_URL
       value: https://saf.prod-fss-pub.nais.io/rest/hentdokument
+
   gcp:
     buckets:
       - name: eessi-pensjon-pdl-produsent-prod

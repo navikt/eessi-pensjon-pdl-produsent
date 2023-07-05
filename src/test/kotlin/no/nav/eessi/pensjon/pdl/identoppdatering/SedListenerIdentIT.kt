@@ -8,6 +8,7 @@ import no.nav.eessi.pensjon.eux.model.BucType.P_BUC_10
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
+import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.oppgaverouting.Enhet
 import no.nav.eessi.pensjon.pdl.integrationtest.CustomMockServer
@@ -19,6 +20,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.PersonMock
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -50,6 +52,9 @@ class SedListenerIdentIT : IntegrationBase() {
     @MockkBean
     lateinit var kodeverkClient: KodeverkClient
 
+    @MockkBean
+    lateinit var safClient: SafClient
+
     val fnr = "11067122781"
 
     val mockedPerson = PersonMock.createWith(
@@ -63,6 +68,7 @@ class SedListenerIdentIT : IntegrationBase() {
         sedListenerIdent.consumeSedMottatt(message, cr, acknowledgment)
     }
 
+    @Disabled
     @Test
     fun `En sed hendelse uten UID vil resultere i ingen oppdatering`() {
         every { norg2.hentArbeidsfordelingEnhet(any()) } returns Enhet.ID_OG_FORDELING

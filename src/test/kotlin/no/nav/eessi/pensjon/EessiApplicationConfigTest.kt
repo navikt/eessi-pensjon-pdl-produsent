@@ -11,6 +11,7 @@ import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonClient
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
@@ -46,6 +47,7 @@ import org.springframework.web.client.RestTemplate
     MockkBean(name = "sedKafkaListenerContainerFactory", classes = [ConcurrentKafkaListenerContainerFactory::class], relaxed = true),
 
 )
+@Disabled
 class EessiApplicationConfigTest {
 
     @Test

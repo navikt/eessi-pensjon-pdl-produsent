@@ -6,11 +6,14 @@ import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.sed.P2100
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
+import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.oppgave.OppgaveOppslag
-import no.nav.eessi.pensjon.pdl.*
+import no.nav.eessi.pensjon.pdl.AKTOERID
 import no.nav.eessi.pensjon.pdl.FNR
+import no.nav.eessi.pensjon.pdl.IdentBaseTest
 import no.nav.eessi.pensjon.pdl.OppgaveModel.*
+import no.nav.eessi.pensjon.pdl.SOME_FNR
 import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
@@ -20,17 +23,16 @@ import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.skyscreamer.jsonassert.JSONAssert
 
-const val FNR_GJENLEVENDE = "51077403071"
 class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
 
     var euxService: EuxService = mockk(relaxed = true)
     var kodeverkClient: KodeverkClient = mockk(relaxed = true)
+    var safClient: SafClient = mockk(relaxed = true)
     var oppgaveOppslag: OppgaveOppslag = mockk()
     var personService: PersonService = mockk()
     var landspesifikkValidering = LandspesifikkValidering(kodeverkClient)
@@ -55,13 +57,83 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
             oppgaveOppslag,
             kodeverkClient,
             personService,
-            landspesifikkValidering
+            landspesifikkValidering,
+            mockk(),
         )
     }
 
-    @Disabled
     @Test
     fun `Gitt at vi har en endringsmelding med en svensk uid, med riktig format saa skal det opprettes en endringsmelding`() {
+        every { personService.hentPerson(NorskIdent(FNR)) } returns
+                personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT)))
+
+        every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns
+                personFraPDL(id = SOME_FNR).copy(
+                    identer = listOf(
+                        IdentInformasjon(
+                            SOME_FNR,
+                            IdentGruppe.FOLKEREGISTERIDENT
+                        )
+                    ),
+                )
+
+        val sed = sedGjenlevende(
+            id = FNR, land = "NO",
+            pinItem = listOf(
+                PinItem(identifikator = "5 12 020-1234", land = "SE"),
+                PinItem(identifikator = FNR, land = "NO")
+            ),
+            fodselsdato = "1971-06-11",
+        )
+        val p2100 = P2100(SedType.P2100, nav = sed.nav, pensjon = sed.pensjon)
+        every { euxService.hentSed(any(), any()) } returns p2100
+
+        assertEquals(
+            Oppdatering(
+                "Innsending av endringsmelding",
+                pdlEndringsMelding(FNR, utstederland = "SWE")
+            ),
+            (identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = "SE")))
+        )
+    }
+
+    @Test
+    fun `Gitt at vi har en endringsmelding med en svensk uid med som mangler fdato så skal vi ikke sende en oppdatering`() {
+        every { personService.hentPerson(NorskIdent(FNR)) } returns
+                personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT)))
+
+        every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns
+                personFraPDL(id = SOME_FNR).copy(
+                    identer = listOf(
+                        IdentInformasjon(
+                            SOME_FNR,
+                            IdentGruppe.FOLKEREGISTERIDENT
+                        )
+                    ),
+                )
+
+        val sed = sedGjenlevende(
+            id = FNR, land = "NO",
+            pinItem = listOf(
+                PinItem(identifikator = "5 12 020-1234", land = "SE"),
+                PinItem(identifikator = FNR, land = "NO")
+            ),
+            fodselsdato = null,
+        )
+        val p2100 = P2100(SedType.P2100, nav = sed.nav, pensjon = sed.pensjon)
+        every { euxService.hentSed(any(), any()) } returns p2100
+
+        assertEquals(
+            Oppdatering(
+                "Innsending av endringsmelding",
+                pdlEndringsMelding(FNR, utstederland = "SWE")
+            ),
+            (identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = "SE")))
+        )
+    }
+
+    @Test
+    fun `Gitt at vi har en P10000 der vi ikke har gjenlevende så skal vi ikke sende oppdatering på gjenlevende`() {
         every { personService.hentPerson(NorskIdent(FNR)) } returns
                 personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT)))
 
@@ -75,19 +147,11 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
                     )
                 )
 
-        every { euxService.hentSed(any(), any()) } returns
-                sedGjenlevende(
-                    id = SOME_FNR, land = "NO", pinItem = listOf(
-                        PinItem(identifikator = "5 12 020-1234", land = "SE"),
-                        PinItem(identifikator = SOME_FNR, land = "NO")
-                    )
-                )
+        val p2100 = P2100(SedType.P2100, null, null)
+        every { euxService.hentSed(any(), any()) } returns p2100
 
         assertEquals(
-            Oppdatering(
-                "Innsending av endringsmelding",
-                pdlEndringsMelding(SOME_FNR, utstederland = "SWE")
-            ),
+            IngenOppdatering("Seden har ingen gjenlevende"),
             (identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = "SE")))
         )
     }

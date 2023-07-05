@@ -70,6 +70,7 @@ spec:
       value: https://saf-q2.dev-fss-pub.nais.io/graphql
     - name: SAF_HENTDOKUMENT_URL
       value: https://saf-q2.dev-fss-pub.nais.io/rest/hentdokument
+
   gcp:
     buckets:
       - name: eessi-pensjon-pdl-produsent-dev-q2
