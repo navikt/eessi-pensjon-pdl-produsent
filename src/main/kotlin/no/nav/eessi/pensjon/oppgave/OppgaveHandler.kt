@@ -116,7 +116,20 @@ class OppgaveHandler(
     override fun finnesOppgavenAlleredeForUID(rinaSakId: String) = !lagringsService.kanHendelsenOpprettes(rinaSakId.plus(LAGRING_IDENT))
     override fun finnesOppgavenAlleredeGJENLEV(rinaSakId: String) = !lagringsService.kanHendelsenOpprettes(rinaSakId.plus(LAGRING_GJENLEV))
 
-    private fun opprettOppgaveMeldingPaaKafkaTopic(melding: OppgaveMelding) {
+
+    private fun opprettOppgaveRuting(sedHendelse: SedHendelse, identifisertePerson : IdentifisertPersonPDL) : Enhet {
+        return oppgaveruting.route(OppgaveRoutingRequest.fra(
+            identifisertePerson,
+            identifisertePerson.fnr!!.getBirthDate(),
+            identifisertePerson.personRelasjon?.saktype,
+            sedHendelse,
+            HendelseType.MOTTATT,
+            null,
+            identifisertePerson.harAdressebeskyttelse!!
+        ))
+    }
+
+  private fun opprettOppgaveMeldingPaaKafkaTopic(melding: OppgaveMelding) {
         val key = MDC.get(X_REQUEST_ID)
         val payload = melding.toJson()
 

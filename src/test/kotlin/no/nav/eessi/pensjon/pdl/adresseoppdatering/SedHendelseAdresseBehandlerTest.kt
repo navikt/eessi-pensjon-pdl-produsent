@@ -53,7 +53,6 @@ class SedHendelseBehandlerTest {
         verify(exactly = 0) { personMottakKlient.opprettPersonopplysning(any()) }
     }
 
-
     @Test
     fun `Gitt en at vi får 400 BAD REQUEST fra PDL så gjør vi ikke retry på prosessen`() {
 

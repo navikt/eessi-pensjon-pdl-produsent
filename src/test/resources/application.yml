@@ -1,8 +1,14 @@
+ENV: 'q2'
+namespace: 'test'
+SPRING_PROFILES_ACTIVE: 'integrationtest'
+
 KAFKA_SEDMOTTATT_TOPIC: 'eessi-basis-sedMottatt-v1'
 KAFKA_SEDMOTTATT_IDENT_GROUP: 'eessi-pensjon-pdl-produsent-group'
 KAFKA_SEDMOTTATT_ADRESSE_GROUP: 'eessi-pensjon-pdl-adresse-group'
 KAFKA_OPPGAVE_TOPIC: 'eessi-pensjon-oppgave-v1'
 KAFKA_OPPGAVE_GROUP: 'eessi-pensjon-pdl-produsent-group'
+SAF_GRAPHQL_URL: ""
+SAF_HENTDOKUMENT_URL: ""
 
 kafka:
   sedMottatt:
@@ -14,10 +20,15 @@ kafka:
   oppgave:
     topic: ${KAFKA_OPPGAVE_TOPIC}
     groupid: ${$KAFKA_OPPGAVE_GROUP}
+  utenlandskAdresse:
+    topic: eessi-basis-sedMottatt-v1
+    groupid: eessi-basis-sedMottatt-v1
+  sedGjenlevMottatt:
+    topic: test
+    groupid: test
 
-namespace: 'test'
-SPRING_PROFILES_ACTIVE: 'integrationtest'
-ENV: 'q2'
+  security.protocol: SSL
+
 NAIS_APP_NAME: eessi-pensjon-pdl-produsent
 
 EUX_RINA_API_V1_URL: http://localhost:${mockserverport}
@@ -27,7 +38,12 @@ oppgave.oppgaver.url: http://localhost:${mockserverport}
 aktoerregister.api.v1.url: http://localhost:${mockserverport}
 norg2_url: http://localhost:${mockserverport}
 kodeverk_url: http://localhost:${mockserverport}
+AZURE_APP_WELL_KNOWN_URL: http://localhost:${mockserverport}
+METRICS_REQUESTFILTER_ENABLE: true
 
 spring:
   main:
     allow-bean-definition-overriding: true
+  profiles:
+    active: 'local-test'
+

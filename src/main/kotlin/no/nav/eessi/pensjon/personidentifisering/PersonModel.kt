@@ -11,11 +11,11 @@ data class IdentifisertPersonPDL(
     override var landkode: String?,
     override var geografiskTilknytning: String?,
     override var personRelasjon: SEDPersonRelasjon?,
-    override val fnr: Fodselsnummer?,
+    override val fnr: Fodselsnummer? = null,
     override var personListe: List<IdentifisertPerson>? = null,
     val uidFraPdl: List<UtenlandskIdentifikasjonsnummer> = emptyList(),
-    val harAdressebeskyttelse: Boolean,
+    val harAdressebeskyttelse: Boolean? = false,
     val erDoed: Boolean = false,
-    val kontaktAdresse: Kontaktadresse?
+    val kontaktAdresse: Kontaktadresse? = null
 
 ) : IdentifisertPerson

@@ -54,7 +54,7 @@ class OppgaveRoutingService(private val norg2Service: Norg2Service) {
             return norg2Service.hentArbeidsfordelingEnhet(norgKlientRequest) ?: enhet
         }
 
-        if (erGydligBuc10eller02(routingRequest.bucType, routingRequest.landkode, routingRequest.sakInformasjon)) {
+        if (erGyldigPBuc10(routingRequest.bucType, routingRequest.landkode, routingRequest.sakInformasjon)) {
             logger.debug("Benytter norg2 for buctype: ${routingRequest.bucType}")
             val personRelasjon = routingRequest.identifisertPerson?.personRelasjon
             val norgKlientRequest = NorgKlientRequest(
@@ -69,8 +69,6 @@ class OppgaveRoutingService(private val norg2Service: Norg2Service) {
         return enhet
     }
 
-    fun erGydligBuc10eller02(bucType: BucType, landkode: String?, sakInformasjon: SakInformasjon?): Boolean {
-        if (bucType == P_BUC_10) return true
-        return bucType == P_BUC_02 && landkode == "NOR" && sakInformasjon?.sakType == SakType.ALDER && sakInformasjon.sakStatus == SakStatus.LOPENDE
-    }
+    fun erGyldigPBuc10(bucType: BucType, landkode: String?, sakInformasjon: SakInformasjon?) =
+        bucType == P_BUC_10 && landkode == "NOR" && sakInformasjon?.sakType == SakType.ALDER && sakInformasjon.sakStatus == SakStatus.LOPENDE.also { logger.info("sakstatus: ${sakInformasjon.sakStatus}") }
 }

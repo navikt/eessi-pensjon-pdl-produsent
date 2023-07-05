@@ -22,7 +22,6 @@ spec:
         - host: eux-rina-api-eessibasis.dev-fss-pub.nais.io
         - host: norg2.dev-fss-pub.nais.io
         - host: saf-q2.dev-fss-pub.nais.io
-
   webproxy: true
   kafka:
     pool: nav-dev
