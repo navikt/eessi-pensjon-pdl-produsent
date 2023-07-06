@@ -49,7 +49,7 @@ internal class OppgaveHandlerTest{
 
         justRun { lagringsService.lagreHendelseMedSakId(any()) }
 
-        oppgaveHandler = OppgaveHandler(kafkaTemplate, lagringsService, safClient)
+        oppgaveHandler = OppgaveHandler(kafkaTemplate, lagringsService, mockk(), safClient)
         oppgaveHandler.initMetrics()
     }
 

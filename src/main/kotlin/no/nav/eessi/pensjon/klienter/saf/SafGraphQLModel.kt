@@ -75,7 +75,7 @@ data class Journalpost(
     val journalfoerendeEnhet: String?,
     val tema: String,
     val dokumenter: List<Dokument>? = null,
-    val behandlingstema: String
+    val behandlingstema: String? = null
 )
 
 data class Dokument(

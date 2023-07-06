@@ -9,6 +9,8 @@ import no.nav.eessi.pensjon.oppgave.Behandlingstema.*
 import no.nav.eessi.pensjon.oppgaverouting.Enhet
 import no.nav.eessi.pensjon.oppgaverouting.Enhet.*
 import no.nav.eessi.pensjon.oppgaverouting.HendelseType
+import no.nav.eessi.pensjon.oppgaverouting.OppgaveRoutingRequest
+import no.nav.eessi.pensjon.oppgaverouting.OppgaveRoutingService
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPersonPDL
 import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.LoggerFactory
@@ -25,6 +27,7 @@ private const val LAGRING_GJENLEV = "_GJENLEV"
 class OppgaveHandler(
     private val oppgaveKafkaTemplate: KafkaTemplate<String, String>,
     private val lagringsService: LagringsService,
+    private val oppgaveruting: OppgaveRoutingService,
     val safClient: SafClient,
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
 ) : OppgaveOppslag {
@@ -67,7 +70,7 @@ class OppgaveHandler(
     private fun opprettOppgave(sedHendelse: SedHendelse, identifisertePerson: IdentifisertPersonPDL, lagringsPathPostfix: String): Boolean {
         return oppgaveForUid.measure {
             return@measure if (!finnesOppgavenAllerede(sedHendelse.rinaSakId.plus(lagringsPathPostfix))) {
-                val oppgaveEnhet = tildeltOppgaveEnhet(identifisertePerson.aktoerId, sedHendelse.rinaSakId, identifisertePerson)
+                val oppgaveEnhet = tildeltOppgaveEnhet(identifisertePerson.aktoerId, sedHendelse, identifisertePerson)
                 val melding = OppgaveMelding(
                     aktoerId = identifisertePerson.aktoerId,
                     filnavn = null,
@@ -89,27 +92,46 @@ class OppgaveHandler(
         }
     }
 
-    private fun tildeltOppgaveEnhet(aktoerId: String, rinaSakId: String, identifisertePerson: IdentifisertPersonPDL): Enhet {
-        val journalpost = hentJournalpostForRinasak(hentRinasakerForAktoerId(aktoerId), rinaSakId)
-        val enhet = journalpost?.journalfoerendeEnhet
-        val behandlingstema = journalpost?.behandlingstema
+    private fun tildeltOppgaveEnhet(aktoerId: String, sedHendelse: SedHendelse, identifisertePerson: IdentifisertPersonPDL): Enhet {
 
-        logger.info("landkode: ${identifisertePerson.landkode} og behandlingstema: $behandlingstema")
-        if (enhet == AUTOMATISK_JOURNALFORING.enhetsNr) {
-            return if (identifisertePerson.landkode == "NO") {
-                when (behandlingstema) {
-                    GJENLEVENDEPENSJON.name, BARNEP.name -> NFP_UTLAND_AALESUND
-                    ALDERSPENSJON.name -> NFP_UTLAND_AALESUND
+        try {
+            val journalpost = hentJournalpostForRinasak(hentRinasakerForAktoerId(aktoerId), sedHendelse.rinaSakId)
+            val enhet = journalpost?.journalfoerendeEnhet
+            val behandlingstema = journalpost?.behandlingstema
+
+            logger.info("landkode: ${identifisertePerson.landkode} og behandlingstema: $behandlingstema")
+            if (enhet == AUTOMATISK_JOURNALFORING.enhetsNr) {
+                return if (identifisertePerson.landkode == "NO") {
+                    when (behandlingstema) {
+                        GJENLEVENDEPENSJON.name, BARNEP.name -> NFP_UTLAND_AALESUND
+                        ALDERSPENSJON.name -> NFP_UTLAND_AALESUND
+                        UFOREPENSJON.name -> UFORE_UTLANDSTILSNITT
+                        else -> Companion.getEnhet(enhet)!!
+                    }
+                } else when (behandlingstema) {
                     UFOREPENSJON.name -> UFORE_UTLANDSTILSNITT
+                    GJENLEVENDEPENSJON.name, BARNEP.name, ALDERSPENSJON.name -> PENSJON_UTLAND
                     else -> Companion.getEnhet(enhet)!!
                 }
-            } else when (behandlingstema) {
-                UFOREPENSJON.name -> UFORE_UTLANDSTILSNITT
-                GJENLEVENDEPENSJON.name, BARNEP.name, ALDERSPENSJON.name -> PENSJON_UTLAND
-                else -> Companion.getEnhet(enhet)!!
             }
+            return Companion.getEnhet(enhet!!)!!
         }
-        return Companion.getEnhet(enhet!!)!!
+        catch (ex :Exception) {
+            logger.info("Henting fra joark feiler, forsøker manuell oppgave-ruting")
+            return opprettOppgaveRuting(sedHendelse, identifisertePerson)
+        }
+    }
+    private fun opprettOppgaveRuting(sedHendelse: SedHendelse, identifisertePerson : IdentifisertPersonPDL) : Enhet {
+        return oppgaveruting.route(
+            OppgaveRoutingRequest.fra(
+            identifisertePerson,
+            identifisertePerson.fnr!!.getBirthDate(),
+            identifisertePerson.personRelasjon?.saktype,
+            sedHendelse,
+            HendelseType.MOTTATT,
+            null,
+            identifisertePerson.harAdressebeskyttelse!!
+        ))
     }
 
     override fun finnesOppgavenAllerede(rinaSakId: String) = !lagringsService.kanHendelsenOpprettes(rinaSakId)
