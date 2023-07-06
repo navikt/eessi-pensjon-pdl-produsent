@@ -51,8 +51,12 @@ class VurderGjenlevOppdateringIdent(
 
         val gjenlevendeFraSed = getGjenlev(sed).also { secureLogger.info("gjenlevende fra sed: $it") }
         val gjenlevendeNorskPin = gjenlevendeFraSed?.person?.pin?.firstOrNull { it.land == "NO" }?.identifikator.also { secureLogger.info("Gjenlevende Norsk pin: $it") }
+
         require((gjenlevendeFraSed == null || gjenlevendeNorskPin == null).not()) {
-            return IngenOppdatering("Seden har ingen gjenlevende")
+            if(gjenlevendeFraSed == null){
+                return IngenOppdatering("Seden har ingen gjenlevende")
+            }
+            return IngenOppdatering("Seden har ingen norsk pin på gjenlevende")
         }
 
         if (gjenlevFdatoErLikGjenlevFnr(gjenlevendeNorskPin, gjenlevendeFraSed))

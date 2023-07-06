@@ -4,7 +4,14 @@ import io.mockk.every
 import io.mockk.mockk
 import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.model.SedType
+import no.nav.eessi.pensjon.eux.model.sed.Adresse
+import no.nav.eessi.pensjon.eux.model.sed.Bruker
+import no.nav.eessi.pensjon.eux.model.sed.EessisakItem
+import no.nav.eessi.pensjon.eux.model.sed.Nav
 import no.nav.eessi.pensjon.eux.model.sed.P2100
+import no.nav.eessi.pensjon.eux.model.sed.P5000
+import no.nav.eessi.pensjon.eux.model.sed.P5000Pensjon
+import no.nav.eessi.pensjon.eux.model.sed.Person
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
@@ -257,6 +264,65 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
         result is OppgaveGjenlev
         assertEquals(result.description, "Det finnes allerede en annen uid fra samme land (oppgave opprettes)")
         assertEquals((result as OppgaveGjenlev).oppgaveData.identifisertPerson.fnr?.value, "11067122781")
+    }
+
+    @Test
+    fun `En SED med gjenlevende som mangler norsk fnr skal ikke sende oppdatering`() {
+
+        every { euxService.hentSed(any(), any()) } returns p5000gjenlevUtenNorskPin()
+
+        val result = identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = "DK"))
+        result is OppgaveGjenlev
+        assertEquals("Seden har ingen norsk pin på gjenlevende", result.description)
+    }
+
+    @Test
+    fun `En SED som mangler gjenlevende skal ikke sende oppdatering`() {
+
+        every { euxService.hentSed(any(), any()) } returns p5000gjenlevUtenNorskPin().copy(
+            p5000Pensjon = null
+        )
+
+        val result = identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = "DK"))
+        result is OppgaveGjenlev
+        assertEquals("Seden har ingen gjenlevende", result.description)
+    }
+
+    fun p5000gjenlevUtenNorskPin(): P5000 {
+        return P5000(
+            type = SedType.P5000,
+            nav = Nav(
+                eessisak = listOf(EessisakItem(
+                    institusjonsid = "UK:UK030",
+                    institusjonsnavn = "Departmentfor Work and Pensions",
+                    saksnummer = "432432432",
+                    land = "GB"
+                )),
+                bruker = Bruker(
+                    person = Person(
+                        pin = listOf(PinItem(
+                            identifikator = "SJ38985B",
+                            land = "GB",
+                        )),
+                        foedselsdato = "1981-19-04",
+                    ),
+                    adresse = Adresse(
+                        by = "Pavlova",
+                        land = "PL",
+
+                    ),
+                ),
+            ),
+            p5000Pensjon = P5000Pensjon(
+                gjenlevende = Bruker(
+                    person = Person(
+                        etternavn = "Pavlova",
+                        fornavn = "Pavel",
+                        foedselsdato = "2006-05-01"
+                    ),
+                )
+            )
+        )
     }
 
     private fun sedMedGjenlevende(gjenlevFNR: String, forsikretFnr: String, gjenlevUid: String, sedType: String): String {
