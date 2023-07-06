@@ -47,7 +47,6 @@ import org.springframework.web.client.RestTemplate
     MockkBean(name = "sedKafkaListenerContainerFactory", classes = [ConcurrentKafkaListenerContainerFactory::class], relaxed = true),
 
 )
-@Disabled
 class EessiApplicationConfigTest {
 
     @Test
