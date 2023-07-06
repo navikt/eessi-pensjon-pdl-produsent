@@ -33,7 +33,7 @@ private const val AKTOER_ID = "123456789351"
 private const val RINA_ID = "74389487"
 
 private const val AUTOMATISK_JOURNALFORENDE_ENHET = "9999"
-private const val BOSATT_NORGE = "NO"
+private const val BOSATT_NORGE = "NOR"
 
 internal class OppgaveHandlerTest{
 
@@ -118,7 +118,7 @@ internal class OppgaveHandlerTest{
         journalfoerendeEnhet = enhet,
         tema = "PEN",
         dokumenter = null,
-        behandlingstema = behandlingstema.name
+        behandlingstema = behandlingstema.kode
     )
 
     @Test

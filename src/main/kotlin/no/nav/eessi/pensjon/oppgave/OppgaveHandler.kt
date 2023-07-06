@@ -101,20 +101,20 @@ class OppgaveHandler(
 
             logger.info("landkode: ${identifisertePerson.landkode} og behandlingstema: $behandlingstema")
             if (enhet == AUTOMATISK_JOURNALFORING.enhetsNr) {
-                return if (identifisertePerson.landkode == "NO") {
-                    when (behandlingstema) {
-                        GJENLEVENDEPENSJON.name, BARNEP.name -> NFP_UTLAND_AALESUND
-                        ALDERSPENSJON.name -> NFP_UTLAND_AALESUND
-                        UFOREPENSJON.name -> UFORE_UTLANDSTILSNITT
-                        else -> Companion.getEnhet(enhet)!!
+                return if (identifisertePerson.landkode == "NOR" ) {
+                    when (Behandlingstema.hentKode(behandlingstema!!)) {
+                        GJENLEVENDEPENSJON, BARNEP -> NFP_UTLAND_AALESUND
+                        ALDERSPENSJON -> NFP_UTLAND_AALESUND
+                        UFOREPENSJON -> UFORE_UTLANDSTILSNITT
+                        else -> Enhet.getEnhet(enhet)!!.also { logger.warn("Enhet er automatisk journalføring, men klarer ikke å route ihht behandlingtema: $behandlingstema") }
                     }
-                } else when (behandlingstema) {
-                    UFOREPENSJON.name -> UFORE_UTLANDSTILSNITT
-                    GJENLEVENDEPENSJON.name, BARNEP.name, ALDERSPENSJON.name -> PENSJON_UTLAND
-                    else -> Companion.getEnhet(enhet)!!
+                } else when (Behandlingstema.hentKode(behandlingstema!!)) {
+                    UFOREPENSJON -> UFORE_UTLANDSTILSNITT
+                    GJENLEVENDEPENSJON, BARNEP, ALDERSPENSJON -> PENSJON_UTLAND
+                    else -> Enhet.getEnhet(enhet)!!.also { logger.warn("Enhet er $enhet, men klarer ikke å route ihht behandlingtema: $behandlingstema") }
                 }
             }
-            return Companion.getEnhet(enhet!!)!!
+            return Enhet.getEnhet(enhet!!)!!
         }
         catch (ex :Exception) {
             logger.info("Henting fra joark feiler, forsøker manuell oppgave-ruting")
