@@ -68,7 +68,6 @@ class SedListenerIdentIT : IntegrationBase() {
         sedListenerIdent.consumeSedMottatt(message, cr, acknowledgment)
     }
 
-    @Disabled
     @Test
     fun `En sed hendelse uten UID vil resultere i ingen oppdatering`() {
         every { norg2.hentArbeidsfordelingEnhet(any()) } returns Enhet.ID_OG_FORDELING
