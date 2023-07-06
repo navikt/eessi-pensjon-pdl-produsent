@@ -35,45 +35,29 @@ class SedHendelseGjenlevIdentBehandler(
 
         val result = vurderGjenlevOppdateringIdent.vurderUtenlandskGjenlevIdent(sedHendelse)
 
-        log(result)
         when (result) {
             is Oppdatering -> {
                 //personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
                 logger.info("Her kommer det en opprettelse av personopplysning")
             }
-            is Oppgave -> {
-                //oppgaveHandler.opprettOppgave(result.oppgaveData)
-                logger.info("Her kommer det en opprettelse av oppgave for UID")
-            }
             is OppgaveGjenlev -> {
                 //oppgaveHandler.opprettOppgave(result.oppgaveData)
+                secureLogger.debug("OppgaveGjenlev:\n${result.toJson()}")
                 logger.info("Her kommer det en opprettelse av oppgave for Gjenlev")
             }
 
             is IngenOppdatering -> {
-                logger.info("Ingen oppgave")
+                logger.info("Ingen oppgave eller oppdatering")
+            }
+            else -> {
+                secureLogger.debug("Ukjent oppdatering/oppgave:\n${result.toJson()}")
+                logger.error("Her skal kun lages oppgaver eller oppdatering for gjenlevende")
             }
         }
 
         count(result.metricTagValue)
     }
 
-    private fun log(result: Result) {
-        when (result) {
-            is Oppdatering -> {
-                secureLogger.debug("Oppdatering:\n${result.toJson()}")
-                logger.info("Oppdatering(description=${result.description})")
-            }
-
-            is IngenOppdatering -> {
-                logger.info(result.toString())
-            }
-
-            else -> {
-                logger.info("Oppgave(description=${result.description}")
-            }
-        }
-    }
 
     private fun testHendelseIProd(sedHendelse: SedHendelse) =
             profile == "prod" && sedHendelse.avsenderId in listOf("NO:NAVAT05", "NO:NAVAT07")
