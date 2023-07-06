@@ -7,15 +7,8 @@ import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.oppgave.OppgaveOppslag
-import no.nav.eessi.pensjon.pdl.AKTOERID
-import no.nav.eessi.pensjon.pdl.DNR
-import no.nav.eessi.pensjon.pdl.FINSK_FNR
-import no.nav.eessi.pensjon.pdl.FNR
-import no.nav.eessi.pensjon.pdl.IdentBaseTest
-import no.nav.eessi.pensjon.pdl.OppgaveModel.IngenOppdatering
-import no.nav.eessi.pensjon.pdl.OppgaveModel.Oppdatering
-import no.nav.eessi.pensjon.pdl.OppgaveModel.Oppgave
-import no.nav.eessi.pensjon.pdl.SVENSK_FNR
+import no.nav.eessi.pensjon.pdl.*
+import no.nav.eessi.pensjon.pdl.OppgaveModel.*
 import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
@@ -78,7 +71,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
     @Test
     fun `Gitt at bruker ikke har norsk pin i SED saa resulterer det i en NoUpdate`() {
-        every { euxService.hentSed(any(), any()) } returns sed(id = SVENSK_FNR, land = "SE")
+        every { euxService.hentSed(any(), any()) } returns sed(pinItem = listOf(PinItem(identifikator = SVENSK_FNR, land = "SE")))
 
         assertEquals(
             IngenOppdatering("Bruker har ikke norsk pin i SED"),
@@ -88,7 +81,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
     @Test
     fun `Gitt at det er en Sed uten utenlandsk ident saa blir det ingen oppdatering`() {
-        every { euxService.hentSed(any(), any()) } returns sed(id = FNR, land = "NO")
+        every { euxService.hentSed(any(), any()) } returns sed(pinItem = listOf(PinItem(identifikator = FNR, land = "NO")))
 
         assertEquals(
             IngenOppdatering(description="Bruker har ikke utenlandsk ident fra avsenderland (SE)", metricTagValueOverride="Bruker har ikke utenlandsk ident fra avsenderland"),
@@ -98,7 +91,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
     @Test
     fun `Gitt at Seden inneholder en uid der avsenderland ikke er det samme som uidland da blir det ingen oppdatering`() {
-        every { euxService.hentSed(any(), any()) } returns sed(id = FNR, land = "PL")
+        every { euxService.hentSed(any(), any()) } returns sed(pinItem = listOf(PinItem(identifikator = FNR, land = "PL")))
         every { personService.hentPerson(NorskIdent(FNR)) } returns personFraPDL(id = FNR)
 
         assertEquals(
@@ -110,7 +103,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
     @Test
     fun `Gitt at vi har en SedHendelse som mangler avsenderNavn saa skal vi faa en NoUpdate som resultat`() {
 
-        every { euxService.hentSed(any(), any()) } returns sed(id = FNR, land = "PL")
+        every { euxService.hentSed(any(), any()) } returns sed(pinItem = listOf(PinItem(identifikator = FNR, land = "PL")))
         every { personService.hentPerson(NorskIdent(FNR)) } returns personFraPDL(id = FNR)
 
         assertEquals(
@@ -126,7 +119,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
         every { euxService.hentSed(any(), any()) } returns
                 sed(
-                    id = FNR, land = "NO", pinItem = listOf(
+                    pinItem = listOf(
                         PinItem(identifikator = "6549876543168765", land = "FI"),
                         PinItem(identifikator = FNR, land = "NO")
                     )
@@ -146,7 +139,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
         every { euxService.hentSed(any(), any()) } returns
                 sed(
-                    id = FNR, land = "NO", pinItem = listOf(
+                    pinItem = listOf(
                         PinItem(identifikator = "6549876543168765", land = "SE"), // validerer ikke
                         PinItem(identifikator = SVENSK_FNR, land = "SE"), // validerer
                         PinItem(identifikator = SVENSK_FNR, land = "SE"), // validerer
@@ -168,7 +161,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
         every { euxService.hentSed(any(), any()) } returns
                 sed(
-                    id = FNR, land = "NO", pinItem = listOf(
+                    pinItem = listOf(
                         PinItem(identifikator = "10017729135", land = "DK"),
                         PinItem(identifikator = "100177-2913", land = "DK"),
                         PinItem(identifikator = FNR, land = "NO")
@@ -191,10 +184,10 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
         every { euxService.hentSed(any(), any()) } returns
                 sed(
-                        id = FNR, land = "NO", pinItem = listOf(
-                        PinItem(identifikator = "1001772913", land = "DK"),
-                        PinItem(identifikator = FNR, land = "NO")
-                )
+                    pinItem = listOf(
+                    PinItem(identifikator = "1001772913", land = "DK"),
+                    PinItem(identifikator = FNR, land = "NO")
+            )
                 )
         every { personService.hentPerson(NorskIdent(FNR)) } returns personFraPDL(id = FNR)
 
@@ -215,7 +208,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
             .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer(FINSK_FNR).copy(utstederland = "FIN")))
         every { euxService.hentSed(any(), any()) } returns
                 sed(
-                    id = FNR, land = "NO", pinItem = listOf(
+                    pinItem = listOf(
                         PinItem(identifikator = FINSK_FNR, land = "FI"),
                         PinItem(identifikator = FNR, land = "NO")
                     )
@@ -232,7 +225,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
         every { personService.hentPerson(NorskIdent(FNR)) } throws PersonoppslagException("pdl person finnes ikke", "not_found")
         every { euxService.hentSed(any(), any()) } returns
                 sed(
-                    id = FNR, land = "NO", pinItem = listOf(
+                    pinItem = listOf(
                         PinItem(identifikator = FINSK_FNR, land = "FI"),
                         PinItem(identifikator = FNR, land = "NO")
                     )
@@ -249,7 +242,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
         every { personService.hentPerson(NorskIdent(FNR)) } throws NullPointerException("pdl kaster NPE")
         every { euxService.hentSed(any(), any()) } returns
                 sed(
-                    id = FNR, land = "NO", pinItem = listOf(
+                    pinItem = listOf(
                         PinItem(identifikator = FINSK_FNR, land = "FI"),
                         PinItem(identifikator = FNR, land = "NO")
                     )
@@ -277,7 +270,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
         every { euxService.hentSed(any(), any()) } returns
                 sed(
-                    id = FNR, land = "NO", pinItem = listOf(
+                    pinItem = listOf(
                         PinItem(identifikator = uid, land = "SE"),
                         PinItem(identifikator = FNR, land = "NO")
                     )
@@ -300,7 +293,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
         every { euxService.hentSed(any(), any()) } returns
                 sed(
-                    id = FNR, land = "NO", pinItem = listOf(
+                    pinItem = listOf(
                         PinItem(identifikator = "1951 06 06-22 34", land = "SE"),
                         PinItem(identifikator = FNR, land = "NO")
                     )
@@ -327,7 +320,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
         every { euxService.hentSed(any(), any()) } returns
                 sed(
-                    id = FNR, land = "NO", pinItem = listOf(
+                    pinItem = listOf(
                         PinItem(identifikator = "5 12 020-2234", land = "SE"),
                         PinItem(identifikator = FNR, land = "NO")
                     )
@@ -354,7 +347,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
         every { euxService.hentSed(any(), any()) } returns
                 sed(
-                    id = FNR, land = "NO", pinItem = listOf(
+                    pinItem = listOf(
                         PinItem(identifikator = "5 12 020-2234", land = "SE"),
                         PinItem(identifikator = FNR, land = "NO")
                     )
@@ -377,7 +370,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
         every { euxService.hentSed(any(), any()) } returns
                 sed(
-                    id = FNR, land = "NO", pinItem = listOf(
+                    pinItem = listOf(
                         PinItem(identifikator = "5 12 020-1234", land = "SE"),
                         PinItem(identifikator = FNR, land = "NO")
                     )
@@ -398,7 +391,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
         every { euxService.hentSed(any(), any()) } returns
                 sed(
-                    id = FNR, land = "NO", pinItem = listOf(
+                    pinItem = listOf(
                         PinItem(identifikator = "5 12 020-1234", land = "SE"),
                         PinItem(identifikator = FNR, land = "NO")
                     )
@@ -420,7 +413,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
         every { euxService.hentSed(any(), any()) } returns
                 sed(
-                    id = FNR, land = "NO", pinItem = listOf(
+                    pinItem = listOf(
                         PinItem(identifikator = "5 12 020-1234", land = "SE"),
                         PinItem(identifikator = FNR, land = "NO")
                     )
@@ -441,7 +434,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
         every { euxService.hentSed(any(), any()) } returns
                 sed(
-                    id = DNR, land = "NO", pinItem = listOf(
+                    pinItem = listOf(
                         PinItem(identifikator = "5 12 020-1234", land = "SE"),
                         PinItem(identifikator = DNR, land = "NO")
                     )

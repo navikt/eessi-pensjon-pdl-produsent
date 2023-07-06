@@ -9,11 +9,8 @@ import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.oppgave.OppgaveOppslag
-import no.nav.eessi.pensjon.pdl.AKTOERID
-import no.nav.eessi.pensjon.pdl.FNR
-import no.nav.eessi.pensjon.pdl.IdentBaseTest
+import no.nav.eessi.pensjon.pdl.*
 import no.nav.eessi.pensjon.pdl.OppgaveModel.*
-import no.nav.eessi.pensjon.pdl.SOME_FNR
 import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
@@ -78,10 +75,44 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
                 )
 
         val sed = sedGjenlevende(
-            id = FNR, land = "NO",
             pinItem = listOf(
                 PinItem(identifikator = "5 12 020-1234", land = "SE"),
                 PinItem(identifikator = FNR, land = "NO")
+            ),
+            fodselsdato = "1971-06-11",
+        )
+        val p2100 = P2100(SedType.P2100, nav = sed.nav, pensjon = sed.pensjon)
+        every { euxService.hentSed(any(), any()) } returns p2100
+
+        assertEquals(
+            Oppdatering(
+                "Innsending av endringsmelding",
+                pdlEndringsMelding(FNR, utstederland = "SWE")
+            ),
+            (identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = "SE")))
+        )
+    }
+
+
+    @Test
+    fun `Gitt at vi har en endringsmelding med en svensk uid, med riktig format men norsk fnr er ikke på stadard format saa skal det opprettes en endringsmelding med formatert norsk fnr`() {
+        every { personService.hentPerson(NorskIdent(FNR)) } returns
+                personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT)))
+
+        every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns
+                personFraPDL(id = SOME_FNR).copy(
+                    identer = listOf(
+                        IdentInformasjon(
+                            SOME_FNR,
+                            IdentGruppe.FOLKEREGISTERIDENT
+                        )
+                    ),
+                )
+
+        val sed = sedGjenlevende(
+            pinItem = listOf(
+                PinItem(identifikator = "5 12 020-1234", land = "SE"),
+                PinItem(identifikator = FNR_MED_MELLOMROM, land = "NO")
             ),
             fodselsdato = "1971-06-11",
         )
@@ -113,7 +144,6 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
                 )
 
         val sed = sedGjenlevende(
-            id = FNR, land = "NO",
             pinItem = listOf(
                 PinItem(identifikator = "5 12 020-1234", land = "SE"),
                 PinItem(identifikator = FNR, land = "NO")

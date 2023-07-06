@@ -15,11 +15,12 @@ import java.time.LocalDateTime
 
 
 const val FNR = "11067122781"
- const val DNR = "51077403071"
- const val SVENSK_FNR = "512020-1234"
- const val FINSK_FNR = "130177-308T"
- const val SOME_FNR = "11077403071"
- const val AKTOERID = "32165498732"
+const val FNR_MED_MELLOMROM = "110671 22781"
+const val DNR = "51077403071"
+const val SVENSK_FNR = "512020-1234"
+const val FINSK_FNR = "130177-308T"
+const val SOME_FNR = "11077403071"
+const val AKTOERID = "32165498732"
 open class IdentBaseTest {
     fun pdlEndringsMelding(
         fnr: String,
@@ -76,12 +77,12 @@ open class IdentBaseTest {
         avsenderNavn = avsenderNavn
     )
 
-    fun sed(id: String = SOME_FNR,
-            brukersAdresse: Adresse? = null,
-            land: String?,
-            pinItem: List<PinItem>? = listOf(PinItem(land = land, identifikator = id)),
-            pensjon: Pensjon = Pensjon(),
-            sedType: SedType = SedType.P2100) =SED (
+    fun sed(
+        brukersAdresse: Adresse? = null,
+        pinItem: List<PinItem>?,
+        pensjon: Pensjon = Pensjon(),
+        sedType: SedType = SedType.P2100
+    ) = SED (
         type = sedType,
         sedGVer = null,
         sedVer = null,
@@ -116,14 +117,11 @@ open class IdentBaseTest {
     )
 
     fun sedGjenlevende(
-        id: String = SOME_FNR,
         brukersAdresse: Adresse? = null,
-        land: String?,
-        pinItem: List<PinItem>? = listOf(PinItem(land = land, identifikator = id)),
+        pinItem: List<PinItem>?,
         fodselsdato: String?
     ) = sed(
-        id, brukersAdresse, land, pinItem,
-        Pensjon(
+        brukersAdresse, pinItem, Pensjon(
             gjenlevende = Bruker(
                 mor = null,
                 far = null,

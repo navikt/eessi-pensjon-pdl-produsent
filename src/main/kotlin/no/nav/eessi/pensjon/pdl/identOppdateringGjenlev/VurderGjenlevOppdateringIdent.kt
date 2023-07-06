@@ -137,7 +137,7 @@ class VurderGjenlevOppdateringIdent(
         return Oppdatering(
             "Innsending av endringsmelding",
             pdlEndringOpplysning(
-                gjenlevNorskIdent,
+                normaliserNorskPin(gjenlevNorskIdent),
                 uidGjenlevendeFraSed,
                 sedHendelse.avsenderNavn!!
             ),
