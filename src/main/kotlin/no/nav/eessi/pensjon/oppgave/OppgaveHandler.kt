@@ -5,9 +5,15 @@ import no.nav.eessi.pensjon.klienter.saf.Journalpost
 import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.lagring.LagringsService
 import no.nav.eessi.pensjon.metrics.MetricsHelper
-import no.nav.eessi.pensjon.oppgave.Behandlingstema.*
+import no.nav.eessi.pensjon.oppgave.Behandlingstema.ALDERSPENSJON
+import no.nav.eessi.pensjon.oppgave.Behandlingstema.BARNEP
+import no.nav.eessi.pensjon.oppgave.Behandlingstema.GJENLEVENDEPENSJON
+import no.nav.eessi.pensjon.oppgave.Behandlingstema.UFOREPENSJON
 import no.nav.eessi.pensjon.oppgaverouting.Enhet
-import no.nav.eessi.pensjon.oppgaverouting.Enhet.*
+import no.nav.eessi.pensjon.oppgaverouting.Enhet.AUTOMATISK_JOURNALFORING
+import no.nav.eessi.pensjon.oppgaverouting.Enhet.NFP_UTLAND_AALESUND
+import no.nav.eessi.pensjon.oppgaverouting.Enhet.PENSJON_UTLAND
+import no.nav.eessi.pensjon.oppgaverouting.Enhet.UFORE_UTLANDSTILSNITT
 import no.nav.eessi.pensjon.oppgaverouting.HendelseType
 import no.nav.eessi.pensjon.oppgaverouting.OppgaveRoutingRequest
 import no.nav.eessi.pensjon.oppgaverouting.OppgaveRoutingService
@@ -71,10 +77,15 @@ class OppgaveHandler(
         return oppgaveForUid.measure {
             return@measure if (!finnesOppgavenAllerede(sedHendelse.rinaSakId.plus(lagringsPathPostfix))) {
                 val oppgaveEnhet = tildeltOppgaveEnhet(identifisertePerson.aktoerId, sedHendelse, identifisertePerson)
+
+                require((oppgaveEnhet != AUTOMATISK_JOURNALFORING)) {
+                    throw RuntimeException("TildeltEnhetsnr kan ikke være automatisk journalføring")
+                }
+
                 val melding = OppgaveMelding(
                     aktoerId = identifisertePerson.aktoerId,
-                    filnavn = null,
-                    sedType = null,
+                    filnavn = sedHendelse.sedType?.beskrivelse,
+                    sedType = sedHendelse.sedType,
                     tildeltEnhetsnr = oppgaveEnhet,
                     rinaSakId = sedHendelse.rinaSakId,
                     hendelseType = HendelseType.MOTTATT,
@@ -106,22 +117,24 @@ class OppgaveHandler(
                         GJENLEVENDEPENSJON, BARNEP -> NFP_UTLAND_AALESUND
                         ALDERSPENSJON -> NFP_UTLAND_AALESUND
                         UFOREPENSJON -> UFORE_UTLANDSTILSNITT
-                        else -> Enhet.getEnhet(enhet)!!.also { logger.warn("Enhet er automatisk journalføring, men klarer ikke å route ihht behandlingtema: $behandlingstema") }
+                        else -> opprettOppgaveRuting(sedHendelse, identifisertePerson)
                     }
                 } else when (Behandlingstema.hentKode(behandlingstema!!)) {
                     UFOREPENSJON -> UFORE_UTLANDSTILSNITT
                     GJENLEVENDEPENSJON, BARNEP, ALDERSPENSJON -> PENSJON_UTLAND
-                    else -> Enhet.getEnhet(enhet)!!.also { logger.warn("Enhet er $enhet, men klarer ikke å route ihht behandlingtema: $behandlingstema") }
+                    else -> opprettOppgaveRuting(sedHendelse, identifisertePerson)
                 }
             }
             return Enhet.getEnhet(enhet!!)!!
         }
         catch (ex :Exception) {
-            logger.info("Henting fra joark feiler, forsøker manuell oppgave-ruting")
+            logger.warn("Henting fra joark feiler, forsøker manuell oppgave-ruting")
             return opprettOppgaveRuting(sedHendelse, identifisertePerson)
         }
+
     }
     private fun opprettOppgaveRuting(sedHendelse: SedHendelse, identifisertePerson : IdentifisertPersonPDL) : Enhet {
+        logger.warn("Routing ihht tildeltOppgaveEnhet fungerer ikke; prøver oppgaverouting")
         return oppgaveruting.route(
             OppgaveRoutingRequest.fra(
             identifisertePerson,

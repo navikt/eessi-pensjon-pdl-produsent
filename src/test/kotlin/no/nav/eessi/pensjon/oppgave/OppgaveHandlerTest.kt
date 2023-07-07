@@ -7,12 +7,17 @@ import io.mockk.slot
 import no.nav.eessi.pensjon.eux.model.BucType
 import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.SedType
-import no.nav.eessi.pensjon.klienter.saf.*
+import no.nav.eessi.pensjon.klienter.saf.Data
+import no.nav.eessi.pensjon.klienter.saf.DokumentoversiktBruker
+import no.nav.eessi.pensjon.klienter.saf.HentMetadataResponse
+import no.nav.eessi.pensjon.klienter.saf.Journalpost
+import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.lagring.LagringsService
 import no.nav.eessi.pensjon.oppgave.Behandlingstema.ALDERSPENSJON
 import no.nav.eessi.pensjon.oppgave.Behandlingstema.BARNEP
 import no.nav.eessi.pensjon.oppgaverouting.Enhet
 import no.nav.eessi.pensjon.oppgaverouting.Enhet.NFP_UTLAND_AALESUND
+import no.nav.eessi.pensjon.oppgaverouting.OppgaveRoutingService
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPersonPDL
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Relasjon
 import no.nav.eessi.pensjon.personoppslag.pdl.model.SEDPersonRelasjon
@@ -35,11 +40,12 @@ private const val RINA_ID = "74389487"
 private const val AUTOMATISK_JOURNALFORENDE_ENHET = "9999"
 private const val BOSATT_NORGE = "NOR"
 
-internal class OppgaveHandlerTest{
+internal class OppgaveHandlerTest {
 
-    private val kafkaTemplate  = mockk<KafkaTemplate<String, String>>()
+    private val kafkaTemplate = mockk<KafkaTemplate<String, String>>()
     private val lagringsService = mockk<LagringsService>()
     private val safClient = mockk<SafClient>()
+    private var oppgaveRoutingService = OppgaveRoutingService(mockk(relaxed = true))
     lateinit var oppgaveHandler: OppgaveHandler
 
     @BeforeEach
@@ -49,7 +55,7 @@ internal class OppgaveHandlerTest{
 
         justRun { lagringsService.lagreHendelseMedSakId(any()) }
 
-        oppgaveHandler = OppgaveHandler(kafkaTemplate, lagringsService, mockk(), safClient)
+        oppgaveHandler = OppgaveHandler(kafkaTemplate, lagringsService, oppgaveRoutingService, safClient)
         oppgaveHandler.initMetrics()
     }
 
@@ -80,11 +86,14 @@ internal class OppgaveHandlerTest{
     }
 
     @ParameterizedTest
-    @EnumSource(value = Enhet::class,
+    @EnumSource(
+        value = Enhet::class,
         names = ["UGYLDIG_ARKIV_TYPE", "OKONOMI_PENSJON", "DISKRESJONSKODE", "AUTOMATISK_JOURNALFORING"],
         mode = EnumSource.Mode.EXCLUDE
     )
-    fun `Gitt at vi får inn en P2100 med gjenlevende som ikke er bosatt Norge så skal vi route gjenlevUid oppgave til 0001 PENSJON UTLAND`(enhet: Enhet) {
+    fun `Gitt at vi får inn en P2100 med gjenlevende som ikke er bosatt Norge så skal vi route gjenlevUid oppgave til 0001 PENSJON UTLAND`(
+        enhet: Enhet
+    ) {
         val identifisertPerson = identifisertPerson(landkode = BOSATT_NORGE)
         val oppgaveData = OppgaveDataGjenlevUID(enSedHendelse(SedType.P2200, BucType.P_BUC_02), identifisertPerson)
 
@@ -139,19 +148,20 @@ internal class OppgaveHandlerTest{
         oppgaveHandler.opprettOppgave(oppgave)
 
         val forventetMelding = """{
-          "sedType" : null,
+          "sedType" : "P2100",
           "journalpostId" : null,
           "tildeltEnhetsnr" : "0001",
           "aktoerId" : "123456789351",
           "rinaSakId" : "74389487",
           "hendelseType" : "MOTTATT",
-          "filnavn" : null,
+          "filnavn" : "Krav om gjenlevendepensjon",
           "oppgaveType" : "PDL"
         }""".trimIndent()
 
         JSONAssert.assertEquals(forventetMelding, meldingSlot.captured, false)
 
     }
+
     fun enSedHendelse(sedType: SedType, bucType: BucType) = SedHendelse(
         sektorKode = "P",
         bucType = bucType,

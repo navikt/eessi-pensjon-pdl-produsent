@@ -55,6 +55,8 @@ class SafClient(private val safGraphQlOidcRestTemplate: RestTemplate,
                         httpEntity,
                         String::class.java)
 
+                logger.info("Response fra journalføring: ${response.body}")
+
                 mapJsonToAny(response.body!!)
 
             } catch (ce: HttpClientErrorException) {
