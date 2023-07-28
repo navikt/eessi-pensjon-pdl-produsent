@@ -3,13 +3,14 @@ package no.nav.eessi.pensjon.pdl.identoppdatering
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
 import io.mockk.verify
-import no.nav.eessi.pensjon.eux.model.BucType.*
+import no.nav.eessi.pensjon.eux.model.BucType.P_BUC_01
 import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.SedType
-import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.oppgave.OppgaveDataUID
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
-import no.nav.eessi.pensjon.pdl.OppgaveModel.*
+import no.nav.eessi.pensjon.pdl.OppgaveModel.Oppdatering
+import no.nav.eessi.pensjon.pdl.OppgaveModel.Oppgave
+import no.nav.eessi.pensjon.pdl.PdlEndringOpplysning
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPersonPDL
 import no.nav.eessi.pensjon.utils.toJson

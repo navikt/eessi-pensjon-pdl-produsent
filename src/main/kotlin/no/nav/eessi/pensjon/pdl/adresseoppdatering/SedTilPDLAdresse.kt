@@ -3,8 +3,8 @@ package no.nav.eessi.pensjon.pdl.adresseoppdatering
 import no.nav.eessi.pensjon.eux.model.sed.Adresse
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.kodeverk.LandkodeException
-import no.nav.eessi.pensjon.models.EndringsmeldingKontaktAdresse
-import no.nav.eessi.pensjon.models.EndringsmeldingUtenlandskAdresse
+import no.nav.eessi.pensjon.pdl.EndringsmeldingKontaktAdresse
+import no.nav.eessi.pensjon.pdl.EndringsmeldingUtenlandskAdresse
 import no.nav.eessi.pensjon.pdl.adresseoppdatering.AdresseValidering.erGyldigAdressenavnNummerEllerBygningEtg
 import no.nav.eessi.pensjon.pdl.adresseoppdatering.AdresseValidering.erGyldigByStedEllerRegion
 import no.nav.eessi.pensjon.pdl.adresseoppdatering.AdresseValidering.erGyldigPostKode

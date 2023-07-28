@@ -1,5 +1,7 @@
 package no.nav.eessi.pensjon.models
 
+import no.nav.eessi.pensjon.pdl.EndringsmeldingKontaktAdresse
+import no.nav.eessi.pensjon.pdl.EndringsmeldingUtenlandskAdresse
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
 import org.junit.jupiter.api.Assertions.assertEquals

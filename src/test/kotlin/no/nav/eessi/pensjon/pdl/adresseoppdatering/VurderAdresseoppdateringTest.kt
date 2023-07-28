@@ -12,13 +12,13 @@ import no.nav.eessi.pensjon.eux.model.sed.Pensjon
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
-import no.nav.eessi.pensjon.models.EndringsmeldingKontaktAdresse
-import no.nav.eessi.pensjon.models.EndringsmeldingUtenlandskAdresse
-import no.nav.eessi.pensjon.models.PdlEndringOpplysning
-import no.nav.eessi.pensjon.models.Personopplysninger
+import no.nav.eessi.pensjon.pdl.EndringsmeldingKontaktAdresse
+import no.nav.eessi.pensjon.pdl.EndringsmeldingUtenlandskAdresse
 import no.nav.eessi.pensjon.pdl.OppgaveModel.IngenOppdatering
 import no.nav.eessi.pensjon.pdl.OppgaveModel.Oppdatering
+import no.nav.eessi.pensjon.pdl.PdlEndringOpplysning
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
+import no.nav.eessi.pensjon.pdl.Personopplysninger
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
 import no.nav.eessi.pensjon.personoppslag.pdl.model.AdressebeskyttelseGradering

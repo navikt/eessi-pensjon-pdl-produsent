@@ -1,9 +1,11 @@
 package no.nav.eessi.pensjon.models
 
+import no.nav.eessi.pensjon.pdl.EndringsmeldingUID
+import no.nav.eessi.pensjon.pdl.PdlEndringOpplysning
+import no.nav.eessi.pensjon.pdl.Personopplysninger
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
 import no.nav.eessi.pensjon.utils.mapAnyToJson
-import no.nav.eessi.pensjon.utils.toJson
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

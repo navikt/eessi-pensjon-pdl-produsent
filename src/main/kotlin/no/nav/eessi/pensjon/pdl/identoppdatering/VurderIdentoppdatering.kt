@@ -6,12 +6,12 @@ import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.sed.Bruker
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
-import no.nav.eessi.pensjon.models.EndringsmeldingUID
-import no.nav.eessi.pensjon.models.PdlEndringOpplysning
-import no.nav.eessi.pensjon.models.Personopplysninger
 import no.nav.eessi.pensjon.oppgave.OppgaveDataUID
 import no.nav.eessi.pensjon.oppgave.OppgaveOppslag
+import no.nav.eessi.pensjon.pdl.EndringsmeldingUID
 import no.nav.eessi.pensjon.pdl.OppgaveModel
+import no.nav.eessi.pensjon.pdl.PdlEndringOpplysning
+import no.nav.eessi.pensjon.pdl.Personopplysninger
 import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
 import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPersonPDL

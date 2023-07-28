@@ -1,4 +1,4 @@
-package no.nav.eessi.pensjon.models
+package no.nav.eessi.pensjon.pdl
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonSubTypes

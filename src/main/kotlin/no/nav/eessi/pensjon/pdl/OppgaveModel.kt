@@ -1,6 +1,5 @@
 package no.nav.eessi.pensjon.pdl;
 
-import no.nav.eessi.pensjon.models.PdlEndringOpplysning
 import no.nav.eessi.pensjon.oppgave.OppgaveData
 
 open class OppgaveModel {

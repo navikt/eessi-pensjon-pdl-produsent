@@ -5,8 +5,8 @@ import io.mockk.mockk
 import no.nav.eessi.pensjon.eux.model.sed.Adresse
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.kodeverk.LandkodeException
-import no.nav.eessi.pensjon.models.EndringsmeldingKontaktAdresse
-import no.nav.eessi.pensjon.models.EndringsmeldingUtenlandskAdresse
+import no.nav.eessi.pensjon.pdl.EndringsmeldingKontaktAdresse
+import no.nav.eessi.pensjon.pdl.EndringsmeldingUtenlandskAdresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue

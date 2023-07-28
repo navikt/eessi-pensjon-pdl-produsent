@@ -5,11 +5,11 @@ import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.sed.Adresse
 import no.nav.eessi.pensjon.eux.model.sed.Bruker
 import no.nav.eessi.pensjon.eux.model.sed.SED
-import no.nav.eessi.pensjon.models.EndringsmeldingKontaktAdresse
-import no.nav.eessi.pensjon.models.EndringsmeldingUtenlandskAdresse
-import no.nav.eessi.pensjon.models.PdlEndringOpplysning
-import no.nav.eessi.pensjon.models.Personopplysninger
+import no.nav.eessi.pensjon.pdl.EndringsmeldingKontaktAdresse
+import no.nav.eessi.pensjon.pdl.EndringsmeldingUtenlandskAdresse
 import no.nav.eessi.pensjon.pdl.OppgaveModel
+import no.nav.eessi.pensjon.pdl.PdlEndringOpplysning
+import no.nav.eessi.pensjon.pdl.Personopplysninger
 import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
