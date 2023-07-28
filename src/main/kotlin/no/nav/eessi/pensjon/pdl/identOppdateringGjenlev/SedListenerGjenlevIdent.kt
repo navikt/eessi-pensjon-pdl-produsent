@@ -39,17 +39,20 @@ class SedListenerGjenlevIdent(
         MDC.putCloseable("x_request_id", UUID.randomUUID().toString()).use {
             consumeIncomingSed.measure {
                 logger.info("SedGjenlevMottatt i partisjon: ${cr.partition()}, med offset: ${cr.offset()}")
-                try {
+                runCatching {
                     behandleIdentHendelse.behandlenGjenlevHendelse(hendelse)
-                    acknowledgment.acknowledge()
+                }.onSuccess {
                     logger.info("Acket sedGjenlevMottatt melding med offset: ${cr.offset()} i partisjon ${cr.partition()}")
+                    acknowledgment.acknowledge()
                     latch.countDown()
-                } catch (ex: Exception) {
-                    logger.error("Noe gikk galt under behandling av SED-hendelse", ex)
+
+                }.onFailure {
+                    logger.error("Noe gikk galt under behandling av SED-hendelse", it)
                     secureLogger.info("Noe gikk galt under behandling av SED-hendelse:\n$hendelse")
-                    throw ex
+                    throw it
                 }
             }
+
         }
     }
 }
