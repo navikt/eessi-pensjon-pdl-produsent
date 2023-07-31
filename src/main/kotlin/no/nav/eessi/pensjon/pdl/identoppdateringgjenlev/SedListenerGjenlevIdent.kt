@@ -1,4 +1,4 @@
-package no.nav.eessi.pensjon.pdl.identOppdateringGjenlev
+package no.nav.eessi.pensjon.pdl.identoppdateringgjenlev
 
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import org.apache.kafka.clients.consumer.ConsumerRecord

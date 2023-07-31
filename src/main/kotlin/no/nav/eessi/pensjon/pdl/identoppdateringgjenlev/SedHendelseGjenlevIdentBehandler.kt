@@ -1,9 +1,11 @@
-package no.nav.eessi.pensjon.pdl.identOppdateringGjenlev
+package no.nav.eessi.pensjon.pdl.identoppdateringgjenlev
 
 import io.micrometer.core.instrument.Metrics
 import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
-import no.nav.eessi.pensjon.pdl.OppgaveModel.*
+import no.nav.eessi.pensjon.pdl.OppgaveModel.IngenOppdatering
+import no.nav.eessi.pensjon.pdl.OppgaveModel.Oppdatering
+import no.nav.eessi.pensjon.pdl.OppgaveModel.OppgaveGjenlev
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson

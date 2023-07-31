@@ -1,4 +1,4 @@
-package no.nav.eessi.pensjon.pdl.identOppdateringGjenlev
+package no.nav.eessi.pensjon.pdl.identoppdateringgjenlev
 
 import io.mockk.every
 import io.mockk.mockk
@@ -16,8 +16,14 @@ import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.oppgave.OppgaveOppslag
-import no.nav.eessi.pensjon.pdl.*
-import no.nav.eessi.pensjon.pdl.OppgaveModel.*
+import no.nav.eessi.pensjon.pdl.AKTOERID
+import no.nav.eessi.pensjon.pdl.FNR
+import no.nav.eessi.pensjon.pdl.FNR_MED_MELLOMROM
+import no.nav.eessi.pensjon.pdl.IdentBaseTest
+import no.nav.eessi.pensjon.pdl.OppgaveModel.IngenOppdatering
+import no.nav.eessi.pensjon.pdl.OppgaveModel.Oppdatering
+import no.nav.eessi.pensjon.pdl.OppgaveModel.OppgaveGjenlev
+import no.nav.eessi.pensjon.pdl.SOME_FNR
 import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe

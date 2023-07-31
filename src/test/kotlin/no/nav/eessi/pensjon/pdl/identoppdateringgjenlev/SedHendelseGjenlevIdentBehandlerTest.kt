@@ -1,4 +1,4 @@
-package no.nav.eessi.pensjon.pdl.identOppdateringGjenlev
+package no.nav.eessi.pensjon.pdl.identoppdateringgjenlev
 
 import com.ninjasquad.springmockk.MockkBean
 import com.ninjasquad.springmockk.MockkBeans

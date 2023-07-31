@@ -50,7 +50,9 @@ internal class ArchitectureTest {
         val klienter = "Klienter"
         val validering = "Validering"
         val oppgaveRouting = "Oppgaverouting"
-        val personidentifisering = "pdl.personidentifisering"
+        val personidentifisering = "personidentifisering"
+        val adresseidentifisering = "adresseoppdatering"
+        val gjenlevidentifisering = "pdl.identoppdateringgjenlev"
 
         layeredArchitecture()
             .consideringOnlyDependenciesInAnyPackage(root)
@@ -60,7 +62,9 @@ internal class ArchitectureTest {
                 .layer(gcp).definedBy("$root.gcp")
                 .layer(klienter).definedBy("$root.klienter..")
                 .layer(oppgaveRouting).definedBy("$root.oppgaverouting")
-                .layer(personidentifisering).definedBy("$root.personidentifisering")
+                .layer(personidentifisering).definedBy("$root.pdl.identoppdatering")
+                .layer(adresseidentifisering).definedBy("$root.pdl.adresseoppdatering")
+                .layer(gjenlevidentifisering).definedBy("$root.pdl.identoppdateringgjenlev")
                 .layer(validering).definedBy("$root.pdl.validering")
                 //define rules
                 .whereLayer(config).mayNotBeAccessedByAnyLayer()
