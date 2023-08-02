@@ -39,11 +39,12 @@ class SedHendelseGjenlevIdentBehandler(
 
         when (result) {
             is Oppdatering -> {
-                //personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
+                personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
+                secureLogger.debug("OppdateringGjenlev:\n${result.toJson()}")
                 logger.info("Her kommer det en opprettelse av personopplysning")
             }
             is OppgaveGjenlev -> {
-                //oppgaveHandler.opprettOppgave(result.oppgaveData)
+                oppgaveHandler.opprettOppgave(result.oppgaveData)
                 secureLogger.debug("OppgaveGjenlev:\n${result.toJson()}")
                 logger.info("Her kommer det en opprettelse av oppgave for Gjenlev")
             }
