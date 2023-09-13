@@ -19,7 +19,7 @@ import java.time.temporal.ChronoUnit
 class Fodselsnummer private constructor(@JsonValue val value: String) {
     init {
         require("""\d{11}""".toRegex().matches(value)) { "Ikke et gyldig fødselsnummer: $value" }
-        require(!fhNummer) { "Impelemntasjonen støtter ikke H-nummer og FH-nummer" }
+        require(!erFnr) { "Impelemntasjonen støtter ikke H-nummer og FH-nummer" }
         require(gyldigeKontrollsiffer) { "Ugyldig kontrollnummer" }
     }
 
@@ -29,7 +29,7 @@ class Fodselsnummer private constructor(@JsonValue val value: String) {
         val resultAge = ChronoUnit.YEARS.between(foedselsdato, LocalDate.now()).toInt()
         return resultAge < 18
     }
-    fun isDNumber() = dNummer
+    fun isDNumber() = erDnummer
     fun getBirthDateAsIso() = foedselsdato.toString()
 
     val kjoenn: Kjoenn
@@ -41,13 +41,13 @@ class Fodselsnummer private constructor(@JsonValue val value: String) {
     //De seks første tallene i NPID er tilfeldige tall og har ingen datobetydning.
     //De to første er ikke høyere enn 31. Tall på plass 3 og 4 (måned på FNR) er mellom 21 og 32.
     //De to siste er kontrollsiffer.
-    val nPID: Boolean
+    val erNpid: Boolean
         get() {
             val lessThen31 = value.substring(0, 2).toInt()
             val between21and32 = value.substring(2, 4).toInt()
             return lessThen31 in 0..31 && between21and32 in 21..32
         }
-    val dNummer: Boolean
+    val erDnummer: Boolean
         get() {
             val dag = value[0].toString().toInt()
             return dag in 4..7
@@ -61,7 +61,7 @@ class Fodselsnummer private constructor(@JsonValue val value: String) {
     private val syntetiskFoedselsnummerFraSkatteetaten: Boolean
         get() = value[2].toString().toInt() >= 8
 
-    private val fhNummer: Boolean
+    private val erFnr: Boolean
         get() {
             return when(value[0]) {
                 '8', '9' -> true
@@ -74,7 +74,7 @@ class Fodselsnummer private constructor(@JsonValue val value: String) {
             val fnrMonth = value.slice(2 until 4).toInt()
 
             val dayFelt = value.slice(0 until 2).toInt()
-            val fnrDay = if(dNummer) dayFelt - 40 else dayFelt
+            val fnrDay = if(erDnummer) dayFelt - 40 else dayFelt
 
             val beregnetMaaned =
                 if (syntetiskFoedselsnummerFraSkatteetaten) {
