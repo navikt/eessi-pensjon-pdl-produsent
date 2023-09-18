@@ -14,9 +14,11 @@ import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
-import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
+import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe.FOLKEREGISTERIDENT
+import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe.NPID
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Kontaktadresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Npid
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
 import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import no.nav.eessi.pensjon.utils.toJson
@@ -46,21 +48,31 @@ class VurderAdresseoppdatering(
                 "Adressens landkode er ulik landkode på avsenderland")
         }
 
-        // Når det ikke finnes norsk ID så er det helt fint at dette tas av Id & Fordeling
-        require (hasNorskPin(brukerFra(sed))) { return IngenOppdatering("Bruker har ikke norsk pin i SED") }
+        // Når det ikke finnes norsk fnr eller npid så er det helt fint at dette tas av Id & Fordeling
+        require (hasNorskPinOrNpid(brukerFra(sed))) { return IngenOppdatering("Bruker har ikke norsk pin eller npid i SED") }
+
+        val npid = Fodselsnummer.fra(norskPinEllerNpid(brukerFra(sed))?.identifikator)?.erNpid == true
+        if(npid) logger.info("Fodselsnummer er npid")
+        else logger.info("Fodselsnummer er norsk ident")
 
         val personFraPDL = try {
 
             val normalisertNorskPIN = try {
-                normaliserNorskPin(norskPin(brukerFra(sed))!!.identifikator!!)
+                if (npid) {
+                    norskPinEllerNpid(brukerFra(sed))
+                }
+                normaliserNorskPin(norskPinEllerNpid(brukerFra(sed))!!.identifikator!!)
             } catch (ex: IllegalArgumentException) {
                 return IngenOppdatering(
-                    "Brukers norske id fra SED validerer ikke: \"${norskPin(brukerFra(sed))!!.identifikator!!}\" - ${ex.message}",
+                    "Brukers norske id fra SED validerer ikke: \"${norskPinEllerNpid(brukerFra(sed))!!.identifikator!!}\" - ${ex.message}",
                     "Brukers norske id fra SED validerer ikke",
                 )
             }
+            val ident = if (!npid) NorskIdent(normalisertNorskPIN)
+                else Npid(norskPinEllerNpid(brukerFra(sed))?.identifikator!!)
 
-            personService.hentPerson(NorskIdent(normalisertNorskPIN)) ?: throw NullPointerException("hentPerson returnerte null")
+            personService.hentPerson(ident) ?: throw NullPointerException("hentPerson returnerte null")
+
         } catch (ex: PersonoppslagException) {
             if (ex.code == "not_found") {
                 return IngenOppdatering("Finner ikke bruker i PDL med angitt fnr i SED")
@@ -68,9 +80,9 @@ class VurderAdresseoppdatering(
             throw ex
         }.also { secureLogger.debug("Person fra PDL:\n${it.toJson()}") }
 
-        val norskFolkeregisterIdent =
+        val norskFnrEllerNpid =
             personFraPDL.identer
-                .firstOrNull { it.gruppe == IdentGruppe.FOLKEREGISTERIDENT }?.ident
+                .firstOrNull { it.gruppe == FOLKEREGISTERIDENT || it.gruppe == NPID }?.ident
                 ?: personFraPDL.identer.first().ident
 
         require(erUtenAdressebeskyttelse(personFraPDL.adressebeskyttelse)) { return IngenOppdatering("Ingen adresseoppdatering") }
@@ -87,7 +99,7 @@ class VurderAdresseoppdatering(
             return Oppdatering(
                 "Adressen fra ${sedHendelse.avsenderLand} finnes allerede i PDL, oppdaterer gyldig til og fra dato",
                 korrigerDatoEndringOpplysning(
-                    norskFnr = norskFolkeregisterIdent,
+                    norskFnr = norskFnrEllerNpid,
                     kilde = sedHendelse.avsenderNavn + " (" + sedHendelse.avsenderLand + ")",
                     kontaktadresse = personFraPDL.kontaktadresse!!
                 )
@@ -106,7 +118,7 @@ class VurderAdresseoppdatering(
 
         return Oppdatering(
             "Adressen i SED fra ${sedHendelse.avsenderLand} finnes ikke i PDL, sender OPPRETT endringsmelding",
-            opprettAdresseEndringOpplysning(norskFolkeregisterIdent, endringsmelding),
+            opprettAdresseEndringOpplysning(norskFnrEllerNpid, endringsmelding),
             metricTagValueOverride = "Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding"
         )
     }
@@ -131,9 +143,9 @@ class VurderAdresseoppdatering(
                 }
             }
 
-    private fun hasNorskPin(bruker: Bruker?) = norskPin(bruker) != null
+    private fun hasNorskPinOrNpid(bruker: Bruker?) = norskPinEllerNpid(bruker) != null
 
-    private fun norskPin(bruker: Bruker?) =
+    private fun norskPinEllerNpid(bruker: Bruker?) =
         bruker?.person?.pin?.firstOrNull { it.land == "NO" }
 
     private fun avsenderLandOgAdressensLandErSamme(sedHendelse: SedHendelse, sed: SED) =

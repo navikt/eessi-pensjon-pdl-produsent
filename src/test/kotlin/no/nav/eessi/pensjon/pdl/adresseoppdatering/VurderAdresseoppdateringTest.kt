@@ -21,17 +21,8 @@ import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.Personopplysninger
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
-import no.nav.eessi.pensjon.personoppslag.pdl.model.AdressebeskyttelseGradering
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
-import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
-import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentInformasjon
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Kontaktadresse
-import no.nav.eessi.pensjon.personoppslag.pdl.model.KontaktadresseType
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Metadata
-import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
-import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
+import no.nav.eessi.pensjon.personoppslag.pdl.model.*
+import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import no.nav.eessi.pensjon.shared.person.FodselsnummerGenerator
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -216,6 +207,38 @@ internal class VurderAdresseoppdateringTest {
             Oppdatering(
                 "Adressen i SED fra $TYSK_ADRESSE_LANDKODE finnes ikke i PDL, sender OPPRETT endringsmelding",
                 pdlAdresseEndringsOpplysning(
+                    pdlAdresse = TYSK_ADRESSE_I_SED_GJORT_OM_TIL_PDL_ADRESSE,
+                    kilde = "$TYSK_INSTITUSJON ($TYSK_ADRESSE_LANDKODE)",
+                    endringsType = Endringstype.OPPRETT
+                ), "Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding"
+            ), result)
+    }
+
+    @Test
+    fun `Gitt en sed med en tysk bostedsadresse fra en institusjon i Tyskland og den ikke finnes i PDL saa skal PDL oppdateres med ny kontaktadresse for en NPID`() {
+        every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns
+                sed(brukersAdresse = TYSK_ADRESSE_I_SED)
+
+        val npid = "01220049651"
+        every { personService.hentPerson(any()) } returns
+                personFraPDL(
+                    id = npid,
+                    utenlandskAdresse = EDDY_ADRESSE_FRA_PDL,
+                    gyldigFraOgMed = LocalDateTime.now().minusDays(5),
+                    gyldigTilOgMed = LocalDateTime.now().plusDays(5),
+                )
+
+        every { personMottakKlient.opprettPersonopplysning(any()) } returns true
+
+        val adresseoppdatering = VurderAdresseoppdatering(personService, euxService, sedTilPDLAdresse)
+
+        val result = adresseoppdatering.vurderUtenlandskKontaktadresse(sedHendelse(avsenderNavn = TYSK_INSTITUSJON, avsenderLand = TYSK_ADRESSE_LANDKODE))
+
+        assertEquals(
+            Oppdatering(
+                "Adressen i SED fra $TYSK_ADRESSE_LANDKODE finnes ikke i PDL, sender OPPRETT endringsmelding",
+                pdlAdresseEndringsOpplysning(
+                    npid,
                     pdlAdresse = TYSK_ADRESSE_I_SED_GJORT_OM_TIL_PDL_ADRESSE,
                     kilde = "$TYSK_INSTITUSJON ($TYSK_ADRESSE_LANDKODE)",
                     endringsType = Endringstype.OPPRETT
@@ -411,7 +434,7 @@ internal class VurderAdresseoppdateringTest {
         val adresseoppdatering = VurderAdresseoppdatering(personService, euxService, mockk())
 
         val result = adresseoppdatering.vurderUtenlandskKontaktadresse(sedHendelse(avsenderLand = "SE"))
-        assertEquals(IngenOppdatering("Bruker har ikke norsk pin i SED"), result)
+        assertEquals(IngenOppdatering("Bruker har ikke norsk pin eller npid i SED"), result)
     }
 
     @Test
@@ -573,7 +596,7 @@ internal class VurderAdresseoppdateringTest {
     )
 
     private fun pdlAdresseEndringsOpplysning(
-        id: String = SOME_FNR,
+        id: String? = SOME_FNR,
         pdlAdresse: EndringsmeldingUtenlandskAdresse,
         kilde: String,
         gyldigFraOgMed: LocalDate = LocalDate.now(),
@@ -583,7 +606,7 @@ internal class VurderAdresseoppdateringTest {
         listOf(
             Personopplysninger(
                 endringstype = endringsType,
-                ident = id,
+                ident = id!!,
                 opplysningstype = Opplysningstype.KONTAKTADRESSE,
                 endringsmelding = EndringsmeldingKontaktAdresse(
                     type = Opplysningstype.KONTAKTADRESSE.name,
@@ -672,7 +695,7 @@ internal class VurderAdresseoppdateringTest {
     )
 
     private fun personFraPDL(
-        id: String = SOME_FNR,
+        id: String? = SOME_FNR,
         adressebeskyttelse: List<AdressebeskyttelseGradering> = listOf(),
         utenlandskAdresse: UtenlandskAdresse? = null,
         opplysningsId: String = "DummyOpplysningsId",
@@ -680,7 +703,7 @@ internal class VurderAdresseoppdateringTest {
         gyldigTilOgMed: LocalDateTime = LocalDateTime.now().plusDays(10),
         metadataMaster: String = "PDL"
     ) = Person(
-        identer = listOf(IdentInformasjon(id, IdentGruppe.FOLKEREGISTERIDENT)),
+        identer = if (Fodselsnummer.fra(id)?.erNpid == true) listOf(IdentInformasjon(id!!, IdentGruppe.NPID)) else listOf(IdentInformasjon(id!!, IdentGruppe.FOLKEREGISTERIDENT)),
         navn = null,
         adressebeskyttelse = adressebeskyttelse,
         bostedsadresse = null,
