@@ -12,6 +12,7 @@ import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
 import no.nav.eessi.pensjon.klienter.norg2.Norg2Service
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
+import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import no.nav.eessi.pensjon.shared.retry.IOExceptionRetryInterceptor
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
@@ -131,7 +132,14 @@ abstract class IntegrationBase {
     }
 
 
-    fun mockHendelse(avsenderLand: String = "DK", avsenderNavn: String = "DK:D005", bucType: BucType = P_BUC_01, sedType: SedType = SedType.P2000, docId: String = "b12e06dda2c7474b9998c7139c841646"): String {
+    fun mockHendelse(
+        avsenderLand: String = "DK",
+        avsenderNavn: String = "DK:D005",
+        bucType: BucType = P_BUC_01,
+        sedType: SedType = SedType.P2000,
+        docId: String = "b12e06dda2c7474b9998c7139c841646",
+        navbruker: Fodselsnummer? = null
+    ): String {
         return """
             {
               "id": 1869,
@@ -148,7 +156,7 @@ abstract class IntegrationBase {
               "rinaDokumentId": "$docId",
               "rinaDokumentVersjon": "1",
               "sedType": "${sedType.name}",
-              "navBruker": null
+              "navBruker": "$navbruker"
             }
         """.trimIndent()
     }
