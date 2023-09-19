@@ -1,6 +1,7 @@
 package no.nav.eessi.pensjon.personoppslag.pdl.model
 
 import no.nav.eessi.pensjon.shared.person.Fodselsnummer
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 object PersonMock {
@@ -14,12 +15,19 @@ object PersonMock {
         uid: List<UtenlandskIdentifikasjonsnummer> = emptyList()
     ): Person {
 
-        val foedselsdato = fnr?.let { Fodselsnummer.fra(it)?.getBirthDate() }
+        val foedselsdato = if (Fodselsnummer.fra(fnr)?.erNpid == true) LocalDate.of(1975, 1, 1)
+        else Fodselsnummer.fra(fnr)?.getBirthDate()
         val utenlandskadresse = if (landkoder) null else UtenlandskAdresse(landkode = "SWE")
 
         val identer = listOfNotNull(
             aktoerId?.let { IdentInformasjon(ident = it.id, gruppe = IdentGruppe.AKTORID) },
-            fnr?.let { IdentInformasjon(ident = it, gruppe = IdentGruppe.FOLKEREGISTERIDENT) }
+            fnr?.let {
+                if (Fodselsnummer.fra(fnr)?.erNpid == true) {
+                    IdentInformasjon(ident = it, gruppe = IdentGruppe.NPID)
+                } else {
+                    IdentInformasjon(ident = it, gruppe = IdentGruppe.FOLKEREGISTERIDENT)
+                }
+            }
         )
 
         val metadata = Metadata(

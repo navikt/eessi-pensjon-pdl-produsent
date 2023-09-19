@@ -30,6 +30,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
 import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
+import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -86,7 +87,8 @@ open class IdentBaseTest {
         bucType: BucType = BucType.P_BUC_01,
         sedType: SedType = SedType.P2000,
         avsenderLand: String = "SE",
-        avsenderNavn: String? = "Utenlandsk institusjon"
+        avsenderNavn: String? = "Utenlandsk institusjon",
+        navBruker: Fodselsnummer? = null
     ) = SedHendelse(
         sektorKode = "P",
         avsenderLand = avsenderLand,
@@ -95,7 +97,8 @@ open class IdentBaseTest {
         rinaDokumentId = "SOME_DOKUMENT_ID",
         rinaDokumentVersjon = "SOME_RINADOKUMENT_VERSION",
         sedType = sedType,
-        avsenderNavn = avsenderNavn
+        avsenderNavn = avsenderNavn,
+        navBruker = navBruker
     )
 
     fun sed(

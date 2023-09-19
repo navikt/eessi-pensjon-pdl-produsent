@@ -12,9 +12,11 @@ import no.nav.eessi.pensjon.pdl.OppgaveModel.*
 import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
-import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
+import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe.*
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentInformasjon
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Npid
+import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -65,7 +67,11 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
                 "Ikke relevant for eessipensjon, buc: P_BUC_01, sed: X001, sektor: P",
                 "Ikke relevant for eessipensjon"
             ),
-            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "NO", sedType = SedType.X001))
+            identoppdatering.vurderUtenlandskIdent(sedHendelse(
+                sedType = SedType.X001,
+                avsenderLand = "NO",
+                navBruker = Fodselsnummer.fra(FNR)
+            ))
         )
     }
 
@@ -75,7 +81,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
         assertEquals(
             IngenOppdatering("Bruker har ikke norsk pin i SED"),
-            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
+            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra(FNR)))
         )
     }
 
@@ -85,7 +91,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
         assertEquals(
             IngenOppdatering(description="Bruker har ikke utenlandsk ident fra avsenderland (SE)", metricTagValueOverride="Bruker har ikke utenlandsk ident fra avsenderland"),
-            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
+            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra(FNR)))
         )
     }
 
@@ -96,7 +102,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
         assertEquals(
             IngenOppdatering(description="Bruker har ikke utenlandsk ident fra avsenderland (SE)", metricTagValueOverride="Bruker har ikke utenlandsk ident fra avsenderland"),
-            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
+            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra(FNR)))
         )
     }
 
@@ -108,7 +114,11 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
         assertEquals(
             IngenOppdatering("AvsenderNavn er ikke satt, kan derfor ikke lage endringsmelding"),
-            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "PL", avsenderNavn = null))
+            identoppdatering.vurderUtenlandskIdent(sedHendelse(
+                avsenderLand = "PL",
+                avsenderNavn = null,
+                navBruker = Fodselsnummer.fra(FNR)
+            ))
         )
     }
 
@@ -130,7 +140,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
                 description="Utenlandsk(e) id(-er) er ikke på gyldig format for land FI",
                 metricTagValueOverride = "Utenlandsk id er ikke på gyldig format"
             ),
-            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "FI"))
+            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "FI", navBruker = Fodselsnummer.fra(FNR)))
         )
     }
 
@@ -152,7 +162,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
         assertEquals(
             Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utstederland = "SWE")),
-            (identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE")))
+            (identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra(FNR))))
         )
     }
 
@@ -175,8 +185,8 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
                 utenlandskId = "100177-2913",
                 utstederland = "DNK"
             )),
-            (identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "DK")))
-        )
+            (identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "DK", navBruker = Fodselsnummer.fra(FNR)))
+        ))
     }
 
     @Test
@@ -197,8 +207,8 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
                         utenlandskId = "100177-2913",
                         utstederland = "DNK"
                 )),
-                (identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "DK")))
-        )
+                (identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "DK", navBruker = Fodselsnummer.fra(FNR)))
+        ))
     }
 
     @Test
@@ -216,8 +226,8 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
         assertEquals(
             IngenOppdatering("PDL uid er identisk med SED uid"),
-            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "FI"))
-        )
+            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "FI", navBruker = Fodselsnummer.fra(FNR))
+        ))
     }
 
     @Test
@@ -233,8 +243,8 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
         assertEquals(
             IngenOppdatering("Finner ikke bruker i PDL med angitt fnr i SED"),
-            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "FI"))
-        )
+            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "FI", navBruker = Fodselsnummer.fra(FNR))
+        ))
     }
 
     @Test
@@ -249,7 +259,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
                 )
 
         assertThrows<NullPointerException> {
-            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "FI"))
+            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "FI", navBruker = Fodselsnummer.fra(FNR)))
         }
     }
 
@@ -263,8 +273,8 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
     fun `Gitt at SEDen inneholder uid som er feilformatert men lik UID fra PDL saa blir det ingen oppdatering`(uid : String) {
 
         every { personService.hentPerson(NorskIdent(FNR)) } returns personFraPDL(id = FNR).copy(identer = listOf(
-            IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT),
-            IdentInformasjon(AKTOERID, IdentGruppe.AKTORID)
+            IdentInformasjon(FNR, FOLKEREGISTERIDENT),
+            IdentInformasjon(AKTOERID, AKTORID)
         ))
             .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer("510606-2234").copy(utstederland = "SWE")))
 
@@ -278,7 +288,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
         assertEquals(
             IngenOppdatering("PDL uid er identisk med SED uid"),
-            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
+            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra(FNR)))
         )
     }
 
@@ -286,8 +296,8 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
     fun `Gitt at SEDen inneholder uid som er feilformatert, men ulik UID fra PDL saa blir det oppgave`() {
 
         every { personService.hentPerson(NorskIdent(FNR)) } returns personFraPDL(id = FNR).copy(identer = listOf(
-            IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT),
-            IdentInformasjon(AKTOERID, IdentGruppe.AKTORID)
+            IdentInformasjon(FNR, FOLKEREGISTERIDENT),
+            IdentInformasjon(AKTOERID, AKTORID)
         ))
             .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer(SVENSK_FNR).copy(utstederland = "SWE")))
 
@@ -299,7 +309,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
                     )
                 )
 
-        val sedHendelse = sedHendelse(avsenderLand = "SE")
+        val sedHendelse = sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra(FNR))
         every { oppgaveOppslag.finnesOppgavenAllerede(eq(sedHendelse.rinaSakId)) } returns false
 
         val actual = identoppdatering.vurderUtenlandskIdent(sedHendelse)
@@ -313,8 +323,8 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
     fun `Gitt at SEDen inneholder uid som er ulik UID fra PDL men det finnes allerede en oppgave på det fra foer av`() {
 
         every { personService.hentPerson(NorskIdent(FNR)) } returns personFraPDL(id = FNR).copy(identer = listOf(
-            IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT),
-            IdentInformasjon(AKTOERID, IdentGruppe.AKTORID)
+            IdentInformasjon(FNR, FOLKEREGISTERIDENT),
+            IdentInformasjon(AKTOERID, AKTORID)
         ))
             .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer(SVENSK_FNR).copy(utstederland = "SWE")))
 
@@ -326,7 +336,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
                     )
                 )
 
-        val sedHendelse = sedHendelse(avsenderLand = "SE")
+        val sedHendelse = sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra(FNR))
         every { oppgaveOppslag.finnesOppgavenAllerede(eq(sedHendelse.rinaSakId)) } returns true
 
         assertEquals(
@@ -340,8 +350,8 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
 
         every { personService.hentPerson(NorskIdent(FNR)) } returns personFraPDL(id = FNR).copy(identer = listOf(
-            IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT),
-            IdentInformasjon(AKTOERID, IdentGruppe.AKTORID)
+            IdentInformasjon(FNR, FOLKEREGISTERIDENT),
+            IdentInformasjon(AKTOERID, AKTORID)
         ))
             .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer(SVENSK_FNR).copy(utstederland = "SWE")))
 
@@ -353,7 +363,36 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
                     )
                 )
 
-        val sedHendelse = sedHendelse(avsenderLand = "SE")
+        val sedHendelse = sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra(FNR))
+        every { oppgaveOppslag.finnesOppgavenAllerede(eq(sedHendelse.rinaSakId)) } returns false
+
+        val actual = identoppdatering.vurderUtenlandskIdent(sedHendelse)
+
+        assertTrue(actual is Oppgave)
+        assertEquals(sedHendelse, (actual as Oppgave).oppgaveData.sedHendelse)
+        assertEquals(AKTOERID, actual.oppgaveData.identifisertPerson.aktoerId)
+    }
+
+    @Test
+    fun `Gitt at SEDen inneholder uid som er ulik UID fra PDL saa skal vi oppdatere for bruker med Npid`() {
+        val npid = "01220049651"
+
+        every { personService.hentPerson(NorskIdent(FNR)) } returns personFraPDL(id = npid).copy(identer = listOf(
+            IdentInformasjon(npid, NPID),
+            IdentInformasjon(AKTOERID, AKTORID)
+        ))
+            .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer(SVENSK_FNR).copy(utstederland = "SWE")))
+
+
+        every { euxService.hentSed(any(), any()) } returns
+                sed(
+                    pinItem = listOf(
+                        PinItem(identifikator = "5 12 020-2234", land = "SE"),
+                        PinItem(identifikator = npid, land = "NO")
+                    )
+                )
+
+        val sedHendelse = sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra(FNR))
         every { oppgaveOppslag.finnesOppgavenAllerede(eq(sedHendelse.rinaSakId)) } returns false
 
         val actual = identoppdatering.vurderUtenlandskIdent(sedHendelse)
@@ -366,7 +405,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
     @Test
     fun `Gitt at vi har en endringsmelding med en svensk uid, med riktig format saa skal det opprettes en endringsmelding`() {
         every { personService.hentPerson(NorskIdent(FNR)) } returns
-                personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT)))
+                personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, FOLKEREGISTERIDENT)))
 
         every { euxService.hentSed(any(), any()) } returns
                 sed(
@@ -378,15 +417,15 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
         assertEquals(
             Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utstederland = "SWE")),
-            (identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE")))
-        )
+            (identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra(FNR)))
+        ))
 
     }
 
     @Test
     fun `Gitt at vi har en SED med svensk UID naar det allerede finnes en UID i PDL fra Finland saa skal det opprettes en endringsmelding`() {
         every { personService.hentPerson(NorskIdent(FNR)) } returns
-                personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT)))
+                personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, FOLKEREGISTERIDENT)))
                     .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer(FINSK_FNR).copy(utstederland = "FIN")))
 
         every { euxService.hentSed(any(), any()) } returns
@@ -399,7 +438,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
         assertEquals(
             Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utstederland = "SWE")),
-            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
+            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra(FNR)))
         )
 
     }
@@ -408,7 +447,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
     fun `Gitt at vi har en SED med norsk fnr som skal oppdateres til pdl, der PDL har en aktoerid inne i PDL saa skal Oppdateringsmeldingen til PDL ha norsk FNR og ikke aktoerid`() {
 
         every { personService.hentPerson(NorskIdent(FNR)) } returns
-                personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon("1234567891234", IdentGruppe.AKTORID), IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT)))
+                personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon("1234567891234", AKTORID), IdentInformasjon(FNR, FOLKEREGISTERIDENT)))
                         .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer(FINSK_FNR).copy(utstederland = "FIN")))
 
         every { euxService.hentSed(any(), any()) } returns
@@ -421,7 +460,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
         assertEquals(
                 Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utstederland = "SWE")),
-                identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
+                identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra(FNR)))
         )
 
     }
@@ -429,8 +468,8 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
     @Test
     fun `Gitt at vi har en SED med norsk dnr som skal oppdateres til pdl, der PDL har et fnr inne så skal Oppdateringsmeldingen til PDL ha norsk FNR og ikke dnr`() {
         every { personService.hentPerson(NorskIdent(DNR)) } returns
-                personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT)))
-                        .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer(FINSK_FNR).copy(utstederland = "FIN")))
+                personFraPDL(id = DNR).copy(identer = listOf(IdentInformasjon(FNR, FOLKEREGISTERIDENT)))
+                    .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer(FINSK_FNR).copy(utstederland = "FIN")))
 
         every { euxService.hentSed(any(), any()) } returns
                 sed(
@@ -441,8 +480,29 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
                 )
 
         assertEquals(
-                Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utstederland = "SWE")),
-                identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE"))
+            Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utstederland = "SWE")),
+            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra(DNR)))
+        )
+    }
+
+    @Test
+    fun `Gitt at vi har en SED med npid som skal oppdateres til pdl, der PDL har et fnr inne så skal Oppdateringsmeldingen til PDL ha norsk FNR og ikke dnr`() {
+        val npid = "01220049651"
+        every { personService.hentPerson(Npid(npid)) } returns
+                personFraPDL(id = npid).copy(identer = listOf(IdentInformasjon(npid, NPID)))
+                    .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer(FINSK_FNR).copy(utstederland = "FIN")))
+
+        every { euxService.hentSed(any(), any()) } returns
+                sed(
+                    pinItem = listOf(
+                        PinItem(identifikator = "5 12 020-1234", land = "SE"),
+                        PinItem(identifikator = npid, land = "NO")
+                    )
+                )
+
+        assertEquals(
+            Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(npid, utstederland = "SWE")),
+            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra(npid)))
         )
     }
 }

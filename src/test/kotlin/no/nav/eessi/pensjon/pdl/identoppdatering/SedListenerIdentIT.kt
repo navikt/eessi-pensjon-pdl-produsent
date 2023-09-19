@@ -18,9 +18,9 @@ import no.nav.eessi.pensjon.pdl.integrationtest.PDL_PRODUSENT_TOPIC_MOTTATT
 import no.nav.eessi.pensjon.personoppslag.pdl.model.AktoerId
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.eessi.pensjon.personoppslag.pdl.model.PersonMock
+import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -87,10 +87,11 @@ class SedListenerIdentIT : IntegrationBase() {
 
         sendMeldingString(
             mockHendelse(
+                avsenderLand = "SE",
                 bucType = P_BUC_10,
                 sedType = SedType.P15000,
-                avsenderLand = "SE",
-                docId = "eb938171a4cb4e658b3a6c011962d204"
+                docId = "eb938171a4cb4e658b3a6c011962d204",
+                navbruker = Fodselsnummer.fra("11067122781")
             )
         )
         sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
@@ -136,11 +137,12 @@ class SedListenerIdentIT : IntegrationBase() {
 
         sendMeldingString(
             mockHendelse(
-                bucType = P_BUC_10,
-                sedType = SedType.P15000,
                 avsenderLand = "DK",
                 avsenderNavn = "",
-                docId = "eb938171a4cb4e658b3a6c011962d204"
+                bucType = P_BUC_10,
+                sedType = SedType.P15000,
+                docId = "eb938171a4cb4e658b3a6c011962d204",
+                navbruker = Fodselsnummer.fra("11067122781")
             )
         )
         sedListenerIdent.getLatch().await(20, TimeUnit.SECONDS)
@@ -176,10 +178,11 @@ class SedListenerIdentIT : IntegrationBase() {
 
         sendMeldingString(
             mockHendelse(
+                avsenderLand = "DK",
                 bucType = P_BUC_02,
                 sedType = SedType.P7000,
-                avsenderLand = "DK",
-                docId = "eb938171a4cb4e658b3a6c011962d504"
+                docId = "eb938171a4cb4e658b3a6c011962d504",
+                navbruker = Fodselsnummer.fra("11067122781")
             )
         )
 
@@ -208,7 +211,7 @@ class SedListenerIdentIT : IntegrationBase() {
     @Test
     fun `Gitt en sed hendelse med en dansk uid som ikke finnes i pdl skal det opprettes det en endringsmelding til person-mottak`() {
         every { norg2.hentArbeidsfordelingEnhet(any()) } returns Enhet.ID_OG_FORDELING
-        every { personService.hentPerson(NorskIdent(fnr)) } returns PersonMock.createWith(
+        every { personService.hentPerson(any()) } returns PersonMock.createWith(
             fnr = fnr,
             aktoerId = AktoerId("1231231231"),
             uid = emptyList()
@@ -229,5 +232,28 @@ class SedListenerIdentIT : IntegrationBase() {
         assertTrue(isMessageInlog("Endringsmelding: OPPRETT, med nye personopplysninger"))
     }
 
+    @Test
+    fun `Gitt en sed hendelse med en npid som har en dansk uid som ikke finnes i pdl skal det opprettes det en endringsmelding til person-mottak`() {
+        every { norg2.hentArbeidsfordelingEnhet(any()) } returns Enhet.ID_OG_FORDELING
+        every { personService.hentPerson(any()) } returns PersonMock.createWith(
+            fnr = "01220049651",
+            aktoerId = AktoerId("1231231231"),
+            uid = emptyList()
+        )
+        every { kodeverkClient.finnLandkode("DK") }.returns("DNK")
+
+        val listOverSeder = listOf(ForenkletSED("b12e06dda2c7474b9998c7139c841646", SedType.P2100, SedStatus.RECEIVED))
+        val mockBuc = CustomMockServer.mockBuc("147729", P_BUC_02, listOverSeder)
+
+        CustomMockServer()
+            .medEndring()
+            .medSed("/buc/147729/sed/b12e06dda2c7474b9998c7139c841646", "src/test/resources/eux/sed/P2100-PinDK-NAV.json")
+            .medMockBuc("/buc/147729", mockBuc)
+
+
+        sendMeldingString(javaClass.getResource("/eux/hendelser/P_BUC_01_P2000-avsenderDK.json")!!.readText())
+
+        assertTrue(isMessageInlog("Endringsmelding: OPPRETT, med nye personopplysninger"))
+    }
 }
 
