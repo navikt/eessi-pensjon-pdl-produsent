@@ -76,7 +76,7 @@ dependencies {
 	implementation("no.nav.security:token-validation-jaxrs:${tokenSupportVersion}")
 	implementation("no.nav.security:token-validation-test-support:2.0.5")
 
-	implementation ("no.nav.common:token-client:2.2023.01.10_13.49-81ddc732df3a")
+	implementation ("no.nav.common:token-client:3.2023.09.13_04.55-a8ff452fbd94")
 
 	//GCP
 	implementation("com.google.cloud:google-cloud-storage:2.26.1")
