@@ -27,12 +27,8 @@ import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPersonPDL
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
-import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
-import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
-import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
+import no.nav.eessi.pensjon.personoppslag.pdl.model.*
+import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe.*
 import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
@@ -121,7 +117,11 @@ class VurderGjenlevOppdateringIdent(
                     throw it
                 }
                 .mapCatching {
-                    personService.hentPerson(NorskIdent(it)) ?: throw NullPointerException("hentPerson returnerte null")
+                    val fnrEllerNpid = sedHendelse.navBruker ?: throw NullPointerException("hentPerson returnerte null")
+
+                    val ident = if (fnrEllerNpid.erNpid) Npid(fnrEllerNpid.value)
+                    else NorskIdent(fnrEllerNpid.value)
+                    personService.hentPerson(ident) ?: throw NullPointerException("hentPerson returnerte null")
                 }
                 .recoverCatching {
                     if (it is PersonoppslagException && it.code == "not_found") {
@@ -209,9 +209,9 @@ class VurderGjenlevOppdateringIdent(
             .contains(Pair(utenlandskPin.id, utenlandskPin.land))
 
     private fun identifisertPerson(personFraPDL: Person) = IdentifisertPersonPDL(
-        fnr = Fodselsnummer.fra(personFraPDL.identer.first { it.gruppe == IdentGruppe.FOLKEREGISTERIDENT }.ident),
+        fnr = Fodselsnummer.fra(personFraPDL.identer.first { it.gruppe == FOLKEREGISTERIDENT || it.gruppe == NPID }.ident),
         uidFraPdl = personFraPDL.utenlandskIdentifikasjonsnummer,
-        aktoerId = personFraPDL.identer.first { it.gruppe == IdentGruppe.AKTORID }.ident,
+        aktoerId = personFraPDL.identer.first { it.gruppe == AKTORID }.ident,
         landkode = personFraPDL.landkode(),
         geografiskTilknytning = personFraPDL.geografiskTilknytning?.gtKommune?: personFraPDL.geografiskTilknytning?.gtBydel,
         harAdressebeskyttelse = false,

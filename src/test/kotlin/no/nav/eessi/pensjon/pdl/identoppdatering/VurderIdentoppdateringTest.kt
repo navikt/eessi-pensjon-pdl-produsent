@@ -383,11 +383,6 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
         ))
             .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer(SVENSK_FNR).copy(utstederland = "SWE")))
 
-        every { personService.hentPerson(Npid(npid)) } returns personFraPDL(id = npid).copy(identer = listOf(
-            IdentInformasjon(npid, NPID),
-            IdentInformasjon(AKTOERID, AKTORID)
-        ))
-            .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer(SVENSK_FNR).copy(utstederland = "SWE")))
 
         every { euxService.hentSed(any(), any()) } returns
                 sed(

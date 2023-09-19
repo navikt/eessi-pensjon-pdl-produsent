@@ -27,8 +27,10 @@ import no.nav.eessi.pensjon.pdl.SOME_FNR
 import no.nav.eessi.pensjon.pdl.validering.LandspesifikkValidering
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
+import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe.*
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentInformasjon
 import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Npid
 import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
@@ -76,14 +78,14 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
     @Test
     fun `Gitt at vi har en endringsmelding med en svensk uid, med riktig format saa skal det opprettes en endringsmelding`() {
         every { personService.hentPerson(NorskIdent(FNR)) } returns
-                personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT)))
+                personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, FOLKEREGISTERIDENT)))
 
         every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns
                 personFraPDL(id = SOME_FNR).copy(
                     identer = listOf(
                         IdentInformasjon(
                             SOME_FNR,
-                            IdentGruppe.FOLKEREGISTERIDENT
+                            FOLKEREGISTERIDENT
                         )
                     ),
                 )
@@ -111,14 +113,14 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
     @Test
     fun `Gitt at vi har en endringsmelding med en svensk uid, med riktig format men norsk fnr er ikke på stadard format saa skal det opprettes en endringsmelding med formatert norsk fnr`() {
         every { personService.hentPerson(NorskIdent(FNR)) } returns
-                personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT)))
+                personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, FOLKEREGISTERIDENT)))
 
         every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns
                 personFraPDL(id = SOME_FNR).copy(
                     identer = listOf(
                         IdentInformasjon(
                             SOME_FNR,
-                            IdentGruppe.FOLKEREGISTERIDENT
+                            FOLKEREGISTERIDENT
                         )
                     ),
                 )
@@ -145,14 +147,14 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
     @Test
     fun `Gitt at vi har en endringsmelding med en svensk uid med som mangler fdato så skal vi ikke sende en oppdatering`() {
         every { personService.hentPerson(NorskIdent(FNR)) } returns
-                personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT)))
+                personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, FOLKEREGISTERIDENT)))
 
         every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns
                 personFraPDL(id = SOME_FNR).copy(
                     identer = listOf(
                         IdentInformasjon(
                             SOME_FNR,
-                            IdentGruppe.FOLKEREGISTERIDENT
+                            FOLKEREGISTERIDENT
                         )
                     ),
                 )
@@ -179,14 +181,14 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
     @Test
     fun `Gitt at vi har en P10000 der vi ikke har gjenlevende så skal vi ikke sende oppdatering på gjenlevende`() {
         every { personService.hentPerson(NorskIdent(FNR)) } returns
-                personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT)))
+                personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, FOLKEREGISTERIDENT)))
 
         every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns
                 personFraPDL(id = SOME_FNR).copy(
                     identer = listOf(
                         IdentInformasjon(
                             SOME_FNR,
-                            IdentGruppe.FOLKEREGISTERIDENT
+                            FOLKEREGISTERIDENT
                         )
                     )
                 )
@@ -213,7 +215,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
     )
     fun `Gitt en P5000 med en gjenlevende som har uid som skal oppdateres`(sedType: String) {
         every { personService.hentPerson(NorskIdent(FNR)) } returns
-                personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT)))
+                personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, FOLKEREGISTERIDENT)))
 
         val gjenlevUid = "120281-6547"
         val sed = sedMedGjenlevende(
@@ -254,7 +256,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
 
         every { personService.hentPerson(NorskIdent(FNR)) } returns
                 personFraPDL(id = FNR).copy(
-                    identer = listOf(IdentInformasjon(FNR, IdentGruppe.FOLKEREGISTERIDENT), IdentInformasjon(AKTOERID, IdentGruppe.AKTORID)),
+                    identer = listOf(IdentInformasjon(FNR, FOLKEREGISTERIDENT), IdentInformasjon(AKTOERID, AKTORID)),
                     utenlandskIdentifikasjonsnummer = listOf((utenlandskIdentifikasjonsnummer(fnr = FNR).copy(utstederland = "DNK")))
                 )
 
@@ -274,6 +276,36 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
         result is OppgaveGjenlev
         assertEquals(result.description, "Det finnes allerede en annen uid fra samme land (oppgave opprettes)")
         assertEquals((result as OppgaveGjenlev).oppgaveData.identifisertPerson.fnr?.value, "11067122781")
+    }
+
+    @Test
+    fun `Gitt en SED med Npid som har to ulike UID fra samme land såå skal det opprettes en OppgaveGjenlev`() {
+
+        val npid = "01220049651"
+        every { oppgaveOppslag.finnesOppgavenAllerede(any()) } returns false
+
+        every { personService.hentPerson(Npid(npid)) } returns
+                personFraPDL(id = npid).copy(
+                    identer = listOf(IdentInformasjon(npid, NPID), IdentInformasjon(AKTOERID, AKTORID)),
+                    utenlandskIdentifikasjonsnummer = listOf((utenlandskIdentifikasjonsnummer(fnr = npid).copy(utstederland = "DNK")))
+                )
+
+        val gjenlevUid = "120281-6547"
+        val sed = sedMedGjenlevende(
+            gjenlevFNR = npid,
+            gjenlevUid = gjenlevUid,
+            forsikretFnr = SOME_FNR,
+            sedType = SedType.P4000.name
+        )
+        every { euxService.hentSed(any(), any()) } returns convertFromSedTypeToSED(sed, SedType.P4000)
+
+        val result = identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(
+            avsenderLand = "DK",
+            navBruker = Fodselsnummer.fra(npid)
+        ))
+        result is OppgaveGjenlev
+        assertEquals(result.description, "Det finnes allerede en annen uid fra samme land (oppgave opprettes)")
+        assertEquals((result as OppgaveGjenlev).oppgaveData.identifisertPerson.fnr?.value, npid)
     }
 
     @Test
