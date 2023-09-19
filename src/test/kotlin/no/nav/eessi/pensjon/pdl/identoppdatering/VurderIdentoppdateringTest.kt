@@ -467,13 +467,9 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
     @Test
     fun `Gitt at vi har en SED med norsk dnr som skal oppdateres til pdl, der PDL har et fnr inne så skal Oppdateringsmeldingen til PDL ha norsk FNR og ikke dnr`() {
-        every { personService.hentPerson(NorskIdent(FNR)) } returns 
-                personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, FOLKEREGISTERIDENT)))
-            .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer(FINSK_FNR).copy(utstederland = "FIN")))
-        
         every { personService.hentPerson(NorskIdent(DNR)) } returns
-                personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, FOLKEREGISTERIDENT)))
-                        .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer(FINSK_FNR).copy(utstederland = "FIN")))
+                personFraPDL(id = DNR).copy(identer = listOf(IdentInformasjon(FNR, FOLKEREGISTERIDENT)))
+                    .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer(FINSK_FNR).copy(utstederland = "FIN")))
 
         every { euxService.hentSed(any(), any()) } returns
                 sed(
@@ -484,15 +480,15 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
                 )
 
         assertEquals(
-                Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utstederland = "SWE")),
-                identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra(FNR)))
+            Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utstederland = "SWE")),
+            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra(DNR)))
         )
     }
 
     @Test
     fun `Gitt at vi har en SED med npid som skal oppdateres til pdl, der PDL har et fnr inne så skal Oppdateringsmeldingen til PDL ha norsk FNR og ikke dnr`() {
         val npid = "01220049651"
-        every { personService.hentPerson(any()) } returns
+        every { personService.hentPerson(Npid(npid)) } returns
                 personFraPDL(id = npid).copy(identer = listOf(IdentInformasjon(npid, NPID)))
                     .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer(FINSK_FNR).copy(utstederland = "FIN")))
 
@@ -506,7 +502,7 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
 
         assertEquals(
             Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(npid, utstederland = "SWE")),
-            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra(FNR)))
+            identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra(npid)))
         )
     }
 }

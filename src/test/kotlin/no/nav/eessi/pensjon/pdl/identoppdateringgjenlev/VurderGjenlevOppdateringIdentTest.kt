@@ -41,6 +41,9 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.skyscreamer.jsonassert.JSONAssert
 
+private const val SVERIGE = "SE"
+private const val NORGE = "NO"
+
 class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
 
     var euxService: EuxService = mockk(relaxed = true)
@@ -56,8 +59,8 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
         every { kodeverkClient.finnLandkode("PL") } returns "POL"
         every { kodeverkClient.finnLandkode("POL") } returns "PL"
 
-        every { kodeverkClient.finnLandkode("SE") } returns "SWE"
-        every { kodeverkClient.finnLandkode("SWE") } returns "SE"
+        every { kodeverkClient.finnLandkode(SVERIGE) } returns "SWE"
+        every { kodeverkClient.finnLandkode("SWE") } returns SVERIGE
 
         every { kodeverkClient.finnLandkode("DK") } returns "DNK"
         every { kodeverkClient.finnLandkode("DNK") } returns "DK"
@@ -80,20 +83,10 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
         every { personService.hentPerson(NorskIdent(FNR)) } returns
                 personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, FOLKEREGISTERIDENT)))
 
-        every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns
-                personFraPDL(id = SOME_FNR).copy(
-                    identer = listOf(
-                        IdentInformasjon(
-                            SOME_FNR,
-                            FOLKEREGISTERIDENT
-                        )
-                    ),
-                )
-
         val sed = sedGjenlevende(
             pinItem = listOf(
-                PinItem(identifikator = "5 12 020-1234", land = "SE"),
-                PinItem(identifikator = FNR, land = "NO")
+                PinItem(identifikator = "5 12 020-1234", land = SVERIGE),
+                PinItem(identifikator = FNR, land = NORGE)
             ),
             fodselsdato = "1971-06-11",
         )
@@ -105,7 +98,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
                 "Innsending av endringsmelding",
                 pdlEndringsMelding(FNR, utstederland = "SWE")
             ),
-            (identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra("11067122781"))))
+            (identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = SVERIGE, navBruker = Fodselsnummer.fra(FNR))))
         )
     }
 
@@ -115,20 +108,10 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
         every { personService.hentPerson(NorskIdent(FNR)) } returns
                 personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, FOLKEREGISTERIDENT)))
 
-        every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns
-                personFraPDL(id = SOME_FNR).copy(
-                    identer = listOf(
-                        IdentInformasjon(
-                            SOME_FNR,
-                            FOLKEREGISTERIDENT
-                        )
-                    ),
-                )
-
         val sed = sedGjenlevende(
             pinItem = listOf(
-                PinItem(identifikator = "5 12 020-1234", land = "SE"),
-                PinItem(identifikator = FNR_MED_MELLOMROM, land = "NO")
+                PinItem(identifikator = "5 12 020-1234", land = SVERIGE),
+                PinItem(identifikator = FNR_MED_MELLOMROM, land = NORGE)
             ),
             fodselsdato = "1971-06-11",
         )
@@ -140,7 +123,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
                 "Innsending av endringsmelding",
                 pdlEndringsMelding(FNR, utstederland = "SWE")
             ),
-            (identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra("11067122781"))))
+            (identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = SVERIGE, navBruker = Fodselsnummer.fra(FNR))))
         )
     }
 
@@ -149,20 +132,10 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
         every { personService.hentPerson(NorskIdent(FNR)) } returns
                 personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, FOLKEREGISTERIDENT)))
 
-        every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns
-                personFraPDL(id = SOME_FNR).copy(
-                    identer = listOf(
-                        IdentInformasjon(
-                            SOME_FNR,
-                            FOLKEREGISTERIDENT
-                        )
-                    ),
-                )
-
         val sed = sedGjenlevende(
             pinItem = listOf(
-                PinItem(identifikator = "5 12 020-1234", land = "SE"),
-                PinItem(identifikator = FNR, land = "NO")
+                PinItem(identifikator = "5 12 020-1234", land = SVERIGE),
+                PinItem(identifikator = FNR, land = NORGE)
             ),
             fodselsdato = null,
         )
@@ -174,7 +147,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
                 "Innsending av endringsmelding",
                 pdlEndringsMelding(FNR, utstederland = "SWE")
             ),
-            (identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra("11067122781"))))
+            (identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = SVERIGE, navBruker = Fodselsnummer.fra(FNR))))
         )
     }
 
@@ -183,22 +156,12 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
         every { personService.hentPerson(NorskIdent(FNR)) } returns
                 personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, FOLKEREGISTERIDENT)))
 
-        every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns
-                personFraPDL(id = SOME_FNR).copy(
-                    identer = listOf(
-                        IdentInformasjon(
-                            SOME_FNR,
-                            FOLKEREGISTERIDENT
-                        )
-                    )
-                )
-
         val p2100 = P2100(SedType.P2100, null, null)
         every { euxService.hentSed(any(), any()) } returns p2100
 
         assertEquals(
             IngenOppdatering("Seden har ingen gjenlevende"),
-            (identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra("11067122781"))))
+            (identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = SVERIGE, navBruker = Fodselsnummer.fra(FNR))))
         )
     }
 
@@ -231,7 +194,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
                 "Innsending av endringsmelding",
                 pdlEndringsMelding(FNR, gjenlevUid, utstederland = "DNK")
             ),
-            (identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = "DK", navBruker = Fodselsnummer.fra("11067122781"))))
+            (identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = "DK", navBruker = Fodselsnummer.fra(FNR))))
         )
     }
 
@@ -244,7 +207,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
         JSONAssert.assertEquals(
             IngenOppdatering("Gjenlevende fdato stemmer ikke overens med fnr",
                 "Gjenlevende fdato stemmer ikke overens med fnr").toJson(),
-            identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra("11067122781"))).toJson(), false
+            identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = SVERIGE, navBruker = Fodselsnummer.fra(FNR))).toJson(), false
         )
 
     }
@@ -271,11 +234,11 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
 
         val result = identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(
             avsenderLand = "DK",
-            navBruker = Fodselsnummer.fra("11067122781")
+            navBruker = Fodselsnummer.fra(FNR)
         ))
         result is OppgaveGjenlev
         assertEquals(result.description, "Det finnes allerede en annen uid fra samme land (oppgave opprettes)")
-        assertEquals((result as OppgaveGjenlev).oppgaveData.identifisertPerson.fnr?.value, "11067122781")
+        assertEquals((result as OppgaveGjenlev).oppgaveData.identifisertPerson.fnr?.value, FNR)
     }
 
     @Test
@@ -315,7 +278,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
 
         val result = identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(
             avsenderLand = "DK",
-            navBruker = Fodselsnummer.fra("11067122781")
+            navBruker = Fodselsnummer.fra(FNR)
         ))
         result is OppgaveGjenlev
         assertEquals("Seden har ingen norsk pin på gjenlevende", result.description)
@@ -330,7 +293,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
 
         val result = identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(
             avsenderLand = "DK",
-            navBruker = Fodselsnummer.fra("11067122781")
+            navBruker = Fodselsnummer.fra(FNR)
         ))
         result is OppgaveGjenlev
         assertEquals("Seden har ingen gjenlevende", result.description)
