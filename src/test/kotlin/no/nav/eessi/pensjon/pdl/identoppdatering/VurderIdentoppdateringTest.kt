@@ -377,12 +377,11 @@ private class VurderIdentoppdateringTest : IdentBaseTest() {
     fun `Gitt at SEDen inneholder uid som er ulik UID fra PDL saa skal vi oppdatere for bruker med Npid`() {
         val npid = "01220049651"
 
-        every { personService.hentPerson(NorskIdent(FNR)) } returns personFraPDL(id = npid).copy(identer = listOf(
+        every { personService.hentPerson(Npid(npid)) } returns personFraPDL(id = npid).copy(identer = listOf(
             IdentInformasjon(npid, NPID),
             IdentInformasjon(AKTOERID, AKTORID)
         ))
             .copy(utenlandskIdentifikasjonsnummer = listOf(utenlandskIdentifikasjonsnummer(SVENSK_FNR).copy(utstederland = "SWE")))
-
 
         every { euxService.hentSed(any(), any()) } returns
                 sed(
