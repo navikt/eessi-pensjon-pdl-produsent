@@ -87,10 +87,8 @@ class VurderIdentoppdatering(
                     throw it
                 }
                 .mapCatching {
-                    val fnrEllerNpid = sedHendelse.navBruker ?: throw NullPointerException("hentPerson returnerte null")
-
-                    val ident = if (fnrEllerNpid.erNpid) Npid(fnrEllerNpid.value)
-                        else NorskIdent(fnrEllerNpid.value)
+                    val ident = if (Fodselsnummer.fra(it)?.erNpid == true) Npid(it)
+                    else NorskIdent(it)
                     personService.hentPerson(ident) ?: throw NullPointerException("hentPerson returnerte null")
                 }
                 .recoverCatching {
