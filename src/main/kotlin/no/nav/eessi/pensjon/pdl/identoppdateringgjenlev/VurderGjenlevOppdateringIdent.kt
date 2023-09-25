@@ -117,9 +117,7 @@ class VurderGjenlevOppdateringIdent(
                     throw it
                 }
                 .mapCatching {
-                    val ident = if (Fodselsnummer.fra(it)?.erNpid == true) Npid(it)
-                    else NorskIdent(it)
-                    personService.hentPerson(ident) ?: throw NullPointerException("hentPerson returnerte null")
+                    personService.hentPerson(Ident.bestemIdent(it)) ?: throw NullPointerException("hentPerson returnerte null")
                 }
                 .recoverCatching {
                     if (it is PersonoppslagException && it.code == "not_found") {
