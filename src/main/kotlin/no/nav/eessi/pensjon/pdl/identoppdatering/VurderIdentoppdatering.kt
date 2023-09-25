@@ -87,8 +87,7 @@ class VurderIdentoppdatering(
                     throw it
                 }
                 .mapCatching {
-                    val ident = if (Fodselsnummer.fra(it)?.erNpid == true) Npid(it)
-                    else NorskIdent(it)
+                    val ident = Ident.bestemIdent(it)
                     personService.hentPerson(ident) ?: throw NullPointerException("hentPerson returnerte null")
                 }
                 .recoverCatching {
