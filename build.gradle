@@ -60,7 +60,7 @@ dependencies {
 		exclude module: 'ep-logging'
 		exclude module: 'ep-eux'
 	}
-	implementation(files("../ep-routing/build/libs/ep-routing-1.0.86.jar")){
+	implementation("no.nav.eessi.pensjon:ep-routing:2.0.0"){
 		exclude module: 'ep-eux'
 		exclude module: 'ep-metrics'
 		exclude module: 'ep-logging'
