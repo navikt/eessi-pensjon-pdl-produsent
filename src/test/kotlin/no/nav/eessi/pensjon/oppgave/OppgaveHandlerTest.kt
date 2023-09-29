@@ -7,11 +7,8 @@ import io.mockk.slot
 import no.nav.eessi.pensjon.eux.model.BucType
 import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.SedType
-import no.nav.eessi.pensjon.klienter.saf.Data
-import no.nav.eessi.pensjon.klienter.saf.DokumentoversiktBruker
-import no.nav.eessi.pensjon.klienter.saf.HentMetadataResponse
-import no.nav.eessi.pensjon.klienter.saf.Journalpost
-import no.nav.eessi.pensjon.klienter.saf.SafClient
+import no.nav.eessi.pensjon.klienter.norg2.Norg2Service
+import no.nav.eessi.pensjon.klienter.saf.*
 import no.nav.eessi.pensjon.lagring.LagringsService
 import no.nav.eessi.pensjon.oppgave.Behandlingstema.ALDERSPENSJON
 import no.nav.eessi.pensjon.oppgave.Behandlingstema.BARNEP
@@ -45,7 +42,8 @@ internal class OppgaveHandlerTest {
     private val kafkaTemplate = mockk<KafkaTemplate<String, String>>()
     private val lagringsService = mockk<LagringsService>()
     private val safClient = mockk<SafClient>()
-    private var oppgaveRoutingService = OppgaveRoutingService(mockk(relaxed = true))
+    private val norg2Service = mockk<Norg2Service>(relaxed = true)
+    private var oppgaveRoutingService = OppgaveRoutingService(norg2Service)
     lateinit var oppgaveHandler: OppgaveHandler
 
     @BeforeEach
@@ -88,12 +86,10 @@ internal class OppgaveHandlerTest {
     @ParameterizedTest
     @EnumSource(
         value = Enhet::class,
-        names = ["UGYLDIG_ARKIV_TYPE", "OKONOMI_PENSJON", "DISKRESJONSKODE", "AUTOMATISK_JOURNALFORING"],
+        names = ["UGYLDIG_ARKIV_TYPE", "OKONOMI_PENSJON", "DISKRESJONSKODE"],
         mode = EnumSource.Mode.EXCLUDE
     )
-    fun `Gitt at vi får inn en P2100 med gjenlevende som ikke er bosatt Norge så skal vi route gjenlevUid oppgave til 0001 PENSJON UTLAND`(
-        enhet: Enhet
-    ) {
+    fun `Gitt at vi får inn en P2100 med gjenlevende som ikke er bosatt Norge så skal vi route gjenlevUid oppgave til 0001 PENSJON UTLAND`(enhet: Enhet) {
         val identifisertPerson = identifisertPerson(landkode = BOSATT_NORGE)
         val oppgaveData = OppgaveDataGjenlevUID(enSedHendelse(SedType.P2200, BucType.P_BUC_02), identifisertPerson)
 
@@ -114,7 +110,7 @@ internal class OppgaveHandlerTest {
         val actual = oppgaveHandler.opprettOppgave(oppgaveData)
 
         val melding = mapJsonToAny<OppgaveMelding>(meldingSlot.captured)
-        assertEquals(enhet, melding.tildeltEnhetsnr)
+        assertEquals(NFP_UTLAND_AALESUND, melding.tildeltEnhetsnr)
         assertTrue(actual)
 
     }
@@ -144,6 +140,7 @@ internal class OppgaveHandlerTest {
         every { journalPost.tilleggsopplysninger } returns listOf(mapOf(Pair("eessi_pensjon_bucid", RINA_ID)))
         every { mockEnhet.data.dokumentoversiktBruker.journalposter } returns listOf(journalPost)
         every { safClient.hentDokumentMetadata(any()) } returns mockEnhet
+        every { norg2Service.hentArbeidsfordelingEnhet(any()) } returns Enhet.PENSJON_UTLAND
 
         oppgaveHandler.opprettOppgave(oppgave)
 
