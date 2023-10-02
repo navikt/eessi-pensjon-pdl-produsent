@@ -28,7 +28,7 @@ class SedListenerAdresse(
     @PostConstruct
     fun initMetrics() {
         adresseMetric = metricsHelper.init("consumeIncomingSedForAddress")
-    }x
+    }
 
     @KafkaListener(
         containerFactory = "sedKafkaListenerContainerFactory",
