@@ -2,7 +2,6 @@ package no.nav.eessi.pensjon.oppgaverouting
 
 import no.nav.eessi.pensjon.eux.model.BucType
 import no.nav.eessi.pensjon.eux.model.BucType.P_BUC_01
-import no.nav.eessi.pensjon.eux.model.BucType.P_BUC_02
 import no.nav.eessi.pensjon.eux.model.BucType.P_BUC_10
 import no.nav.eessi.pensjon.eux.model.buc.SakStatus
 import no.nav.eessi.pensjon.eux.model.buc.SakType
@@ -38,9 +37,6 @@ class OppgaveRoutingService(private val norg2Service: Norg2Service) {
 
     private fun tildelEnhet(routingRequest: OppgaveRoutingRequest): Enhet {
         val enhet = EnhetFactory.hentHandlerFor(routingRequest.bucType).finnEnhet(routingRequest)
-
-        if (enhet == Enhet.AUTOMATISK_JOURNALFORING)
-            return enhet
 
         logger.debug("enhet: $enhet")
 

@@ -5,15 +5,9 @@ import no.nav.eessi.pensjon.klienter.saf.Journalpost
 import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.lagring.LagringsService
 import no.nav.eessi.pensjon.metrics.MetricsHelper
-import no.nav.eessi.pensjon.oppgave.Behandlingstema.ALDERSPENSJON
-import no.nav.eessi.pensjon.oppgave.Behandlingstema.BARNEP
-import no.nav.eessi.pensjon.oppgave.Behandlingstema.GJENLEVENDEPENSJON
-import no.nav.eessi.pensjon.oppgave.Behandlingstema.UFOREPENSJON
+import no.nav.eessi.pensjon.oppgave.Behandlingstema.*
 import no.nav.eessi.pensjon.oppgaverouting.Enhet
-import no.nav.eessi.pensjon.oppgaverouting.Enhet.AUTOMATISK_JOURNALFORING
-import no.nav.eessi.pensjon.oppgaverouting.Enhet.NFP_UTLAND_AALESUND
-import no.nav.eessi.pensjon.oppgaverouting.Enhet.PENSJON_UTLAND
-import no.nav.eessi.pensjon.oppgaverouting.Enhet.UFORE_UTLANDSTILSNITT
+import no.nav.eessi.pensjon.oppgaverouting.Enhet.*
 import no.nav.eessi.pensjon.oppgaverouting.HendelseType
 import no.nav.eessi.pensjon.oppgaverouting.OppgaveRoutingRequest
 import no.nav.eessi.pensjon.oppgaverouting.OppgaveRoutingService
@@ -78,10 +72,6 @@ class OppgaveHandler(
             return@measure if (!finnesOppgavenAllerede(sedHendelse.rinaSakId.plus(lagringsPathPostfix))) {
                 val oppgaveEnhet = tildeltOppgaveEnhet(identifisertePerson.aktoerId, sedHendelse, identifisertePerson)
 
-                require((oppgaveEnhet != AUTOMATISK_JOURNALFORING)) {
-                    throw RuntimeException("TildeltEnhetsnr kan ikke være automatisk journalføring")
-                }
-
                 val melding = OppgaveMelding(
                     aktoerId = identifisertePerson.aktoerId,
                     filnavn = sedHendelse.sedType?.beskrivelse,
@@ -107,11 +97,11 @@ class OppgaveHandler(
 
         try {
             val journalpost = hentJournalpostForRinasak(hentRinasakerForAktoerId(aktoerId), sedHendelse.rinaSakId)
-            val enhet = journalpost?.journalfoerendeEnhet
+//            val enhet = journalpost?.journalfoerendeEnhet
             val behandlingstema = journalpost?.behandlingstema
 
             logger.info("landkode: ${identifisertePerson.landkode} og behandlingstema: $behandlingstema")
-            if (enhet == AUTOMATISK_JOURNALFORING.enhetsNr) {
+//            if (enhet == AUTOMATISK_JOURNALFORING.enhetsNr) {
                 return if (identifisertePerson.landkode == "NOR" ) {
                     when (Behandlingstema.hentKode(behandlingstema!!)) {
                         GJENLEVENDEPENSJON, BARNEP -> NFP_UTLAND_AALESUND
@@ -124,8 +114,8 @@ class OppgaveHandler(
                     GJENLEVENDEPENSJON, BARNEP, ALDERSPENSJON -> PENSJON_UTLAND
                     else -> opprettOppgaveRuting(sedHendelse, identifisertePerson)
                 }
-            }
-            return Enhet.getEnhet(enhet!!)!!
+//            }
+//            return Enhet.getEnhet(enhet!!)!!
         }
         catch (ex :Exception) {
             logger.warn("Henting fra joark feiler, forsøker manuell oppgave-ruting")
