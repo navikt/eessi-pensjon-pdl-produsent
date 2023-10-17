@@ -1,7 +1,7 @@
 buildscript {
 	ext {
 		springBootVersion = '3.1.4'
-		springKafkaVersion = '3.0.11'
+		springKafkaVersion = '3.0.12'
 		cxfVersion = '3.4.2'
 		jacksonModuleKotlinVersion = '2.15.3'
 		tokenSupportVersion = '3.1.7'
@@ -44,7 +44,7 @@ dependencies {
 	implementation("io.micrometer:micrometer-registry-prometheus:1.11.5")
 
 	// Eessi pensjon biblioteker
-	implementation("no.nav.eessi.pensjon:ep-eux:2.1.54")
+	implementation("no.nav.eessi.pensjon:ep-eux:2.1.68")
 	implementation("no.nav.eessi.pensjon:ep-metrics:2.0.39")
 	implementation("no.nav.eessi.pensjon:ep-logging:2.1.34")
 
