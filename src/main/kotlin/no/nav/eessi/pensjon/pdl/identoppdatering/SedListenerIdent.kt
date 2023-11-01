@@ -42,7 +42,7 @@ class SedListenerIdent(
             consumeIncomingSed.measure {
                 logger.info("SedMottatt i partisjon: ${cr.partition()}, med offset: ${cr.offset()}")
                 try {
-                    if (cr.offset() in listOf(518691L, 519143L)) {
+                    if (cr.offset() in listOf(518691L, 519143L, 768200L)) {
                         logger.warn("Hopper over offset: ${cr.offset()} grunnet feil ved henting av vedlegg...")
                     } else {
                         behandleIdentHendelse.behandle(hendelse)
