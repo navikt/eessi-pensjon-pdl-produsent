@@ -12,7 +12,6 @@ import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.integrationtest.IntegrationBase
 import no.nav.eessi.pensjon.pdl.integrationtest.KafkaTestConfig
 import no.nav.eessi.pensjon.utils.toJson
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -46,11 +45,6 @@ class SedHendelseListenerExceptionTest : IntegrationBase() {
 
     @Autowired
     lateinit var sedListenerAdresse: SedListenerAdresse
-
-    @BeforeEach
-    fun setUp(){
-        sedListenerAdresse.initMetrics()
-    }
 
     @Test
     fun `Gitt en at vi faar 423 LOCKED fra PDL så gjoer vi ingen retry`() {

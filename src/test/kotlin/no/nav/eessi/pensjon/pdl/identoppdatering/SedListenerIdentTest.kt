@@ -47,7 +47,6 @@ internal class SedListenerIdentTest {
                         "test"
                 ),
         )
-        sedListenerIdent.initMetrics()
     }
 
     @Test

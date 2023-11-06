@@ -54,7 +54,6 @@ internal class OppgaveHandlerTest {
         justRun { lagringsService.lagreHendelseMedSakId(any()) }
 
         oppgaveHandler = OppgaveHandler(kafkaTemplate, lagringsService, oppgaveRoutingService, safClient)
-        oppgaveHandler.initMetrics()
     }
 
     @Test

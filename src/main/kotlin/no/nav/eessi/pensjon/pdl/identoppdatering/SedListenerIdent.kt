@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.HttpClientErrorException
 import java.util.*
 import java.util.concurrent.CountDownLatch
-import javax.annotation.PostConstruct
 
 @Service
 class SedListenerIdent(
@@ -27,8 +26,7 @@ class SedListenerIdent(
 
     fun getLatch() = latch
 
-    @PostConstruct
-    fun initMetrics() {
+    init {
         consumeIncomingSed = metricsHelper.init("consumeIncomingSed")
     }
 

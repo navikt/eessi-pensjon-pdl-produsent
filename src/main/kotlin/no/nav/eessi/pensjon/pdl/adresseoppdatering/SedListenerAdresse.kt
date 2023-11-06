@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.HttpClientErrorException
 import java.util.*
 import java.util.concurrent.CountDownLatch
-import javax.annotation.PostConstruct
 
 @Service
 class SedListenerAdresse(
@@ -23,12 +22,7 @@ class SedListenerAdresse(
     private val logger = LoggerFactory.getLogger(SedListenerAdresse::class.java)
     private val secureLogger = LoggerFactory.getLogger("secureLog")
 
-    private lateinit var adresseMetric: MetricsHelper.Metric
-
-    @PostConstruct
-    fun initMetrics() {
-        adresseMetric = metricsHelper.init("consumeIncomingSedForAddress")
-    }
+    private var adresseMetric: MetricsHelper.Metric = metricsHelper.init("consumeIncomingSedForAddress")
 
     @KafkaListener(
         containerFactory = "sedKafkaListenerContainerFactory",

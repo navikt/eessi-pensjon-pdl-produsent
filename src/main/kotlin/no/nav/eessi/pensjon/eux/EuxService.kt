@@ -5,7 +5,6 @@ import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import javax.annotation.PostConstruct
 
 @Service
 class EuxService(
@@ -15,8 +14,7 @@ class EuxService(
     private lateinit var hentBuc: MetricsHelper.Metric
     private lateinit var hentSed: MetricsHelper.Metric
 
-    @PostConstruct
-    fun initMetrics() {
+    init {
         hentSed = metricsHelper.init("hentSed", alert = MetricsHelper.Toggle.OFF)
         hentBuc = metricsHelper.init("hentBuc", alert = MetricsHelper.Toggle.OFF)
     }

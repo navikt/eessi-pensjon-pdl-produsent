@@ -12,7 +12,6 @@ import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.client.HttpStatusCodeException
 import org.springframework.web.client.RestTemplate
-import javax.annotation.PostConstruct
 
 @Component
 class Norg2Klient(private val norg2RestTemplate: RestTemplate,
@@ -22,8 +21,7 @@ class Norg2Klient(private val norg2RestTemplate: RestTemplate,
 
     private lateinit var hentArbeidsfordeling: MetricsHelper.Metric
 
-    @PostConstruct
-    fun initMetrics() {
+    init {
         hentArbeidsfordeling = metricsHelper.init("hentArbeidsfordeling")
     }
 

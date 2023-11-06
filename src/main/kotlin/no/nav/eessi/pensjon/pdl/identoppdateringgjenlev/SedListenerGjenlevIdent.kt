@@ -10,7 +10,6 @@ import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
 import java.util.*
 import java.util.concurrent.CountDownLatch
-import javax.annotation.PostConstruct
 
 @Service
 class SedListenerGjenlevIdent(
@@ -25,8 +24,7 @@ class SedListenerGjenlevIdent(
 
     fun getLatch() = latch
 
-    @PostConstruct
-    fun initMetrics() {
+    init {
         consumeIncomingSed = metricsHelper.init("consumeIncomingSed")
     }
 

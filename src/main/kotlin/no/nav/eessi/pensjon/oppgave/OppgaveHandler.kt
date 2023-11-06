@@ -18,7 +18,6 @@ import org.slf4j.MDC
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
-import javax.annotation.PostConstruct
 
 private const val LAGRING_IDENT = "_IDENT"
 private const val LAGRING_GJENLEV = "_GJENLEV"
@@ -35,14 +34,8 @@ class OppgaveHandler(
     private val logger = LoggerFactory.getLogger(OppgaveHandler::class.java)
     private val X_REQUEST_ID = "x_request_id"
 
-    private lateinit var publiserOppgavemelding: MetricsHelper.Metric
-    private lateinit var oppgaveForUid: MetricsHelper.Metric
-
-    @PostConstruct
-    fun initMetrics() {
-        publiserOppgavemelding = metricsHelper.init("publiserOppgavemelding")
-        oppgaveForUid = metricsHelper.init("OppgaveForUid")
-    }
+    private var publiserOppgavemelding: MetricsHelper.Metric = metricsHelper.init("publiserOppgavemelding")
+    private var oppgaveForUid: MetricsHelper.Metric = metricsHelper.init("OppgaveForUid")
 
     fun opprettOppgave(oppgaveData: OppgaveData): Boolean {
         return if(oppgaveData is OppgaveDataUID){

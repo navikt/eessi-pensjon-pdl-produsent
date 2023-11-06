@@ -12,8 +12,6 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.HttpClientErrorException
 import java.util.*
 import java.util.concurrent.CountDownLatch
-import javax.annotation.PostConstruct
-
 @Service
 class SedListenerAdresse(
     private val sedHendelseBehandler: SedHendelseBehandler,
@@ -25,11 +23,9 @@ class SedListenerAdresse(
 
     private lateinit var adresseMetric: MetricsHelper.Metric
 
-    @PostConstruct
-    fun initMetrics() {
+    init {
         adresseMetric = metricsHelper.init("consumeIncomingSedForAddress")
     }
-
     @KafkaListener(
         containerFactory = "sedKafkaListenerContainerFactory",
         topics = ["\${kafka.utenlandskAdresse.topic}"],

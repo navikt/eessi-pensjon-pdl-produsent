@@ -14,7 +14,6 @@ import no.nav.eessi.pensjon.pdl.integrationtest.IntegrationBase
 import no.nav.eessi.pensjon.pdl.integrationtest.KafkaTestConfig
 import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import no.nav.eessi.pensjon.utils.toJson
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -60,11 +59,6 @@ class SedListenerTest {
 
     @MockkBean
     private lateinit var oppgaveHandler: OppgaveHandler
-
-    @BeforeEach
-    fun setUp() {
-        sedListenerIdent.initMetrics()
-    }
 
     @Test
     fun `Sjekk om brukers fnr stemmer overens med brukers fdato foer vi vuderer aa oppdatere UID på bruker`() {

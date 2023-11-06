@@ -1,6 +1,5 @@
 package no.nav.eessi.pensjon.klienter.saf
 
-import jakarta.annotation.PostConstruct
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import org.slf4j.LoggerFactory
@@ -30,8 +29,7 @@ class SafClient(private val safGraphQlOidcRestTemplate: RestTemplate,
     private lateinit var HentDokumentInnhold: MetricsHelper.Metric
     private lateinit var HentRinaSakIderFraDokumentMetadata: MetricsHelper.Metric
 
-    @PostConstruct
-    fun initMetrics() {
+    init {
         HentDokumentMetadata = metricsHelper.init("HentDokumentMetadata", ignoreHttpCodes = listOf(HttpStatus.FORBIDDEN))
         HentDokumentInnhold = metricsHelper.init("HentDokumentInnhold", ignoreHttpCodes = listOf(HttpStatus.FORBIDDEN, HttpStatus.UNAUTHORIZED))
         HentRinaSakIderFraDokumentMetadata = metricsHelper.init("HentRinaSakIderFraDokumentMetadata", ignoreHttpCodes = listOf(HttpStatus.FORBIDDEN))
