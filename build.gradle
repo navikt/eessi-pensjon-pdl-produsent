@@ -45,7 +45,7 @@ dependencies {
 
 	// Eessi pensjon biblioteker
 	implementation("no.nav.eessi.pensjon:ep-eux:2.1.68")
-	implementation("no.nav.eessi.pensjon:ep-metrics:2.0.39")
+	implementation("no.nav.eessi.pensjon:ep-metrics:2.0.43")
 	implementation("no.nav.eessi.pensjon:ep-logging:2.1.37")
 
 	implementation("no.nav.eessi.pensjon:ep-kodeverk:4.0.88"){
