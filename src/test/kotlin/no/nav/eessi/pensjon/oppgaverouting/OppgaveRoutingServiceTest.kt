@@ -13,7 +13,6 @@ import no.nav.eessi.pensjon.eux.model.buc.SakType.*
 import no.nav.eessi.pensjon.klienter.norg2.Norg2ArbeidsfordelingItem
 import no.nav.eessi.pensjon.klienter.norg2.Norg2Klient
 import no.nav.eessi.pensjon.klienter.norg2.Norg2Service
-import no.nav.eessi.pensjon.klienter.norg2.NorgKlientRequest
 import no.nav.eessi.pensjon.models.*
 import no.nav.eessi.pensjon.oppgaverouting.Enhet.*
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPersonPDL
@@ -22,7 +21,6 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.SEDPersonRelasjon
 import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -221,7 +219,7 @@ internal class OppgaveRoutingServiceTest {
         )
 
         val result = routingService.route(oppgaveroutingrequest)
-        assertEquals(NFP_UTLAND_OSLO, result)
+        assertEquals(FAMILIE_OG_PENSJONSYTELSER_OSLO, result)
     }
 
     @Test
@@ -424,7 +422,7 @@ internal class OppgaveRoutingServiceTest {
     @Test
     fun testEnumEnhets() {
         assertEquals(PENSJON_UTLAND, Enhet.getEnhet("0001"))
-        assertEquals(NFP_UTLAND_OSLO, Enhet.getEnhet("4803"))
+        assertEquals(FAMILIE_OG_PENSJONSYTELSER_OSLO, Enhet.getEnhet("4803"))
         assertEquals(DISKRESJONSKODE, Enhet.getEnhet("2103"))
     }
 
