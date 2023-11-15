@@ -10,7 +10,8 @@ import no.nav.eessi.pensjon.eux.model.document.ForenkletSED
 import no.nav.eessi.pensjon.eux.model.document.SedStatus
 import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
-import no.nav.eessi.pensjon.oppgaverouting.Enhet
+import no.nav.eessi.pensjon.oppgaverouting.Enhet.FAMILIE_OG_PENSJONSYTELSER_OSLO
+import no.nav.eessi.pensjon.oppgaverouting.Enhet.ID_OG_FORDELING
 import no.nav.eessi.pensjon.pdl.integrationtest.CustomMockServer
 import no.nav.eessi.pensjon.pdl.integrationtest.IntegrationBase
 import no.nav.eessi.pensjon.pdl.integrationtest.KafkaTestConfig
@@ -70,7 +71,7 @@ class SedListenerIdentIT : IntegrationBase() {
 
     @Test
     fun `En sed hendelse uten UID vil resultere i ingen oppdatering`() {
-        every { norg2.hentArbeidsfordelingEnhet(any()) } returns Enhet.ID_OG_FORDELING
+        every { norg2.hentArbeidsfordelingEnhet(any()) } returns ID_OG_FORDELING
         every { personService.hentPerson(NorskIdent( fnr)) } returns mockedPerson
         every { kodeverkClient.finnLandkode("NO") } returns "NOR"
 
@@ -101,7 +102,7 @@ class SedListenerIdentIT : IntegrationBase() {
 
     @Test
     fun `Gitt en sed-hendelse fra Sverige som sender inn en tysk uid saa skal det stoppes av valideringen`() {
-        every { norg2.hentArbeidsfordelingEnhet(any()) } returns  Enhet.ID_OG_FORDELING
+        every { norg2.hentArbeidsfordelingEnhet(any()) } returns  ID_OG_FORDELING
         every { personService.hentPerson(NorskIdent( "29087021082")) } returns mockedPerson
         every { kodeverkClient.finnLandkode("DE") } returns "DEU"
 
@@ -123,7 +124,7 @@ class SedListenerIdentIT : IntegrationBase() {
 
     @Test
     fun `Gitt en sed hendelse uten avsenderNavn saa sender vi ingen oppdatering`() {
-        every { norg2.hentArbeidsfordelingEnhet(any()) } returns Enhet.ID_OG_FORDELING
+        every { norg2.hentArbeidsfordelingEnhet(any()) } returns ID_OG_FORDELING
         every { personService.hentPerson(NorskIdent( "29087021082")) } returns mockedPerson
         every { kodeverkClient.finnLandkode("DK") } returns "DNK"
 
@@ -152,7 +153,7 @@ class SedListenerIdentIT : IntegrationBase() {
 
     @Test
     fun `Gitt en hendelse med flere sed i buc og en dansk uid som ikke finnes i pdl skal det opprettes det en endringsmelding til person-mottak`() {
-        every { norg2.hentArbeidsfordelingEnhet(any()) } returns Enhet.NFP_UTLAND_OSLO
+        every { norg2.hentArbeidsfordelingEnhet(any()) } returns FAMILIE_OG_PENSJONSYTELSER_OSLO
         every { personService.hentPerson(NorskIdent(fnr))} returns PersonMock.createWith(
             fnr = fnr,
             uid = emptyList()
@@ -210,7 +211,7 @@ class SedListenerIdentIT : IntegrationBase() {
 
     @Test
     fun `Gitt en sed hendelse med en dansk uid som ikke finnes i pdl skal det opprettes det en endringsmelding til person-mottak`() {
-        every { norg2.hentArbeidsfordelingEnhet(any()) } returns Enhet.ID_OG_FORDELING
+        every { norg2.hentArbeidsfordelingEnhet(any()) } returns ID_OG_FORDELING
         every { personService.hentPerson(any()) } returns PersonMock.createWith(
             fnr = fnr,
             aktoerId = AktoerId("1231231231"),
@@ -234,7 +235,7 @@ class SedListenerIdentIT : IntegrationBase() {
 
     @Test
     fun `Gitt en sed hendelse med en npid som har en dansk uid som ikke finnes i pdl skal det opprettes det en endringsmelding til person-mottak`() {
-        every { norg2.hentArbeidsfordelingEnhet(any()) } returns Enhet.ID_OG_FORDELING
+        every { norg2.hentArbeidsfordelingEnhet(any()) } returns ID_OG_FORDELING
         every { personService.hentPerson(any()) } returns PersonMock.createWith(
             fnr = "01220049651",
             aktoerId = AktoerId("1231231231"),
