@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.Metrics
 import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.pdl.OppgaveModel
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
+import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.LoggerFactory
@@ -63,7 +64,7 @@ class SedHendelseBehandler(
     }
 
     private fun log(result: Result) {
-        logger.info(result.toString())
+        logger.info(Fodselsnummer.vask11sifre(result.toString()))
         if (result is Oppdatering) {
             secureLogger.info("Oppdatering til PDL:\n${result.pdlEndringsOpplysninger.toJson()}")
         }
