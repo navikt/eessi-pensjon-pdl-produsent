@@ -47,7 +47,7 @@ class SedHendelseListenerExceptionTest : IntegrationBase() {
     lateinit var sedListenerAdresse: SedListenerAdresse
 
     @Test
-    fun `Gitt en at vi faar 423 LOCKED fra PDL så gjoer vi ingen retry`() {
+    fun `Gitt en at vi faar 423 LOCKED fra PDL saa gjoer vi ingen retry`() {
 
         val ack = mockk<Acknowledgment>()
         justRun { ack.acknowledge() }
@@ -56,6 +56,19 @@ class SedHendelseListenerExceptionTest : IntegrationBase() {
         sedListenerAdresse.consumeSedMottatt(enSedHendelse(), mockk(relaxed = true), ack )
 
         verify(exactly = 3) { adresseoppdatering.vurderUtenlandskKontaktadresse(any()) }
+        verify(exactly = 1) { ack.acknowledge() }
+
+    }
+
+    @Test
+    fun `Gitt at vi skal oppdatere kontaktadresse med en adresse som allerede finnes i PDL som oppholdsadresse`() {
+        val ack = mockk<Acknowledgment>()
+        justRun { ack.acknowledge() }
+
+        every { adresseoppdatering.vurderUtenlandskKontaktadresse(any()) } throws HttpClientErrorException(HttpStatus.BAD_REQUEST, "Kontaktadressen er allerede registrert som oppholdsadresse")
+        sedListenerAdresse.consumeSedMottatt(enSedHendelse(), mockk(relaxed = true), ack )
+
+        verify(exactly = 1) { adresseoppdatering.vurderUtenlandskKontaktadresse(any()) }
         verify(exactly = 1) { ack.acknowledge() }
 
     }

@@ -46,6 +46,8 @@ class SedListenerAdresse(
                     } catch (ex: HttpClientErrorException) {
                         if (ex.statusCode == HttpStatus.LOCKED)
                             logger.error("Det pågår allerede en adresseoppdatering på bruker", ex)
+                        else if (ex.message != null && ex.message!!.contains("Kontaktadressen er allerede registrert som oppholdsadresse"))
+                            logger.warn("Kontaktadressen er allerede registrert som bostedsadresse, Ingen Oppdatering")
                         else throw ex
                     } catch (ex: Exception) {
                         logger.error("Noe gikk galt under behandling av SED-hendelse for adresse", ex)
