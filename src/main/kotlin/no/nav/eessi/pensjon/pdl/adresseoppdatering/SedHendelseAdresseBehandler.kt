@@ -64,7 +64,7 @@ class SedHendelseBehandler(
     }
 
     private fun log(result: Result) {
-        logger.info(Fodselsnummer.vask11sifre(result.toString()))
+        logger.info(Fodselsnummer.vaskFnr(result.toString()))
         if (result is Oppdatering) {
             secureLogger.info("Oppdatering til PDL:\n${result.pdlEndringsOpplysninger.toJson()}")
         }
