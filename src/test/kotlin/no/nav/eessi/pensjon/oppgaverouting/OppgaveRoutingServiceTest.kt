@@ -7,16 +7,17 @@ import no.nav.eessi.pensjon.eux.model.BucType.*
 import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.buc.SakStatus
-import no.nav.eessi.pensjon.eux.model.buc.SakStatus.*
+import no.nav.eessi.pensjon.eux.model.buc.SakStatus.AVSLUTTET
+import no.nav.eessi.pensjon.eux.model.buc.SakStatus.LOPENDE
 import no.nav.eessi.pensjon.eux.model.buc.SakType
 import no.nav.eessi.pensjon.eux.model.buc.SakType.*
 import no.nav.eessi.pensjon.klienter.norg2.Norg2ArbeidsfordelingItem
 import no.nav.eessi.pensjon.klienter.norg2.Norg2Klient
 import no.nav.eessi.pensjon.klienter.norg2.Norg2Service
-import no.nav.eessi.pensjon.models.*
 import no.nav.eessi.pensjon.oppgaverouting.Enhet.*
 import no.nav.eessi.pensjon.personidentifisering.IdentifisertPersonPDL
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Relasjon.*
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Relasjon.FORSIKRET
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Relasjon.GJENLEVENDE
 import no.nav.eessi.pensjon.personoppslag.pdl.model.SEDPersonRelasjon
 import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import no.nav.eessi.pensjon.utils.mapJsonToAny
@@ -72,10 +73,10 @@ internal class OppgaveRoutingServiceTest {
             fun arguments() =
                 Arrays.stream(
                     arrayOf(
-                        TestArgumentsPBuc02(PENSJON_UTLAND, NORGE, GJENLEV),
+                        TestArgumentsPBuc02(NFP_UTLAND_AALESUND, NORGE, GJENLEV),
                         TestArgumentsPBuc02(UFORE_UTLANDSTILSNITT, NORGE, UFOREP, LOPENDE),
                         TestArgumentsPBuc02(UFORE_UTLANDSTILSNITT, NORGE, UFOREP, AVSLUTTET),
-                        TestArgumentsPBuc02(PENSJON_UTLAND, NORGE, BARNEP),
+                        TestArgumentsPBuc02(NFP_UTLAND_AALESUND, NORGE, BARNEP),
 
                         TestArgumentsPBuc02(NFP_UTLAND_AALESUND, NORGE, ALDER),
                         TestArgumentsPBuc02(UFORE_UTLANDSTILSNITT, NORGE, UFOREP, LOPENDE),
@@ -106,7 +107,7 @@ internal class OppgaveRoutingServiceTest {
 
         @ParameterizedTest
         @MethodSource("arguments")
-        fun `Routing for P_BUC_02'er`(arguments: TestArgumentsPBuc02) {
+        fun     `Routing for P_BUC_02'er`(arguments: TestArgumentsPBuc02) {
 
             assertEquals(
                 arguments.expectedResult,
@@ -223,7 +224,7 @@ internal class OppgaveRoutingServiceTest {
     }
 
     @Test
-    fun `Gitt gjenlevendesak for P_BUC_02 mottatt når bruk av Norg2 tjeneste benyttes så routes det til PensjonUtland`() {
+    fun `Gitt gjenlevendesak for P_BUC_02 mottatt når bruk av Norg2 tjeneste benyttes så routes det til NFP_UTLAND_AALESUND`() {
         val json = """
             {
             "id": 100026861,
@@ -267,7 +268,7 @@ internal class OppgaveRoutingServiceTest {
         )
 
         val result = routingService.route(oppgaveroutingrequest)
-        assertEquals(PENSJON_UTLAND, result)
+        assertEquals(NFP_UTLAND_AALESUND, result)
 
     }
 
