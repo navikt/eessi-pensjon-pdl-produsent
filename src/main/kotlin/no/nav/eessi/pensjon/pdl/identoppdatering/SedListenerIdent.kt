@@ -21,14 +21,10 @@ class SedListenerIdent(
 
     private val logger = LoggerFactory.getLogger(SedListenerIdent::class.java)
     private val latch = CountDownLatch(1)
-    private lateinit var consumeIncomingSed: MetricsHelper.Metric
+    private var consumeIncomingSed: MetricsHelper.Metric = metricsHelper.init("consumeIncomingSed")
     private val secureLogger = LoggerFactory.getLogger("secureLog")
 
     fun getLatch() = latch
-
-    init {
-        consumeIncomingSed = metricsHelper.init("consumeIncomingSed")
-    }
 
     @KafkaListener(
         containerFactory = "sedKafkaListenerContainerFactory",
@@ -40,7 +36,7 @@ class SedListenerIdent(
             consumeIncomingSed.measure {
                 logger.info("SedMottatt i partisjon: ${cr.partition()}, med offset: ${cr.offset()}")
                 try {
-                    if (cr.offset() in listOf(518691L, 519143L, 768200L, 814710L)) {
+                    if (cr.offset() in listOf(518691L, 519143L, 768200L, 814710L, 840165L)) {
                         logger.warn("Hopper over offset: ${cr.offset()} grunnet feil ved henting av vedlegg...")
                     } else {
                         behandleIdentHendelse.behandle(hendelse)
