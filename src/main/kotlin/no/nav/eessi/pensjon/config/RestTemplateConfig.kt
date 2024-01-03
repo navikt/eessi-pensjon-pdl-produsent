@@ -24,9 +24,7 @@ import org.springframework.http.client.ClientHttpRequestExecution
 import org.springframework.http.client.ClientHttpRequestInterceptor
 import org.springframework.http.client.SimpleClientHttpRequestFactory
 import org.springframework.web.client.DefaultResponseErrorHandler
-import org.springframework.web.client.ResponseErrorHandler
 import org.springframework.web.client.RestTemplate
-import java.time.Duration
 
 
 @Configuration
@@ -90,9 +88,7 @@ class RestTemplateConfig(
                 tokenIntercetor
             )
             .build().apply {
-                requestFactory = BufferingClientHttpRequestFactory(SimpleClientHttpRequestFactory()
-                    .apply { setOutputStreaming(false) }
-                )
+                requestFactory = BufferingClientHttpRequestFactory(SimpleClientHttpRequestFactory())
             }
     }
 
