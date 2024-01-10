@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
-internal class EndringsmeldingUtAdresseTest() {
+internal class EndringsmeldingUtAdresseTest {
 
     private val utenlandskAdresse = EndringsmeldingUtenlandskAdresse(
         landkode = "NO",

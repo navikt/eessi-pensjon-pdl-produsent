@@ -15,7 +15,7 @@ import org.junit.jupiter.params.provider.CsvSource
  * https://confluence.adeo.no/display/MOFO/OMR-330+Adresser+-+06+-+Produsent+adresser#
  */
 
-internal class AdresseValideringTest() {
+internal class AdresseValideringTest {
     /**
      * Bygning feltet kan ikke inneholde ordene: "postboks", "postb.",  "postbox", "po.box" og "p.b."
      * ikke ord som "ukjent" "vet ikke"

@@ -13,7 +13,7 @@ import org.springframework.http.HttpMethod
 import java.nio.file.Files
 import java.nio.file.Paths
 
-class CustomMockServer() {
+class CustomMockServer {
     private val serverPort = System.getProperty("mockserverport").toInt()
 
     fun medSed(bucPath: String, sedLocation: String) = apply {

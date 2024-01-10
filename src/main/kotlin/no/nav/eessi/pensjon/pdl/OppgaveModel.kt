@@ -1,4 +1,4 @@
-package no.nav.eessi.pensjon.pdl;
+package no.nav.eessi.pensjon.pdl
 
 import no.nav.eessi.pensjon.oppgave.OppgaveData
 
