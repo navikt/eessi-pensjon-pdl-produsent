@@ -25,6 +25,8 @@ import org.springframework.http.client.ClientHttpRequestInterceptor
 import org.springframework.http.client.SimpleClientHttpRequestFactory
 import org.springframework.web.client.DefaultResponseErrorHandler
 import org.springframework.web.client.RestTemplate
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 
 @Configuration
@@ -109,7 +111,7 @@ class RestTemplateConfig(
     private fun onBehalfOfBearerTokenInterceptor(clientId: String): ClientHttpRequestInterceptor {
         logger.info("init onBehalfOfBearerTokenInterceptor: $clientId")
         return ClientHttpRequestInterceptor { request: HttpRequest, body: ByteArray?, execution: ClientHttpRequestExecution ->
-            val navidentTokenFromUI = getToken(tokenValidationContextHolder).tokenAsString
+            val navidentTokenFromUI = URLDecoder.decode(getToken(tokenValidationContextHolder)?.encodedToken, StandardCharsets.UTF_8)
 
             logger.info("NAVIdent: ${getClaims(tokenValidationContextHolder).get("NAVident")?.toString()}")
 
@@ -136,7 +138,7 @@ class RestTemplateConfig(
     ): ClientHttpRequestInterceptor {
         return ClientHttpRequestInterceptor { request: HttpRequest, body: ByteArray?, execution: ClientHttpRequestExecution ->
             val response = oAuth2AccessTokenService.getAccessToken(clientProperties)
-            request.headers.setBearerAuth(response.accessToken)
+            request.headers.setBearerAuth(response?.accessToken!!)
             /*
             val tokenChunks = response.accessToken.split(".")
             val tokenBody =  tokenChunks[1]
