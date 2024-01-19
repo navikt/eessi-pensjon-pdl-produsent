@@ -3,17 +3,7 @@ package no.nav.eessi.pensjon.pdl.identoppdateringgjenlev
 import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.UtenlandskId
 import no.nav.eessi.pensjon.eux.model.SedHendelse
-import no.nav.eessi.pensjon.eux.model.sed.Bruker
-import no.nav.eessi.pensjon.eux.model.sed.P10000
-import no.nav.eessi.pensjon.eux.model.sed.P15000
-import no.nav.eessi.pensjon.eux.model.sed.P2100
-import no.nav.eessi.pensjon.eux.model.sed.P4000
-import no.nav.eessi.pensjon.eux.model.sed.P5000
-import no.nav.eessi.pensjon.eux.model.sed.P6000
-import no.nav.eessi.pensjon.eux.model.sed.P7000
-import no.nav.eessi.pensjon.eux.model.sed.P8000
-import no.nav.eessi.pensjon.eux.model.sed.P9000
-import no.nav.eessi.pensjon.eux.model.sed.SED
+import no.nav.eessi.pensjon.eux.model.sed.*
 import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.oppgave.OppgaveDataGjenlevUID
@@ -29,6 +19,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
 import no.nav.eessi.pensjon.personoppslag.pdl.model.*
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe.*
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
@@ -69,7 +60,7 @@ class VurderGjenlevOppdateringIdent(
             return IngenOppdatering("Seden har ingen norsk pin på gjenlevende")
         }
 
-        if (gjenlevFdatoErLikGjenlevFnr(gjenlevendeNorskPin, gjenlevendeFraSed))
+        if (gjenlevFdatoUlikLikGjenlevFnr(gjenlevendeNorskPin, gjenlevendeFraSed))
             return IngenOppdatering("Gjenlevende fdato stemmer ikke overens med fnr", "Gjenlevende fdato stemmer ikke overens med fnr")
 
         val gjenlevendeUid = gjenlevendeFraSed?.person?.pin?.filter { it.land == sedHendelse.avsenderLand && it.land != "NO" }
@@ -158,7 +149,7 @@ class VurderGjenlevOppdateringIdent(
         )
     }
 
-    private fun gjenlevFdatoErLikGjenlevFnr(
+    private fun gjenlevFdatoUlikLikGjenlevFnr(
         gjenlevendeNorskPin: String?,
         gjenlevendeFraSed: Bruker?
     ) : Boolean {

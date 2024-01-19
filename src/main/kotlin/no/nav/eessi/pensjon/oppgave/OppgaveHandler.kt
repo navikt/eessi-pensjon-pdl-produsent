@@ -121,7 +121,7 @@ class OppgaveHandler(
         return oppgaveruting.route(
             OppgaveRoutingRequest.fra(
             identifisertePerson,
-            identifisertePerson.fnr!!.getBirthDate(),
+            identifisertePerson.fnr!!.getBirthDate()!!,
             identifisertePerson.personRelasjon?.saktype,
             sedHendelse,
             HendelseType.MOTTATT,
