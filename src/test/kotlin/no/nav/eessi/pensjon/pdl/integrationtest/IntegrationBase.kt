@@ -84,7 +84,7 @@ abstract class IntegrationBase {
 
     @BeforeEach
     fun setup() {
-        every { personService.harAdressebeskyttelse(any(), any()) } returns false
+        every { personService.harAdressebeskyttelse(any()) } returns false
 
         listAppender.start()
         deugLogger.addAppender(listAppender)
