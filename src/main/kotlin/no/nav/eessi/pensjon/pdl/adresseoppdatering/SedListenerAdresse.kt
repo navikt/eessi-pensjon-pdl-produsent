@@ -34,7 +34,7 @@ class SedListenerAdresse(
             adresseMetric.measure {
                 logger.info("SED-hendelse mottatt i partisjon: ${cr.partition()}, med offset: ${cr.offset()} ")
 
-                val offsetToSkip = listOf(811036L, 828626L, 835424L, 887875L, 887884L, 895313L, 918851L, 970852L, 990520L)
+                val offsetToSkip = listOf<Long>(811036, 828626, 835424, 887875, 887884, 895313, 918851, 970852, 990520, 993284)
                 if (cr.offset() in offsetToSkip) {
                     logger.warn("Hopper over offset: ${cr.offset()}")
                 }
