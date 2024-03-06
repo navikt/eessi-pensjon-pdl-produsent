@@ -178,12 +178,18 @@ class VurderIdentoppdatering(
                         identifikasjonsnummer = konvertertTilPdlFormat(utenlandskPin),
                         utstederland = kodeverkClient.finnLandkode(utenlandskPin.land)
                             ?: throw RuntimeException("Feil ved landkode"),
-                        kilde = kilde
+                        kilde = if (kilde.contains("Employee Insurance UWV Amsterdam office")) formaterNederlandskKilde(kilde) else kilde
                     ),
                     opplysningstype = Opplysningstype.UTENLANDSKIDENTIFIKASJONSNUMMER
                 )
             )
         )
+
+    private fun formaterNederlandskKilde(kilde: String): String =
+        kilde.replace("->", "")
+            .replace("<-", "")
+            .replace("<", "")
+            .replace(">", "")
 
     private fun konvertertTilPdlFormat(utenlandskPin: UtenlandskId): String {
         if (utenlandskPin.land == "SE") {
