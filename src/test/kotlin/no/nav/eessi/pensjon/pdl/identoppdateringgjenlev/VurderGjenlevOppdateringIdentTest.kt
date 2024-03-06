@@ -28,6 +28,7 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.skyscreamer.jsonassert.JSONAssert
 
 private const val SVERIGE = "SE"
+private const val NEDERLAND = "NL"
 private const val NORGE = "NO"
 
 class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
@@ -53,6 +54,9 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
 
         every { kodeverkClient.finnLandkode("FI") } returns "FIN"
         every { kodeverkClient.finnLandkode("FIN") } returns "FI"
+
+        every { kodeverkClient.finnLandkode("NL") } returns "NLD"
+        every { kodeverkClient.finnLandkode("NLD") } returns "NL"
 
         identoppdatering = VurderGjenlevOppdateringIdent(
             euxService,
@@ -85,6 +89,39 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
                 pdlEndringsMelding(FNR, utstederland = "SWE", utenlandskInstitusjon = "Utenlandsk institusjon")
             ),
             (identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = SVERIGE, navBruker = Fodselsnummer.fra(FNR))))
+        )
+    }
+
+    @Test
+    fun `Gitt at vi har en endringsmelding med en nederlandsk uid, saa skal det opprettes en endringsmelding med riktig format på nederlandsk institusjon`() {
+        every { personService.hentPerson(NorskIdent(FNR)) } returns
+                personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, FOLKEREGISTERIDENT)))
+
+        val sed = sedGjenlevende(
+            pinItem = listOf(
+                PinItem(identifikator = "1234.56.789", land = NEDERLAND),
+                PinItem(identifikator = FNR, land = NORGE)
+            ),
+            fodselsdato = "1971-06-11",
+        )
+        val p2100 = P2100(SedType.P2100, nav = sed.nav, pensjon = sed.pensjon)
+        every { euxService.hentSed(any(), any()) } returns p2100
+
+        assertEquals(
+            Oppdatering(
+                "Innsending av endringsmelding",
+                pdlEndringsMelding(
+                    FNR, utstederland = "NLD",
+                    utenlandskId = "1234.56.789",
+                    utenlandskInstitusjon = "Employee Insurance UWV Amsterdam office:P_BUC_03  P_BUC_10, AW_BUC_06x, AW_BUC_07x, AW_BUC_9x, AW_BUC_10x, AW_BUC_11  AW_BUC_13, M_BUC_03b"
+                )
+            ),
+            identoppdatering.vurderUtenlandskGjenlevIdent(
+                sedHendelse(
+                avsenderLand = NEDERLAND,
+                avsenderNavn = "Employee Insurance UWV Amsterdam office:P_BUC_03 -> P_BUC_10, AW_BUC_06x, AW_BUC_07x, AW_BUC_9x, AW_BUC_10x, AW_BUC_11  AW_BUC_13, M_BUC_03b",
+                navBruker = Fodselsnummer.fra(FNR))
+            )
         )
     }
 

@@ -216,7 +216,7 @@ class VurderIdentoppdateringTest : IdentBaseTest() {
             identoppdatering.vurderUtenlandskIdent(
                 sedHendelse(
                     avsenderLand = "NL",
-                    avsenderNavn = "Employee Insurance UWV Amsterdam office:P_BUC_03  P_BUC_10, AW_BUC_06x, AW_BUC_07x, AW_BUC_9x, AW_BUC_10x, AW_BUC_11  AW_BUC_13, M_BUC_03b",
+                    avsenderNavn = "Employee Insurance UWV Amsterdam office:P_BUC_03 -> P_BUC_10, AW_BUC_06x, AW_BUC_07x, AW_BUC_9x, AW_BUC_10x, AW_BUC_11  AW_BUC_13, M_BUC_03b",
                     navBruker = Fodselsnummer.fra(FNR)
                 )
             )
