@@ -82,7 +82,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
         assertEquals(
             Oppdatering(
                 "Innsending av endringsmelding",
-                pdlEndringsMelding(FNR, utstederland = "SWE")
+                pdlEndringsMelding(FNR, utstederland = "SWE", utenlandskInstitusjon = "Utenlandsk institusjon")
             ),
             (identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = SVERIGE, navBruker = Fodselsnummer.fra(FNR))))
         )
@@ -107,7 +107,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
         assertEquals(
             Oppdatering(
                 "Innsending av endringsmelding",
-                pdlEndringsMelding(FNR, utstederland = "SWE")
+                pdlEndringsMelding(FNR, utstederland = "SWE", utenlandskInstitusjon = "Utenlandsk institusjon")
             ),
             (identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = SVERIGE, navBruker = Fodselsnummer.fra(FNR))))
         )
@@ -131,7 +131,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
         assertEquals(
             Oppdatering(
                 "Innsending av endringsmelding",
-                pdlEndringsMelding(FNR, utstederland = "SWE")
+                pdlEndringsMelding(FNR, utstederland = "SWE", utenlandskInstitusjon = "Utenlandsk institusjon")
             ),
             (identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = SVERIGE, navBruker = Fodselsnummer.fra(FNR))))
         )
@@ -178,7 +178,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
         assertEquals(
             Oppdatering(
                 "Innsending av endringsmelding",
-                pdlEndringsMelding(FNR, gjenlevUid, utstederland = "DNK")
+                pdlEndringsMelding(FNR, gjenlevUid, utstederland = "DNK", utenlandskInstitusjon = "Utenlandsk institusjon")
             ),
             (identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = "DK", navBruker = Fodselsnummer.fra(FNR))))
         )

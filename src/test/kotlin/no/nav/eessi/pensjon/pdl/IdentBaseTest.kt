@@ -48,7 +48,7 @@ open class IdentBaseTest {
         fnr: String,
         utenlandskId: String = SVENSK_FNR,
         utstederland: String,
-        utenlandskInstitusjon: String = "Utenlandsk institusjon"
+        utenlandskInstitusjon: String? = "Utenlandsk institusjon"
     ) =
         PdlEndringOpplysning(
             listOf(
@@ -58,7 +58,7 @@ open class IdentBaseTest {
                     endringsmelding = EndringsmeldingUID(
                         identifikasjonsnummer = utenlandskId,
                         utstederland = utstederland,
-                        kilde = utenlandskInstitusjon
+                        kilde = utenlandskInstitusjon!!
                     ),
                     opplysningstype = Opplysningstype.UTENLANDSKIDENTIFIKASJONSNUMMER
                 )
