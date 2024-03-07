@@ -164,7 +164,7 @@ class VurderIdentoppdateringTest : IdentBaseTest() {
 
 
         assertEquals(
-            Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utstederland = "SWE", utenlandskInstitusjon = "Utenlandsk institusjon")),
+            Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utstederland = "SWE")),
             (identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra(FNR))))
         )
     }
@@ -451,7 +451,7 @@ class VurderIdentoppdateringTest : IdentBaseTest() {
                 )
 
         assertEquals(
-            Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utstederland = "SWE", utenlandskInstitusjon = "Utenlandsk institusjon")),
+            Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utstederland = "SWE")),
             (identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra(FNR)))
         ))
 
@@ -472,7 +472,7 @@ class VurderIdentoppdateringTest : IdentBaseTest() {
                 )
 
         assertEquals(
-            Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utstederland = "SWE", utenlandskInstitusjon = "Utenlandsk institusjon")),
+            Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utstederland = "SWE")),
             identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra(FNR)))
         )
 
@@ -494,7 +494,7 @@ class VurderIdentoppdateringTest : IdentBaseTest() {
                 )
 
         assertEquals(
-                Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utstederland = "SWE", utenlandskInstitusjon = "Utenlandsk institusjon")),
+                Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utstederland = "SWE")),
                 identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra(FNR)))
         )
 
@@ -515,7 +515,7 @@ class VurderIdentoppdateringTest : IdentBaseTest() {
                 )
 
         assertEquals(
-            Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utstederland = "SWE", utenlandskInstitusjon = "Utenlandsk institusjon")),
+            Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utstederland = "SWE")),
             identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra(DNR)))
         )
     }
@@ -536,7 +536,7 @@ class VurderIdentoppdateringTest : IdentBaseTest() {
                 )
 
         assertEquals(
-            Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(npid, utstederland = "SWE", utenlandskInstitusjon = "Utenlandsk institusjon")),
+            Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(npid, utstederland = "SWE")),
             identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra(npid)))
         )
     }

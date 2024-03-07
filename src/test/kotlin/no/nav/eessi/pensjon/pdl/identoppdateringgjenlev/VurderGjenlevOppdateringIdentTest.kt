@@ -55,8 +55,8 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
         every { kodeverkClient.finnLandkode("FI") } returns "FIN"
         every { kodeverkClient.finnLandkode("FIN") } returns "FI"
 
-        every { kodeverkClient.finnLandkode("NL") } returns "NLD"
-        every { kodeverkClient.finnLandkode("NLD") } returns "NL"
+        every { kodeverkClient.finnLandkode(NEDERLAND) } returns "NLD"
+        every { kodeverkClient.finnLandkode("NLD") } returns NEDERLAND
 
         identoppdatering = VurderGjenlevOppdateringIdent(
             euxService,
@@ -86,7 +86,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
         assertEquals(
             Oppdatering(
                 "Innsending av endringsmelding",
-                pdlEndringsMelding(FNR, utstederland = "SWE", utenlandskInstitusjon = "Utenlandsk institusjon")
+                pdlEndringsMelding(FNR, utstederland = "SWE")
             ),
             (identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = SVERIGE, navBruker = Fodselsnummer.fra(FNR))))
         )
@@ -168,7 +168,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
         assertEquals(
             Oppdatering(
                 "Innsending av endringsmelding",
-                pdlEndringsMelding(FNR, utstederland = "SWE", utenlandskInstitusjon = "Utenlandsk institusjon")
+                pdlEndringsMelding(FNR, utstederland = "SWE")
             ),
             (identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = SVERIGE, navBruker = Fodselsnummer.fra(FNR))))
         )
@@ -215,7 +215,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
         assertEquals(
             Oppdatering(
                 "Innsending av endringsmelding",
-                pdlEndringsMelding(FNR, gjenlevUid, utstederland = "DNK", utenlandskInstitusjon = "Utenlandsk institusjon")
+                pdlEndringsMelding(FNR, gjenlevUid, utstederland = "DNK")
             ),
             (identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(avsenderLand = "DK", navBruker = Fodselsnummer.fra(FNR))))
         )
