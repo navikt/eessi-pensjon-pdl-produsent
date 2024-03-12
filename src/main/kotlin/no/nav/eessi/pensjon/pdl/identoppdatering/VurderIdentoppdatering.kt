@@ -168,7 +168,7 @@ class VurderIdentoppdatering(
 
     private fun brukerFra(sed: SED) = sed.nav?.bruker
 
-    private fun pdlEndringOpplysning(norskFnr: String, utenlandskPin: UtenlandskId, kilde: String) =
+    private fun pdlEndringOpplysning(norskFnr: String, utenlandskPin: UtenlandskId, kildeTilPdl: String) =
         PdlEndringOpplysning(
             listOf(
                 Personopplysninger(
@@ -178,14 +178,14 @@ class VurderIdentoppdatering(
                         identifikasjonsnummer = konvertertTilPdlFormat(utenlandskPin),
                         utstederland = kodeverkClient.finnLandkode(utenlandskPin.land)
                             ?: throw RuntimeException("Feil ved landkode"),
-                        kilde = if (kilde.contains("Employee Insurance UWV Amsterdam office")) formaterNederlandskKilde(kilde) else kilde
+                        kilde = formaterVekkHakeParentes(kildeTilPdl)
                     ),
                     opplysningstype = Opplysningstype.UTENLANDSKIDENTIFIKASJONSNUMMER
                 )
             )
         )
 
-    private fun formaterNederlandskKilde(kilde: String): String =
+    private fun formaterVekkHakeParentes(kilde: String): String =
         kilde.replace("->", "")
             .replace("<-", "")
             .replace("<", "")
