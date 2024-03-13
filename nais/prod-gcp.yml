@@ -17,7 +17,7 @@ spec:
     outbound:
       external:
         - host: pdl-api.prod-fss-pub.nais.io
-        - host: kodeverk.prod-fss-pub.nais.io
+        - host: kodeverk-api.nav.no
         - host: pdl-mottak.prod-fss-pub.nais.io
         - host: eux-rina-api.prod-fss-pub.nais.io
         - host: norg2.prod-fss-pub.nais.io
@@ -46,7 +46,7 @@ spec:
     - name: KAFKA_OPPGAVE_TOPIC
       value: eessipensjon.privat-oppgave
     - name: KODEVERK_URL
-      value: https://kodeverk.prod-fss-pub.nais.io
+      value: https://kodeverk-api.nav.no
     - name: AZURE_APP_PROXY_CLIENT_ID
       value: prod-fss.eessipensjon.eessi-pensjon-onprem-proxy
     - name: AZURE_APP_KODEVERK_CLIENT_ID
