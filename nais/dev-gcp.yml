@@ -17,7 +17,7 @@ spec:
     outbound:
       external:
         - host: pdl-api.dev-fss-pub.nais.io
-        - host: kodeverk.dev-fss-pub.nais.io
+        - host: kodeverk-api.nav.no
         - host: pdl-mottak.dev-fss-pub.nais.io
         - host: eux-rina-api-eessibasis.dev-fss-pub.nais.io
         - host: norg2.dev-fss-pub.nais.io
