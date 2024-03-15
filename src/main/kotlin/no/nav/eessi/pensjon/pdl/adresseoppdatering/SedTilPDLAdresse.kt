@@ -26,7 +26,7 @@ class SedTilPDLAdresse(private val kodeverkClient: KodeverkClient) {
      */
     fun konverter(kilde: String, sedAdresse: Adresse) =
         EndringsmeldingKontaktAdresse(
-            kilde = kilde,
+            kilde = formaterVekkHakeParentes(kilde),
             gyldigFraOgMed = LocalDate.now(),
             gyldigTilOgMed = LocalDate.now().plus(gyldighetsperiodeKontaktadresse),
             coAdressenavn = null,
@@ -55,6 +55,12 @@ class SedTilPDLAdresse(private val kodeverkClient: KodeverkClient) {
                 it.adresse.regionDistriktOmraade)
             ) { "Ikke gyldig adresse, har kun landkode" }
         }
+
+    private fun formaterVekkHakeParentes(kilde: String): String =
+        kilde.replace("->", "")
+            .replace("<-", "")
+            .replace("<", "")
+            .replace(">", "")
 
     private fun requireMinstEttFeltMedVerdi(verdier: List<String?>, lazyMessage: () -> Any) {
         require(verdier.any { it.isNullOrEmpty().not() }, lazyMessage)

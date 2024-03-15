@@ -189,7 +189,7 @@ class VurderAdresseoppdatering(
             )
         ))
 
-    private fun formaterVekkHakeParentes(kilde: String): String =
+    fun formaterVekkHakeParentes(kilde: String): String =
         kilde.replace("->", "")
             .replace("<-", "")
             .replace("<", "")
