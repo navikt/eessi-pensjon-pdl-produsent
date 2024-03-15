@@ -4,6 +4,7 @@ import io.mockk.every
 import io.mockk.mockk
 import no.nav.eessi.pensjon.eux.model.sed.Adresse
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
+import no.nav.eessi.pensjon.kodeverk.KodeverkClient.Companion.toJson
 import no.nav.eessi.pensjon.kodeverk.LandkodeException
 import no.nav.eessi.pensjon.pdl.EndringsmeldingKontaktAdresse
 import no.nav.eessi.pensjon.pdl.EndringsmeldingUtenlandskAdresse
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.skyscreamer.jsonassert.JSONAssert
 import java.time.LocalDate
 
 class SedTilPDLAdresseTest {
@@ -71,6 +73,33 @@ class SedTilPDLAdresseTest {
             )
 
         assertEquals(pdlAdresse, SedTilPDLAdresse(kodeverkClient).konverter("some kilde", sedAdresse))
+    }
+
+    @Test
+    fun `Kilde med hakeparetens skal byttes ut ved innsending av adresse til PDL`() {
+        val sedAdresse = adresse(gate = "postboks 123")
+        val result = """
+                {
+                  "@type" : "KONTAKTADRESSE",
+                  "kilde" : "Nederland  Svada kommer her som skal sendes inn til PDL",
+                  "gyldigFraOgMed" : "2024-03-15",
+                  "gyldigTilOgMed" : "2029-03-15",
+                  "coAdressenavn" : null,
+                  "adresse" : {
+                    "@type" : "UTENLANDSK_ADRESSE",
+                    "adressenavnNummer" : null,
+                    "bySted" : "some by",
+                    "bygningEtasjeLeilighet" : "some bygning",
+                    "landkode" : "NLD",
+                    "postboksNummerNavn" : "postboks 123",
+                    "postkode" : "some postnummer",
+                    "regionDistriktOmraade" : "some region"
+                  }
+              }""".trimIndent()
+
+        val bla = SedTilPDLAdresse(kodeverkClient).konverter("Nederland -> Svada kommer her som skal sendes inn til PDL", sedAdresse)
+        println("******* ${bla.toJson()}")
+        JSONAssert.assertEquals(result, bla.toJson(), false)
     }
 
     @ParameterizedTest
