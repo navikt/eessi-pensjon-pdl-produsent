@@ -170,7 +170,7 @@ class VurderAdresseoppdatering(
                 endringstype = Endringstype.KORRIGER,
                 ident = norskFnr,
                 endringsmelding = EndringsmeldingKontaktAdresse(
-                    kilde = kilde,
+                    kilde = formaterVekkHakeParentes(kilde),
                     gyldigFraOgMed = LocalDate.now(),
                     gyldigTilOgMed = LocalDate.now().plus(SedTilPDLAdresse.gyldighetsperiodeKontaktadresse),
                     coAdressenavn = kontaktadresse.coAdressenavn,
@@ -188,4 +188,11 @@ class VurderAdresseoppdatering(
                 opplysningsId = kontaktadresse.metadata.opplysningsId
             )
         ))
+
+    private fun formaterVekkHakeParentes(kilde: String): String =
+        kilde.replace("->", "")
+            .replace("<-", "")
+            .replace("<", "")
+            .replace(">", "")
+
 }
