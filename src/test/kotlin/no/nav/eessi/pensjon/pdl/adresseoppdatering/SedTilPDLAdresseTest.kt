@@ -82,8 +82,8 @@ class SedTilPDLAdresseTest {
                 {
                   "@type" : "KONTAKTADRESSE",
                   "kilde" : "Nederland  Svada kommer her som skal sendes inn til PDL",
-                  "gyldigFraOgMed" : "2024-03-15",
-                  "gyldigTilOgMed" : "2029-03-15",
+                  "gyldigFraOgMed" : "2024-03-21",
+                  "gyldigTilOgMed" : "2029-03-21",
                   "coAdressenavn" : null,
                   "adresse" : {
                     "@type" : "UTENLANDSK_ADRESSE",
