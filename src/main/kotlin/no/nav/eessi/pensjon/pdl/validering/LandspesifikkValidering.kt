@@ -1,24 +1,7 @@
 package no.nav.eessi.pensjon.pdl.validering
 
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
-import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.BELGIA
-import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.BULGARIA
-import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.DANMARK
-import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.ESTLAND
-import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.FINLAND
-import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.FRANKRIKE
-import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.ISLAND
-import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.ITALIA
-import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.LATVIA
-import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.LITAUEN
-import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.NEDERLAND
-import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.POLEN
-import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.SLOVENIA
-import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.SPANIA
-import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.STORBRITANNIA
-import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.SVERIGE
-import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.TYSKLAND
-import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.UNGARN
+import no.nav.eessi.pensjon.pdl.validering.GyldigeLand.*
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
@@ -82,7 +65,7 @@ class LandspesifikkValidering(private val kodeverkClient: KodeverkClient) {
     private fun finland(uid: String) = uid.length == 11 && uid.substring(6,7) in listOf("-","A","a") && uid.checkDigitsLength(IntRange(0,5), 6) && uid.checkDigitsLength(IntRange(7, 9), 3)
     private fun italia(uid: String) = uid.isLettersOrDigit() && uid.length == 16
     private fun latvia(uid: String) = uid.checkDigitsLength(11) && uid.substring(5, 6) != "-" && uid.checkDigitsLength(IntRange(0,6), 6) && uid.checkDigitsLength(IntRange(6,11), 5)
-    private fun nederland(uid: String) = uid.length == 11 && uid.checkDigitsLength(9) && uid.substring(4, 5) == "." && uid.substring(7, 8) == "."
+    private fun nederland(uid: String)  =  uid.checkDigitsLength(9) && (uid.length == 9 || (uid.length == 11 && uid[4] == '.' && uid[7] == '.'))
     private fun slovenia(uid: String) = (uid.checkDigitsLength(13) || uid.checkDigitsLength(8))  && (uid.length == 8 || uid.length == 13)
 
     /**

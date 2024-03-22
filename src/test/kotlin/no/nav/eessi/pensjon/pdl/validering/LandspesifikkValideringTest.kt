@@ -76,6 +76,7 @@ internal class LandspesifikkValideringTest {
         "LV, 130177-180171, false",
         "LV, 130177-1801Ø, false",
         "NL, 1234.56.789, true",
+        "NL, 138153279, true",
         "NL, 130177-1801Ø, false",
         "NL, 130177&1801Ø, false",
         "NL, 130-1801Ø, false",
