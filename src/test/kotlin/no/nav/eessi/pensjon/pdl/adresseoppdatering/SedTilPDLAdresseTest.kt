@@ -76,14 +76,15 @@ class SedTilPDLAdresseTest {
     }
 
     @Test
-    fun `Kilde med hakeparetens skal byttes ut ved innsending av adresse til PDL`() {
+    fun `Kilde med hakeparentes skal byttes ut ved innsending av adresse til PDL`() {
         val sedAdresse = adresse(gate = "postboks 123")
+
         val result = """
                 {
                   "@type" : "KONTAKTADRESSE",
                   "kilde" : "Nederland  Svada kommer her som skal sendes inn til PDL",
-                  "gyldigFraOgMed" : "2024-03-22",
-                  "gyldigTilOgMed" : "2029-03-22",
+                  "gyldigFraOgMed" : "${LocalDate.now()}",
+                  "gyldigTilOgMed" : "${LocalDate.now().plusYears(5)}",
                   "coAdressenavn" : null,
                   "adresse" : {
                     "@type" : "UTENLANDSK_ADRESSE",
