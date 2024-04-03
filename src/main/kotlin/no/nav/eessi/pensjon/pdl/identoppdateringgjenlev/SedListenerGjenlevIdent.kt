@@ -5,9 +5,11 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
+import org.springframework.web.client.HttpClientErrorException
 import java.util.*
 import java.util.concurrent.CountDownLatch
 
@@ -37,20 +39,33 @@ class SedListenerGjenlevIdent(
         MDC.putCloseable("x_request_id", UUID.randomUUID().toString()).use {
             consumeIncomingSed.measure {
                 logger.info("SedGjenlevMottatt i partisjon: ${cr.partition()}, med offset: ${cr.offset()}")
-                runCatching {
-                    behandleIdentHendelse.behandlenGjenlevHendelse(hendelse)
-                }.onSuccess {
-                    logger.info("Acket sedGjenlevMottatt melding med offset: ${cr.offset()} i partisjon ${cr.partition()}")
-                    acknowledgment.acknowledge()
-                    latch.countDown()
+                try {
+                    if (cr.offset() in listOf(1072448L)) {
+                        logger.warn("Hopper over offset: ${cr.offset()} grunnet feil ved henting av vedlegg...")
+                    } else {
+                        runCatching {
+                            behandleIdentHendelse.behandlenGjenlevHendelse(hendelse)
+                        }.onSuccess {
+                            logger.info("Acket sedGjenlevMottatt melding med offset: ${cr.offset()} i partisjon ${cr.partition()}")
+                            acknowledgment.acknowledge()
+                            latch.countDown()
 
-                }.onFailure {
-                    logger.error("Noe gikk galt under behandling av SED-hendelse", it)
-                    secureLogger.info("Noe gikk galt under behandling av SED-hendelse:\n$hendelse")
-                    throw it
+                        }.onFailure {
+                            logger.error("Noe gikk galt under behandling av SED-hendelse", it)
+                            secureLogger.info("Noe gikk galt under behandling av SED-hendelse:\n$hendelse")
+                            throw it
+                        }
+                    }
+                } catch (ex: HttpClientErrorException) {
+                    if (ex.statusCode == HttpStatus.LOCKED)
+                        logger.error("Det pågår allerede en adresseoppdatering på bruker", ex)
+                    else throw ex
+                } catch (ex: Exception) {
+                    logger.error("Noe gikk galt under behandling av SED-hendelse", ex)
+                    throw ex
                 }
             }
-
         }
     }
 }
+
