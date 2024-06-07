@@ -43,7 +43,7 @@ spec:
     - name: NORG2_URL
       value: https://norg2.dev-fss-pub.nais.io/norg2
     - name: KAFKA_SEDMOTTATT_TOPIC
-      value: eessibasis.sedmottatt-v1-q1
+      value: eessibasis.sedmottatt-v1-q2
     - name: KAFKA_OPPGAVE_TOPIC
       value: eessipensjon.privat-oppgave-q2
     - name: KODEVERK_URL
@@ -53,7 +53,7 @@ spec:
     - name: AZURE_APP_KODEVERK_CLIENT_ID
       value: kodeverk-api.nav.no
     - name: AZURE_APP_EUX_CLIENT_ID
-      value: dev-fss.eessibasis.eux-rina-api-q1
+      value: dev-fss.eessibasis.eux-rina-api-q2
     - name: AZURE_APP_NORG2_CLIENT_ID
       value: dev-fss.org.norg2
     - name: AZURE_APP_PDL_CLIENT_ID
