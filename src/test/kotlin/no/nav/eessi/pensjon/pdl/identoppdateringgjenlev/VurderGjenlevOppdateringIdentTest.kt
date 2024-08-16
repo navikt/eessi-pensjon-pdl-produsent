@@ -312,7 +312,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
     fun `En SED som mangler gjenlevende skal ikke sende oppdatering`() {
 
         every { euxService.hentSed(any(), any()) } returns p5000gjenlevUtenNorskPin().copy(
-            p5000Pensjon = null
+            pensjon = null
         )
 
         val result = identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(
@@ -348,7 +348,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
                     ),
                 ),
             ),
-            p5000Pensjon = P5000Pensjon(
+            pensjon = P5000Pensjon(
                 gjenlevende = Bruker(
                     person = Person(
                         etternavn = "Pavlova",
