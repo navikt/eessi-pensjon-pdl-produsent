@@ -168,13 +168,13 @@ class VurderGjenlevOppdateringIdent(
         return when(sed) {
             is P2100 -> sed.pensjon?.gjenlevende
             is P4000 -> sed.p4000Pensjon?.gjenlevende
-            is P5000 -> sed.p5000Pensjon?.gjenlevende
-            is P6000 -> sed.p6000Pensjon?.gjenlevende
-            is P7000 -> sed.p7000Pensjon?.gjenlevende
+            is P5000 -> sed.pensjon?.gjenlevende
+            is P6000 -> sed.pensjon?.gjenlevende
+            is P7000 -> sed.pensjon?.gjenlevende
             is P8000 -> sed.p8000Pensjon?.gjenlevende
             is P9000 -> sed.pensjon?.gjenlevende
             is P10000 -> sed.pensjon?.gjenlevende
-            is P15000 -> sed.p15000Pensjon?.gjenlevende
+            is P15000 -> sed.pensjon?.gjenlevende
             else -> {
                 logger.warn("Sed: ${sed.type} er ikke en del av vurdering for gjenlevende ident")
                 null
