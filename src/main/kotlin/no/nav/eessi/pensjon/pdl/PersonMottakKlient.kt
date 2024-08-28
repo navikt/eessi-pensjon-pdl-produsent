@@ -40,6 +40,10 @@ class PersonMottakKlient(private val personMottakRestTemplate: RestTemplate) {
                 logger.warn("Kontaktadressen er allerede registrert som bostedsadresse, Ingen Oppdatering")
                 return true
             }
+            if (ex.statusCode.value() == 422 && (ex.message != null && ex.message!!.contains("Feltet inneholder et symbol som ikke er gyldig for endringer i PDL"))) {
+                logger.warn("Kontaktadressen er inneholder et symbol eller et tegn som ikke er gyldig for endringer i PDL, Ingen Oppdatering")
+                return true
+            }
             throw ex
         }
     }
