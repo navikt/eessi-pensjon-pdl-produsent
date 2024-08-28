@@ -78,6 +78,18 @@ internal class PersonMottakKlientTest {
         verifyRestTemplateInvocations(1)
     }
 
+    @Test
+    fun `Gitt at vi mottar en opprettPersonopplysning og adressen inneholder et ugyldig symbol eller tegn så kastes Exception og det returneres true`() {
+        restTemplateCall() throws HttpClientErrorException(HttpStatus.UNPROCESSABLE_ENTITY, "Feltet inneholder et symbol som ikke er gyldig for endringer i PDL")
+
+        val response = personMottakKlient.opprettPersonopplysning(PdlEndringOpplysning(listOf(dummyPersonOpplysninger(Opplysningstype.KONTAKTADRESSE))))
+
+        assertTrue(response)
+        assertTrue(isMessageInlog("Kontaktadressen er inneholder et symbol eller et tegn som ikke er gyldig for endringer i PDL, Ingen Oppdatering"))
+
+        verifyRestTemplateInvocations(1)
+    }
+
     @ParameterizedTest
     @EnumSource(Opplysningstype::class, mode = EnumSource.Mode.EXCLUDE, names = ["KONTAKTADRESSE"])
     fun `Gitt en opprettPersonopplysning med kaster en conflict 409 return false`(opplysningstype:Opplysningstype) {
