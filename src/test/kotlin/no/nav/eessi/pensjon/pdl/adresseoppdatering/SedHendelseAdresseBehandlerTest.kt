@@ -3,7 +3,7 @@ package no.nav.eessi.pensjon.pdl.adresseoppdatering
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
 import io.mockk.verify
-import no.nav.eessi.pensjon.eux.model.BucType.*
+import no.nav.eessi.pensjon.eux.model.BucType.P_BUC_01
 import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
@@ -66,6 +66,7 @@ class SedHendelseBehandlerTest {
 
         verify(exactly = 1) { adresseoppdatering.vurderUtenlandskKontaktadresse(any()) }
         verify(exactly = 0) { personMottakKlient.opprettPersonopplysning(any()) }
+
     }
 
     fun enSedHendelse() = SedHendelse(
