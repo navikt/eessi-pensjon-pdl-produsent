@@ -48,9 +48,7 @@ private class SedHendelseIdentBehandlerTest {
 
     @Test
     fun `Gitt en Oppdatering så kaller vi opprettPersonopplysning`() {
-
-        every { vurderIdentoppdatering.vurderUtenlandskIdent(any()) } returns
-                Oppdatering("En oppdatering", PdlEndringOpplysning(listOf()))
+        every { vurderIdentoppdatering.vurderUtenlandskIdent(any()) } returns Oppdatering("En oppdatering", PdlEndringOpplysning(listOf()))
         every { personMottakKlient.opprettPersonopplysning(any()) } returns true
 
         sedHendelseIdentBehandler.behandle(enSedHendelseAsJson())
@@ -62,14 +60,10 @@ private class SedHendelseIdentBehandlerTest {
 
     @Test
     fun `Gitt Oppgave så kaller vi opprettOppgave, men IKKE opprettPersonopplysning`() {
-
-        val enSedHendelse = enSedHendelse()
-
-        every { vurderIdentoppdatering.vurderUtenlandskIdent(any()) } returns
-                Oppgave("Oppgave", OppgaveDataUID(enSedHendelse, enIdentifisertPerson()))
+        every { vurderIdentoppdatering.vurderUtenlandskIdent(any()) } returns Oppgave("Oppgave", OppgaveDataUID(enSedHendelse(), enIdentifisertPerson()))
         every { oppgaveHandler.opprettOppgave(any()) } returns true
 
-        sedHendelseIdentBehandler.behandle(enSedHendelse.toJson())
+        sedHendelseIdentBehandler.behandle(enSedHendelse().toJson())
 
         verify(exactly = 1) { vurderIdentoppdatering.vurderUtenlandskIdent(any()) }
         verify(exactly = 0) { personMottakKlient.opprettPersonopplysning(any()) }
@@ -78,7 +72,6 @@ private class SedHendelseIdentBehandlerTest {
 
     @Test
     fun `Gitt en at vi får 423 LOCKED fra PDL så gjør vi retry på hele prosessen`() {
-
         every { vurderIdentoppdatering.vurderUtenlandskIdent(any()) } throws HttpClientErrorException(HttpStatus.LOCKED)
 
         val ex = org.junit.jupiter.api.assertThrows<HttpClientErrorException> {

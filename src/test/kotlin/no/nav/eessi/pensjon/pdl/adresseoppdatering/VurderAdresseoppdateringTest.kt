@@ -5,23 +5,15 @@ import io.mockk.mockk
 import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.SedType
-import no.nav.eessi.pensjon.eux.model.sed.Adresse
-import no.nav.eessi.pensjon.eux.model.sed.Bruker
-import no.nav.eessi.pensjon.eux.model.sed.Nav
-import no.nav.eessi.pensjon.eux.model.sed.Pensjon
-import no.nav.eessi.pensjon.eux.model.sed.PinItem
-import no.nav.eessi.pensjon.eux.model.sed.SED
+import no.nav.eessi.pensjon.eux.model.sed.*
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
-import no.nav.eessi.pensjon.pdl.EndringsmeldingKontaktAdresse
-import no.nav.eessi.pensjon.pdl.EndringsmeldingUtenlandskAdresse
+import no.nav.eessi.pensjon.pdl.*
 import no.nav.eessi.pensjon.pdl.OppgaveModel.IngenOppdatering
 import no.nav.eessi.pensjon.pdl.OppgaveModel.Oppdatering
-import no.nav.eessi.pensjon.pdl.PdlEndringOpplysning
-import no.nav.eessi.pensjon.pdl.PersonMottakKlient
-import no.nav.eessi.pensjon.pdl.Personopplysninger
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
 import no.nav.eessi.pensjon.personoppslag.pdl.model.*
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import no.nav.eessi.pensjon.shared.person.FodselsnummerGenerator
 import no.nav.eessi.pensjon.utils.mapJsonToAny
@@ -443,10 +435,7 @@ internal class VurderAdresseoppdateringTest {
                 sed(brukersAdresse = EDDY_ADRESSE_I_SED)
 
         every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns
-                personFraPDL(
-                    utenlandskAdresse = EDDY_ADRESSE_FRA_PDL,
-                    gyldigFraOgMed = LocalDateTime.now()
-                )
+                personFraPDL(utenlandskAdresse = EDDY_ADRESSE_FRA_PDL, gyldigFraOgMed = LocalDateTime.now())
 
         val adresseoppdatering = VurderAdresseoppdatering(personService, euxService, sedTilPDLAdresse)
 
@@ -466,9 +455,7 @@ internal class VurderAdresseoppdateringTest {
                 sed(brukersAdresse = EDDY_ADRESSE_I_SED.copy(gate = "Postboks 543"))
 
         every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns
-                personFraPDL(
-                    utenlandskAdresse = EDDY_ADRESSE_FRA_PDL.copy(postboksNummerNavn = "Postboks 543", adressenavnNummer = null)
-                )
+                personFraPDL(utenlandskAdresse = EDDY_ADRESSE_FRA_PDL.copy(postboksNummerNavn = "Postboks 543", adressenavnNummer = null))
 
         every { personMottakKlient.opprettPersonopplysning(any()) } returns true
         val adresseoppdatering = VurderAdresseoppdatering(personService, euxService, sedTilPDLAdresse)
@@ -489,11 +476,7 @@ internal class VurderAdresseoppdateringTest {
     @Test
     fun `Gitt person med adressebeskyttelse (i Norge) så gjør vi ingen oppdatering`() {
         every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns sed(brukersAdresse = EDDY_ADRESSE_I_SED)
-
-        every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns
-                personFraPDL(
-                    adressebeskyttelse = listOf(AdressebeskyttelseGradering.STRENGT_FORTROLIG)
-                )
+        every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns personFraPDL(adressebeskyttelse = listOf(AdressebeskyttelseGradering.STRENGT_FORTROLIG))
 
         val adresseoppdatering = VurderAdresseoppdatering(personService, euxService, mockk())
 
@@ -506,11 +489,7 @@ internal class VurderAdresseoppdateringTest {
     @Test
     fun `Gitt at en person har adressebeskyttelse fortrolig utland saa skal adressen likevel registreres`() {
         every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns sed(brukersAdresse = EDDY_ADRESSE_I_SED)
-
-        every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns
-                personFraPDL(
-                    adressebeskyttelse = listOf(AdressebeskyttelseGradering.STRENGT_FORTROLIG_UTLAND)
-                )
+        every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns personFraPDL(adressebeskyttelse = listOf(AdressebeskyttelseGradering.STRENGT_FORTROLIG_UTLAND))
 
         val adresseoppdatering = VurderAdresseoppdatering(personService, euxService, sedTilPDLAdresse)
 
