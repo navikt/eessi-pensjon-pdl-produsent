@@ -45,7 +45,7 @@ internal class ArchitectureTest {
     fun `controllers should not call each other`() {
         classes().that()
             .areAnnotatedWith(RestController::class.java)
-            .should().onlyBeAccessed().byClassesThat().areNotAnnotatedWith(RestController::class.java)
+            .should().onlyHaveDependentClassesThat().areNotAnnotatedWith(RestController::class.java)
             .because("Controllers should not call each other")
             .check(classesToAnalyze)
     }
@@ -67,7 +67,7 @@ internal class ArchitectureTest {
             .consideringOnlyDependenciesInAnyPackage(root)
                 //Define components
                 .layer(config).definedBy("$root.config")
-                .layer(health).definedBy("$root.health")
+                .layer(health).definedBy("$root.shared.api.health")
                 .layer(gcp).definedBy("$root.gcp")
                 .layer(klienter).definedBy("$root.klienter..")
                 .layer(oppgaveRouting).definedBy("$root.oppgaverouting")
