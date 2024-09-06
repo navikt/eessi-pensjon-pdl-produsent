@@ -2,8 +2,7 @@ package no.nav.eessi.pensjon.architecture
 
 import com.tngtech.archunit.core.importer.ClassFileImporter
 import com.tngtech.archunit.core.importer.ImportOption
-import com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses
-import com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noMethods
+import com.tngtech.archunit.lang.syntax.ArchRuleDefinition.*
 import com.tngtech.archunit.library.Architectures.layeredArchitecture
 import com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices
 import no.nav.eessi.pensjon.EessiPensjonApplication
@@ -11,6 +10,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.springframework.web.bind.annotation.RestController
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class ArchitectureTest {
@@ -39,6 +39,15 @@ internal class ArchitectureTest {
     @Test
     fun `Klienter should not depend on eachother`() {
         slices().matching("..$root.klienter.(**)").should().notDependOnEachOther().check(classesToAnalyze)
+    }
+
+    @Test
+    fun `controllers should not call each other`() {
+        classes().that()
+            .areAnnotatedWith(RestController::class.java)
+            .should().onlyBeAccessed().byClassesThat().areNotAnnotatedWith(RestController::class.java)
+            .because("Controllers should not call each other")
+            .check(classesToAnalyze)
     }
 
     @Test
