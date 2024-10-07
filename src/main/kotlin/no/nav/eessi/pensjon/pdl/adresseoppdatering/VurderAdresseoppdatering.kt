@@ -1,25 +1,19 @@
 package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
+import no.nav.eessi.pensjon.eux.BucMetadata
 import no.nav.eessi.pensjon.eux.EuxService
+import no.nav.eessi.pensjon.eux.Participant
 import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.sed.Adresse
 import no.nav.eessi.pensjon.eux.model.sed.Bruker
 import no.nav.eessi.pensjon.eux.model.sed.SED
-import no.nav.eessi.pensjon.pdl.EndringsmeldingKontaktAdresse
-import no.nav.eessi.pensjon.pdl.EndringsmeldingUtenlandskAdresse
-import no.nav.eessi.pensjon.pdl.OppgaveModel
-import no.nav.eessi.pensjon.pdl.PdlEndringOpplysning
-import no.nav.eessi.pensjon.pdl.Personopplysninger
+import no.nav.eessi.pensjon.pdl.*
 import no.nav.eessi.pensjon.pdl.validering.erRelevantForEESSIPensjon
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
+import no.nav.eessi.pensjon.personoppslag.pdl.model.*
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe.FOLKEREGISTERIDENT
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe.NPID
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Kontaktadresse
-import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Npid
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
 import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import no.nav.eessi.pensjon.utils.toJson
 import org.slf4j.LoggerFactory
@@ -40,9 +34,16 @@ class VurderAdresseoppdatering(
 
         val sed = euxService.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId).also { secureLogger.debug("SED:\n$it") }
 
+        val avsender = if (sedHendelse.avsenderLand != null) {
+            Pair(sedHendelse.avsenderLand, sedHendelse.avsenderNavn)
+        } else {
+            val bucMetadata = euxService.getBucMetadata(sedHendelse.rinaSakId)
+            populerSenderland(bucMetadata!!, sedHendelse.rinaDokumentId)
+        }
+
         require(adresseErIUtlandet(adresseFra(sed))) { return IngenOppdatering("Bruker har ikke utenlandsk adresse i SED") }
-        require(avsenderISedHendelse(sedHendelse)) { "Mangler avsenderNavn eller avsenderLand i sedHendelse - avslutter adresseoppdatering: $sedHendelse" }
-        require(avsenderLandOgAdressensLandErSamme(sedHendelse, sed)) {
+        require(avsenderISedHendelse(avsender.first, avsender.second )) { "Mangler avsenderNavn eller avsenderLand i sedHendelse - avslutter adresseoppdatering: $sedHendelse" }
+        require(avsenderLandOgAdressensLandErSamme(sedHendelse.avsenderId, avsender.first, sed)) {
             return IngenOppdatering(
                 "Adressens landkode (${adresseFra(sed)?.land}) er ulik landkode på avsenderland (${sedHendelse.avsenderLand})",
                 "Adressens landkode er ulik landkode på avsenderland")
@@ -148,18 +149,18 @@ class VurderAdresseoppdatering(
     private fun norskPinEllerNpid(bruker: Bruker?) =
         bruker?.person?.pin?.firstOrNull { it.land == "NO" }
 
-    private fun avsenderLandOgAdressensLandErSamme(sedHendelse: SedHendelse, sed: SED) =
-        sedHendelse.avsenderLand == adresseFra(sed)?.land || isSedHendelseFromPreprod(sedHendelse) /* "alt" er fra Norge i preprod */
+    private fun avsenderLandOgAdressensLandErSamme(avsenderId: String?, avsenderLand: String?, sed: SED) =
+        avsenderLand == adresseFra(sed)?.land || isSedHendelseFromPreprod(avsenderId) /* "alt" er fra Norge i preprod */
 
     private fun adresseFra(sed: SED) = brukerFra(sed)?.adresse
 
     private fun brukerFra(sed: SED) = sed.nav?.bruker
 
-    private fun isSedHendelseFromPreprod(sedHendelse: SedHendelse) =
-        sedHendelse.avsenderId in listOf("NO:NAVAT05", "NO:NAVAT07")
+    private fun isSedHendelseFromPreprod(avsenderId: String?) =
+        avsenderId in listOf("NO:NAVAT05", "NO:NAVAT07")
 
-    private fun avsenderISedHendelse(sedHendelse: SedHendelse) =
-        sedHendelse.avsenderNavn != null && sedHendelse.avsenderLand != null
+    private fun avsenderISedHendelse(avsenderLand: String?, avsenderId: String?) =
+        avsenderLand != null && avsenderId != null
 
     private fun adresseErIUtlandet(adresse: Adresse?) =
         adresse?.land != null && adresse.land != "NO"
@@ -188,6 +189,16 @@ class VurderAdresseoppdatering(
                 opplysningsId = kontaktadresse.metadata.opplysningsId
             )
         ))
+
+    private fun populerSenderland(bucMetadata: BucMetadata, dokumentId: String): Pair<String?, String?> {
+        val participant : Participant? = bucMetadata.documents
+            .filter { it.id == dokumentId }
+            .flatMap { it.conversations }
+            .flatMap { it.participants.orEmpty() }
+            .filter { it.role == "Sender" }
+            .firstOrNull()
+        return Pair(participant?.organisation?.countryCode, participant?.organisation?.id).also { logger.info("Henter avsenderland: $it fra metadata") }
+    }
 
     fun formaterVekkHakeParentes(kilde: String): String =
         kilde.replace("->", "")

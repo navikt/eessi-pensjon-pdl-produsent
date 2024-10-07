@@ -3,6 +3,8 @@ package no.nav.eessi.pensjon.eux
 import no.nav.eessi.pensjon.eux.klient.EuxKlientLib
 import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.metrics.MetricsHelper
+import no.nav.eessi.pensjon.utils.mapJsonToAny
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
@@ -19,6 +21,9 @@ class EuxService(
         hentBuc = metricsHelper.init("hentBuc", alert = MetricsHelper.Toggle.OFF)
     }
 
+    private val logger = LoggerFactory.getLogger(EuxService::class.java)
+
+
     /**
      * Henter SED fra Rina EUX API.
      *
@@ -32,6 +37,22 @@ class EuxService(
             val json = euxKlient.hentSedJson(rinaSakId, dokumentId)
             SED.fromJsonToConcrete(json)
         }
+    }
+
+    fun getBucMetadata(rinaSakId: String) : BucMetadata? {
+        val metaData = euxKlient.hentBucJson(rinaSakId = rinaSakId)
+        logger.debug("bucmetadata: ${metaData}")
+
+        return metaData?.let { mapJsonToAny(it) }
+    }
+
+    fun populerMottakerland(bucMetadata: BucMetadata): List<String> {
+        val list : List<Participant> = bucMetadata.documents
+            .flatMap { it.conversations }
+            .flatMap { it.participants.orEmpty() }
+            .filter { it.role == "Receiver" }
+
+        return list.map { it.organisation.countryCode }.distinct()
     }
 
 }
