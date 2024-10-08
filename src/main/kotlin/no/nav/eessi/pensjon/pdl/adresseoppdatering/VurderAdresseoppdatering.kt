@@ -1,9 +1,9 @@
 package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
-import no.nav.eessi.pensjon.eux.BucMetadata
 import no.nav.eessi.pensjon.eux.EuxService
-import no.nav.eessi.pensjon.eux.Participant
 import no.nav.eessi.pensjon.eux.model.SedHendelse
+import no.nav.eessi.pensjon.eux.model.buc.BucMetadata
+import no.nav.eessi.pensjon.eux.model.buc.Participant
 import no.nav.eessi.pensjon.eux.model.sed.Adresse
 import no.nav.eessi.pensjon.eux.model.sed.Bruker
 import no.nav.eessi.pensjon.eux.model.sed.SED
