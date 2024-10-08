@@ -46,13 +46,4 @@ class EuxService(
         return metaData?.let { mapJsonToAny(it) }
     }
 
-    fun populerMottakerland(bucMetadata: BucMetadata): List<String> {
-        val list : List<Participant> = bucMetadata.documents
-            .flatMap { it.conversations }
-            .flatMap { it.participants.orEmpty() }
-            .filter { it.role == "Receiver" }
-
-        return list.map { it.organisation.countryCode }.distinct()
-    }
-
 }
