@@ -1,6 +1,6 @@
 buildscript {
 	ext {
-		kotlinVersion = '2.0.20'
+		kotlinVersion = '2.0.21'
 		springBootVersion = '3.3.4'
 		springKafkaVersion = '3.2.4'
 		cxfVersion = '3.4.2'
@@ -48,23 +48,23 @@ dependencies {
 	implementation("io.micrometer:micrometer-registry-prometheus:1.13.5")
 
 	// Eessi pensjon biblioteker
-	implementation("no.nav.eessi.pensjon:ep-eux:2.3.25")
-	implementation("no.nav.eessi.pensjon:ep-metrics:2.0.79")
-	implementation("no.nav.eessi.pensjon:ep-logging:2.1.75")
+	implementation("no.nav.eessi.pensjon:ep-eux:2.3.29")
+	implementation("no.nav.eessi.pensjon:ep-metrics:2.0.86")
+	implementation("no.nav.eessi.pensjon:ep-logging:2.1.83")
 
-	implementation("no.nav.eessi.pensjon:ep-kodeverk:4.0.165"){
+	implementation("no.nav.eessi.pensjon:ep-kodeverk:4.0.175"){
 		exclude module: 'ep-eux'
 		exclude module: 'ep-metrics'
 		exclude module: 'ep-logging'
 		exclude module: 'ep-eux'
 	}
-	implementation("no.nav.eessi.pensjon:ep-personoppslag:13.1.159"){
+	implementation("no.nav.eessi.pensjon:ep-personoppslag:13.1.175"){
 		exclude module: 'ep-eux'
 		exclude module: 'ep-metrics'
 		exclude module: 'ep-logging'
 		exclude module: 'ep-eux'
 	}
-	implementation("no.nav.eessi.pensjon:ep-routing:2.0.147"){
+	implementation("no.nav.eessi.pensjon:ep-routing:2.0.160"){
 		exclude module: 'ep-eux'
 		exclude module: 'ep-metrics'
 		exclude module: 'ep-logging'
@@ -95,7 +95,7 @@ dependencies {
 	testImplementation "org.springframework.kafka:spring-kafka-test:$springKafkaVersion"
 	testImplementation("no.nav.security:token-validation-spring-test:${tokenSupportVersion}")
 
-	testImplementation(platform("org.junit:junit-bom:5.11.1"))
+	testImplementation(platform("org.junit:junit-bom:5.11.2"))
 	testImplementation("org.junit.jupiter:junit-jupiter")
 
 	//mock - test
