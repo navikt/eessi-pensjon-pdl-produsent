@@ -142,7 +142,7 @@ class VurderIdentoppdatering(
         utenlandskeUids.map { Pair(it.identifikasjonsnummer, kodeverkClient.finnLandkode(it.utstederland)) }
             .contains(Pair(utenlandskPin.id, utenlandskPin.land))
 
-    private fun identifisertPerson(personFraPDL: Person) = IdentifisertPersonPDL(
+    private fun identifisertPerson(personFraPDL: PdlPerson) = IdentifisertPersonPDL(
         fnr = Fodselsnummer.fra(personFraPDL.identer.first { it.gruppe == FOLKEREGISTERIDENT || it.gruppe == NPID }.ident),
         uidFraPdl = personFraPDL.utenlandskIdentifikasjonsnummer,
         aktoerId = personFraPDL.identer.first { it.gruppe == AKTORID }.ident,

@@ -19,7 +19,6 @@ import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
 import no.nav.eessi.pensjon.personoppslag.pdl.model.*
 import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe.*
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
@@ -195,7 +194,7 @@ class VurderGjenlevOppdateringIdent(
         utenlandskeUids.map { Pair(it.identifikasjonsnummer, kodeverkClient.finnLandkode(it.utstederland)) }
             .contains(Pair(utenlandskPin.id, utenlandskPin.land))
 
-    private fun identifisertPerson(personFraPDL: Person) = IdentifisertPersonPDL(
+    private fun identifisertPerson(personFraPDL: PdlPerson) = IdentifisertPersonPDL(
         fnr = Fodselsnummer.fra(personFraPDL.identer.first { it.gruppe == FOLKEREGISTERIDENT || it.gruppe == NPID }.ident),
         uidFraPdl = personFraPDL.utenlandskIdentifikasjonsnummer,
         aktoerId = personFraPDL.identer.first { it.gruppe == AKTORID }.ident,

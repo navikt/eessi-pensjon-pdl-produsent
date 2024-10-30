@@ -13,7 +13,7 @@ object PersonMock {
         aktoerId: AktoerId? = null,
         geo: String? = "0301",
         uid: List<UtenlandskIdentifikasjonsnummer> = emptyList()
-    ): Person {
+    ): PdlPerson {
 
         val foedselsdato = if (Fodselsnummer.fra(fnr)?.erNpid == true) LocalDate.of(1975, 1, 1)
         else Fodselsnummer.fra(fnr)?.getBirthDate()
@@ -45,7 +45,7 @@ object PersonMock {
             "1234"
         )
 
-        return Person(
+        return PdlPerson(
             identer = identer,
             navn = Navn(fornavn, null, etternavn, metadata = metadata),
             adressebeskyttelse = listOf(AdressebeskyttelseGradering.UGRADERT),

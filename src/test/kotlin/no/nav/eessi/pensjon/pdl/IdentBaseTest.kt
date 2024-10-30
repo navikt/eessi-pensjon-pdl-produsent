@@ -3,33 +3,8 @@ package no.nav.eessi.pensjon.pdl
 import no.nav.eessi.pensjon.eux.model.BucType
 import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.SedType
-import no.nav.eessi.pensjon.eux.model.sed.Adresse
-import no.nav.eessi.pensjon.eux.model.sed.Bruker
-import no.nav.eessi.pensjon.eux.model.sed.Nav
-import no.nav.eessi.pensjon.eux.model.sed.P10000
-import no.nav.eessi.pensjon.eux.model.sed.P15000
-import no.nav.eessi.pensjon.eux.model.sed.P4000
-import no.nav.eessi.pensjon.eux.model.sed.P5000
-import no.nav.eessi.pensjon.eux.model.sed.P6000
-import no.nav.eessi.pensjon.eux.model.sed.P7000
-import no.nav.eessi.pensjon.eux.model.sed.P8000
-import no.nav.eessi.pensjon.eux.model.sed.P9000
-import no.nav.eessi.pensjon.eux.model.sed.Pensjon
-import no.nav.eessi.pensjon.eux.model.sed.PinItem
-import no.nav.eessi.pensjon.eux.model.sed.SED
-import no.nav.eessi.pensjon.personoppslag.pdl.model.AdressebeskyttelseGradering
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Doedsfall
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Folkeregistermetadata
-import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
-import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentInformasjon
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Kontaktadresse
-import no.nav.eessi.pensjon.personoppslag.pdl.model.KontaktadresseType
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Metadata
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Opplysningstype
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
-import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
-import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskIdentifikasjonsnummer
+import no.nav.eessi.pensjon.eux.model.sed.*
+import no.nav.eessi.pensjon.personoppslag.pdl.model.*
 import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import java.time.LocalDate
@@ -182,7 +157,7 @@ open class IdentBaseTest {
         gyldigFraOgMed: LocalDateTime = LocalDateTime.now().minusDays(10),
         gyldigTilOgMed: LocalDateTime = LocalDateTime.now().plusDays(10),
         doedsdato: LocalDate? = null
-    ): Person = Person(
+    ): PdlPerson = PdlPerson(
         identer = listOf(IdentInformasjon(id, IdentGruppe.FOLKEREGISTERIDENT)),
         navn = null,
         adressebeskyttelse = adressebeskyttelse,

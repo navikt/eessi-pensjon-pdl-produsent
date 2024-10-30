@@ -148,7 +148,7 @@ class SedListenerAdresseIT : IntegrationBase() {
             return sedHendelse
         }
 
-        fun enPersonFraPDL(fnr: String) = no.nav.eessi.pensjon.personoppslag.pdl.model.Person(
+        fun enPersonFraPDL(fnr: String) = no.nav.eessi.pensjon.personoppslag.pdl.model.PdlPerson(
             identer = listOf(
                 IdentInformasjon(
                     ident = fnr,

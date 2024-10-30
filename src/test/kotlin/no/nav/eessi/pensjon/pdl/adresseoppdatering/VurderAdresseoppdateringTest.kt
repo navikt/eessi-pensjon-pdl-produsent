@@ -13,7 +13,6 @@ import no.nav.eessi.pensjon.pdl.OppgaveModel.Oppdatering
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
 import no.nav.eessi.pensjon.personoppslag.pdl.model.*
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Person
 import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import no.nav.eessi.pensjon.shared.person.FodselsnummerGenerator
 import no.nav.eessi.pensjon.utils.mapJsonToAny
@@ -681,7 +680,7 @@ internal class VurderAdresseoppdateringTest {
         gyldigFraOgMed: LocalDateTime = LocalDateTime.now().minusDays(10),
         gyldigTilOgMed: LocalDateTime = LocalDateTime.now().plusDays(10),
         metadataMaster: String = "PDL"
-    ) = Person(
+    ) = PdlPerson(
         identer = if (Fodselsnummer.fra(id)?.erNpid == true) listOf(IdentInformasjon(id!!, IdentGruppe.NPID)) else listOf(IdentInformasjon(id!!, IdentGruppe.FOLKEREGISTERIDENT)),
         navn = null,
         adressebeskyttelse = adressebeskyttelse,
