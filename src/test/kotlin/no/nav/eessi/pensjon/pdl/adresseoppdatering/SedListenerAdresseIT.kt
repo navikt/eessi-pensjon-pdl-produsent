@@ -88,7 +88,7 @@ class SedListenerAdresseIT : IntegrationBase() {
 
     companion object {
         fun enSedFraEux(fnr: String) = SED(
-            type = SedType.P2100,
+            type = SedType.SEDTYPE_P2100,
             sedGVer = null,
             sedVer = null,
             nav = Nav(
@@ -138,7 +138,7 @@ class SedListenerAdresseIT : IntegrationBase() {
             val sedHendelse: SedHendelse = SedHendelse(
                 sektorKode = "P",
                 bucType = P_BUC_01,
-                sedType = SedType.P2100,
+                sedType = SedType.SEDTYPE_P2100,
                 rinaSakId = "74389487",
                 rinaDokumentId = "743982",
                 rinaDokumentVersjon = "1",

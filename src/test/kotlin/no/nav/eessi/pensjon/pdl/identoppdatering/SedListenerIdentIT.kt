@@ -77,11 +77,11 @@ class SedListenerIdentIT : IntegrationBase() {
         every { personService.hentPerson(NorskIdent( fnr)) } returns mockedPerson
         every { kodeverkClient.finnLandkode("NO") } returns "NOR"
 
-        val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", P15000, RECEIVED))
+        val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SEDTYPE_P15000, RECEIVED))
         val mockBuc = CustomMockServer.mockBuc("147729", P_BUC_10, listOverSeder)
 
         val mockNorskPin = mockPin(fnr, "NO")
-        val mockSed = mockSedUtenPensjon(sedType = P15000, pin = listOf(mockNorskPin))
+        val mockSed = mockSedUtenPensjon(sedType = SEDTYPE_P15000, pin = listOf(mockNorskPin))
 
         CustomMockServer()
             .medMockSed("/buc/147729/sed/eb938171a4cb4e658b3a6c011962d204", mockSed)
@@ -92,7 +92,7 @@ class SedListenerIdentIT : IntegrationBase() {
             mockHendelse(
                 avsenderLand = "SE",
                 bucType = P_BUC_10,
-                sedType = P15000,
+                sedType = SEDTYPE_P15000,
                 docId = "eb938171a4cb4e658b3a6c011962d204",
                 navbruker = Fodselsnummer.fra(FNR)
             )
@@ -108,7 +108,7 @@ class SedListenerIdentIT : IntegrationBase() {
         every { personService.hentPerson(NorskIdent( "29087021082")) } returns mockedPerson
         every { kodeverkClient.finnLandkode("DE") } returns "DEU"
 
-        val listOverSeder = listOf(ForenkletSED("b12e06dda2c7474b9998c7139c841646", P8000, RECEIVED))
+        val listOverSeder = listOf(ForenkletSED("b12e06dda2c7474b9998c7139c841646", SEDTYPE_P8000, RECEIVED))
         val mockBuc = CustomMockServer.mockBuc("147729", P_BUC_02, listOverSeder)
 
         CustomMockServer()
@@ -130,7 +130,7 @@ class SedListenerIdentIT : IntegrationBase() {
         every { personService.hentPerson(NorskIdent( "29087021082")) } returns mockedPerson
         every { kodeverkClient.finnLandkode("DK") } returns "DNK"
 
-        val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", P15000, RECEIVED))
+        val listOverSeder = listOf(ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SEDTYPE_P15000, RECEIVED))
         val mockBuc = CustomMockServer.mockBuc("147729", P_BUC_10, listOverSeder)
 
         CustomMockServer()
@@ -143,7 +143,7 @@ class SedListenerIdentIT : IntegrationBase() {
                 avsenderLand = "DK",
                 avsenderNavn = "",
                 bucType = P_BUC_10,
-                sedType = P15000,
+                sedType = SEDTYPE_P15000,
                 docId = "eb938171a4cb4e658b3a6c011962d204",
                 navbruker = Fodselsnummer.fra("11067122781")
             )
@@ -163,10 +163,10 @@ class SedListenerIdentIT : IntegrationBase() {
         every { kodeverkClient.finnLandkode("DK") }.returns("DNK")
 
         val listOverSeder = listOf(
-            ForenkletSED("eb938171a4cb4e658b3a6c011962d204", P2100, RECEIVED),
-            ForenkletSED("eb938171a4cb4e658b3a6c011962d205", P5000, SENT),
-            ForenkletSED("eb938171a4cb4e658b3a6c011962d504", P7000, RECEIVED),
-            ForenkletSED("eb938171a4cb4e658b3a6c011962d205", H120, RECEIVED)
+            ForenkletSED("eb938171a4cb4e658b3a6c011962d204", SEDTYPE_P2100, RECEIVED),
+            ForenkletSED("eb938171a4cb4e658b3a6c011962d205", SEDTYPE_P5000, SENT),
+            ForenkletSED("eb938171a4cb4e658b3a6c011962d504", SEDTYPE_P7000, RECEIVED),
+            ForenkletSED("eb938171a4cb4e658b3a6c011962d205", SEDTYPE_H120, RECEIVED)
         )
         val mockBuc = CustomMockServer.mockBuc("147729", P_BUC_02, listOverSeder)
 
@@ -183,7 +183,7 @@ class SedListenerIdentIT : IntegrationBase() {
             mockHendelse(
                 avsenderLand = "DK",
                 bucType = P_BUC_02,
-                sedType = P7000,
+                sedType = SEDTYPE_P7000,
                 docId = "eb938171a4cb4e658b3a6c011962d504",
                 navbruker = Fodselsnummer.fra("11067122781")
             )
@@ -221,7 +221,7 @@ class SedListenerIdentIT : IntegrationBase() {
         )
         every { kodeverkClient.finnLandkode("DK") }.returns("DNK")
 
-        val listOverSeder = listOf(ForenkletSED("b12e06dda2c7474b9998c7139c841646", P2100, RECEIVED))
+        val listOverSeder = listOf(ForenkletSED("b12e06dda2c7474b9998c7139c841646", SEDTYPE_P2100, RECEIVED))
         val mockBuc = CustomMockServer.mockBuc("147729", P_BUC_02, listOverSeder)
 
         CustomMockServer()
@@ -245,7 +245,7 @@ class SedListenerIdentIT : IntegrationBase() {
         )
         every { kodeverkClient.finnLandkode("DK") }.returns("DNK")
 
-        val listOverSeder = listOf(ForenkletSED("b12e06dda2c7474b9998c7139c841646", P2100, RECEIVED))
+        val listOverSeder = listOf(ForenkletSED("b12e06dda2c7474b9998c7139c841646", SEDTYPE_P2100, RECEIVED))
         val mockBuc = CustomMockServer.mockBuc("147729", P_BUC_02, listOverSeder)
 
         CustomMockServer()

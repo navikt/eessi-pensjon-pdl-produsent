@@ -76,7 +76,7 @@ class SedHendelseListenerExceptionTest : IntegrationBase() {
     fun enSedHendelse() = SedHendelse(
         sektorKode = "P",
         bucType = BucType.P_BUC_01,
-        sedType = SedType.P2100,
+        sedType = SedType.SEDTYPE_P2100,
         rinaSakId = "74389487",
         rinaDokumentId = "743982",
         rinaDokumentVersjon = "1",

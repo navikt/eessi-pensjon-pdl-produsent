@@ -59,7 +59,7 @@ internal class OppgaveHandlerTest {
     @Test
     fun `Gitt at vi får inn en P2100 med gjenlevende som er bosatt Norge så skal vi route gjenlevUid oppgave til 4862 NFP UTLAND AALESUND`() {
         val identifisertPerson = identifisertPerson(BOSATT_NORGE)
-        val oppgaveData = OppgaveDataGjenlevUID(enSedHendelse(SedType.P2200, BucType.P_BUC_02), identifisertPerson)
+        val oppgaveData = OppgaveDataGjenlevUID(enSedHendelse(SedType.SEDTYPE_P2200, BucType.P_BUC_02), identifisertPerson)
         val hentMetadataResponse = HentMetadataResponse(
             data = Data(
                 dokumentoversiktBruker = DokumentoversiktBruker(
@@ -90,7 +90,7 @@ internal class OppgaveHandlerTest {
     )
     fun `Gitt at vi får inn en P2100 med gjenlevende som ikke er bosatt Norge så skal vi route gjenlevUid oppgave til 0001 PENSJON UTLAND`(enhet: Enhet) {
         val identifisertPerson = identifisertPerson(landkode = BOSATT_NORGE)
-        val oppgaveData = OppgaveDataGjenlevUID(enSedHendelse(SedType.P2200, BucType.P_BUC_02), identifisertPerson)
+        val oppgaveData = OppgaveDataGjenlevUID(enSedHendelse(SedType.SEDTYPE_P2200, BucType.P_BUC_02), identifisertPerson)
 
         val hentMetadataResponse = HentMetadataResponse(
             data = Data(
@@ -128,7 +128,7 @@ internal class OppgaveHandlerTest {
     @Test
     fun `gitt en sedhendelse og en identifisert person, så skal det opprettes en oppgavemelding`() {
         val identifisertPerson = identifisertPerson(landkode = BOSATT_NORGE)
-        val oppgave = OppgaveDataUID(enSedHendelse(SedType.P2100, BucType.P_BUC_01), identifisertPerson)
+        val oppgave = OppgaveDataUID(enSedHendelse(SedType.SEDTYPE_P2100, BucType.P_BUC_01), identifisertPerson)
 
         val meldingSlot = slot<String>()
         every { kafkaTemplate.sendDefault(any(), capture(meldingSlot)).get() } returns mockk()

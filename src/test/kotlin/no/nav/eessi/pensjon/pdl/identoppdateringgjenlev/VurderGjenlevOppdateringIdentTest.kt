@@ -80,7 +80,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
             ),
             fodselsdato = "1971-06-11",
         )
-        val p2100 = P2100(SedType.P2100, nav = sed.nav, pensjon = sed.pensjon)
+        val p2100 = P2100(SedType.SEDTYPE_P2100, nav = sed.nav, pensjon = sed.pensjon)
         every { euxService.hentSed(any(), any()) } returns p2100
 
         assertEquals(
@@ -104,7 +104,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
             ),
             fodselsdato = "1971-06-11",
         )
-        val p2100 = P2100(SedType.P2100, nav = sed.nav, pensjon = sed.pensjon)
+        val p2100 = P2100(SedType.SEDTYPE_P2100, nav = sed.nav, pensjon = sed.pensjon)
         every { euxService.hentSed(any(), any()) } returns p2100
 
         assertEquals(
@@ -138,7 +138,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
             ),
             fodselsdato = "1971-06-11",
         )
-        val p2100 = P2100(SedType.P2100, nav = sed.nav, pensjon = sed.pensjon)
+        val p2100 = P2100(SedType.SEDTYPE_P2100, nav = sed.nav, pensjon = sed.pensjon)
         every { euxService.hentSed(any(), any()) } returns p2100
 
         assertEquals(
@@ -162,7 +162,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
             ),
             fodselsdato = null,
         )
-        val p2100 = P2100(SedType.P2100, nav = sed.nav, pensjon = sed.pensjon)
+        val p2100 = P2100(SedType.SEDTYPE_P2100, nav = sed.nav, pensjon = sed.pensjon)
         every { euxService.hentSed(any(), any()) } returns p2100
 
         assertEquals(
@@ -179,7 +179,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
         every { personService.hentPerson(NorskIdent(FNR)) } returns
                 personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, FOLKEREGISTERIDENT)))
 
-        val p2100 = P2100(SedType.P2100, null, null)
+        val p2100 = P2100(SedType.SEDTYPE_P2100, null, null)
         every { euxService.hentSed(any(), any()) } returns p2100
 
         assertEquals(
@@ -251,9 +251,9 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
             gjenlevFNR = FNR,
             gjenlevUid = gjenlevUid,
             forsikretFnr = SOME_FNR,
-            sedType = SedType.P4000.name
+            sedType = SedType.SEDTYPE_P4000.name
         )
-        every { euxService.hentSed(any(), any()) } returns convertFromSedTypeToSED(sed, SedType.P4000)
+        every { euxService.hentSed(any(), any()) } returns convertFromSedTypeToSED(sed, SedType.SEDTYPE_P4000)
 
         val result = identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(
             avsenderLand = "DK",
@@ -282,9 +282,9 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
             gjenlevFNR = npid,
             gjenlevUid = gjenlevUid,
             forsikretFnr = SOME_FNR,
-            sedType = SedType.P4000.name
+            sedType = SedType.SEDTYPE_P4000.name
         )
-        every { euxService.hentSed(any(), any()) } returns convertFromSedTypeToSED(sed, SedType.P4000)
+        every { euxService.hentSed(any(), any()) } returns convertFromSedTypeToSED(sed, SedType.SEDTYPE_P4000)
 
         val result = identoppdatering.vurderUtenlandskGjenlevIdent(sedHendelse(
             avsenderLand = "DK",
@@ -325,7 +325,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
 
     fun p5000gjenlevUtenNorskPin(): P5000 {
         return P5000(
-            type = SedType.P5000,
+            type = SedType.SEDTYPE_P5000,
             nav = Nav(
                 eessisak = listOf(EessisakItem(
                     institusjonsid = "UK:UK030",

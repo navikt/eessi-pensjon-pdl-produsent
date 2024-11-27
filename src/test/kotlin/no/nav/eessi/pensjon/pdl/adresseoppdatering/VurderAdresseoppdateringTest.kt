@@ -624,7 +624,7 @@ internal class VurderAdresseoppdateringTest {
     )
 
     private fun sed(id: String = SOME_FNR, brukersAdresse: Adresse? = null, pinItem: PinItem? = null) = SED(
-        type = SedType.P2100,
+        type = SedType.SEDTYPE_P2100,
         sedGVer = null,
         sedVer = null,
         nav = Nav(

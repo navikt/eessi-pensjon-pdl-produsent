@@ -136,7 +136,7 @@ abstract class IntegrationBase {
         avsenderLand: String = "DK",
         avsenderNavn: String = "DK:D005",
         bucType: BucType = P_BUC_01,
-        sedType: SedType = SedType.P2000,
+        sedType: SedType = SedType.SEDTYPE_P2000,
         docId: String = "b12e06dda2c7474b9998c7139c841646",
         navbruker: Fodselsnummer? = null
     ): String {

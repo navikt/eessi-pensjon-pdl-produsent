@@ -14,7 +14,7 @@ internal class UtenlandskPersonIdentifiseringTest {
 
         val sed = SED.fromJsonToConcrete(javaClass.getResource("/eux/sed/P2100-PinDK-NAV.json")!!.readText())
 
-        val resultat = UtenlandskPersonIdentifisering.finnAlleUtenlandskeIDerIMottatteSed(listOf(Pair(mockForenkledSed(SedType.P2100), sed)))
+        val resultat = UtenlandskPersonIdentifisering.finnAlleUtenlandskeIDerIMottatteSed(listOf(Pair(mockForenkledSed(SedType.SEDTYPE_P2100), sed)))
 
         assertEquals(2, resultat.size)
         assertEquals(resultat.first().id, "130177-1234")

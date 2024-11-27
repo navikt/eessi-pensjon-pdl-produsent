@@ -60,7 +60,7 @@ open class IdentBaseTest {
 
     fun sedHendelse(
         bucType: BucType = BucType.P_BUC_01,
-        sedType: SedType = SedType.P2000,
+        sedType: SedType = SedType.SEDTYPE_P2000,
         avsenderLand: String = "SE",
         avsenderNavn: String? = "Utenlandsk institusjon",
         navBruker: Fodselsnummer? = null
@@ -80,7 +80,7 @@ open class IdentBaseTest {
         brukersAdresse: Adresse? = null,
         pinItem: List<PinItem>?,
         pensjon: Pensjon = Pensjon(),
-        sedType: SedType = SedType.P2100
+        sedType: SedType = SedType.SEDTYPE_P2100
     ) = SED (
         type = sedType,
         sedGVer = null,
@@ -194,14 +194,14 @@ open class IdentBaseTest {
 
     fun convertFromSedTypeToSED(json: String, sedType: SedType): SED {
         return when (sedType) {
-            SedType.P4000 -> mapJsonToAny<P4000>(json)
-            SedType.P5000 -> mapJsonToAny<P5000>(json)
-            SedType.P6000 -> mapJsonToAny<P6000>(json)
-            SedType.P7000 -> mapJsonToAny<P7000>(json)
-            SedType.P8000 -> mapJsonToAny<P8000>(json)
-            SedType.P9000 -> mapJsonToAny<P9000>(json)
-            SedType.P10000 -> mapJsonToAny<P10000>(json)
-            SedType.P15000 -> mapJsonToAny<P15000>(json)
+            SedType.SEDTYPE_P4000 -> mapJsonToAny<P4000>(json)
+            SedType.SEDTYPE_P5000 -> mapJsonToAny<P5000>(json)
+            SedType.SEDTYPE_P6000 -> mapJsonToAny<P6000>(json)
+            SedType.SEDTYPE_P7000 -> mapJsonToAny<P7000>(json)
+            SedType.SEDTYPE_P8000 -> mapJsonToAny<P8000>(json)
+            SedType.SEDTYPE_P9000 -> mapJsonToAny<P9000>(json)
+            SedType.SEDTYPE_P10000 -> mapJsonToAny<P10000>(json)
+            SedType.SEDTYPE_P15000 -> mapJsonToAny<P15000>(json)
             else -> SED.fromJson(json)
         }
     }

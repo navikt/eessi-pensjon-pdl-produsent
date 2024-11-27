@@ -71,7 +71,7 @@ class VurderIdentoppdateringTest : IdentBaseTest() {
                 "Ikke relevant for eessipensjon"
             ),
             identoppdatering.vurderUtenlandskIdent(sedHendelse(
-                sedType = SedType.X001,
+                sedType = SedType.SEDTYPE_X001,
                 avsenderLand = "NO",
                 navBruker = Fodselsnummer.fra(FNR)
             ))

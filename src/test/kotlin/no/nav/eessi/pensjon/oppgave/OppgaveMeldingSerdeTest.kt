@@ -13,7 +13,7 @@ internal class OppgaveMeldingSerdeTest {
     @Test
     fun serde_journalforing() {
         val melding = OppgaveMelding(
-            SedType.P8000,
+            SedType.SEDTYPE_P8000,
             "12345",
             Enhet.ID_OG_FORDELING,
             "aktoerId",
@@ -40,7 +40,7 @@ internal class OppgaveMeldingSerdeTest {
     @Test
     fun serde_behandleSed() {
         val melding = OppgaveMelding(
-            SedType.P8000,
+            SedType.SEDTYPE_P8000,
             null,
             Enhet.ID_OG_FORDELING,
             "aktoerId",

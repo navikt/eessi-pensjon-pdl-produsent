@@ -196,14 +196,14 @@ internal class OppgaveRoutingServiceTest {
         every { norg2Klient.hentArbeidsfordelingEnheter(any()) } returns enhetlist
 
         val personRelasjon =
-            SEDPersonRelasjon(Fodselsnummer.fra(DUMMY_FNR), FORSIKRET, ALDER, SedType.P15000, rinaDocumentId =  "3123123")
+            SEDPersonRelasjon(Fodselsnummer.fra(DUMMY_FNR), FORSIKRET, ALDER, SedType.SEDTYPE_P15000, rinaDocumentId =  "3123123")
         val identifisertPerson =
             IdentifisertPersonPDL("01010101010",  "NOR", "3005", personRelasjon, personListe = emptyList())
 
         val sedHendelseModel = SedHendelse(
             1232312L, "2321313", "P", P_BUC_10, "32131", avsenderId = "12313123",
             "SE", "SE", "2312312", "NO", "NO", "23123123", "1",
-            SedType.P15000, null
+            SedType.SEDTYPE_P15000, null
         )
 
         val oppgaveroutingrequest = OppgaveRoutingRequest.fra(
@@ -248,14 +248,14 @@ internal class OppgaveRoutingServiceTest {
         every { norg2Klient.hentArbeidsfordelingEnheter(any()) } returns listOf(mappedResponse)
 
         val personRelasjon =
-            SEDPersonRelasjon(Fodselsnummer.fra(DUMMY_FNR), GJENLEVENDE, GJENLEV, SedType.P2100, rinaDocumentId =  "3123123")
+            SEDPersonRelasjon(Fodselsnummer.fra(DUMMY_FNR), GJENLEVENDE, GJENLEV, SedType.SEDTYPE_P2100, rinaDocumentId =  "3123123")
         val identifisertPerson =
             IdentifisertPersonPDL("01010101010",  "NOR", "3005", personRelasjon, personListe = emptyList())
 
         val sedHendelseModel = SedHendelse(
             1232312L, "2321313", "P", P_BUC_02, "32131", avsenderId = "12313123",
             "SE", "SE", "2312312", "NO", "NO", "23123123", "1",
-            SedType.P2100, null
+            SedType.SEDTYPE_P2100, null
         )
 
         val oppgaveroutingrequest = OppgaveRoutingRequest.fra(
@@ -297,7 +297,7 @@ internal class OppgaveRoutingServiceTest {
         every { norg2Klient.hentArbeidsfordelingEnheter(any()) } returns listOf(mappedResponse)
 
         val personRelasjon =
-            SEDPersonRelasjon(Fodselsnummer.fra(DUMMY_FNR), GJENLEVENDE, BARNEP, SedType.P2100, rinaDocumentId =  "3123123")
+            SEDPersonRelasjon(Fodselsnummer.fra(DUMMY_FNR), GJENLEVENDE, BARNEP, SedType.SEDTYPE_P2100, rinaDocumentId =  "3123123")
         val identifisertPerson = IdentifisertPersonPDL(
             "01010101010",
             "SWE",
@@ -309,7 +309,7 @@ internal class OppgaveRoutingServiceTest {
         val sedHendelseModel = SedHendelse(
             1232312L, "2321313", "P", P_BUC_02, "32131", avsenderId = "12313123",
             "SE", "SE", "2312312", "NO", "NO", "23123123", "1",
-            SedType.P2100, null
+            SedType.SEDTYPE_P2100, null
         )
 
         val oppgaveroutingrequest = OppgaveRoutingRequest.fra(
@@ -350,14 +350,14 @@ internal class OppgaveRoutingServiceTest {
         every { norg2Klient.hentArbeidsfordelingEnheter(any()) } returns listOf(mappedResponse)
 
         val personRelasjon =
-            SEDPersonRelasjon(Fodselsnummer.fra(DUMMY_FNR), FORSIKRET, UFOREP, SedType.P2200, rinaDocumentId =  "3123123")
+            SEDPersonRelasjon(Fodselsnummer.fra(DUMMY_FNR), FORSIKRET, UFOREP, SedType.SEDTYPE_P2200, rinaDocumentId =  "3123123")
         val identifisertPerson =
             IdentifisertPersonPDL("01010101010",  "SWE", null, personRelasjon, personListe = emptyList())
 
         val sedHendelseModel = SedHendelse(
             1232312L, "2321313", "P", P_BUC_03, "32131", avsenderId = "12313123",
             "NO", "NO", "2312312", "SE", "SE", "23123123", "1",
-            SedType.P2200, null
+            SedType.SEDTYPE_P2200, null
         )
 
         val oppgaveroutingrequest = OppgaveRoutingRequest.fra(
