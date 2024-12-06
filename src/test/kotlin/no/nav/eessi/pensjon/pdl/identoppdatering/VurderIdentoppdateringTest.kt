@@ -52,6 +52,9 @@ class VurderIdentoppdateringTest : IdentBaseTest() {
         every { kodeverkClient.finnLandkode("NL") } returns "NLD"
         every { kodeverkClient.finnLandkode("NLD") } returns "NL"
 
+        every { kodeverkClient.finnLandkode("BR") } returns "BGR"
+        every { kodeverkClient.finnLandkode("BGR") } returns "BR"
+
         identoppdatering = VurderIdentoppdatering(
             euxService,
             oppgaveOppslag,
@@ -454,6 +457,26 @@ class VurderIdentoppdateringTest : IdentBaseTest() {
             Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utstederland = "SWE")),
             (identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "SE", navBruker = Fodselsnummer.fra(FNR)))
         ))
+
+    }
+
+    @Test
+    fun `Gitt at vi har en endringsmelding med en bulgarsk uid, med mellomrom i saa skal det opprettes en endringsmelding`() {
+        every { personService.hentPerson(NorskIdent(FNR)) } returns
+                personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, FOLKEREGISTERIDENT)))
+
+        every { euxService.hentSed(any(), any()) } returns
+                sed(
+                    pinItem = listOf(
+                        PinItem(identifikator = "5 12 020  1234", land = "BR"),
+                        PinItem(identifikator = FNR, land = "NO")
+                    )
+                )
+
+        assertEquals(
+            Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utenlandskId = "5120201234", utstederland = "BGR")),
+            (identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "BR", navBruker = Fodselsnummer.fra(FNR))))
+        )
 
     }
 
