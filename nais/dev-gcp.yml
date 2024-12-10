@@ -19,7 +19,7 @@ spec:
         - host: pdl-api.dev-fss-pub.nais.io
         - host: kodeverk-api.nav.no
         - host: pdl-mottak.dev-fss-pub.nais.io
-        - host: dev-gcp.eessibasis.eux-rina-api-q2
+        - host: eux-rina-api-q2.intern.dev.nav.no
         - host: norg2.dev-fss-pub.nais.io
         - host: saf-q2.dev-fss-pub.nais.io
   webproxy: true
@@ -35,7 +35,7 @@ spec:
     - name: SECURITYTOKENSERVICE_URL
       value: https://sts-q2.preprod.local/SecurityTokenServiceProvider/
     - name: EUX_RINA_API_V1_URL
-      value: https://eux-rina-api-eessibasis.eux-rina-api-q2/cpi
+      value: https://eux-rina-api-q2.intern.dev.nav.no/cpi
     - name: PDL_URL
       value: https://pdl-api.dev-fss-pub.nais.io/graphql
     - name: PDL_MOTTAK_URL
