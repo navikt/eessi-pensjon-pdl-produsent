@@ -19,7 +19,7 @@ spec:
         - host: pdl-api.dev-fss-pub.nais.io
         - host: kodeverk-api.nav.no
         - host: pdl-mottak.dev-fss-pub.nais.io
-        - host: eux-rina-api-eessibasis.dev-fss-pub.nais.io
+        - host: dev-gcp.eessibasis.eux-rina-api-q2
         - host: norg2.dev-fss-pub.nais.io
         - host: saf-q2.dev-fss-pub.nais.io
   webproxy: true
@@ -35,7 +35,7 @@ spec:
     - name: SECURITYTOKENSERVICE_URL
       value: https://sts-q2.preprod.local/SecurityTokenServiceProvider/
     - name: EUX_RINA_API_V1_URL
-      value: https://eux-rina-api-eessibasis.dev-fss-pub.nais.io/cpi
+      value: https://eux-nav-rinasak-q2.intern.dev.nav.no/cpi
     - name: PDL_URL
       value: https://pdl-api.dev-fss-pub.nais.io/graphql
     - name: PDL_MOTTAK_URL
@@ -53,7 +53,7 @@ spec:
     - name: AZURE_APP_KODEVERK_CLIENT_ID
       value: kodeverk-api.nav.no
     - name: AZURE_APP_EUX_CLIENT_ID
-      value: dev-fss.eessibasis.eux-rina-api-q2
+      value: dev-gcp.eessibasis.eux-rina-api-q2
     - name: AZURE_APP_NORG2_CLIENT_ID
       value: dev-fss.org.norg2
     - name: AZURE_APP_PDL_CLIENT_ID
