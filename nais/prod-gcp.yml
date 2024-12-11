@@ -19,7 +19,7 @@ spec:
         - host: pdl-api.prod-fss-pub.nais.io
         - host: kodeverk-api.nav.no
         - host: pdl-mottak.prod-fss-pub.nais.io
-        - host: eux-rina-api.prod-fss-pub.nais.io
+        - host: eux-rina-api.intern.nav.no
         - host: norg2.prod-fss-pub.nais.io
   webproxy: true
   kafka:
@@ -34,7 +34,7 @@ spec:
     - name: SECURITYTOKENSERVICE_URL
       value: https://sts.adeo.no/SecurityTokenServiceProvider/
     - name: EUX_RINA_API_V1_URL
-      value: https://eux-rina-api.prod-fss-pub.nais.io/cpi
+      value: https://eux-rina-api.intern.nav.no/cpi
     - name: PDL_URL
       value: https://pdl-api.prod-fss-pub.nais.io/graphql
     - name: PDL_MOTTAK_URL
@@ -52,7 +52,7 @@ spec:
     - name: AZURE_APP_KODEVERK_CLIENT_ID
       value: prod-fss.org.kodeverk
     - name: AZURE_APP_EUX_CLIENT_ID
-      value: prod-fss.eessibasis.eux-rina-api
+      value: prod-gcp.eessibasis.eux-rina-api
     - name: AZURE_APP_NORG2_CLIENT_ID
       value: prod-fss.org.norg2
     - name: AZURE_APP_PDL_CLIENT_ID
