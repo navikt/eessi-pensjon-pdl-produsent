@@ -44,12 +44,14 @@ class SedHendelseBehandler(
 
         logger.info("*** Starter pdl endringsmelding (ADRESSE) prosess for BucType: ${sedHendelse.bucType}, SED: ${sedHendelse.sedType}, RinaSakID: ${sedHendelse.rinaSakId} ***")
 
-        val result = adresseoppdatering.vurderUtenlandskKontaktadresse(sedHendelse)
+        val result = adresseoppdatering.vurderUtenlandskKontaktadresse(sedHendelse).also { log(it)}
 
-        log(result)
-
-        if (result is Oppdatering) {
-            personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
+        when(result) {
+            is Oppdatering -> personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
+            else -> {
+                secureLogger.debug("Ingen oppdatering | ${result.toJson()}")
+                logger.warn("Ingen oppdatering for ${sedHendelse.rinaSakId}")
+            }
         }
 
         countForAddress(result.metricTagValue)
