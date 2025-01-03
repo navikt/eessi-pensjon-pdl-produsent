@@ -93,7 +93,7 @@ dependencies {
 	testImplementation "org.springframework.kafka:spring-kafka-test:$springKafkaVersion"
 	testImplementation("no.nav.security:token-validation-spring-test:${tokenSupportVersion}")
 
-	testImplementation("org.junit.jupiter:junit-jupiter:5.11.2")
+	testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
 
 	//mock - test
 	testImplementation("org.mock-server:mockserver-netty:5.15.0") {
