@@ -18,12 +18,10 @@ import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
 import org.apache.hc.client5.http.impl.classic.HttpClients
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder
-import org.apache.hc.client5.http.io.HttpClientConnectionManager
+import org.apache.hc.client5.http.ssl.DefaultClientTlsStrategy
+import org.apache.hc.client5.http.ssl.HostnameVerificationPolicy
 import org.apache.hc.client5.http.ssl.NoopHostnameVerifier
-import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory
-import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder
-import org.apache.hc.core5.ssl.SSLContexts
-import org.apache.hc.core5.ssl.TrustStrategy
+import org.apache.hc.core5.ssl.SSLContextBuilder
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -46,10 +44,8 @@ import org.springframework.kafka.test.EmbeddedKafkaBroker
 import org.springframework.kafka.test.utils.ContainerTestUtils
 import org.springframework.kafka.test.utils.KafkaTestUtils
 import org.springframework.web.client.RestTemplate
-import java.security.cert.X509Certificate
 import java.util.*
 import java.util.concurrent.TimeUnit
-import javax.net.ssl.SSLContext
 
 const val PDL_PRODUSENT_TOPIC_MOTTATT = "eessi-basis-sedMottatt-v1"
 abstract class IntegrationBase {
@@ -230,18 +226,19 @@ abstract class IntegrationBase {
 
         @Bean
         fun opprettSSLRestTemplate(): RestTemplate {
-            val acceptingTrustStrategy = TrustStrategy { _: Array<X509Certificate?>?, _: String? -> true }
+            val sslContext = SSLContextBuilder.create()
+                .loadTrustMaterial(null) { _, _ -> true } // Trust all certificates
+                .build()
 
-            val sslcontext: SSLContext = SSLContexts.custom()
-                .loadTrustMaterial(null, acceptingTrustStrategy)
-                .build()
-            val sslSocketFactory: SSLConnectionSocketFactory = SSLConnectionSocketFactoryBuilder.create()
-                .setSslContext(sslcontext)
-                .setHostnameVerifier(NoopHostnameVerifier.INSTANCE)
-                .build()
-            val connectionManager: HttpClientConnectionManager = PoolingHttpClientConnectionManagerBuilder.create()
-                .setSSLSocketFactory(sslSocketFactory)
-                .build()
+            val connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
+                .setTlsSocketStrategy(
+                    DefaultClientTlsStrategy(
+                        sslContext,
+                        HostnameVerificationPolicy.CLIENT,
+                        NoopHostnameVerifier.INSTANCE
+                    )
+                ).build()
+
             val httpClient = HttpClients.custom()
                 .setConnectionManager(connectionManager)
                 .build()
