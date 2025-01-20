@@ -90,11 +90,9 @@ class OppgaveHandler(
 
         try {
             val journalpost = hentJournalpostForRinasak(hentRinasakerForAktoerId(aktoerId), sedHendelse.rinaSakId)
-//            val enhet = journalpost?.journalfoerendeEnhet
             val behandlingstema = journalpost?.behandlingstema
 
             logger.info("landkode: ${identifisertePerson.landkode} og behandlingstema: $behandlingstema")
-//            if (enhet == AUTOMATISK_JOURNALFORING.enhetsNr) {
                 return if (identifisertePerson.landkode == "NOR" ) {
                     when (Behandlingstema.hentKode(behandlingstema!!)) {
                         GJENLEVENDEPENSJON, BARNEP -> NFP_UTLAND_AALESUND
@@ -107,8 +105,6 @@ class OppgaveHandler(
                     GJENLEVENDEPENSJON, BARNEP, ALDERSPENSJON -> PENSJON_UTLAND
                     else -> opprettOppgaveRuting(sedHendelse, identifisertePerson)
                 }
-//            }
-//            return Enhet.getEnhet(enhet!!)!!
         }
         catch (ex :Exception) {
             logger.warn("Henting fra joark feiler, forsøker manuell oppgave-ruting")
