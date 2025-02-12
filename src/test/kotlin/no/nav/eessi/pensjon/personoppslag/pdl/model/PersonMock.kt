@@ -1,5 +1,6 @@
 package no.nav.eessi.pensjon.personoppslag.pdl.model
 
+import io.mockk.mockk
 import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -45,6 +46,10 @@ object PersonMock {
             "1234"
         )
 
+        val personfnr = Fodselsnummer.fra(fnr)
+        val fdatoaar =   LocalDate.of(1921, 7, 12)
+        val doeadfall =  Doedsfall(LocalDate.of(2020, 10, 1), null, mockk())
+
         return PdlPerson(
             identer = identer,
             navn = Navn(fornavn, null, etternavn, metadata = metadata),
@@ -58,7 +63,8 @@ object PersonMock {
             ),
             oppholdsadresse = null,
             statsborgerskap = emptyList(),
-            foedsel = Foedsel(foedselsdato, null, null, null, metadata = metadata),
+            //foedested = Foedested("NOR", null, null, null, mockk()),
+            foedselsdato = Foedselsdato(fdatoaar?.year, personfnr?.getBirthDateAsIso(), null, mockk()),
             geografiskTilknytning = geo?.let { GeografiskTilknytning(GtType.KOMMUNE, it, null, null) },
             kjoenn = Kjoenn(KjoennType.KVINNE, null, metadata),
             doedsfall = null,

@@ -13,6 +13,7 @@ import no.nav.eessi.pensjon.pdl.OppgaveModel.Oppdatering
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonoppslagException
 import no.nav.eessi.pensjon.personoppslag.pdl.model.*
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Foedested
 import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import no.nav.eessi.pensjon.shared.person.FodselsnummerGenerator
 import no.nav.eessi.pensjon.utils.mapJsonToAny
@@ -489,6 +490,10 @@ internal class VurderAdresseoppdateringTest {
     fun `Gitt at en person har adressebeskyttelse fortrolig utland saa skal adressen likevel registreres`() {
         every { euxService.hentSed(eq(SOME_RINA_SAK_ID), eq(SOME_DOKUMENT_ID)) } returns sed(brukersAdresse = EDDY_ADRESSE_I_SED)
         every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns personFraPDL(adressebeskyttelse = listOf(AdressebeskyttelseGradering.STRENGT_FORTROLIG_UTLAND))
+            .copy(foedested = Foedested("NOR", null, null, null, mockk<Metadata>(relaxed = true).apply {
+                every { endringer } returns mockk(relaxed = true)
+                every { historisk } returns false
+            }),)
 
         val adresseoppdatering = VurderAdresseoppdatering(personService, euxService, sedTilPDLAdresse)
 
@@ -680,35 +685,57 @@ internal class VurderAdresseoppdateringTest {
         gyldigFraOgMed: LocalDateTime = LocalDateTime.now().minusDays(10),
         gyldigTilOgMed: LocalDateTime = LocalDateTime.now().plusDays(10),
         metadataMaster: String = "PDL"
-    ) = PdlPerson(
-        identer = if (Fodselsnummer.fra(id)?.erNpid == true) listOf(IdentInformasjon(id!!, IdentGruppe.NPID)) else listOf(IdentInformasjon(id!!, IdentGruppe.FOLKEREGISTERIDENT)),
-        navn = null,
-        adressebeskyttelse = adressebeskyttelse,
-        bostedsadresse = null,
-        oppholdsadresse = null,
-        statsborgerskap = listOf(),
-        foedsel = null,
-        geografiskTilknytning = null,
-        kjoenn = null,
-        doedsfall = null,
-        forelderBarnRelasjon = listOf(),
-        sivilstand = listOf(),
-        kontaktadresse = Kontaktadresse(
-            coAdressenavn = "c/o Anund",
-            folkeregistermetadata = null,
-            gyldigFraOgMed = gyldigFraOgMed,
-            gyldigTilOgMed = gyldigTilOgMed,
-            metadata = Metadata(
+    ): PdlPerson {
+        val personfnr = Fodselsnummer.fra(id)
+        val fdatoaar =   LocalDate.of(1921, 7, 12)
+        val doeadfall =  Doedsfall(LocalDate.of(2020, 10, 1), null, mockk())
+
+        return PdlPerson(
+            identer = if (Fodselsnummer.fra(id)?.erNpid == true) listOf(
+                IdentInformasjon(
+                    id!!,
+                    IdentGruppe.NPID
+                )
+            ) else listOf(IdentInformasjon(id!!, IdentGruppe.FOLKEREGISTERIDENT)),
+            navn = null,
+            adressebeskyttelse = adressebeskyttelse,
+            bostedsadresse = null,
+            oppholdsadresse = null,
+            statsborgerskap = listOf(),
+            foedested = Foedested("NOR", null, null, null, metadata = Metadata(
                 endringer = emptyList(),
                 historisk = false,
                 master = metadataMaster,
-                opplysningsId = opplysningsId
+                opplysningsId = opplysningsId),
             ),
-            type = KontaktadresseType.Utland,
-            utenlandskAdresse = utenlandskAdresse
-        ),
-        kontaktinformasjonForDoedsbo = null,
-        utenlandskIdentifikasjonsnummer = listOf()
-    )
+            foedselsdato = Foedselsdato(fdatoaar?.year, personfnr?.getBirthDateAsIso(), null, metadata = Metadata(
+                endringer = emptyList(),
+                historisk = false,
+                master = metadataMaster,
+                opplysningsId = opplysningsId),
+            ),
+            geografiskTilknytning = null,
+            kjoenn = null,
+            doedsfall = null,
+            forelderBarnRelasjon = listOf(),
+            sivilstand = listOf(),
+            kontaktadresse = Kontaktadresse(
+                coAdressenavn = "c/o Anund",
+                folkeregistermetadata = null,
+                gyldigFraOgMed = gyldigFraOgMed,
+                gyldigTilOgMed = gyldigTilOgMed,
+                metadata = Metadata(
+                    endringer = emptyList(),
+                    historisk = false,
+                    master = metadataMaster,
+                    opplysningsId = opplysningsId
+                ),
+                type = KontaktadresseType.Utland,
+                utenlandskAdresse = utenlandskAdresse
+            ),
+            kontaktinformasjonForDoedsbo = null,
+            utenlandskIdentifikasjonsnummer = listOf()
+        )
+    }
 
 }
