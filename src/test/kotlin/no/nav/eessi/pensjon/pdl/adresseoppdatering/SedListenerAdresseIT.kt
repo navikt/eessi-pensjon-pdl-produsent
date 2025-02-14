@@ -2,6 +2,7 @@ package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.verify
 import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.model.BucType.P_BUC_01
@@ -19,13 +20,8 @@ import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.integrationtest.IntegrationBase
 import no.nav.eessi.pensjon.pdl.integrationtest.KafkaTestConfig
-import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
-import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentInformasjon
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Kontaktadresse
-import no.nav.eessi.pensjon.personoppslag.pdl.model.KontaktadresseType
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Metadata
-import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
-import no.nav.eessi.pensjon.personoppslag.pdl.model.UtenlandskAdresse
+import no.nav.eessi.pensjon.personoppslag.pdl.model.*
+import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import no.nav.eessi.pensjon.shared.person.FodselsnummerGenerator
 import no.nav.eessi.pensjon.utils.toJson
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -36,6 +32,7 @@ import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.web.client.RestTemplate
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 
@@ -148,47 +145,65 @@ class SedListenerAdresseIT : IntegrationBase() {
             return sedHendelse
         }
 
-        fun enPersonFraPDL(fnr: String) = no.nav.eessi.pensjon.personoppslag.pdl.model.PdlPerson(
-            identer = listOf(
-                IdentInformasjon(
-                    ident = fnr,
-                    gruppe = IdentGruppe.FOLKEREGISTERIDENT
-                )
-            ),
-            navn = null,
-            adressebeskyttelse = listOf(),
-            bostedsadresse = null,
-            oppholdsadresse = null,
-            statsborgerskap = listOf(),
-            foedsel = null,
-            geografiskTilknytning = null,
-            kjoenn = null,
-            doedsfall = null,
-            forelderBarnRelasjon = listOf(),
-            sivilstand = listOf(),
-            kontaktadresse = Kontaktadresse(
-                coAdressenavn = "c/o Anund",
-                folkeregistermetadata = null,
-                gyldigFraOgMed = LocalDateTime.now().minusDays(5),
-                gyldigTilOgMed = LocalDateTime.now().plusDays(5),
-                metadata = Metadata(
+        fun enPersonFraPDL(fnr: String): PdlPerson {
+            val personfnr = Fodselsnummer.fra(fnr)
+            val fdatoaar =   LocalDate.of(1921, 7, 12)
+            val doeadfall =  Doedsfall(LocalDate.of(2020, 10, 1), null, mockk())
+
+            return PdlPerson(
+                identer = listOf(
+                    IdentInformasjon(
+                        ident = fnr,
+                        gruppe = IdentGruppe.FOLKEREGISTERIDENT
+                    )
+                ),
+                navn = null,
+                adressebeskyttelse = listOf(),
+                bostedsadresse = null,
+                oppholdsadresse = null,
+                statsborgerskap = listOf(),
+                foedested = Foedested("NOR", null, null, null, Metadata(
                     endringer = emptyList(),
                     historisk = false,
-                    master = "",
-                    opplysningsId = "OpplysningsId"
+                    master = "PDL",
+                    opplysningsId = "654-654-564"),
                 ),
-                type = KontaktadresseType.Utland,
-                utenlandskAdresse = UtenlandskAdresse(
-                    adressenavnNummer = "EddyRoad",
-                    bygningEtasjeLeilighet = "EddyHouse",
-                    bySted = "EddyCity",
-                    postkode = "111",
-                    regionDistriktOmraade = "Stockholm",
-                    landkode = "SWE"
-                )
-            ),
-            kontaktinformasjonForDoedsbo = null,
-            utenlandskIdentifikasjonsnummer = listOf()
-        )
+                foedselsdato = Foedselsdato(fdatoaar?.year, personfnr?.getBirthDateAsIso(), null,
+                    Metadata(
+                    endringer = emptyList(),
+                    historisk = false,
+                    master = "PDL",
+                    opplysningsId = "654-654-564"),
+                ),
+                geografiskTilknytning = null,
+                kjoenn = null,
+                doedsfall = null,
+                forelderBarnRelasjon = listOf(),
+                sivilstand = listOf(),
+                kontaktadresse = Kontaktadresse(
+                    coAdressenavn = "c/o Anund",
+                    folkeregistermetadata = null,
+                    gyldigFraOgMed = LocalDateTime.now().minusDays(5),
+                    gyldigTilOgMed = LocalDateTime.now().plusDays(5),
+                    metadata = Metadata(
+                        endringer = emptyList(),
+                        historisk = false,
+                        master = "",
+                        opplysningsId = "OpplysningsId"
+                    ),
+                    type = KontaktadresseType.Utland,
+                    utenlandskAdresse = UtenlandskAdresse(
+                        adressenavnNummer = "EddyRoad",
+                        bygningEtasjeLeilighet = "EddyHouse",
+                        bySted = "EddyCity",
+                        postkode = "111",
+                        regionDistriktOmraade = "Stockholm",
+                        landkode = "SWE"
+                    )
+                ),
+                kontaktinformasjonForDoedsbo = null,
+                utenlandskIdentifikasjonsnummer = listOf()
+            )
+        }
     }
 }

@@ -1,10 +1,12 @@
 package no.nav.eessi.pensjon.pdl
 
+import io.mockk.mockk
 import no.nav.eessi.pensjon.eux.model.BucType
 import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.sed.*
 import no.nav.eessi.pensjon.personoppslag.pdl.model.*
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Foedested
 import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import java.time.LocalDate
@@ -157,40 +159,47 @@ open class IdentBaseTest {
         gyldigFraOgMed: LocalDateTime = LocalDateTime.now().minusDays(10),
         gyldigTilOgMed: LocalDateTime = LocalDateTime.now().plusDays(10),
         doedsdato: LocalDate? = null
-    ): PdlPerson = PdlPerson(
-        identer = listOf(IdentInformasjon(id, IdentGruppe.FOLKEREGISTERIDENT)),
-        navn = null,
-        adressebeskyttelse = adressebeskyttelse,
-        bostedsadresse = null,
-        oppholdsadresse = null,
-        statsborgerskap = listOf(),
-        foedsel = null,
-        geografiskTilknytning = null,
-        kjoenn = null,
-        doedsfall = Doedsfall(
-            doedsdato = doedsdato,
-            folkeregistermetadata = null,
-            metadata= metadata()
-        ),
-        forelderBarnRelasjon = listOf(),
-        sivilstand = listOf(),
-        kontaktadresse = Kontaktadresse(
-            coAdressenavn = "c/o Anund",
-            folkeregistermetadata = null,
-            gyldigFraOgMed = gyldigFraOgMed,
-            gyldigTilOgMed = gyldigTilOgMed,
-            metadata = Metadata(
-                endringer = emptyList(),
-                historisk = false,
-                master = "",
-                opplysningsId = opplysningsId
+    ): PdlPerson {
+        val personfnr = Fodselsnummer.fra(id)
+        val fdatoaar =   LocalDate.of(1921, 7, 12)
+        val doeadfall =  Doedsfall(LocalDate.of(2020, 10, 1), null, mockk())
+
+        return PdlPerson(
+            identer = listOf(IdentInformasjon(id, IdentGruppe.FOLKEREGISTERIDENT)),
+            navn = null,
+            adressebeskyttelse = adressebeskyttelse,
+            bostedsadresse = null,
+            oppholdsadresse = null,
+            statsborgerskap = listOf(),
+            foedested = Foedested("NOR", null, null, null, mockk()),
+            foedselsdato = Foedselsdato(fdatoaar?.year, personfnr?.getBirthDateAsIso(), null, mockk()),
+            geografiskTilknytning = null,
+            kjoenn = null,
+            doedsfall = Doedsfall(
+                doedsdato = doedsdato,
+                folkeregistermetadata = null,
+                metadata = metadata()
             ),
-            type = KontaktadresseType.Utland,
-            utenlandskAdresse = utenlandskAdresse
-        ),
-        kontaktinformasjonForDoedsbo = null,
-        utenlandskIdentifikasjonsnummer = listOf()
-    )
+            forelderBarnRelasjon = listOf(),
+            sivilstand = listOf(),
+            kontaktadresse = Kontaktadresse(
+                coAdressenavn = "c/o Anund",
+                folkeregistermetadata = null,
+                gyldigFraOgMed = gyldigFraOgMed,
+                gyldigTilOgMed = gyldigTilOgMed,
+                metadata = Metadata(
+                    endringer = emptyList(),
+                    historisk = false,
+                    master = "",
+                    opplysningsId = opplysningsId
+                ),
+                type = KontaktadresseType.Utland,
+                utenlandskAdresse = utenlandskAdresse
+            ),
+            kontaktinformasjonForDoedsbo = null,
+            utenlandskIdentifikasjonsnummer = listOf()
+        )
+    }
 
     fun convertFromSedTypeToSED(json: String, sedType: SedType): SED {
         return when (sedType) {
