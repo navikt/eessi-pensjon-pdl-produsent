@@ -16,11 +16,11 @@ spec:
   accessPolicy:
     outbound:
       external:
-        - host: pdl-api.prod-fss-pub.nais.io
         - host: kodeverk-api.nav.no
-        - host: pdl-mottak.prod-fss-pub.nais.io
         - host: eux-rina-api.intern.nav.no
         - host: norg2.prod-fss-pub.nais.io
+        - host: pdl-api.prod-fss-pub.nais.io
+        - host: pdl-mottak.prod-fss-pub.nais.io
   webproxy: true
   kafka:
     pool: nav-prod
@@ -29,10 +29,6 @@ spec:
       value: prod
     - name: NAMESPACE
       value: p
-    - name: SECURITY_TOKEN_SERVICE_OPENID_CONFIGURATION_URL
-      value: https://security-token-service.nais.adeo.no/rest/v1/sts/.well-known/openid-configuration
-    - name: SECURITYTOKENSERVICE_URL
-      value: https://sts.adeo.no/SecurityTokenServiceProvider/
     - name: EUX_RINA_API_V1_URL
       value: https://eux-rina-api.intern.nav.no/cpi
     - name: PDL_URL
@@ -41,12 +37,18 @@ spec:
       value: https://pdl-mottak.prod-fss-pub.nais.io
     - name: NORG2_URL
       value: https://norg2.prod-fss-pub.nais.io/norg2
+    - name: KODEVERK_URL
+      value: https://kodeverk-api.nav.no
+    - name: SAF_GRAPHQL_URL
+      value: https://saf.prod-fss-pub.nais.io/graphql
+    - name: SAF_HENTDOKUMENT_URL
+      value: https://saf.prod-fss-pub.nais.io/rest/hentdokument
+
     - name: KAFKA_SEDMOTTATT_TOPIC
       value: eessibasis.sedmottatt-v1
     - name: KAFKA_OPPGAVE_TOPIC
       value: eessipensjon.privat-oppgave
-    - name: KODEVERK_URL
-      value: https://kodeverk-api.nav.no
+
     - name: AZURE_APP_PROXY_CLIENT_ID
       value: prod-fss.eessipensjon.eessi-pensjon-onprem-proxy
     - name: AZURE_APP_KODEVERK_CLIENT_ID
@@ -59,14 +61,11 @@ spec:
       value: prod-fss.pdl.pdl-api
     - name: AZURE_APP_PDL_MOTTAK_CLIENT_ID
       value: prod-fss.pdl.pdl-mottak
-    - name: GCP_BUCKET_NAME
-      value: eessi-pensjon-pdl-produsent-prod
     - name: AZURE_APP_SAF_CLIENT_ID
       value: prod-fss.teamdokumenthandtering.saf
-    - name: SAF_GRAPHQL_URL
-      value: https://saf.prod-fss-pub.nais.io/graphql
-    - name: SAF_HENTDOKUMENT_URL
-      value: https://saf.prod-fss-pub.nais.io/rest/hentdokument
+
+    - name: GCP_BUCKET_NAME
+      value: eessi-pensjon-pdl-produsent-prod
 
   gcp:
     buckets:
