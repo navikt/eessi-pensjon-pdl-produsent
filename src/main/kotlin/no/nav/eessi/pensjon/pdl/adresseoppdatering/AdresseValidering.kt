@@ -1,5 +1,7 @@
 package no.nav.eessi.pensjon.pdl.adresseoppdatering
 
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Metadata
+
 object AdresseValidering {
 
     val maaInneholdeMinstEnBokstav = Regex(".*\\p{L}+.*")
@@ -24,6 +26,12 @@ object AdresseValidering {
             !inneholderUkjentFraser(tekst) &&
             !inneholderTegnPDLIkkeGodtar(tekst)
 
+    /**
+     * Fra PDL: Norsk bostedsadresse vil alltid ha Freg som master. Utenlandsk bostedsadresse vil alltid ha PDL som master.
+     */
+    fun erNorskAdresse(meta: Metadata?) : Boolean{
+        return meta?.master.equals("FREG", ignoreCase = true).not().also { print("erNorskAdresse: " +it) }
+    }
     private fun inneholderPostboksFraser(tekst: String) = postboksFraser.any { tekst.contains(it) }
     private fun inneholderUkjentFraser(tekst: String) = ukjentFraser.any { tekst.contains(it) }
     private fun inneholderTegnPDLIkkeGodtar(tekst: String) = ugyldigeTegn.any { tekst.contains(it) }
