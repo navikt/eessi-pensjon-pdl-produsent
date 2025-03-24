@@ -87,6 +87,7 @@ class VurderAdresseoppdatering(
                 ?: personFraPDL.identer.first().ident
 
         require(erUtenAdressebeskyttelse(personFraPDL.adressebeskyttelse)) { return IngenOppdatering("Ingen adresseoppdatering") }
+        require(AdresseValidering.erNorskAdresse(personFraPDL.bostedsadresse?.metadata)) { return IngenOppdatering("Ingen adresseoppdatering da dette allerede har en norsk adresse") }
 
         logger.info("Vi har funnet en person fra PDL med samme norsk identifikator som bruker i SED")
 

@@ -116,6 +116,20 @@ internal class VurderAdresseoppdateringTest {
         landkode = "SWE"
     )
 
+    private val NORSK_ADRESSE_FRA_PDL = Bostedsadresse(
+        LocalDateTime.of(2000, 9, 2, 4,3),
+        LocalDateTime.of(2300, 9, 2, 4,3),
+        Vegadresse(
+            "Kirkeveien",
+            "12",
+            null,
+            "0123",
+            null,
+            null
+        ),
+        utenlandskAdresse = null,
+        metadata = Metadata(emptyList(), false, "FREG", "Doll")
+    )
     private val EDDY_ADRESSE_I_ENDRINGSMELDING = EndringsmeldingUtenlandskAdresse(
         adressenavnNummer = "EddyRoad",
         bygningEtasjeLeilighet = "EddyHouse",
@@ -236,6 +250,27 @@ internal class VurderAdresseoppdateringTest {
                     endringsType = Endringstype.OPPRETT
                 ), "Adressen i SED finnes ikke i PDL, sender OPPRETT endringsmelding"
             ), result)
+    }
+
+    @Test
+    fun `Gitt SED med norsk bostedsadresse, og selv om denne finnes i PDL som en adresse fra FREG, så oppretter vi en ny kontaktadresse likevel`() {
+        every { euxService.hentSed(any(), any()) } returns sed(brukersAdresse = EDDY_ADRESSE_I_SED)
+        every { personService.hentPerson(NorskIdent(SOME_FNR)) } returns
+                personFraPDL(
+                    bostedsadresse = NORSK_ADRESSE_FRA_PDL,
+                    metadataMaster = "Freg"
+                )
+        every { personMottakKlient.opprettPersonopplysning(any()) } returns true
+        val adresseoppdatering = VurderAdresseoppdatering(personService, euxService, sedTilPDLAdresse)
+
+        val result =
+            adresseoppdatering.vurderUtenlandskKontaktadresse(sedHendelse(avsenderLand = EDDY_ADRESSE_LANDKODE))
+
+        assertEquals(
+            IngenOppdatering(
+                "Ingen adresseoppdatering da dette allerede har en norsk adresse"
+            ), result
+        )
     }
 
     @Test
@@ -684,7 +719,8 @@ internal class VurderAdresseoppdateringTest {
         opplysningsId: String = "DummyOpplysningsId",
         gyldigFraOgMed: LocalDateTime = LocalDateTime.now().minusDays(10),
         gyldigTilOgMed: LocalDateTime = LocalDateTime.now().plusDays(10),
-        metadataMaster: String = "PDL"
+        metadataMaster: String = "PDL",
+        bostedsadresse: Bostedsadresse? = null
     ): PdlPerson {
         val personfnr = Fodselsnummer.fra(id)
         val fdatoaar =   LocalDate.of(1921, 7, 12)
@@ -699,7 +735,7 @@ internal class VurderAdresseoppdateringTest {
             ) else listOf(IdentInformasjon(id!!, IdentGruppe.FOLKEREGISTERIDENT)),
             navn = null,
             adressebeskyttelse = adressebeskyttelse,
-            bostedsadresse = null,
+            bostedsadresse = bostedsadresse,
             oppholdsadresse = null,
             statsborgerskap = listOf(),
             foedested = Foedested("NOR", null, null, null, metadata = Metadata(
