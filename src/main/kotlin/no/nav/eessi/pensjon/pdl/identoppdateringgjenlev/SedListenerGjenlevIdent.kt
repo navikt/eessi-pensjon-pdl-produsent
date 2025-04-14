@@ -47,15 +47,14 @@ class SedListenerGjenlevIdent(
                             behandleIdentHendelse.behandlenGjenlevHendelse(hendelse)
                         }.onSuccess {
                             logger.info("Acket sedGjenlevMottatt melding med offset: ${cr.offset()} i partisjon ${cr.partition()}")
-                            acknowledgment.acknowledge()
-                            latch.countDown()
-
                         }.onFailure {
                             logger.error("Noe gikk galt under behandling av SED-hendelse", it)
                             secureLogger.info("Noe gikk galt under behandling av SED-hendelse:\n$hendelse")
                             throw it
                         }
                     }
+                    latch.countDown()
+                    acknowledgment.acknowledge()
                 } catch (ex: HttpClientErrorException) {
                     if (ex.statusCode == HttpStatus.LOCKED)
                         logger.error("Det pågår allerede en adresseoppdatering på bruker", ex)
