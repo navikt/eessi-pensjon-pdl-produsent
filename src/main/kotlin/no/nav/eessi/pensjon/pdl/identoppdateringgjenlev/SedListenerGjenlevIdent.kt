@@ -40,7 +40,7 @@ class SedListenerGjenlevIdent(
             consumeIncomingSed.measure {
                 logger.info("SedGjenlevMottatt i partisjon: ${cr.partition()}, med offset: ${cr.offset()}")
                 try {
-                    if (cr.offset() in listOf(1072448L,1786617)) {
+                    if (cr.offset() in listOf(1072448L,1786617, 1860315)) {
                         logger.warn("Hopper over offset: ${cr.offset()} grunnet feil ved henting av vedlegg...")
                     } else {
                         runCatching {
