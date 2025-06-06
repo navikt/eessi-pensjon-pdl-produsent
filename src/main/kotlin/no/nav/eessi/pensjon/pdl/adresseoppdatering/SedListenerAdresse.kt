@@ -41,6 +41,7 @@ class SedListenerAdresse(
 
                 try {
                     sedHendelseBehandler.behandle(hendelse)
+                    latch.countDown()
                     logger.info("Acket sedMottatt melding med offset: ${cr.offset()} i partisjon ${cr.partition()}")
                 } catch (ex: HttpClientErrorException) {
                     handleHttpClientErrorException(ex)
