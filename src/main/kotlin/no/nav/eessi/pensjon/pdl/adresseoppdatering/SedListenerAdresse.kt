@@ -18,6 +18,7 @@ class SedListenerAdresse(
     private val sedHendelseBehandler: SedHendelseBehandler,
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
 ) {
+    val latch: CountDownLatch = CountDownLatch(1)
     private val logger = LoggerFactory.getLogger(SedListenerAdresse::class.java)
     private val secureLogger = LoggerFactory.getLogger("secureLog")
     private val adresseMetric = metricsHelper.init("consumeIncomingSedForAddress")
