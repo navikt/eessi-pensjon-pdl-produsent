@@ -18,11 +18,10 @@ class SedListenerAdresse(
     private val sedHendelseBehandler: SedHendelseBehandler,
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
 ) {
-    val latch: CountDownLatch = CountDownLatch(1)
     private val logger = LoggerFactory.getLogger(SedListenerAdresse::class.java)
     private val secureLogger = LoggerFactory.getLogger("secureLog")
-
-    private var adresseMetric: MetricsHelper.Metric = metricsHelper.init("consumeIncomingSedForAddress")
+    private val adresseMetric = metricsHelper.init("consumeIncomingSedForAddress")
+    private val offsetToSkip = setOf<Long>(1976376)
 
     @KafkaListener(
         containerFactory = "sedKafkaListenerContainerFactory",
@@ -34,29 +33,36 @@ class SedListenerAdresse(
             adresseMetric.measure {
                 logger.info("SED-hendelse mottatt i partisjon: ${cr.partition()}, med offset: ${cr.offset()} ")
 
-                val offsetToSkip = listOf<Long>(811036, 828626, 835424, 887875, 887884, 895313, 918851, 970852, 990520, 993284, 1014829, 1119923, 1120149, 1155518, 1296526, 1340464, 1542881, 1786617)
                 if (cr.offset() in offsetToSkip) {
                     logger.warn("Hopper over offset: ${cr.offset()}")
+                    return@measure
                 }
-                else {
-                    try {
-                        sedHendelseBehandler.behandle(hendelse)
-                        logger.info("Acket sedMottatt melding med offset: ${cr.offset()} i partisjon ${cr.partition()}")
-                        latch.countDown()
-                    } catch (ex: HttpClientErrorException) {
-                        if (ex.statusCode == HttpStatus.LOCKED)
-                            logger.error("Det pågår allerede en adresseoppdatering på bruker", ex)
-                        else if (ex.message != null && ex.message!!.contains("Kontaktadressen er allerede registrert som oppholdsadresse"))
-                            logger.warn("Kontaktadressen er allerede registrert som bostedsadresse, Ingen Oppdatering")
-                        else throw ex
-                    } catch (ex: Exception) {
-                        logger.error("Noe gikk galt under behandling av SED-hendelse for adresse", ex)
-                        secureLogger.info("Noe gikk galt under behandling av SED-hendelse for adresse:\n$hendelse")
-                        throw ex
-                    }
+
+                try {
+                    sedHendelseBehandler.behandle(hendelse)
+                    logger.info("Acket sedMottatt melding med offset: ${cr.offset()} i partisjon ${cr.partition()}")
+                } catch (ex: HttpClientErrorException) {
+                    handleHttpClientErrorException(ex)
+                } catch (ex: Exception) {
+                    handleGeneralException(ex, hendelse)
                 }
                 acknowledgment.acknowledge()
             }
         }
+    }
+
+    private fun handleHttpClientErrorException(ex: HttpClientErrorException) {
+        when {
+            ex.statusCode == HttpStatus.LOCKED -> logger.error("Det pågår allerede en adresseoppdatering på bruker", ex)
+            ex.message?.contains("Kontaktadressen er allerede registrert som oppholdsadresse") == true ->
+                logger.warn("Kontaktadressen er allerede registrert som bostedsadresse, Ingen Oppdatering")
+            else -> throw ex
+        }
+    }
+
+    private fun handleGeneralException(ex: Exception, hendelse: String) {
+        logger.error("Noe gikk galt under behandling av SED-hendelse for adresse", ex)
+        secureLogger.info("Noe gikk galt under behandling av SED-hendelse for adresse:\n$hendelse")
+        throw ex
     }
 }
