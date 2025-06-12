@@ -22,7 +22,7 @@ class SedListenerAdresse(
     private val logger = LoggerFactory.getLogger(SedListenerAdresse::class.java)
     private val secureLogger = LoggerFactory.getLogger("secureLog")
     private val adresseMetric = metricsHelper.init("consumeIncomingSedForAddress")
-    private val offsetToSkip = setOf<Long>(1976376, 1984985)
+    private val offsetToSkip = setOf<Long>(1976376, 1984985, 1990284)
 
     @KafkaListener(
         containerFactory = "sedKafkaListenerContainerFactory",
