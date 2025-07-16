@@ -34,6 +34,7 @@ spec:
       value: prod
     - name: NAMESPACE
       value: p
+
     - name: EUX_RINA_API_V1_URL
       value: https://eux-rina-api.intern.nav.no/cpi
     - name: PDL_URL

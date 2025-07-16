@@ -23,7 +23,6 @@ spec:
       external:
         - host: kodeverk-api.nav.no
         - host: norg2.dev-fss-pub.nais.io
-        - host: saf-q2.dev-fss-pub.nais.io
         - host: pdl-api.dev-fss-pub.nais.io
         - host: pdl-mottak.dev-fss-pub.nais.io
         - host: eux-rina-api-q2.intern.dev.nav.no
