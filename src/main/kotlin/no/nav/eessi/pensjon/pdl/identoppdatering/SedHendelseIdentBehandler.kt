@@ -115,6 +115,6 @@ data class SedHendelseIdentBehandlerRetryConfig(val initialRetryMillis: Long = 2
 class SedHendelseIdentBehandlerRetryLogger : RetryListener {
     private val logger = LoggerFactory.getLogger(SedHendelseIdentBehandlerRetryLogger::class.java)
     override fun <T : Any?, E : Throwable?> onError(context: RetryContext?, callback: RetryCallback<T, E>?, throwable: Throwable?) {
-        logger.warn("Feil under behandling av sedHendelse - try #${context?.retryCount } - ${throwable?.toString()}", throwable)
+        logger.error("Feil under behandling av sedHendelse - try #${context?.retryCount } - ${throwable?.toString()}", throwable)
     }
 }
