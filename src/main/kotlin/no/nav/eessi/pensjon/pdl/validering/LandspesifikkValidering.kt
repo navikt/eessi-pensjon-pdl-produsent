@@ -97,7 +97,7 @@ class LandspesifikkValidering(private val kodeverkClient: KodeverkClient) {
     }
 
     fun formaterBulgarskUID(uid: String): String {
-        var uidNew = uid.trim().replace(" ", "").replace("-", "")
+        var uidNew = uid.trim().replace(" ", "").replace("-", "").replace(":", "")
         return uidNew
     }
 
