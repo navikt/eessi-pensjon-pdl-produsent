@@ -61,7 +61,7 @@ class LandspesifikkValidering(private val kodeverkClient: KodeverkClient) {
     }
 
     private fun belgia(uid: String) = uid.length == 13 && uid.checkDigitsLength(11) && uid.substring(6, 7) == "-" && uid.substring(10, 11) == "-"
-    private fun bulgaria(uid: String) = uid.checkDigitsLength(10)
+    private fun bulgaria(uid: String) = uid.filter { it.isDigit() }.checkDigitsLength(10)
     private fun finland(uid: String) = uid.length == 11 && uid.substring(6,7) in listOf("-","A","a") && uid.checkDigitsLength(IntRange(0,5), 6) && uid.checkDigitsLength(IntRange(7, 9), 3)
     private fun italia(uid: String) = uid.isLettersOrDigit() && uid.length == 16
     private fun latvia(uid: String) = uid.checkDigitsLength(11) && uid.substring(5, 6) != "-" && uid.checkDigitsLength(IntRange(0,6), 6) && uid.checkDigitsLength(IntRange(6,11), 5)

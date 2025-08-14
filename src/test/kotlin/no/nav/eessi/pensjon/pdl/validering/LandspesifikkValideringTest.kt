@@ -47,6 +47,7 @@ internal class LandspesifikkValideringTest {
         "BE, 770113-123-12, true",
         "BE, 770113-12312, false",
         "BR, 1234567890, true" ,
+        "BR, 123456-7890, true" ,
         "BR, 123456789012, false" ,
         "BR, 770113-12312, false",
         "FI, 130177A636D, true",
