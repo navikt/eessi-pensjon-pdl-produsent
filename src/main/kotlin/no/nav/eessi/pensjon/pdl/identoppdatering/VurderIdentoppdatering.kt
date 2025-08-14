@@ -199,7 +199,7 @@ class VurderIdentoppdatering(
             return landspesifikkValidering.formaterDanskEllerIslandskUID(utenlandskPin.id)
         }
         if (utenlandskPin.land == "BR") {
-            return utenlandskPin.id.replace(" ", "")
+            return utenlandskPin.id.replace(" ", "").replace("-", "")
         }
         return utenlandskPin.id
     }
