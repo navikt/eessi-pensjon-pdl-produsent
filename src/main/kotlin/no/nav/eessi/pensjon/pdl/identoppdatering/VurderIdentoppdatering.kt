@@ -201,9 +201,7 @@ class VurderIdentoppdatering(
         if (utenlandskPin.land == "BR") {
             return utenlandskPin.id.replace(" ", "").replace("-", "")
         }
-        if (utenlandskPin.land == "BGR") {
-            return utenlandskPin.id.replace(" ", "").replace("-", "")
-        }
+
         return utenlandskPin.id
     }
     private fun UtenlandskId.erPersonValidertPaaLand(): Boolean = landspesifikkValidering.validerLandsspesifikkUID(land, id)
