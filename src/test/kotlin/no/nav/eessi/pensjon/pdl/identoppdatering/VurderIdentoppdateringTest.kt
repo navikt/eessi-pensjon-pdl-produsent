@@ -460,24 +460,27 @@ class VurderIdentoppdateringTest : IdentBaseTest() {
 
     }
 
-    @Test
-    fun `Gitt at vi har en endringsmelding med en bulgarsk uid, med mellomrom i saa skal det opprettes en endringsmelding`() {
+    @ParameterizedTest
+    @CsvSource(value = [
+        "5 12 0201234, 5120201234",    // ident med mellomrom
+        "195106-0622, 1951060622"]     // ident med bindestrek
+    )
+    fun `Gitt at vi har en endringsmelding med en bulgarsk uid, med spesielle tegn i saa skal det opprettes en endringsmelding`(ident: String, forventetIdent: String) {
         every { personService.hentPerson(NorskIdent(FNR)) } returns
                 personFraPDL(id = FNR).copy(identer = listOf(IdentInformasjon(FNR, FOLKEREGISTERIDENT)))
 
         every { euxService.hentSed(any(), any()) } returns
                 sed(
                     pinItem = listOf(
-                        PinItem(identifikator = "5 12 020  1234", land = "BR"),
+                        PinItem(identifikator = ident, land = "BR"),
                         PinItem(identifikator = FNR, land = "NO")
                     )
                 )
 
         assertEquals(
-            Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utenlandskId = "5120201234", utstederland = "BGR")),
+            Oppdatering("Innsending av endringsmelding", pdlEndringsMelding(FNR, utenlandskId = forventetIdent, utstederland = "BGR")),
             (identoppdatering.vurderUtenlandskIdent(sedHendelse(avsenderLand = "BR", navBruker = Fodselsnummer.fra(FNR))))
         )
-
     }
 
     @Test
