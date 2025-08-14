@@ -41,10 +41,15 @@ class LandspesifikkValidering(private val kodeverkClient: KodeverkClient) {
      */
     fun normalisertPin(uid: String, land: String): String {
         val landKode = kodeverkClient.finnLandkode(land)
-        return if (GyldigeLand.landkode(landKode!!) == SVERIGE) {
-            formaterSvenskUID(uid)
+        return when {
+            GyldigeLand.landkode(landKode!!) == SVERIGE -> {
+                formaterSvenskUID(uid)
+            }
+            GyldigeLand.landkode(landKode!!) == BULGARIA -> {
+                formaterBulgarskUID(uid)
+            }
+            else -> uid
         }
-        else uid
     }
 
     fun String.checkDigitsLength(range: IntRange, len: Int): Boolean =  this.substring(range).checkDigitsLength(len)
@@ -80,7 +85,7 @@ class LandspesifikkValidering(private val kodeverkClient: KodeverkClient) {
         return formaterSvenskUID(uid).length == 11 && formaterSvenskUID(uid).checkDigitsLength(10)
     }
 
-     fun formaterSvenskUID(uid: String): String { // TODO Denne implementasjonen kan godt få en ny titt
+    fun formaterSvenskUID(uid: String): String { // TODO Denne implementasjonen kan godt få en ny titt
         var uidNew = uid.trim().replace(" ", "").replace("-", "")
         if (uidNew.length == 12) {
             uidNew = uidNew.removeRange(0, 2)
@@ -88,6 +93,11 @@ class LandspesifikkValidering(private val kodeverkClient: KodeverkClient) {
         if (uidNew.filter { it.isDigit() }.length == 10) {
             uidNew = uidNew.replaceRange(6, 6, "-")
         }
+        return uidNew
+    }
+
+    fun formaterBulgarskUID(uid: String): String {
+        var uidNew = uid.trim().replace(" ", "").replace("-", "")
         return uidNew
     }
 
