@@ -462,8 +462,9 @@ class VurderIdentoppdateringTest : IdentBaseTest() {
 
     @ParameterizedTest
     @CsvSource(value = [
-        "5 12 0201234, 5120201234",    // ident med mellomrom
-        "195106-0622, 1951060622"]     // ident med bindestrek
+        "5 12 0201234, 5120201234",     // ident med mellomrom
+        "195106-0622, 1951060622",      // ident med bindestrek
+        ":1951060622, 1951060622"]      // ident med :
     )
     fun `Gitt at vi har en endringsmelding med en bulgarsk uid, med spesielle tegn i saa skal det opprettes en endringsmelding`(ident: String, forventetIdent: String) {
         every { personService.hentPerson(NorskIdent(FNR)) } returns
