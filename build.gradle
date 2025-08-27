@@ -1,7 +1,7 @@
 buildscript {
 	ext {
 		kotlinVersion = '2.2.10'
-		springBootVersion = '3.5.4'
+		springBootVersion = '3.5.5'
 		springKafkaVersion = '3.3.9'
 		cxfVersion = '3.4.2'
 		tokenSupportVersion = '5.0.34'
@@ -84,7 +84,7 @@ dependencies {
 	implementation ("no.nav.common:token-client:3.2025.06.23_14.50-3af3985d8555")
 
 	//GCP
-	implementation("com.google.cloud:google-cloud-storage:2.55.0")
+	implementation("com.google.cloud:google-cloud-storage:2.56.0")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test") {
 		exclude module: 'junit'
