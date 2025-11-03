@@ -108,4 +108,4 @@ spec:
       memory: 1Gi
     requests:
       cpu: 75m
-      memory: 900Mi
+      memory: 700Mi
