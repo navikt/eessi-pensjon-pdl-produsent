@@ -81,7 +81,7 @@ dependencies {
 	//nødvendig for validering av jwt og EnableJwtTokenValidationConfiguration
 	implementation("org.hibernate.validator:hibernate-validator:9.0.1.Final")
 
-	implementation ("no.nav.common:token-client:3.2025.10.10_08.21-bb7c7830d93c")
+	implementation ("no.nav.common:token-client:3.2025.11.10_14.07-a9f44944d7bc")
 
 	//GCP
 	implementation("com.google.cloud:google-cloud-storage:2.59.0")
