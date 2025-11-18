@@ -41,7 +41,7 @@ class GcpStorageService( @param:Value("\${GCP_BUCKET_NAME}") var bucketname: Str
         val jsonHendelse =  gcpStorage.get(BlobId.of(bucketname, storageKey))
 
         if(jsonHendelse!= null && jsonHendelse.exists()){
-            return jsonHendelse.getContent().toString().also { secureLogger.info("Henter json: $it") }
+                return jsonHendelse.getContent().toString().also { secureLogger.info("Henter json: $it") }
         }
         return null
     }
