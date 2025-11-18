@@ -11,6 +11,7 @@ import java.nio.ByteBuffer
 @Component
 class GcpStorageService( @param:Value("\${GCP_BUCKET_NAME}") var bucketname: String,  private val gcpStorage: Storage) {
     private val logger = LoggerFactory.getLogger(GcpStorageService::class.java)
+    private val secureLogger = LoggerFactory.getLogger("secureLog")
 
     init {
         ensureBucketExists()
@@ -40,7 +41,7 @@ class GcpStorageService( @param:Value("\${GCP_BUCKET_NAME}") var bucketname: Str
         val jsonHendelse =  gcpStorage.get(BlobId.of(bucketname, storageKey))
 
         if(jsonHendelse!= null && jsonHendelse.exists()){
-            return jsonHendelse.getContent().toString()
+            return jsonHendelse.getContent().toString().also { secureLogger.info("Henter json: $it") }
         }
         return null
     }
