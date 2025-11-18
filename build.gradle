@@ -21,16 +21,6 @@ apply from: "buildSrc/ep-module.gradle"
 
 group = 'no.nav.eessi.pensjon'
 
-configurations.all {
-	resolutionStrategy {
-		force "com.fasterxml.jackson.core:jackson-core:2.20.1"
-		force "com.fasterxml.jackson.core:jackson-databind:2.20.1"
-		force "com.fasterxml.jackson.core:jackson-annotations:2.20.1"
-		force "om.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.20.1"
-		force "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.20.1"
-	}
-}
-
 dependencies {
 	// Spring-boot BOM-fil spesifiserer versjoner for Spring Boot-avhengigheter
 	implementation(platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}"))
@@ -94,7 +84,7 @@ dependencies {
 	implementation ("no.nav.common:token-client:3.2025.11.10_14.07-a9f44944d7bc")
 
 	//GCP
-	implementation("com.google.cloud:google-cloud-storage:2.60.0")
+	implementation("com.google.cloud:google-cloud-storage:2.59.0")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test") {
 		exclude module: 'junit'
