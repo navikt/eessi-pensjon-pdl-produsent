@@ -32,7 +32,7 @@ class VurderAdresseoppdatering(
     fun vurderUtenlandskKontaktadresse(sedHendelse: SedHendelse): Result {
         require(erRelevantForEESSIPensjon(sedHendelse)) { return IngenOppdatering("SED ikke relevant for EESSI Pensjon, buc: ${sedHendelse.bucType}, sed: ${sedHendelse.sedType}, sektor: ${sedHendelse.sektorKode}", "SED ikke relevant for EESSI Pensjon") }
 
-        val sed = euxService.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId).also { secureLogger.debug("SED:\n$it") }
+        val sed = euxService.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId).also { secureLogger.info("SED:\n$it") }
 
         val avsender = if (sedHendelse.avsenderLand != null) {
             Pair(sedHendelse.avsenderLand, sedHendelse.avsenderNavn)
@@ -79,7 +79,7 @@ class VurderAdresseoppdatering(
                 return IngenOppdatering("Finner ikke bruker i PDL med angitt fnr i SED")
             }
             throw ex
-        }.also { secureLogger.debug("Person fra PDL:\n${it.toJson()}") }
+        }.also { secureLogger.info("Person fra PDL:\n${it.toJson()}") }
 
         val norskFnrEllerNpid =
             personFraPDL.identer

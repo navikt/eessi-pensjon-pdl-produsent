@@ -49,7 +49,7 @@ class SedHendelseBehandler(
         when(result) {
             is Oppdatering -> personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
             else -> {
-                secureLogger.debug("Ingen oppdatering | ${result.toJson()}")
+                secureLogger.info("Ingen oppdatering | ${result.toJson()}")
                 logger.info("Ingen oppdatering for ${sedHendelse.rinaSakId}")
             }
         }

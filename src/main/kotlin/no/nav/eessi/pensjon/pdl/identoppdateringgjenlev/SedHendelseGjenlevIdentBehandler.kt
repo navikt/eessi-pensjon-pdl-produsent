@@ -26,7 +26,7 @@ class SedHendelseGjenlevIdentBehandler(
     fun behandlenGjenlevHendelse(hendelse: String) {
         logger.debug(hendelse)
         logger.debug("Profile: $profile")
-        val sedHendelse = sedHendelseMapping(hendelse).also { secureLogger.debug("Sedhendelse:\n${it.toJson()}") }
+        val sedHendelse = sedHendelseMapping(hendelse).also { secureLogger.info("Sedhendelse:\n${it.toJson()}") }
 
         if (testHendelseIProd(sedHendelse)) {
             logger.error("Avsender id er ${sedHendelse.avsenderId}. Dette er testdata i produksjon!!!\n$sedHendelse")
@@ -40,12 +40,12 @@ class SedHendelseGjenlevIdentBehandler(
         when (result) {
             is Oppdatering -> {
                 personMottakKlient.opprettPersonopplysning(result.pdlEndringsOpplysninger)
-                secureLogger.debug("OppdateringGjenlev:\n${result.toJson()}")
+                secureLogger.info("OppdateringGjenlev:\n${result.toJson()}")
                 logger.info("Her kommer det en opprettelse av personopplysning")
             }
             is OppgaveGjenlev -> {
                 oppgaveHandler.opprettOppgave(result.oppgaveData)
-                secureLogger.debug("OppgaveGjenlev:\n${result.toJson()}")
+                secureLogger.info("OppgaveGjenlev:\n${result.toJson()}")
                 logger.info("Her kommer det en opprettelse av oppgave for Gjenlev")
             }
 
@@ -53,7 +53,7 @@ class SedHendelseGjenlevIdentBehandler(
                 logger.info("Ingen oppgave eller oppdatering")
             }
             else -> {
-                secureLogger.debug("Ukjent oppdatering/oppgave:\n${result.toJson()}")
+                secureLogger.info("Ukjent oppdatering/oppgave:\n${result.toJson()}")
                 logger.error("Her skal kun lages oppgaver eller oppdatering for gjenlevende")
             }
         }

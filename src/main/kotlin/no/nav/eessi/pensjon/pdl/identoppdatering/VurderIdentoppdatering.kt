@@ -40,7 +40,7 @@ class VurderIdentoppdatering(
         require(erRelevantForEESSIPensjon(sedHendelse)) { return IngenOppdatering("Ikke relevant for eessipensjon, buc: ${sedHendelse.bucType}, sed: ${sedHendelse.sedType}, sektor: ${sedHendelse.sektorKode}", "Ikke relevant for eessipensjon") }
 
         val sed = euxService.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId)
-            .also { secureLogger.debug("SED:\n${it}") }
+            .also { secureLogger.info("SED:\n${it}") }
 
         require(sedHendelse.avsenderLand.isNullOrEmpty().not()) {
             return IngenOppdatering("Avsenderland mangler")
@@ -97,7 +97,7 @@ class VurderIdentoppdatering(
                     throw it
                 }
                 .onSuccess {
-                    secureLogger.debug("Person fra PDL:\n${it}")
+                    secureLogger.info("Person fra PDL:\n${it}")
                 }
                 .getOrThrow()
 

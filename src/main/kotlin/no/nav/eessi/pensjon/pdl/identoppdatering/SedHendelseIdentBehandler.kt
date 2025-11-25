@@ -38,7 +38,7 @@ class SedHendelseIdentBehandler(
     fun behandle(hendelse: String) {
         logger.debug(hendelse)
         logger.debug("Profile: $profile")
-        val sedHendelse = sedHendelseMapping(hendelse).also { secureLogger.debug("Sedhendelse:\n${it.toJson()}") }
+        val sedHendelse = sedHendelseMapping(hendelse).also { secureLogger.info("Sedhendelse:\n${it.toJson()}") }
 
         if (testHendelseIProd(sedHendelse)) {
             logger.error("Avsender id er ${sedHendelse.avsenderId}. Dette er testdata i produksjon!!!\n$sedHendelse")
@@ -70,7 +70,7 @@ class SedHendelseIdentBehandler(
     private fun log(result: Result) {
         when (result) {
             is Oppdatering -> {
-                secureLogger.debug("Oppdatering:\n${result.toJson()}")
+                secureLogger.info("Oppdatering:\n${result.toJson()}")
                 logger.info("Oppdatering(description=${result.description})")
             }
 
