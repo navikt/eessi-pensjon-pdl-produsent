@@ -11,16 +11,23 @@ import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonClient
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
-import org.junit.jupiter.api.Disabled
+import org.apache.kafka.clients.producer.ProducerConfig
+import org.apache.kafka.common.serialization.StringSerializer
 import org.junit.jupiter.api.Test
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.context.TestConfiguration
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory
+import org.springframework.kafka.core.DefaultKafkaProducerFactory
+import org.springframework.kafka.core.KafkaTemplate
+import org.springframework.kafka.core.ProducerFactory
 import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.web.client.RestTemplate
 
-@SpringBootTest(classes = [RestTemplateConfig::class, UnsecuredWebMvcTestLauncher::class], webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = [RestTemplateConfig::class, EessiApplicationConfigTest.KafkaConfig::class, UnsecuredWebMvcTestLauncher::class], webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles(profiles = [ "excludeKodeverk","unsecured-webmvctest", "integrationtest"])
 @EmbeddedKafka
 @EnableMockOAuth2Server
@@ -52,5 +59,22 @@ class EessiApplicationConfigTest {
     @Test
     fun `contextTest`(){
         println("alt er vel om vi kommer hit")
+    }
+
+    @TestConfiguration
+    class KafkaConfig {
+        @Bean
+        fun producerFactory(): ProducerFactory<String, String> {
+            val configProps: MutableMap<String, Any> = HashMap<String, Any>()
+            configProps[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = "localhost:9092"
+            configProps[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java
+            configProps[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java
+            return DefaultKafkaProducerFactory(configProps)
+        }
+
+        @Bean
+        fun kafkaTemplate(): KafkaTemplate<String, String> {
+            return KafkaTemplate(producerFactory())
+        }
     }
 }

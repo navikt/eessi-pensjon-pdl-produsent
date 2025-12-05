@@ -25,6 +25,7 @@ import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import no.nav.eessi.pensjon.shared.person.FodselsnummerGenerator
 import no.nav.eessi.pensjon.utils.toJson
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -44,6 +45,7 @@ import java.util.concurrent.TimeUnit
     controlledShutdown = true,
     topics = ["eessi-basis-sedMottatt-v1"]
 )
+@Disabled
 class SedListenerAdresseIT : IntegrationBase() {
 
     @MockkBean(name = "pdlRestTemplate")

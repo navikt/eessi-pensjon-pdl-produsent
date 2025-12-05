@@ -48,7 +48,7 @@ class KafkaConfig(
     @Bean
     fun oppgaveKafkaTemplate(): KafkaTemplate<String, String> {
         val template = KafkaTemplate(producerFactory())
-        template.defaultTopic = oppgaveTopic
+        template.setDefaultTopic(oppgaveTopic)
         return template
     }
 
@@ -67,9 +67,9 @@ class KafkaConfig(
     @Bean
     fun sedKafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, String>? {
         val factory = ConcurrentKafkaListenerContainerFactory<String, String>()
-        factory.consumerFactory = kafkaConsumerFactory()
+        factory.setConsumerFactory(kafkaConsumerFactory())
         factory.containerProperties.ackMode = ContainerProperties.AckMode.MANUAL
-        factory.containerProperties.setAuthExceptionRetryInterval( Duration.ofSeconds(4L) )
+        factory.containerProperties.setAuthExceptionRetryInterval(Duration.ofSeconds(4L))
         if (kafkaErrorHandler != null) {
             factory.setCommonErrorHandler(kafkaErrorHandler)
         }
@@ -86,5 +86,4 @@ class KafkaConfig(
         configMap[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = truststorePath
         configMap[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = securityProtocol
     }
-
 }

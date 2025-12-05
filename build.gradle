@@ -1,10 +1,10 @@
 buildscript {
 	ext {
 		kotlinVersion = '2.2.21'
-		springBootVersion = '3.5.7'
-		springKafkaVersion = '3.3.10'
+		springBootVersion = '4.0.0'
+		springKafkaVersion = '4.0.0'
 		cxfVersion = '3.4.2'
-		tokenSupportVersion = '5.0.39'
+		tokenSupportVersion = '6.0.0'
 	}
 }
 
@@ -24,13 +24,14 @@ group = 'no.nav.eessi.pensjon'
 dependencies {
 	// Spring-boot BOM-fil spesifiserer versjoner for Spring Boot-avhengigheter
 	implementation(platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}"))
-	implementation("org.springframework.boot:spring-boot-starter-aop")
-	implementation("org.springframework.boot:spring-boot-starter-web")
+	implementation("org.springframework.boot:spring-boot-starter-aop:3.5.8")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
+	implementation("org.springframework.boot:spring-boot-starter-web")
+	implementation("org.springframework.boot:spring-boot-restclient")
 	implementation("org.springframework.boot:spring-boot-actuator")
 
 	// Spring Framework BOM-fil overstyrer så vi får siste patch-versjon av Spring Framework
-	implementation(platform("org.springframework:spring-framework-bom:6.2.12"))
+	implementation(platform("org.springframework:spring-framework-bom:7.0.1"))
 	implementation("org.springframework.retry:spring-retry:2.0.12")
 	implementation "org.springframework.kafka:spring-kafka:$springKafkaVersion"
 
@@ -45,23 +46,23 @@ dependencies {
 	implementation("io.micrometer:micrometer-registry-prometheus:1.15.5")
 
 	// Eessi pensjon biblioteker
-	implementation("no.nav.eessi.pensjon:ep-eux:2.5.30")
-	implementation("no.nav.eessi.pensjon:ep-metrics:2.1.16")
-	implementation("no.nav.eessi.pensjon:ep-logging:2.3.21")
+	implementation("no.nav.eessi.pensjon:ep-eux:2.6.4")
+	implementation("no.nav.eessi.pensjon:ep-metrics:2.1.19")
+	implementation("no.nav.eessi.pensjon:ep-logging:2.3.25")
 
-	implementation("no.nav.eessi.pensjon:ep-kodeverk:4.3.39") {
+	implementation("no.nav.eessi.pensjon:ep-kodeverk:4.3.46") {
 		exclude module: 'ep-eux'
 		exclude module: 'ep-metrics'
 		exclude module: 'ep-logging'
 		exclude module: 'ep-eux'
 	}
-	implementation("no.nav.eessi.pensjon:ep-personoppslag:13.3.54"){
+	implementation("no.nav.eessi.pensjon:ep-personoppslag:13.3.57") {
 		exclude module: 'ep-eux'
 		exclude module: 'ep-metrics'
 		exclude module: 'ep-logging'
 		exclude module: 'ep-eux'
 	}
-	implementation("no.nav.eessi.pensjon:ep-routing:2.1.66"){
+	implementation("no.nav.eessi.pensjon:ep-routing:2.1.70"){
 		exclude module: 'ep-eux'
 		exclude module: 'ep-metrics'
 		exclude module: 'ep-logging'
@@ -79,7 +80,7 @@ dependencies {
 	implementation("no.nav.security:token-validation-jaxrs:${tokenSupportVersion}")
 
 	//nødvendig for validering av jwt og EnableJwtTokenValidationConfiguration
-	implementation("org.hibernate.validator:hibernate-validator:9.0.1.Final")
+	implementation("org.hibernate.validator:hibernate-validator:9.1.0.Final")
 
 	implementation ("no.nav.common:token-client:3.2025.11.10_14.07-a9f44944d7bc")
 
@@ -91,6 +92,8 @@ dependencies {
 		exclude module: "mockito-core"
 		exclude module: "junit-vintage-engine"
 	}
+	testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+
 	testImplementation "org.springframework.kafka:spring-kafka-test:$springKafkaVersion"
 	testImplementation("no.nav.security:token-validation-spring-test:${tokenSupportVersion}")
 
@@ -106,4 +109,7 @@ dependencies {
 	// Architecture tests
 	testImplementation 'com.tngtech.archunit:archunit:1.4.1'
 
+	//testcontainers
+	testImplementation("org.testcontainers:junit-jupiter:1.21.3")
+	testImplementation "org.testcontainers:testcontainers:2.0.2"
 }

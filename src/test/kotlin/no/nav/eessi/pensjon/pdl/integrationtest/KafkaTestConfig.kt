@@ -11,8 +11,8 @@ import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.restclient.RestTemplateBuilder
 import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Primary
 import org.springframework.core.Ordered
@@ -47,7 +47,7 @@ class KafkaTestConfig(
     @Bean
     fun oppgaveKafkaTemplate(): KafkaTemplate<String, String> {
         val template = KafkaTemplate(producerFactory())
-        template.defaultTopic = oppgaveTopic
+        template.setDefaultTopic( oppgaveTopic)
         return template
     }
 
@@ -70,7 +70,7 @@ class KafkaTestConfig(
     @Bean
     fun sedKafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, String>? {
         val factory = ConcurrentKafkaListenerContainerFactory<String, String>()
-        factory.consumerFactory = kafkaConsumerFactory()
+        factory.setConsumerFactory(kafkaConsumerFactory())
         factory.containerProperties.ackMode = ContainerProperties.AckMode.MANUAL
         factory.containerProperties.setAuthExceptionRetryInterval(Duration.ofSeconds(4L))
         return factory
@@ -106,7 +106,7 @@ class KafkaTestConfig(
     @Bean
     fun kafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, String>? {
         val factory = ConcurrentKafkaListenerContainerFactory<String, String>()
-        factory.consumerFactory = kafkaConsumerFactory()
+        factory.setConsumerFactory(kafkaConsumerFactory())
         factory.containerProperties.ackMode = ContainerProperties.AckMode.MANUAL
         factory.containerProperties.setAuthExceptionRetryInterval(Duration.ofSeconds(4L))
         return factory
