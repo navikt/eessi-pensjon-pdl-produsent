@@ -57,8 +57,6 @@ spec:
     - name: KAFKA_OPPGAVE_TOPIC
       value: eessipensjon.privat-oppgave
 
-    - name: AZURE_APP_PROXY_CLIENT_ID
-      value: prod-fss.eessipensjon.eessi-pensjon-onprem-proxy
     - name: AZURE_APP_KODEVERK_CLIENT_ID
       value: prod-gcp.team-rocket.kodeverk-api
     - name: AZURE_APP_EUX_CLIENT_ID
