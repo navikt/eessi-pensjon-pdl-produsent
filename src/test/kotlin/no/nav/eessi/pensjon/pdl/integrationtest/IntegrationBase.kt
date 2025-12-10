@@ -30,8 +30,8 @@ import org.mockserver.integration.ClientAndServer
 import org.mockserver.socket.PortFactory
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.restclient.RestTemplateBuilder
 import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory
@@ -89,7 +89,7 @@ abstract class IntegrationBase {
         ContainerTestUtils.waitForAssignment(mottattContainer, embeddedKafka.partitionsPerTopic)
         Thread.sleep(3000) // wait a bit for the container to start
 
-        kafkaTemplate =  KafkaTemplate(producerFactory).apply { defaultTopic = PDL_PRODUSENT_TOPIC_MOTTATT }
+        kafkaTemplate =  KafkaTemplate(producerFactory).apply { setDefaultTopic(PDL_PRODUSENT_TOPIC_MOTTATT)}
 
     }
 
@@ -108,9 +108,9 @@ abstract class IntegrationBase {
 
     private fun initConsumer(): KafkaMessageListenerContainer<String, String> {
         val consumerProperties = KafkaTestUtils.consumerProps(
+            embeddedKafka,
             UUID.randomUUID().toString(),
-            "false",
-            embeddedKafka
+            false
         )
         consumerProperties[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
         val consumerFactory = DefaultKafkaConsumerFactory<String, String>(consumerProperties)
