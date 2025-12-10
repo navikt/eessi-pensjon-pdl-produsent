@@ -4,28 +4,24 @@ import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import no.nav.eessi.pensjon.EessiPensjonApplication
 import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.eux.model.BucType.P_BUC_01
 import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.SedType
-import no.nav.eessi.pensjon.eux.model.sed.Adresse
-import no.nav.eessi.pensjon.eux.model.sed.Bruker
-import no.nav.eessi.pensjon.eux.model.sed.Nav
-import no.nav.eessi.pensjon.eux.model.sed.Pensjon
-import no.nav.eessi.pensjon.eux.model.sed.Person
-import no.nav.eessi.pensjon.eux.model.sed.PinItem
-import no.nav.eessi.pensjon.eux.model.sed.SED
+import no.nav.eessi.pensjon.eux.model.sed.*
+import no.nav.eessi.pensjon.gcp.GcpStorageService
+import no.nav.eessi.pensjon.klienter.norg2.Norg2Klient
 import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.integrationtest.IntegrationBase
-import no.nav.eessi.pensjon.pdl.integrationtest.KafkaTestConfig
 import no.nav.eessi.pensjon.personoppslag.pdl.model.*
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Foedested
 import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import no.nav.eessi.pensjon.shared.person.FodselsnummerGenerator
 import no.nav.eessi.pensjon.utils.toJson
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -38,14 +34,14 @@ import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 
 
-@SpringBootTest( classes = [KafkaTestConfig::class, IntegrationBase.TestConfig::class])
+@SpringBootTest(classes = [EessiPensjonApplication::class])
+//@Import(KafkaTestConfig::class)
 @ActiveProfiles("integrationtest", "excludeKodeverk")
 @DirtiesContext
 @EmbeddedKafka(
     controlledShutdown = true,
     topics = ["eessi-basis-sedMottatt-v1"]
 )
-@Disabled
 class SedListenerAdresseIT : IntegrationBase() {
 
     @MockkBean(name = "pdlRestTemplate")
@@ -56,6 +52,12 @@ class SedListenerAdresseIT : IntegrationBase() {
 
     @Autowired
     lateinit var adresseListener: SedListenerAdresse
+
+    @MockkBean
+    lateinit var gcpStorageService: GcpStorageService
+
+    @MockkBean
+    lateinit var norg2Klient: Norg2Klient
 
     @MockkBean
     lateinit var euxService: EuxService

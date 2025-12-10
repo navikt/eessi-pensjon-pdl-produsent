@@ -10,7 +10,7 @@ import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.integrationtest.IntegrationBase
-import no.nav.eessi.pensjon.pdl.integrationtest.KafkaTestConfig
+import no.nav.eessi.pensjon.pdl.integrationtest.MinimalTestConfig
 import no.nav.eessi.pensjon.utils.toJson
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -23,16 +23,16 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.web.client.HttpClientErrorException
 
-@SpringBootTest( classes = [KafkaTestConfig::class, IntegrationBase.TestConfig::class,
+@SpringBootTest( classes = [MinimalTestConfig::class,
     TestSedHendelseBehandlerRetryConfig::class, SedHendelseBehandler::class, SedListenerAdresse::class, SedHendelseBehandlerRetryLogger::class])
-@ActiveProfiles("retryConfigOverride")
+@ActiveProfiles("integrationtest", "retryConfigOverride")
 @DirtiesContext
 @EnableRetry
 @EmbeddedKafka(
     controlledShutdown = true,
     topics = ["eessi-basis-sedMottatt-v1"]
 )
-class SedHendelseListenerExceptionTest : IntegrationBase() {
+class SedHendelseListenerExceptionTest{
 
     @MockkBean
     lateinit var personMottakKlient: PersonMottakKlient

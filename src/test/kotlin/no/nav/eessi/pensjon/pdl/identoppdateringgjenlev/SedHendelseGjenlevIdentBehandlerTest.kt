@@ -9,7 +9,7 @@ import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.lagring.LagringsService
 import no.nav.eessi.pensjon.oppgave.OppgaveOppslag
 import no.nav.eessi.pensjon.pdl.integrationtest.IntegrationBase
-import no.nav.eessi.pensjon.pdl.integrationtest.KafkaTestConfig
+import no.nav.eessi.pensjon.pdl.integrationtest.MinimalTestConfig
 import no.nav.eessi.pensjon.pdl.integrationtest.PDL_PRODUSENT_TOPIC_MOTTATT
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import org.junit.jupiter.api.Test
@@ -20,7 +20,7 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.web.client.RestTemplate
 
-@SpringBootTest( classes = [KafkaTestConfig::class, IntegrationBase.TestConfig::class])
+@SpringBootTest( classes = [MinimalTestConfig::class])
 @ActiveProfiles("integrationtest", "excludeKodeverk")
 @DirtiesContext
 @EmbeddedKafka(
@@ -28,15 +28,15 @@ import org.springframework.web.client.RestTemplate
     topics = [PDL_PRODUSENT_TOPIC_MOTTATT]
 )
 @MockkBeans(
-    MockkBean(name = "euxService", classes = [EuxService::class], relaxed = true),
+//    MockkBean(name = "euxService", classes = [EuxService::class], relaxed = true),
     MockkBean(name = "safClient", classes = [SafClient::class], relaxed = true),
-    MockkBean(name = "kodeverkClient", classes = [KodeverkClient::class], relaxed = true),
-    MockkBean(name = "oppgaveOppslag", classes = [OppgaveOppslag::class]),
-    MockkBean(name = "personService", classes = [PersonService::class]),
+//    MockkBean(name = "kodeverkClient", classes = [KodeverkClient::class], relaxed = true),
+//    MockkBean(name = "oppgaveOppslag", classes = [OppgaveOppslag::class]),
+//    MockkBean(name = "personService", classes = [PersonService::class]),
     MockkBean(name = "pdlRestTemplate", classes = [RestTemplate::class]),
-    MockkBean(name = "safGraphQlOidcRestTemplate", classes = [RestTemplate::class]),
+//    MockkBean(name = "safGraphQlOidcRestTemplate", classes = [RestTemplate::class]),
 )
-class SedHendelseGjenlevIdentBehandlerTest : IntegrationBase(){
+class SedHendelseGjenlevIdentBehandlerTest {
 
     @MockkBean(relaxed = true)
     lateinit var kodeverkClient: KodeverkClient
@@ -44,10 +44,10 @@ class SedHendelseGjenlevIdentBehandlerTest : IntegrationBase(){
     @MockkBean
     lateinit var lagringsService: LagringsService
 
-    @Autowired
-    lateinit var identoppdatering: VurderGjenlevOppdateringIdent
-    @Autowired
-    lateinit var gjenlevIdentBehandler: SedHendelseGjenlevIdentBehandler
+//    @Autowired
+//    lateinit var identoppdatering: VurderGjenlevOppdateringIdent
+//    @Autowired
+//    lateinit var gjenlevIdentBehandler: SedHendelseGjenlevIdentBehandler
 
     @Test
     fun configTest(){

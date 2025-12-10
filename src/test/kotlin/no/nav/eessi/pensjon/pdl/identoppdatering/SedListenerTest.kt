@@ -11,7 +11,6 @@ import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.oppgave.OppgaveHandler
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.pdl.integrationtest.IntegrationBase
-import no.nav.eessi.pensjon.pdl.integrationtest.KafkaTestConfig
 import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import no.nav.eessi.pensjon.utils.toJson
 import org.junit.jupiter.api.Test
@@ -29,7 +28,6 @@ import org.springframework.web.client.HttpClientErrorException
 
 
 @SpringBootTest(classes = [
-    KafkaTestConfig::class,
     IntegrationBase.TestConfig::class,
     SedListenerIdent::class,
     SedHendelseIdentBehandler::class,
