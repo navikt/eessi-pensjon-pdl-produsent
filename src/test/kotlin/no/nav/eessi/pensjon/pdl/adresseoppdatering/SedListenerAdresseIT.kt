@@ -97,7 +97,7 @@ class SedListenerAdresseIT : IntegrationBase() {
                     far = null,
                     person = Person(
                         pin = listOf(
-                            null ?: PinItem(
+                            PinItem(
                                 identifikator = fnr,
                                 land = "NO"
                             )

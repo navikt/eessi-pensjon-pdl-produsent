@@ -14,8 +14,8 @@ class EuxService(
     private val euxKlient: EuxKlientLib,
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
 ) {
-    private lateinit var hentBuc: MetricsHelper.Metric
-    private lateinit var hentSed: MetricsHelper.Metric
+    private var hentBuc: MetricsHelper.Metric
+    private var hentSed: MetricsHelper.Metric
 
     init {
         hentSed = metricsHelper.init("hentSed", alert = MetricsHelper.Toggle.OFF)

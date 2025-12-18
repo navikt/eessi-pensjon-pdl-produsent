@@ -45,7 +45,7 @@ class LandspesifikkValidering(private val kodeverkClient: KodeverkClient) {
             GyldigeLand.landkode(landKode!!) == SVERIGE -> {
                 formaterSvenskUID(uid)
             }
-            GyldigeLand.landkode(landKode!!) == BULGARIA -> {
+            GyldigeLand.landkode(landKode) == BULGARIA -> {
                 formaterBulgarskUID(uid)
             }
             else -> uid

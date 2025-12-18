@@ -21,7 +21,7 @@ class SedListenerGjenlevIdent(
 
     private val logger = LoggerFactory.getLogger(SedListenerGjenlevIdent::class.java)
     private val latch = CountDownLatch(1)
-    private lateinit var consumeIncomingSed: MetricsHelper.Metric
+    private var consumeIncomingSed: MetricsHelper.Metric
     private val secureLogger = LoggerFactory.getLogger("secureLog")
 
     fun getLatch() = latch

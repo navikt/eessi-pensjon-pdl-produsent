@@ -62,8 +62,8 @@ class VurderGjenlevOppdateringIdent(
         if (gjenlevFdatoUlikLikGjenlevFnr(gjenlevendeNorskPin, gjenlevendeFraSed))
             return IngenOppdatering("Gjenlevende fdato stemmer ikke overens med fnr", "Gjenlevende fdato stemmer ikke overens med fnr")
 
-        val gjenlevendeUid = gjenlevendeFraSed?.person?.pin?.filter { it.land == sedHendelse.avsenderLand && it.land != "NO" }
-        secureLogger.info("Gjenlevende person pin: ${gjenlevendeFraSed?.person?.pin} gjenlevende uid: $gjenlevendeUid")
+        val gjenlevendeUid = gjenlevendeFraSed.person?.pin?.filter { it.land == sedHendelse.avsenderLand && it.land != "NO" }
+        secureLogger.info("Gjenlevende person pin: ${gjenlevendeFraSed.person?.pin} gjenlevende uid: $gjenlevendeUid")
 
         val uidGjenlevendeFraSed  =
             (gjenlevendeUid ?: emptyList())
@@ -96,7 +96,7 @@ class VurderGjenlevOppdateringIdent(
             return IngenOppdatering("AvsenderNavn er ikke satt, kan derfor ikke lage endringsmelding")
         }
 
-        val gjenlevNorskIdent = gjenlevendeFraSed?.person?.pin?.first { it.land == "NO" }?.identifikator
+        val gjenlevNorskIdent = gjenlevendeFraSed.person?.pin?.first { it.land == "NO" }?.identifikator
         val personGjenlevFraPDL =
             (gjenlevNorskIdent ?: return IngenOppdatering("Gjenlevende bruker har ikke norsk pin i SED"))
                 .runCatching {
