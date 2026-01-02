@@ -33,7 +33,7 @@ object AdresseValidering {
      * Fra PDL: Norsk bostedsadresse vil alltid ha Freg som master. Utenlandsk bostedsadresse vil alltid ha PDL som master.
      */
     fun erNorskAdresse(meta: Metadata?) : Boolean{
-        return meta?.master.equals("FREG", ignoreCase = true).not().also { logger.warn("erNorskAdresse: " +it) }
+        return meta?.master.equals("FREG", ignoreCase = true).not().also { logger.info("erNorskAdresse: " +it) }
     }
     private fun inneholderPostboksFraser(tekst: String) = postboksFraser.any { tekst.contains(it) }
     private fun inneholderUkjentFraser(tekst: String) = ukjentFraser.any { tekst.contains(it) }
