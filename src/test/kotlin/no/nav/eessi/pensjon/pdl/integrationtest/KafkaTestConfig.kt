@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Primary
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
+import org.springframework.kafka.annotation.EnableKafka
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory
 import org.springframework.kafka.core.ConsumerFactory
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory
@@ -28,6 +29,7 @@ import org.springframework.web.client.RestTemplate
 import java.time.Duration
 
 @TestConfiguration
+@EnableKafka
 class KafkaTestConfig(
     @param:Value("\${spring.embedded.kafka.brokers}") private val bootstrapServers: String,
     @Value("\${KAFKA_OPPGAVE_TOPIC}") private val oppgaveTopic: String) {

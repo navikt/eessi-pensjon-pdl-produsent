@@ -45,7 +45,6 @@ import java.util.concurrent.TimeUnit
     controlledShutdown = true,
     topics = ["eessi-basis-sedMottatt-v1"]
 )
-@Disabled
 class SedListenerAdresseIT : IntegrationBase() {
 
     @MockkBean(name = "pdlRestTemplate")
