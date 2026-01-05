@@ -22,6 +22,7 @@ import org.springframework.http.HttpRequest
 import org.springframework.http.client.BufferingClientHttpRequestFactory
 import org.springframework.http.client.ClientHttpRequestExecution
 import org.springframework.http.client.ClientHttpRequestInterceptor
+import org.springframework.http.client.JdkClientHttpRequestFactory
 import org.springframework.http.client.SimpleClientHttpRequestFactory
 import org.springframework.web.client.DefaultResponseErrorHandler
 import org.springframework.web.client.RestTemplate
@@ -87,7 +88,7 @@ class RestTemplateConfig(
                 tokenIntercetor
             )
             .build().apply {
-                requestFactory = BufferingClientHttpRequestFactory(SimpleClientHttpRequestFactory())
+                requestFactory = JdkClientHttpRequestFactory()
             }
     }
 
@@ -100,30 +101,9 @@ class RestTemplateConfig(
                 RequestResponseLoggerInterceptor()
             )
             .build().apply {
-                requestFactory = BufferingClientHttpRequestFactory(SimpleClientHttpRequestFactory())
+                requestFactory = JdkClientHttpRequestFactory()
             }
 
-    }
-
-    private fun onBehalfOfBearerTokenInterceptor(clientId: String): ClientHttpRequestInterceptor {
-        logger.info("init onBehalfOfBearerTokenInterceptor: $clientId")
-        return ClientHttpRequestInterceptor { request: HttpRequest, body: ByteArray?, execution: ClientHttpRequestExecution ->
-            val navidentTokenFromUI = URLDecoder.decode(getToken(tokenValidationContextHolder)?.encodedToken, StandardCharsets.UTF_8)
-
-            logger.info("NAVIdent: ${getClaims(tokenValidationContextHolder).get("NAVident")?.toString()}")
-
-            val tokenClient: AzureAdOnBehalfOfTokenClient = AzureAdTokenClientBuilder.builder()
-                .withNaisDefaults()
-                .buildOnBehalfOfTokenClient()
-
-            val accessToken: String = tokenClient.exchangeOnBehalfOfToken(
-                "api://$clientId/.default",
-                navidentTokenFromUI
-            )
-
-            request.headers.setBearerAuth(accessToken)
-            execution.execute(request, body!!)
-        }
     }
 
     private fun clientProperties(oAuthKey: String): ClientProperties = clientConfigurationProperties.registration[oAuthKey]
