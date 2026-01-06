@@ -20,6 +20,9 @@ spec:
       enabled: true
   accessPolicy:
     outbound:
+      rules:
+        - application: logging
+          namespace: nais-system
       external:
         - host: kodeverk-api.nav.no
         - host: eux-rina-api.intern.nav.no
