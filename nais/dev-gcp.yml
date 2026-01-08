@@ -13,8 +13,6 @@ spec:
         - id: loki
   envFrom:
     - secret: pdl-produsent
-  secureLogs:
-    enabled: true
   azure:
     application:
       enabled: true
