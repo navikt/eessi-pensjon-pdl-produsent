@@ -23,8 +23,10 @@ import no.nav.eessi.pensjon.pdl.integrationtest.KafkaTestConfig
 import no.nav.eessi.pensjon.personoppslag.pdl.model.*
 import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import no.nav.eessi.pensjon.shared.person.FodselsnummerGenerator
+import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.eessi.pensjon.utils.toJson
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -84,7 +86,61 @@ class SedListenerAdresseIT : IntegrationBase() {
         verify(exactly = 1) { personMottakKlient.opprettPersonopplysning(any()) }
     }
 
+    @Test
+    @Disabled
+    fun `Serdes for H002`() {
+        val sedJson = sedFraEuxRaw()
+        val sed: SED = mapJsonToAny<SED>(sedJson)
+        assertNotNull(sed)
+        assertEquals(SedType.H002, sed.type)
+    }
+
     companion object {
+
+        fun sedFraEuxRaw() = """
+            {
+              "nav": {
+                "bruker": {
+                  "person": {
+                    "kjoenn": "M",
+                    "etternavn": "Tilly",
+                    "pin": [
+                      {
+                        "sektor": "pensjoner",
+                        "land": "CH",
+                        "institusjonsid": "CH:4534534",
+                        "institusjonsnavn": "Centrale de Pensjon",
+                        "identifikator": "53453443534534"
+                      }
+                    ],
+                    "fornavn": "Olaf",
+                    "foedselsdato": "1976-10-14",
+                    "statsborgerskap": [
+                      {
+                        "land": "SE"
+                      }
+                    ]
+                  },
+                  "adresse": [
+                    {
+                      "type": "bosted"
+                    }
+                  ]
+                }
+              },
+              "sedGVer": "4",
+              "sedVer": "3",
+              "sed": "H002",
+              "horisontal": {
+                "bruker": {
+                  "negativesvar": [
+                    {
+                      "informasjon": "Nous ne sommes pas en mesure de vous fournir l'information demandée."
+                    }
+                  ]
+                }
+        """.trimIndent()
+
         fun enSedFraEux(fnr: String) = SED(
             type = SedType.P2100,
             sedGVer = null,
