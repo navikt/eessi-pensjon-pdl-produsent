@@ -43,7 +43,6 @@ class VurderGjenlevOppdateringIdent(
         require(erRelevantForEESSIPensjon(sedHendelse)) { return IngenOppdatering("Ikke relevant for eessipensjon, buc: ${sedHendelse.bucType}, sed: ${sedHendelse.sedType}, sektor: ${sedHendelse.sektorKode}", "Ikke relevant for eessipensjon") }
 
         val sed = euxService.hentSed(sedHendelse.rinaSakId, sedHendelse.rinaDokumentId)
-            .also { secureLogger.info("SED:\n$it") }
 
         require(sedHendelse.avsenderLand.isNullOrEmpty().not()) {
             return IngenOppdatering("Avsenderland mangler")

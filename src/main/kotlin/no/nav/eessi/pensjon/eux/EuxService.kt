@@ -16,6 +16,7 @@ class EuxService(
 ) {
     private var hentBuc: MetricsHelper.Metric
     private var hentSed: MetricsHelper.Metric
+    private val secureLogger = LoggerFactory.getLogger("secureLog")
 
     init {
         hentSed = metricsHelper.init("hentSed", alert = MetricsHelper.Toggle.OFF)
@@ -35,7 +36,7 @@ class EuxService(
      */
     fun hentSed(rinaSakId: String, dokumentId: String): SED {
         return hentSed.measure {
-            val json = euxKlient.hentSedJson(rinaSakId, dokumentId)
+            val json = euxKlient.hentSedJson(rinaSakId, dokumentId).also { secureLogger.info("SED pre mapping:\n$it") }
             SED.fromJsonToConcrete(json)
         }
     }
