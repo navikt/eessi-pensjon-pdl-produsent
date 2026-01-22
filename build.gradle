@@ -39,6 +39,12 @@ dependencies {
 
 	implementation("org.yaml:snakeyaml:2.5") // Pga https://security.snyk.io/package/maven/org.yaml:snakeyaml
 
+	implementation("io.confluent:kafka-avro-serializer:8.0.2"){
+		exclude module: 'org.apache.avro'
+	}
+	implementation('no.nav.pensjon:pensjon-pdl-avro-schema:2025.08.14-08.26-800400e1dc81')
+	implementation("org.apache.avro:avro:1.12.1")
+
 	testImplementation("org.apache.httpcomponents.client5:httpclient5:5.5.1")
 
 	implementation("com.fasterxml.jackson.core:jackson-core:${jacksonModuleKotlinVersion}")
