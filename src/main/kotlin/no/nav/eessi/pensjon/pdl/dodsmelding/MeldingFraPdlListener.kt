@@ -21,17 +21,8 @@ class MeldingFraPdlListener(
     private val leesahKafkaListenerMetric = metricsHelper.init("consumeMsgFromPdlDodsmelding")
 
     @KafkaListener(
-        autoStartup = "\${pdl.kafka.autoStartup}",
-        batch = "true",
-        topics = ["pdl.leesah-v1"],
-        properties = [
-            "auth.exception.retry.interval: 30s",
-            "auto.offset.reset:earliest",
-            "value.deserializer:io.confluent.kafka.serializers.KafkaAvroDeserializer",
-            "key.deserializer:io.confluent.kafka.serializers.KafkaAvroDeserializer",
-            "specific.avro.reader:true",
-        ],
-    )
+        topics = ["\${kafka.pdlHendelse.topic}"],
+        groupId = "\${kafka.pdlHendelse.groupid}")
     fun mottaLeesahMelding(consumerRecords: List<ConsumerRecord<String, Personhendelse>>, ack: Acknowledgment) {
         try {
             logger.info("Behandler ${consumerRecords.size} meldinger, firstOffset=${consumerRecords.first().offset()}, lastOffset=${consumerRecords.last().offset()}")

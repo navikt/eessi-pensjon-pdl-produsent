@@ -30,6 +30,9 @@ kafka:
   oppgave:
     topic: ${KAFKA_OPPGAVE_TOPIC}
     groupid: ${KAFKA_OPPGAVE_GROUP}
+  pdlHendelse:
+    topic: topic
+    groupid: grouoid
   utenlandskAdresse:
     topic: eessi-basis-sedMottatt-v1
     groupid: test-group

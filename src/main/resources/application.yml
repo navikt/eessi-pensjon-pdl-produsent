@@ -43,6 +43,9 @@ kafka:
   utenlandskAdresse:
     topic: ${KAFKA_SEDMOTTATT_TOPIC}
     groupid: eessi-pensjon-pdl-adresse-group
+  pdlHendelse:
+    topic: ${KAFKA_PDLHENDELSE_TOPIC}
+    groupid: eessi-pensjon-pdl-leesah-group
   security.protocol: SSL
   brokers: ${KAFKA_BROKERS:localhost:9092}
 
