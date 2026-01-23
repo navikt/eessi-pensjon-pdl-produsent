@@ -62,3 +62,16 @@ management:
   endpoint:
     info:
       show-details: "ALWAYS"
+
+spring:
+  kafka:
+    properties:
+      schema:
+        registry:
+          url: ${KAFKA_SCHEMA_REGISTRY}
+      basic:
+        auth:
+          credentials:
+            source: USER_INFO
+          user:
+            info: ${KAFKA_SCHEMA_REGISTRY_USER}:${KAFKA_SCHEMA_REGISTRY_PASSWORD}
