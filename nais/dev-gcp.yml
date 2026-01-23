@@ -58,6 +58,8 @@ spec:
       value: eessibasis.sedmottatt-v1-q2
     - name: KAFKA_OPPGAVE_TOPIC
       value: eessipensjon.privat-oppgave-q2
+    - name: KAFKA_PDLHENDELSE_TOPIC
+      value: pdl.leesah-v1
 
     - name: AZURE_APP_KODEVERK_CLIENT_ID
       value: dev-gcp.team-rocket.kodeverk-api
