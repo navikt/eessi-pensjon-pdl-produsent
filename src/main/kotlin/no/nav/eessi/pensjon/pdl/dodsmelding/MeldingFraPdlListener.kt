@@ -28,6 +28,7 @@ class MeldingFraPdlListener(
     )
     fun mottaLeesahMelding(consumerRecords: List<ConsumerRecord<String, String>>, ack: Acknowledgment) {
         try {
+            logger.info("Mottatt Leesah melding fra PDL med: ${consumerRecords}")
 //            logger.info("Behandler ${consumerRecords.size} meldinger, firstOffset=${consumerRecords.first().offset()}, lastOffset=${consumerRecords.last().offset()}")
             consumerRecords.forEach { record ->
                 leesahKafkaListenerMetric.measure {
