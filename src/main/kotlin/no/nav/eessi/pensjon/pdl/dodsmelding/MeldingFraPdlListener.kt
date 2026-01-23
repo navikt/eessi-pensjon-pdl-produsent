@@ -21,6 +21,7 @@ class MeldingFraPdlListener(
     private val leesahKafkaListenerMetric = metricsHelper.init("consumeMsgFromPdlDodsmelding")
 
     @KafkaListener(
+        containerFactory = "sedKafkaListenerContainerFactory",
         topics = ["\${kafka.pdlHendelse.topic}"],
         groupId = "\${kafka.pdlHendelse.groupid}")
     fun mottaLeesahMelding(consumerRecords: List<ConsumerRecord<String, Personhendelse>>, ack: Acknowledgment) {
