@@ -1,6 +1,7 @@
 package no.nav.eessi.pensjon.pdl.dodsmelding
 
 import no.nav.eessi.pensjon.metrics.MetricsHelper
+import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.person.pdl.leesah.Personhendelse
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
@@ -23,24 +24,18 @@ class MeldingFraPdlListener(
     @KafkaListener(
         containerFactory = "sedKafkaListenerContainerFactory",
         topics = ["\${kafka.pdlHendelse.topic}"],
-        groupId = "\${kafka.pdlHendelse.groupid}",
-            properties = [
-            "auth.exception.retry.interval: 30s",
-            "auto.offset.reset:earliest",
-            "value.deserializer:io.confluent.kafka.serializers.KafkaAvroDeserializer",
-            "key.deserializer:io.confluent.kafka.serializers.KafkaAvroDeserializer",
-            "specific.avro.reader:true",
-            ]
+        groupId = "\${kafka.pdlHendelse.groupid}"
     )
-    fun mottaLeesahMelding(consumerRecords: List<ConsumerRecord<String, Personhendelse>>, ack: Acknowledgment) {
+    fun mottaLeesahMelding(consumerRecords: List<ConsumerRecord<String, String>>, ack: Acknowledgment) {
         try {
             logger.info("Behandler ${consumerRecords.size} meldinger, firstOffset=${consumerRecords.first().offset()}, lastOffset=${consumerRecords.last().offset()}")
-
             consumerRecords.forEach { record ->
                 leesahKafkaListenerMetric.measure {
-                    val opplysningstype = record.value().opplysningstype
+                    logger.debug("Leesah melding: ${record.value()}")
+                    val personHendelse  = mapJsonToAny<Personhendelse>(record.value())
+                    val opplysningstype = personHendelse.opplysningstype
                     if (opplysningstype == "DOEDSFALL_V1") {
-                        MDC.put("personhendelseId", record.value().hendelseId)
+                        MDC.put("personhendelseId", personHendelse.hendelseId)
                         logger.info("Undersøker type:: $opplysningstype")
                     } else {
                         logger.debug("Ingen behandling for: $opplysningstype")
