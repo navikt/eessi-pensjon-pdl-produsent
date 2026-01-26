@@ -22,18 +22,19 @@ class MeldingFraPdlListener(
     private val leesahKafkaListenerMetric = metricsHelper.init("consumeMsgFromPdlDodsmelding")
 
     @KafkaListener(
-        containerFactory = "sedKafkaListenerContainerFactory",
+        autoStartup = "true",
+        containerFactory = "kafkaAivenHendelseListenerAvroLatestContainerFactory",
         topics = ["\${kafka.pdlHendelse.topic}"],
         groupId = "\${kafka.pdlHendelse.groupid}"
     )
-    fun mottaLeesahMelding(consumerRecords: List<ConsumerRecord<String, String>>, ack: Acknowledgment) {
+    fun mottaLeesahMelding(consumerRecords: List<ConsumerRecord<String, Personhendelse>>, ack: Acknowledgment) {
         try {
             logger.info("Mottatt Leesah melding fra PDL med: ${consumerRecords}")
 //            logger.info("Behandler ${consumerRecords.size} meldinger, firstOffset=${consumerRecords.first().offset()}, lastOffset=${consumerRecords.last().offset()}")
             consumerRecords.forEach { record ->
                 leesahKafkaListenerMetric.measure {
                     logger.debug("Leesah melding: ${record.value()}")
-                    val personHendelse  = mapJsonToAny<Personhendelse>(record.value())
+                    val personHendelse: Personhendelse = record.value()
                     val opplysningstype = personHendelse.opplysningstype
                     if (opplysningstype == "DOEDSFALL_V1") {
                         MDC.put("personhendelseId", personHendelse.hendelseId)

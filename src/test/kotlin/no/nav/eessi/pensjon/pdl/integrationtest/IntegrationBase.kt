@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
 import com.ninjasquad.springmockk.MockkBean
+import io.confluent.kafka.serializers.KafkaAvroDeserializer
 import io.mockk.every
 import no.nav.eessi.pensjon.eux.klient.EuxKlientLib
 import no.nav.eessi.pensjon.eux.model.BucType
@@ -23,6 +24,7 @@ import org.apache.hc.client5.http.ssl.HostnameVerificationPolicy
 import org.apache.hc.client5.http.ssl.NoopHostnameVerifier
 import org.apache.hc.core5.ssl.SSLContextBuilder
 import org.apache.kafka.clients.consumer.ConsumerConfig
+import org.apache.kafka.common.serialization.StringDeserializer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.mockserver.client.MockServerClient
@@ -34,6 +36,7 @@ import org.springframework.boot.restclient.RestTemplateBuilder
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
+import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.core.ProducerFactory
@@ -44,6 +47,7 @@ import org.springframework.kafka.test.EmbeddedKafkaBroker
 import org.springframework.kafka.test.utils.ContainerTestUtils
 import org.springframework.kafka.test.utils.KafkaTestUtils
 import org.springframework.web.client.RestTemplate
+import java.time.Duration
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -223,6 +227,37 @@ abstract class IntegrationBase {
 
         @Bean
         fun euxKlientLib(): EuxKlientLib = EuxKlientLib(euxOAuthRestTemplate()!!)
+
+        @Bean
+        fun kafkaAivenHendelseListenerAvroLatestContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, String> {
+            val factory = ConcurrentKafkaListenerContainerFactory<String, String>()
+            factory.containerProperties.ackMode = ContainerProperties.AckMode.MANUAL_IMMEDIATE
+            factory.containerProperties.setAuthExceptionRetryInterval(Duration.ofSeconds(2))
+            factory.setConsumerFactory(DefaultKafkaConsumerFactory(consumerConfigsLatestAvro()))
+            return factory
+        }
+
+        private fun consumerConfigsLatestAvro(): Map<String, Any> {
+            val kafkaBrokers = System.getenv("KAFKA_BROKERS") ?: "http://localhost:9092"
+            val schemaRegisty = System.getenv("KAFKA_SCHEMA_REGISTRY") ?: "http://localhost:9093"
+            val schemaRegistryUser = System.getenv("KAFKA_SCHEMA_REGISTRY_USER") ?: "mangler i pod"
+            val schemaRegistryPassword = System.getenv("KAFKA_SCHEMA_REGISTRY_PASSWORD") ?: "mangler i pod"
+            val consumerConfigs =
+                mutableMapOf(
+                    ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to kafkaBrokers,
+                    "schema.registry.url" to schemaRegisty,
+                    "basic.auth.credentials.source" to "USER_INFO",
+                    "basic.auth.user.info" to "$schemaRegistryUser:$schemaRegistryPassword",
+                    "specific.avro.reader" to true,
+                    ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
+                    ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to KafkaAvroDeserializer::class.java,
+                    ConsumerConfig.MAX_POLL_RECORDS_CONFIG to "1",
+                    ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to "latest",
+                    ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG to "false",
+                )
+            return consumerConfigs.toMap()
+        }
+
 
         @Bean
         fun opprettSSLRestTemplate(): RestTemplate {

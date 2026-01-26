@@ -1,5 +1,6 @@
 package no.nav.eessi.pensjon.config
 
+import io.confluent.kafka.serializers.KafkaAvroDeserializer
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
@@ -75,7 +76,38 @@ class KafkaConfig(
         }
         return factory
     }
+    @Bean
+    fun kafkaAivenHendelseListenerAvroLatestContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, String> {
+        val factory = ConcurrentKafkaListenerContainerFactory<String, String>()
+        factory.containerProperties.ackMode = ContainerProperties.AckMode.MANUAL_IMMEDIATE
+        factory.containerProperties.setAuthExceptionRetryInterval(Duration.ofSeconds(2))
+        factory.setConsumerFactory(DefaultKafkaConsumerFactory(consumerConfigsLatestAvro()))
+//        factory.setCommonErrorHandler(kafkaRestartingErrorHandler)
+        return factory
+    }
 
+
+
+    private fun consumerConfigsLatestAvro(): Map<String, Any> {
+        val kafkaBrokers = System.getenv("KAFKA_BROKERS") ?: "http://localhost:9092"
+        val schemaRegisty = System.getenv("KAFKA_SCHEMA_REGISTRY") ?: "http://localhost:9093"
+        val schemaRegistryUser = System.getenv("KAFKA_SCHEMA_REGISTRY_USER") ?: "mangler i pod"
+        val schemaRegistryPassword = System.getenv("KAFKA_SCHEMA_REGISTRY_PASSWORD") ?: "mangler i pod"
+        val consumerConfigs =
+            mutableMapOf(
+                ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to kafkaBrokers,
+                "schema.registry.url" to schemaRegisty,
+                "basic.auth.credentials.source" to "USER_INFO",
+                "basic.auth.user.info" to "$schemaRegistryUser:$schemaRegistryPassword",
+                "specific.avro.reader" to true,
+                ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
+                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to KafkaAvroDeserializer::class.java,
+                ConsumerConfig.MAX_POLL_RECORDS_CONFIG to "1",
+                ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to "latest",
+                ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG to "false",
+            )
+        return consumerConfigs.toMap()
+    }
     private fun populerCommonConfig(configMap: MutableMap<String, Any>) {
         configMap[SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG] = keystorePath
         configMap[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = credstorePassword
