@@ -16,13 +16,10 @@ import java.util.concurrent.CountDownLatch
 class MeldingFraPdlListener(
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
 ) {
-    val latch: CountDownLatch = CountDownLatch(1)
     private val logger = LoggerFactory.getLogger(MeldingFraPdlListener::class.java)
-    private val secureLogger = LoggerFactory.getLogger("secureLog")
     private val leesahKafkaListenerMetric = metricsHelper.init("consumeMsgFromPdlDodsmelding")
 
     @KafkaListener(
-        autoStartup = "true",
         containerFactory = "kafkaAivenHendelseListenerAvroLatestContainerFactory",
         topics = ["\${kafka.pdlHendelse.topic}"],
         groupId = "\${kafka.pdlHendelse.groupid}"
@@ -30,7 +27,6 @@ class MeldingFraPdlListener(
     fun mottaLeesahMelding(consumerRecords: List<ConsumerRecord<String, Personhendelse>>, ack: Acknowledgment) {
         try {
             logger.info("Mottatt Leesah melding fra PDL med: ${consumerRecords}")
-//            logger.info("Behandler ${consumerRecords.size} meldinger, firstOffset=${consumerRecords.first().offset()}, lastOffset=${consumerRecords.last().offset()}")
             consumerRecords.forEach { record ->
                 leesahKafkaListenerMetric.measure {
                     logger.debug("Leesah melding: ${record.value()}")
