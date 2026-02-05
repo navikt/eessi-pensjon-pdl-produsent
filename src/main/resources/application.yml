@@ -30,6 +30,10 @@ no.nav.security.jwt:
 
 METRICS_REQUESTFILTER_ENABLE: true
 
+pdl:
+  kafka:
+    autoStartup: true
+
 kafka:
   oppgave:
     topic: ${KAFKA_OPPGAVE_TOPIC}
