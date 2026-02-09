@@ -34,7 +34,7 @@ class MeldingFraPdlListener(
     )
     fun mottaLeesahMelding(consumerRecords: List<ConsumerRecord<String, Personhendelse>>, ack: Acknowledgment) {
         try {
-            logger.info("Mottatt Leesah melding fra PDL med: ${consumerRecords}")
+            logger.info("Mottatt Leesah melding fra PDL med: \\${consumerRecords}")
             consumerRecords.forEach { record ->
                 leesahKafkaListenerMetric.measure {
                     logger.debug("Leesah melding: ${record.value()}")
@@ -43,19 +43,19 @@ class MeldingFraPdlListener(
                         "DOEDSFALL_V1" -> {
                             logger.info("Undersøker type:: ${personhendelse.opplysningstype}")
                         }
-
                         "BOSTEDSADRESSE_V1", "KONTAKTADRESSE_V1", "OPPHOLDSADRESSE_V1" -> {
                             logger.info("Undersøker type:: ${personhendelse.opplysningstype}")
                         }
-
                         else -> {
                             logger.debug("Fant ikke type: ${personhendelse.opplysningstype}, Det er helt OK!")
                         }
                     }
+                    Thread.sleep(5000) // Slow down processing by 5 seconds per record
                 }
             }
         } catch (e: Exception) {
             logger.error("Behandling av hendelse feilet", e)
+            throw e
         }
         ack.acknowledge()
         logger.info("Acket personhendelse")
