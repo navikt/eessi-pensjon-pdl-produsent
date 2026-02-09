@@ -38,13 +38,19 @@ class MeldingFraPdlListener(
             consumerRecords.forEach { record ->
                 leesahKafkaListenerMetric.measure {
                     logger.debug("Leesah melding: ${record.value()}")
-                    val personHendelse: Personhendelse = record.value()
-                    val opplysningstype = personHendelse.opplysningstype
-                    if (opplysningstype == "DOEDSFALL_V1") {
-                        MDC.put("personhendelseId", personHendelse.hendelseId)
-                        logger.info("Undersøker type:: $opplysningstype")
-                    } else {
-                        logger.debug("Ingen behandling for: $opplysningstype")
+                    val personhendelse = record.value()
+                    when (personhendelse.opplysningstype) {
+                        "DOEDSFALL_V1" -> {
+                            logger.info("Undersøker type:: ${personhendelse.opplysningstype}")
+                        }
+
+                        "BOSTEDSADRESSE_V1", "KONTAKTADRESSE_V1", "OPPHOLDSADRESSE_V1" -> {
+                            logger.info("Undersøker type:: ${personhendelse.opplysningstype}")
+                        }
+
+                        else -> {
+                            logger.debug("Fant ikke type: ${personhendelse.opplysningstype}, Det er helt OK!")
+                        }
                     }
                 }
             }
