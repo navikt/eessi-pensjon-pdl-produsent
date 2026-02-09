@@ -60,6 +60,8 @@ spec:
       value: eessibasis.sedmottatt-v1
     - name: KAFKA_OPPGAVE_TOPIC
       value: eessipensjon.privat-oppgave
+    - name: KAFKA_GROUP_ID
+      value: eessipensjon-pdl-produsent
 
     - name: AZURE_APP_KODEVERK_CLIENT_ID
       value: prod-gcp.team-rocket.kodeverk-api
