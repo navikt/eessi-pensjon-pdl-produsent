@@ -37,7 +37,6 @@ class MeldingFraPdlListener(
             logger.info("Behandler ${consumerRecords.size} meldinger, firstOffset=${consumerRecords.first().offset()}, lastOffset=${consumerRecords.last().offset()}")
             consumerRecords.forEach { record ->
                 leesahKafkaListenerMetric.measure {
-                    logger.debug("Leesah melding: ${record.value()}")
                     val personhendelse = record.value()
                     when (personhendelse.opplysningstype) {
                         "DOEDSFALL_V1" -> {
