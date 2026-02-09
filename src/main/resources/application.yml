@@ -35,6 +35,8 @@ pdl:
     autoStartup: true
 
 kafka:
+  consumer:
+    group-id: ${KAFKA_GROUP_ID}
   oppgave:
     topic: ${KAFKA_OPPGAVE_TOPIC}
     groupid: eessi-pensjon-pdl-produsent-group
