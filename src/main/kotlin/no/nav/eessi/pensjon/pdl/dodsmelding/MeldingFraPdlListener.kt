@@ -24,11 +24,11 @@ class MeldingFraPdlListener(
         topics = ["pdl.leesah-v1"],
         groupId = "eessi-pensjon-pdl-produsent",
         properties = [
-            "auth.exception.retry.interval=30s",
-            "auto.offset.reset=earliest",
+            "auth.exception.retry.interval: 30s",
+            "auto.offset.reset:earliest",
             "value.deserializer:io.confluent.kafka.serializers.KafkaAvroDeserializer",
             "key.deserializer:io.confluent.kafka.serializers.KafkaAvroDeserializer",
-            "specific.avro.reader=true",
+            "specific.avro.reader:true",
         ]
     )
     fun mottaLeesahMelding(consumerRecords: List<ConsumerRecord<String, Personhendelse>>, ack: Acknowledgment) {
