@@ -1,0 +1,31 @@
+{
+  "hendelseId": "87573b9b-8395-45fd-a24a-c93ab88f9807",
+  "personidenter": [
+    "1000016953359",
+    "03123538209"
+  ],
+  "master": "FREG",
+  "opprettet": "2025-05-14T12:51:18.529Z",
+  "opplysningstype": "DOEDSFALL_V1",
+  "endringstype": "OPPRETTET",
+  "tidligereHendelseId": null,
+  "adressebeskyttelse": null,
+  "doedfoedtBarn": null,
+  "doedsfall": {
+    "doedsdato": "2025-05-13"
+  },
+  "foedsel": null,
+  "forelderBarnRelasjon": null,
+  "familierelasjon": null,
+  "sivilstand": null,
+  "vergemaalEllerFremtidsfullmakt": null,
+  "utflyttingFraNorge": null,
+  "innflyttingTilNorge": null,
+  "folkeregisteridentifikator": null,
+  "navn": null,
+  "sikkerhetstiltak": null,
+  "statsborgerskap": null,
+  "telefonnummer": null,
+  "kontaktadresse": null,
+  "bostedsadresse": null
+}

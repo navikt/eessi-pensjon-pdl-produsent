@@ -1,16 +1,13 @@
 package no.nav.eessi.pensjon.pdl.dodsmelding
 
 import no.nav.eessi.pensjon.metrics.MetricsHelper
-import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.person.pdl.leesah.Personhendelse
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
-import org.slf4j.MDC
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Service
-import java.util.concurrent.CountDownLatch
 
 @Service
 class MeldingFraPdlListener(
@@ -24,7 +21,13 @@ class MeldingFraPdlListener(
         batch = "true",
         topics = ["pdl.leesah-v1"],
         groupId = "eessi-pensjon-pdl-produsent",
-        containerFactory = "kafkaAivenHendelseListenerAvroLatestContainerFactory",
+        properties = [
+            "auth.exception.retry.interval: 30s",
+            "auto.offset.reset:earliest",
+            "value.deserializer:io.confluent.kafka.serializers.KafkaAvroDeserializer",
+            "key.deserializer:io.confluent.kafka.serializers.KafkaAvroDeserializer",
+            "specific.avro.reader:true",
+        ],
     )
     fun mottaLeesahMelding(consumerRecords: List<ConsumerRecord<String, Personhendelse>>, ack: Acknowledgment) {
         try {
