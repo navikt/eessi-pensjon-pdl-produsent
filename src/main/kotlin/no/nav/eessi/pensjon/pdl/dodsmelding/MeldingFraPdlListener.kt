@@ -3,6 +3,7 @@ package no.nav.eessi.pensjon.pdl.dodsmelding
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.person.pdl.leesah.Personhendelse
+import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -30,23 +31,23 @@ class MeldingFraPdlListener(
             "specific.avro.reader:true",
         ],
     )
-    fun mottaLeesahMelding(consumerRecords: List<ConsumerRecord<String, String>>, ack: Acknowledgment) {
+    fun mottaLeesahMelding(consumerRecords: List<ConsumerRecord<String, GenericRecord>>, ack: Acknowledgment) {
         try {
             logger.info("Behandler ${consumerRecords.size} meldinger, firstOffset=${consumerRecords.first().offset()}, lastOffset=${consumerRecords.last().offset()}")
             consumerRecords.forEach { record ->
                 leesahKafkaListenerMetric.measure {
                     logger.info("Mottatt key fra ${record.key()}")
                     logger.info("Mottatt melding fra ${record.value()}")
-                    val personhendelse = mapJsonToAny<Personhendelse>(record.value())
-                    when (personhendelse.opplysningstype) {
+                    val opplysningstype = record.value().get("opplysningstype").toString()
+                    when (opplysningstype) {
                         "DOEDSFALL_V1" -> {
-                            logger.info("Undersøker type:: ${personhendelse.opplysningstype}")
+                            logger.info("Undersøker type:: ${opplysningstype}")
                         }
                         "BOSTEDSADRESSE_V1", "KONTAKTADRESSE_V1", "OPPHOLDSADRESSE_V1" -> {
-                            logger.info("Undersøker type:: ${personhendelse.opplysningstype}")
+                            logger.info("Undersøker type:: ${opplysningstype}")
                         }
                         else -> {
-                            logger.debug("Fant ikke type: ${personhendelse.opplysningstype}, Det er helt OK!")
+                            logger.debug("Fant ikke type: ${opplysningstype}, Det er helt OK!")
                         }
                     }
                     Thread.sleep(5000) // Slow down processing by 5 seconds per record
