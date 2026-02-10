@@ -1,6 +1,7 @@
 package no.nav.eessi.pensjon.pdl.dodsmelding
 
 import no.nav.eessi.pensjon.metrics.MetricsHelper
+import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.person.pdl.leesah.Personhendelse
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
@@ -29,12 +30,14 @@ class MeldingFraPdlListener(
             "specific.avro.reader:true",
         ],
     )
-    fun mottaLeesahMelding(consumerRecords: List<ConsumerRecord<String, Personhendelse>>, ack: Acknowledgment) {
+    fun mottaLeesahMelding(consumerRecords: List<ConsumerRecord<String, String>>, ack: Acknowledgment) {
         try {
             logger.info("Behandler ${consumerRecords.size} meldinger, firstOffset=${consumerRecords.first().offset()}, lastOffset=${consumerRecords.last().offset()}")
             consumerRecords.forEach { record ->
                 leesahKafkaListenerMetric.measure {
-                    val personhendelse = record.value()
+                    logger.info("Mottatt key fra ${record.key()}")
+                    logger.info("Mottatt melding fra ${record.value()}")
+                    val personhendelse = mapJsonToAny<Personhendelse>(record.value())
                     when (personhendelse.opplysningstype) {
                         "DOEDSFALL_V1" -> {
                             logger.info("Undersøker type:: ${personhendelse.opplysningstype}")
