@@ -21,6 +21,8 @@ class MeldingFraPdlListener(
     @KafkaListener(
         autoStartup = "\${pdl.kafka.autoStartup}",
         batch = "true",
+        topics = ["pdl.leesah-v1"],
+        groupId = "eessi-pensjon-pdl-produsent",
         properties = [
             "auth.exception.retry.interval=30s",
             "auto.offset.reset=earliest",
