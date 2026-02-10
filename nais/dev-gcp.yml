@@ -63,7 +63,6 @@ spec:
     - name: KAFKA_GROUP_ID
       value: eessipensjon-pdl-produsent-q2
 
-
     - name: AZURE_APP_KODEVERK_CLIENT_ID
       value: dev-gcp.team-rocket.kodeverk-api
     - name: AZURE_APP_EUX_CLIENT_ID

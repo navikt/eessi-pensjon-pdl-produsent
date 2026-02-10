@@ -91,16 +91,16 @@ class KafkaConfig(
 
 
     private fun consumerConfigsLatestAvro(): Map<String, Any> {
-//        val kafkaBrokers = System.getenv("KAFKA_BROKERS") ?: "http://localhost:9092"
-        val schemaRegisty = System.getenv("KAFKA_SCHEMA_REGISTRY") ?: "http://localhost:9093"
-//        val schemaRegistryUser = System.getenv("KAFKA_SCHEMA_REGISTRY_USER") ?: "mangler i pod"
-//        val schemaRegistryPassword = System.getenv("KAFKA_SCHEMA_REGISTRY_PASSWORD") ?: "mangler i pod"
+        val kafkaBrokers = System.getenv("KAFKA_BROKERS") ?: throw RuntimeException("KAFKA_BROKERS må være satt i miljøet")
+        val schemaRegisty = System.getenv("KAFKA_SCHEMA_REGISTRY") ?: throw RuntimeException("KAFKA_BROKERS må være satt i miljøet")
+        val schemaRegistryUser = System.getenv("KAFKA_SCHEMA_REGISTRY_USER") ?: throw RuntimeException("KAFKA_BROKERS må være satt i miljøet")
+        val schemaRegistryPassword = System.getenv("KAFKA_SCHEMA_REGISTRY_PASSWORD") ?: throw RuntimeException("KAFKA_BROKERS må være satt i miljøet")
         val consumerConfigs =
             mutableMapOf(
-//                ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to kafkaBrokers,
+                ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to kafkaBrokers,
                 "schema.registry.url" to schemaRegisty,
-//                "basic.auth.credentials.source" to "USER_INFO",
-//                "basic.auth.user.info" to "$schemaRegistryUser:$schemaRegistryPassword",
+                "basic.auth.credentials.source" to "USER_INFO",
+                "basic.auth.user.info" to "$schemaRegistryUser:$schemaRegistryPassword",
                 "specific.avro.reader" to true,
                 ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
                 ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to KafkaAvroDeserializer::class.java,
