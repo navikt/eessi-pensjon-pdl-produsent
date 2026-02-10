@@ -17,6 +17,9 @@
         <logger name="no.nav.security" level="ERROR"/>
         <logger name="no.nav.eessi" level="INFO"/>
         <logger name="no.nav.security.token.support.core.validation" level="ERROR"/>
+        <!-- Add Kafka debug logging -->
+        <logger name="org.apache.kafka" level="DEBUG"/>
+        <logger name="org.springframework.kafka" level="DEBUG"/>
         <root level="info">
             <appender-ref ref="stdout_json"/>
         </root>
@@ -62,6 +65,9 @@
         <logger name="no.nav.security" level="DEBUG"/>
         <logger name="no.nav.eessi" level="DEBUG"/>
         <logger name="no.nav.security.token.support.core.validation" level="ERROR"/>
+        <!-- Add Kafka debug logging -->
+        <logger name="org.apache.kafka" level="DEBUG"/>
+        <logger name="org.springframework.kafka" level="DEBUG"/>
 
         <logger name="secureLog" level="DEBUG" additivity="false">
             <appender-ref ref="stdout_json"/>
@@ -91,6 +97,9 @@
         <logger name="no.nav" level="DEBUG"/>
         <logger name="no.nav.security" level="DEBUG"/>
         <logger name="no.nav.eessi" level="DEBUG"/>
+        <!-- Add Kafka debug logging -->
+        <logger name="org.apache.kafka" level="DEBUG"/>
+        <logger name="org.springframework.kafka" level="DEBUG"/>
 
         <logger name="secureLog" level="DEBUG" additivity="false">
             <appender-ref ref="STDOUT"/>

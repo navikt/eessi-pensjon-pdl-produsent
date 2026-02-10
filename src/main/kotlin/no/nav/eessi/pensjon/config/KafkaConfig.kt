@@ -1,6 +1,7 @@
 package no.nav.eessi.pensjon.config
 
 import io.confluent.kafka.serializers.KafkaAvroDeserializer
+import no.nav.eessi.pensjon.oppgaverouting.logger
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -95,6 +96,7 @@ class KafkaConfig(
         val schemaRegisty = System.getenv("KAFKA_SCHEMA_REGISTRY") ?: throw RuntimeException("KAFKA_BROKERS må være satt i miljøet")
         val schemaRegistryUser = System.getenv("KAFKA_SCHEMA_REGISTRY_USER") ?: throw RuntimeException("KAFKA_BROKERS må være satt i miljøet")
         val schemaRegistryPassword = System.getenv("KAFKA_SCHEMA_REGISTRY_PASSWORD") ?: throw RuntimeException("KAFKA_BROKERS må være satt i miljøet")
+        logger.info("Setter opp consumer med følgende konfigurasjon: bootstrapServers=$kafkaBrokers, schemaRegistry=$schemaRegisty, securityProtocol=$securityProtocol, schemaRegistryUser=$schemaRegistryUser")
         val consumerConfigs =
             mutableMapOf(
                 ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to kafkaBrokers,
