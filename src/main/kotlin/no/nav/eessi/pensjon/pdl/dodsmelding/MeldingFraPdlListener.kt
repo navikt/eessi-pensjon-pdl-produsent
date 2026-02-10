@@ -23,14 +23,13 @@ class MeldingFraPdlListener(
         batch = "true",
         topics = ["pdl.leesah-v1"],
         groupId = "eessi-pensjon-pdl-produsent",
-        containerFactory = "kafkaAivenHendelseListenerAvroLatestContainerFactory"
-//        properties = [
-//            "auth.exception.retry.interval: 30s",
-//            "auto.offset.reset:earliest",
-//            "value.deserializer:io.confluent.kafka.serializers.KafkaAvroDeserializer",
-//            "key.deserializer:io.confluent.kafka.serializers.KafkaAvroDeserializer",
-//            "specific.avro.reader:true",
-//        ]
+        properties = [
+            "auth.exception.retry.interval: 30s",
+            "auto.offset.reset:earliest",
+            "value.deserializer:io.confluent.kafka.serializers.KafkaAvroDeserializer",
+            "key.deserializer:io.confluent.kafka.serializers.KafkaAvroDeserializer",
+            "specific.avro.reader:true",
+        ]
     )
     fun mottaLeesahMelding(consumerRecords: List<ConsumerRecord<String, Personhendelse>>, ack: Acknowledgment) {
         try {
