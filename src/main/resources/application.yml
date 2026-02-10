@@ -71,9 +71,6 @@ management:
 
 spring:
   kafka:
-    consumer:
-      groupid: ${KAFKA_GROUP_ID}
-      value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
     properties:
       schema:
         registry:
