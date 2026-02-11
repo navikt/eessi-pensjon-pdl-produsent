@@ -96,7 +96,7 @@ class KafkaConfig(
         val schemaRegisty = System.getenv("KAFKA_SCHEMA_REGISTRY") ?: throw RuntimeException("KAFKA_BROKERS må være satt i miljøet")
         val schemaRegistryUser = System.getenv("KAFKA_SCHEMA_REGISTRY_USER") ?: throw RuntimeException("KAFKA_BROKERS må være satt i miljøet")
         val schemaRegistryPassword = System.getenv("KAFKA_SCHEMA_REGISTRY_PASSWORD") ?: throw RuntimeException("KAFKA_BROKERS må være satt i miljøet")
-//        logger.info("Setter opp consumer med følgende konfigurasjon: bootstrapServers=$kafkaBrokers, schemaRegistry=$schemaRegisty, securityProtocol=$securityProtocol, schemaRegistryUser=$schemaRegistryUser")
+        logger.info("Setter opp consumer med følgende konfigurasjon: bootstrapServers=$bootstrapServers, schemaRegistry=$schemaRegisty, securityProtocol=$securityProtocol, schemaRegistryUser=$schemaRegistryUser")
         val consumerConfigs =
             mutableMapOf(
                 ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
@@ -110,7 +110,7 @@ class KafkaConfig(
                 ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to "earliest",
                 ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG to "false",
             )
-        return consumerConfigs.toMap()
+        return consumerConfigs.toMap().also { logger.debug("Kafka consumer configs: {}", it) }
     }
     private fun populerCommonConfig(configMap: MutableMap<String, Any>) {
         configMap[SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG] = keystorePath
