@@ -2,6 +2,7 @@ package no.nav.eessi.pensjon.config
 
 import io.confluent.kafka.serializers.KafkaAvroDeserializer
 import no.nav.eessi.pensjon.oppgaverouting.logger
+import no.nav.person.pdl.leesah.Personhendelse
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -18,6 +19,7 @@ import org.springframework.kafka.annotation.EnableKafka
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory
 import org.springframework.kafka.core.*
 import org.springframework.kafka.listener.ContainerProperties
+import org.springframework.kafka.listener.DefaultErrorHandler
 import java.time.Duration
 
 @EnableKafka
@@ -80,16 +82,20 @@ class KafkaConfig(
         return factory
     }
     @Bean
-    fun kafkaAivenHendelseListenerAvroLatestContainerFactory(): ConcurrentKafkaListenerContainerFactory<Int, GenericRecord> {
-        val factory = ConcurrentKafkaListenerContainerFactory<Int, GenericRecord>()
+    fun kafkaAivenHendelseListenerAvroLatestContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, Personhendelse> {
+        val factory = ConcurrentKafkaListenerContainerFactory<String, Personhendelse>()
         factory.containerProperties.ackMode = ContainerProperties.AckMode.BATCH
         factory.containerProperties.setAuthExceptionRetryInterval(Duration.ofSeconds(2))
         factory.setConsumerFactory(DefaultKafkaConsumerFactory(consumerConfigsLatestAvro()))
-//        factory.setCommonErrorHandler(kafkaRestartingErrorHandler)
+        factory.setCommonErrorHandler(kafkaRestartingErrorHandler())
         return factory
     }
 
-
+    fun kafkaRestartingErrorHandler(): DefaultErrorHandler {
+        return DefaultErrorHandler({ record, exception ->
+            logger.error("Kafka error, restarting container", exception)
+        }, org.springframework.util.backoff.FixedBackOff(5000, 3))
+    }
 
     private fun consumerConfigsLatestAvro(): Map<String, Any> {
 //        val kafkaBrokers = System.getenv("KAFKA_BROKERS") ?: throw RuntimeException("KAFKA_BROKERS må være satt i miljøet")
