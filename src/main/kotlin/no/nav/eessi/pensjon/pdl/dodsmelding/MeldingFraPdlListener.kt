@@ -23,6 +23,7 @@ class MeldingFraPdlListener(
         batch = "true",
         topics = ["pdl.leesah-v1"],
         groupId = "eessi-pensjon-pdl-produsent",
+        idIsGroup = false,
         containerFactory = "kafkaAivenHendelseListenerAvroLatestContainerFactory",
 //        properties = [
 //            "auth.exception.retry.interval: 30s",
