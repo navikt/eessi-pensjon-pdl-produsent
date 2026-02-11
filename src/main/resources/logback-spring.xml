@@ -18,8 +18,8 @@
         <logger name="no.nav.eessi" level="INFO"/>
         <logger name="no.nav.security.token.support.core.validation" level="ERROR"/>
         <!-- Add Kafka debug logging -->
-        <logger name="org.apache.kafka" level="DEBUG"/>
-        <logger name="org.springframework.kafka" level="DEBUG"/>
+        <logger name="org.apache.kafka" level="ERROR"/>
+        <logger name="org.springframework.kafka" level="ERROR"/>
         <root level="info">
             <appender-ref ref="stdout_json"/>
         </root>
