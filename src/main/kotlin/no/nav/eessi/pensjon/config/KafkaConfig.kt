@@ -107,14 +107,13 @@ class KafkaConfig(
             mutableMapOf(
                 ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
                 "schema.registry.url" to schemaRegisty,
+                "auth.exception.retry.interval" to "30s",
                 "basic.auth.credentials.source" to "USER_INFO",
                 "basic.auth.user.info" to "$schemaRegistryUser:$schemaRegistryPassword",
                 "specific.avro.reader" to true,
                 ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
                 ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to KafkaAvroDeserializer::class.java,
-                ConsumerConfig.MAX_POLL_RECORDS_CONFIG to "1",
                 ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to "earliest",
-                ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG to "false",
             )
         return consumerConfigs.toMap().also { logger.debug("Kafka consumer configs: {}", it) }
     }
