@@ -25,7 +25,7 @@ class MeldingFraPdlListener(
         groupId = "eessi-pensjon-pdl-produsent",
         properties = [
             "auth.exception.retry.interval: 30s",
-            "auto.offset.reset:earliest",
+            "auto.offset.reset:latest",
             "value.deserializer:io.confluent.kafka.serializers.KafkaAvroDeserializer",
             "key.deserializer:io.confluent.kafka.serializers.KafkaAvroDeserializer",
             "specific.avro.reader:true",
