@@ -1,10 +1,10 @@
 package no.nav.eessi.pensjon.pdl.dodsmelding
 
+import io.micrometer.core.instrument.Metrics
 import no.nav.eessi.pensjon.metrics.MetricsHelper
-import no.nav.eessi.pensjon.utils.mapJsonToAny
 import no.nav.person.pdl.leesah.Personhendelse
-import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.kafka.annotation.KafkaListener
@@ -16,7 +16,13 @@ class MeldingFraPdlListener(
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
 ) {
     private val logger = LoggerFactory.getLogger(MeldingFraPdlListener::class.java)
-    private val leesahKafkaListenerMetric = metricsHelper.init("consumeMsgFromPdlDodsmelding")
+    private val messureOpplysningstype = MessureOpplysningstypeHelper()
+
+    private var leesahKafkaListenerMetric : MetricsHelper.Metric = metricsHelper.init("leesahPersonoppslag")
+
+    init {
+        messureOpplysningstype.clearAll()
+    }
 
     @KafkaListener(
         autoStartup = "\${pdl.kafka.autoStartup}",
@@ -31,17 +37,19 @@ class MeldingFraPdlListener(
             logger.info("Behandler ${consumerRecords.size} meldinger, firstOffset=${consumerRecords.first().offset()}, lastOffset=${consumerRecords.last().offset()}")
             consumerRecords.forEach { record ->
                 leesahKafkaListenerMetric.measure {
-                    logger.info("Mottatt melding fra ${record.value()}")
-                    val opplysningstype = record.value().get("opplysningstype").toString()
-                    when (opplysningstype) {
+                    val personhendelse = record.value()
+                    logger.info("Undersøker type: ${personhendelse.opplysningstype}")
+
+                    when (personhendelse.opplysningstype) {
                         "DOEDSFALL_V1" -> {
-                            logger.info("Undersøker type:: ${opplysningstype}")
+                            messureOpplysningstype.addKjent(personhendelse)
                         }
                         "BOSTEDSADRESSE_V1", "KONTAKTADRESSE_V1", "OPPHOLDSADRESSE_V1" -> {
-                            logger.info("Undersøker type:: ${opplysningstype}")
+                            messureOpplysningstype.addKjent(personhendelse)
                         }
                         else -> {
-                            logger.debug("Behandler ikke ${opplysningstype}, ignorerer melding")
+                            logger.debug("Behandler ikke ${personhendelse.opplysningstype}, ignorerer melding")
+                            messureOpplysningstype.addUkjent(personhendelse)
                         }
                     }
                     Thread.sleep(5000) // Slow down processing by 5 seconds per record
@@ -52,6 +60,41 @@ class MeldingFraPdlListener(
             throw e
         }
         ack.acknowledge()
+        messureOpplysningstype.createMetrics()
+        messureOpplysningstype.clearAll()
         logger.info("Acket personhendelse")
+    }
+
+    class MessureOpplysningstypeHelper() {
+
+        private val logger: Logger = LoggerFactory.getLogger(javaClass)
+        private val knownType : MutableList<String> = mutableListOf()
+        private val unkownType : MutableList<String> = mutableListOf()
+
+        fun addKjent(personhendelse: Personhendelse) = knownType.add(personhendelse.opplysningstype)
+
+        fun addUkjent(personhendelse: Personhendelse) = unkownType.add(personhendelse.opplysningstype)
+
+        fun createMetrics() {
+            try {
+                knownType.map { navn ->
+                    logger.debug("Opplysningstype: $navn")
+                    Metrics.counter("personhendelse_kjent_opplysningstype", "Navn", navn).increment()
+                }
+                unkownType.map { navn ->
+                    logger.debug("Ukjentopplysningstype: $navn")
+                    Metrics.counter("personhendelse_ukjent_opplysningstype", "Navn", navn).increment()
+                }
+            } catch (_: Exception) {
+                logger.warn("Metrics feilet på opplysningstype")
+            }
+        }
+
+        fun clearAll() {
+            knownType.clear()
+            unkownType.clear()
+            logger.info("messureOpplysningstype all cleared")
+        }
+
     }
 }
