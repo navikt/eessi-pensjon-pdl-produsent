@@ -29,7 +29,6 @@ class MeldingFraPdlListener(
         batch = "true",
         topics = ["pdl.leesah-v1"],
         groupId = "eessi-pensjon-pdl-produsent",
-        idIsGroup = false,
         containerFactory = "kafkaAivenHendelseListenerAvroLatestContainerFactory",
     )
     fun mottaLeesahMelding(consumerRecords: List<ConsumerRecord<String, Personhendelse>>, ack: Acknowledgment) {
@@ -52,7 +51,6 @@ class MeldingFraPdlListener(
                             messureOpplysningstype.addUkjent(personhendelse)
                         }
                     }
-                    Thread.sleep(1000) // Slow down processing by 5 seconds per record
                 }
             }
         } catch (e: Exception) {
