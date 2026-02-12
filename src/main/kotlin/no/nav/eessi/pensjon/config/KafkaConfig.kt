@@ -3,7 +3,6 @@ package no.nav.eessi.pensjon.config
 import io.confluent.kafka.serializers.KafkaAvroDeserializer
 import no.nav.eessi.pensjon.oppgaverouting.logger
 import no.nav.person.pdl.leesah.Personhendelse
-import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
@@ -86,7 +85,15 @@ class KafkaConfig(
         val factory = ConcurrentKafkaListenerContainerFactory<String, Personhendelse>()
         factory.containerProperties.ackMode = ContainerProperties.AckMode.BATCH
         factory.containerProperties.setAuthExceptionRetryInterval(Duration.ofSeconds(2))
-        factory.setConsumerFactory(DefaultKafkaConsumerFactory(consumerConfigsLatestAvro()))
+
+        val configMap: MutableMap<String, Any> = consumerConfigsLatestAvro()
+        populerCommonConfig(configMap)
+
+        factory.setConsumerFactory(
+            DefaultKafkaConsumerFactory(
+                configMap
+            )
+        )
         factory.setCommonErrorHandler(kafkaRestartingErrorHandler())
         return factory
     }
@@ -97,25 +104,25 @@ class KafkaConfig(
         }, org.springframework.util.backoff.FixedBackOff(5000, 3))
     }
 
-    private fun consumerConfigsLatestAvro(): Map<String, Any> {
+    private fun consumerConfigsLatestAvro(): MutableMap<String, Any> {
 //        val kafkaBrokers = System.getenv("KAFKA_BROKERS") ?: throw RuntimeException("KAFKA_BROKERS må være satt i miljøet")
         val schemaRegisty = System.getenv("KAFKA_SCHEMA_REGISTRY") ?: throw RuntimeException("KAFKA_BROKERS må være satt i miljøet")
         val schemaRegistryUser = System.getenv("KAFKA_SCHEMA_REGISTRY_USER") ?: throw RuntimeException("KAFKA_BROKERS må være satt i miljøet")
         val schemaRegistryPassword = System.getenv("KAFKA_SCHEMA_REGISTRY_PASSWORD") ?: throw RuntimeException("KAFKA_BROKERS må være satt i miljøet")
         logger.info("Setter opp consumer med følgende konfigurasjon: bootstrapServers=$bootstrapServers, schemaRegistry=$schemaRegisty, securityProtocol=$securityProtocol, schemaRegistryUser=$schemaRegistryUser")
         val consumerConfigs =
-            mutableMapOf(
+            mutableMapOf<String, Any>(
                 ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
                 "schema.registry.url" to schemaRegisty,
                 "auth.exception.retry.interval" to "30s",
                 "basic.auth.credentials.source" to "USER_INFO",
                 "basic.auth.user.info" to "$schemaRegistryUser:$schemaRegistryPassword",
-                "specific.avro.reader" to true,
-                ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
-                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to KafkaAvroDeserializer::class.java,
+                "specific.avro.reader" to "true",
+                ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java.name,
+                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to KafkaAvroDeserializer::class.java.name,
                 ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to "earliest",
             )
-        return consumerConfigs.toMap().also { logger.debug("Kafka consumer configs: {}", it) }
+        return consumerConfigs.also { logger.debug("Kafka consumer configs: {}", it) }
     }
     private fun populerCommonConfig(configMap: MutableMap<String, Any>) {
         configMap[SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG] = keystorePath
