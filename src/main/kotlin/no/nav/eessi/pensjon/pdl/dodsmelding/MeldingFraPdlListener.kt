@@ -42,7 +42,7 @@ class MeldingFraPdlListener(
 
                     when (personhendelse.opplysningstype) {
                         "DOEDSFALL_V1" -> {
-                            logger.debug("DOEDSFALL_V1: ${personhendelse.toJson()}")
+                            logger.debug("DOEDSFALL_V1: ${personhendelse}")
                             messureOpplysningstype.addKjent(personhendelse)
                         }
                         "BOSTEDSADRESSE_V1", "KONTAKTADRESSE_V1", "OPPHOLDSADRESSE_V1" -> {
