@@ -31,7 +31,6 @@ class MeldingFraPdlListener(
             logger.info("Behandler ${consumerRecords.size} meldinger, firstOffset=${consumerRecords.first().offset()}, lastOffset=${consumerRecords.last().offset()}")
             consumerRecords.forEach { record ->
                 leesahKafkaListenerMetric.measure {
-                    logger.info("Mottatt key fra ${record.key()}")
                     logger.info("Mottatt melding fra ${record.value()}")
                     val opplysningstype = record.value().get("opplysningstype").toString()
                     when (opplysningstype) {
