@@ -118,6 +118,7 @@ class KafkaConfig(
                 "basic.auth.credentials.source" to "USER_INFO",
                 "basic.auth.user.info" to "$schemaRegistryUser:$schemaRegistryPassword",
                 "specific.avro.reader" to "true",
+                "spring.kafka.listener.ack-mode" to "MANUAL",
                 ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java.name,
                 ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to KafkaAvroDeserializer::class.java.name,
                 ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to "earliest",
