@@ -2,6 +2,7 @@ package no.nav.eessi.pensjon.pdl.dodsmelding
 
 import io.micrometer.core.instrument.Metrics
 import no.nav.eessi.pensjon.metrics.MetricsHelper
+import no.nav.eessi.pensjon.utils.toJson
 import no.nav.person.pdl.leesah.Personhendelse
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.Logger
@@ -41,6 +42,7 @@ class MeldingFraPdlListener(
 
                     when (personhendelse.opplysningstype) {
                         "DOEDSFALL_V1" -> {
+                            logger.debug("DOEDSFALL_V1: ${personhendelse.toJson()}")
                             messureOpplysningstype.addKjent(personhendelse)
                         }
                         "BOSTEDSADRESSE_V1", "KONTAKTADRESSE_V1", "OPPHOLDSADRESSE_V1" -> {
