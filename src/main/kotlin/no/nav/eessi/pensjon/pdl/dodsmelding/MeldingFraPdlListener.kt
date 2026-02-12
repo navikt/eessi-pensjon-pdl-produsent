@@ -46,6 +46,7 @@ class MeldingFraPdlListener(
                             messureOpplysningstype.addKjent(personhendelse)
                         }
                         "BOSTEDSADRESSE_V1", "KONTAKTADRESSE_V1", "OPPHOLDSADRESSE_V1" -> {
+                            logger.debug("ADRESSE_V1: ${personhendelse}")
                             messureOpplysningstype.addKjent(personhendelse)
                         }
                         else -> {
