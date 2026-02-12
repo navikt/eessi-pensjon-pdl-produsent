@@ -41,7 +41,7 @@ class MeldingFraPdlListener(
                             logger.info("Undersøker type:: ${opplysningstype}")
                         }
                         else -> {
-                            logger.debug("Fant ikke type: ${opplysningstype}, Det er helt OK!")
+                            logger.debug("Behandler ikke ${opplysningstype}, ignorerer melding")
                         }
                     }
                     Thread.sleep(5000) // Slow down processing by 5 seconds per record
