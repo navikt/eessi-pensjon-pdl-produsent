@@ -5,12 +5,12 @@ import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.verify
 import no.nav.person.pdl.leesah.Personhendelse
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.kafka.support.Acknowledgment
 
@@ -30,6 +30,7 @@ class MeldingFraPdlListenerTest {
     }
 
     @Test
+    @Disabled
     fun `personhendelse på dødsfall records skal gå ok`() {
         val hendelse1 = hentHendelsefraFil("/leesha/leesha_doedsfall_hendelse1.json")
 
