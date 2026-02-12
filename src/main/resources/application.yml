@@ -81,5 +81,3 @@ spring:
             source: USER_INFO
           user:
             info: ${KAFKA_SCHEMA_REGISTRY_USER}:${KAFKA_SCHEMA_REGISTRY_PASSWORD}
-    listener:
-      ack-mode: manual

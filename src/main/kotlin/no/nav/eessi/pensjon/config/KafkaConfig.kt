@@ -105,7 +105,6 @@ class KafkaConfig(
     }
 
     private fun consumerConfigsLatestAvro(): MutableMap<String, Any> {
-//        val kafkaBrokers = System.getenv("KAFKA_BROKERS") ?: throw RuntimeException("KAFKA_BROKERS må være satt i miljøet")
         val schemaRegisty = System.getenv("KAFKA_SCHEMA_REGISTRY") ?: throw RuntimeException("KAFKA_BROKERS må være satt i miljøet")
         val schemaRegistryUser = System.getenv("KAFKA_SCHEMA_REGISTRY_USER") ?: throw RuntimeException("KAFKA_BROKERS må være satt i miljøet")
         val schemaRegistryPassword = System.getenv("KAFKA_SCHEMA_REGISTRY_PASSWORD") ?: throw RuntimeException("KAFKA_BROKERS må være satt i miljøet")
