@@ -83,7 +83,7 @@ class KafkaConfig(
     @Bean
     fun kafkaAivenHendelseListenerAvroLatestContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, Personhendelse> {
         val factory = ConcurrentKafkaListenerContainerFactory<String, Personhendelse>()
-        factory.containerProperties.ackMode = ContainerProperties.AckMode.BATCH
+        factory.containerProperties.ackMode = ContainerProperties.AckMode.MANUAL
         factory.containerProperties.setAuthExceptionRetryInterval(Duration.ofSeconds(2))
 
         val configMap: MutableMap<String, Any> = consumerConfigsLatestAvro()
