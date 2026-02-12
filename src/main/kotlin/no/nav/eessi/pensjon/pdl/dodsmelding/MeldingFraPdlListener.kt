@@ -52,7 +52,7 @@ class MeldingFraPdlListener(
                             messureOpplysningstype.addUkjent(personhendelse)
                         }
                     }
-                    Thread.sleep(5000) // Slow down processing by 5 seconds per record
+                    Thread.sleep(1000) // Slow down processing by 5 seconds per record
                 }
             }
         } catch (e: Exception) {
