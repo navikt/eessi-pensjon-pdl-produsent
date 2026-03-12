@@ -61,6 +61,20 @@ class SedHendelseListenerExceptionTest : IntegrationBase() {
     }
 
     @Test
+    fun `Gitt en at vi faar 409 Conflict med melding om funn av duplikat adresse fra PDL saa acker vi meldingen`() {
+
+        val ack = mockk<Acknowledgment>()
+        justRun { ack.acknowledge() }
+
+        every { adresseoppdatering.vurderUtenlandskKontaktadresse(any()) } throws HttpClientErrorException(HttpStatus.CONFLICT, "Fant duplikat kontaktadresse")
+        sedListenerAdresse.consumeSedMottatt(enSedHendelse(), mockk(relaxed = true), ack )
+
+        verify(exactly = 1) { adresseoppdatering.vurderUtenlandskKontaktadresse(any()) }
+        verify(exactly = 1) { ack.acknowledge() }
+
+    }
+
+    @Test
     fun `Gitt at vi skal oppdatere kontaktadresse med en adresse som allerede finnes i PDL som oppholdsadresse`() {
         val ack = mockk<Acknowledgment>()
         justRun { ack.acknowledge() }
