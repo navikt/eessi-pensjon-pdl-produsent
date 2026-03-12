@@ -58,6 +58,8 @@ class SedListenerAdresse(
             ex.statusCode == HttpStatus.LOCKED -> logger.error("Det pågår allerede en adresseoppdatering på bruker", ex)
             ex.message?.contains("Kontaktadressen er allerede registrert som oppholdsadresse") == true ->
                 logger.warn("Kontaktadressen er allerede registrert som bostedsadresse, Ingen Oppdatering")
+            ex.message?.contains("Fant duplikat kontaktadresse") == true ->
+                logger.warn("Fant duplikat kontaktadresse, Ingen Oppdatering")
             else -> throw ex
         }
     }
