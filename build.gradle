@@ -37,7 +37,7 @@ dependencies {
 	implementation("org.springframework.retry:spring-retry:2.0.12")
 	implementation "org.springframework.kafka:spring-kafka:$springKafkaVersion"
 
-	implementation("org.yaml:snakeyaml:2.5") // Pga https://security.snyk.io/package/maven/org.yaml:snakeyaml
+	implementation("org.yaml:snakeyaml:2.6") // Pga https://security.snyk.io/package/maven/org.yaml:snakeyaml
 
 	testImplementation("org.apache.httpcomponents.client5:httpclient5:5.5.1")
 
