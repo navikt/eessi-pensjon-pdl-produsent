@@ -17,6 +17,8 @@ class MeldingFraPdlListener(
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
 ) {
     private val logger = LoggerFactory.getLogger(MeldingFraPdlListener::class.java)
+    private val secureLogger = LoggerFactory.getLogger("secureLog")
+
     private val messureOpplysningstype = MessureOpplysningstypeHelper()
 
     private var leesahKafkaListenerMetric : MetricsHelper.Metric = metricsHelper.init("leesahPersonoppslag")
@@ -43,6 +45,7 @@ class MeldingFraPdlListener(
                     when (personhendelse.opplysningstype) {
                         "DOEDSFALL_V1" -> {
                             logger.debug("DOEDSFALL_V1: ${personhendelse}")
+                            secureLogger.info("DOEDSFALL_V1: ${personhendelse.toJson()}")
                             messureOpplysningstype.addKjent(personhendelse)
                         }
                         "BOSTEDSADRESSE_V1", "KONTAKTADRESSE_V1", "OPPHOLDSADRESSE_V1" -> {
