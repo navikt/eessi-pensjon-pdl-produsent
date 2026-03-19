@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.verify
