@@ -1,8 +1,9 @@
 package no.nav.eessi.pensjon.pdl.dodsmelding
 
 import io.micrometer.core.instrument.Metrics
+import no.nav.eessi.pensjon.klienter.saf.BrukerIdType
+import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.metrics.MetricsHelper
-import no.nav.eessi.pensjon.utils.toJson
 import no.nav.person.pdl.leesah.Personhendelse
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.Logger
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class MeldingFraPdlListener(
+    private val safClient: SafClient,
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
 ) {
     private val logger = LoggerFactory.getLogger(MeldingFraPdlListener::class.java)
@@ -47,6 +49,10 @@ class MeldingFraPdlListener(
                             logger.debug("DOEDSFALL_V1: ${personhendelse}")
                             secureLogger.info("DOEDSFALL_V1: ${personhendelse}")
                             messureOpplysningstype.addKjent(personhendelse)
+                            personhendelse.personidenter.forEach {
+                                val responseFraSaf = safClient.hentDokumentMetadata(it, BrukerIdType.FNR)
+                                println(responseFraSaf)
+                            }
                         }
                         "BOSTEDSADRESSE_V1", "KONTAKTADRESSE_V1", "OPPHOLDSADRESSE_V1" -> {
                             logger.debug("ADRESSE_V1: ${personhendelse}")

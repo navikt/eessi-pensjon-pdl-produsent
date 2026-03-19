@@ -1,6 +1,7 @@
 package no.nav.eessi.pensjon.oppgave
 
 import no.nav.eessi.pensjon.eux.model.SedHendelse
+import no.nav.eessi.pensjon.klienter.saf.BrukerIdType
 import no.nav.eessi.pensjon.klienter.saf.Journalpost
 import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.lagring.LagringsService
@@ -55,7 +56,7 @@ class OppgaveHandler(
     }
 
     private fun hentRinasakerForAktoerId(aktoerId: String): List<Journalpost> {
-        val hentMetadataResponse = safClient.hentDokumentMetadata(aktoerId)
+        val hentMetadataResponse = safClient.hentDokumentMetadata(aktoerId, BrukerIdType.AKTOERID)
         return hentMetadataResponse.data.dokumentoversiktBruker.journalposter
 
     }

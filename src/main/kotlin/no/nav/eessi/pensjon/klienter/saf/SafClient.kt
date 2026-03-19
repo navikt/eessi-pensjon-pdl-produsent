@@ -37,14 +37,14 @@ class SafClient(private val safGraphQlOidcRestTemplate: RestTemplate,
         backoff = Backoff(delayExpression = "@retrySafConfig.initialRetryMillis", delay = 10000L, maxDelay = 100000L, multiplier = 3.0),
         listeners  = ["retrySafLogger"]
     )
-    fun hentDokumentMetadata(aktoerId: String) : HentMetadataResponse {
-        logger.info("Henter dokument metadata for aktørid: $aktoerId")
+    fun hentDokumentMetadata(ident: String, identType: BrukerIdType) : HentMetadataResponse {
+        logger.info("Henter dokument metadata for aktørid: $ident")
 
         return HentDokumentMetadata.measure {
             try {
                 val headers = HttpHeaders()
                 headers.contentType = MediaType.APPLICATION_JSON
-                val httpEntity = HttpEntity(genererQuery(aktoerId), headers)
+                val httpEntity = HttpEntity(genererQueryByIdent(ident, identType), headers)
                 val response = safGraphQlOidcRestTemplate.exchange("/",
                         HttpMethod.POST,
                         httpEntity,
@@ -56,7 +56,7 @@ class SafClient(private val safGraphQlOidcRestTemplate: RestTemplate,
 
             } catch (ce: HttpClientErrorException) {
                 if(ce.statusCode == HttpStatus.FORBIDDEN) {
-                    logger.error("En feil oppstod under henting av dokument metadata fra SAF for aktørID $aktoerId, ikke tilgang", ce)
+                    logger.error("En feil oppstod under henting av dokument metadata fra SAF for aktørID $ident, ikke tilgang", ce)
                     throw HttpClientErrorException(ce.statusCode, "Du har ikke tilgang til dette dokument-temaet. Kontakt nærmeste leder for å få tilgang.")
                 }
                 logger.error("En feil oppstod under henting av dokument metadata fra SAF: ${ce.responseBodyAsString}")
@@ -77,8 +77,8 @@ class SafClient(private val safGraphQlOidcRestTemplate: RestTemplate,
         listeners  = ["retrySafLogger"]
     )
 
-    private fun genererQuery(aktoerId: String): String {
-        val request = SafRequest(variables = Variables(BrukerId(aktoerId, BrukerIdType.AKTOERID), 10000))
+    private fun genererQueryByIdent(ident: String, identType: BrukerIdType): String {
+        val request = SafRequest(variables = Variables(BrukerId(ident, identType), 10000))
         return request.toJson()
     }
 }
