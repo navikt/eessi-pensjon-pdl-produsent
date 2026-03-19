@@ -10,6 +10,7 @@ import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.sed.Adresse
 import no.nav.eessi.pensjon.eux.model.sed.Bruker
+import no.nav.eessi.pensjon.eux.model.sed.H002
 import no.nav.eessi.pensjon.eux.model.sed.Nav
 import no.nav.eessi.pensjon.eux.model.sed.Pensjon
 import no.nav.eessi.pensjon.eux.model.sed.Person
@@ -87,10 +88,9 @@ class SedListenerAdresseIT : IntegrationBase() {
     }
 
     @Test
-    @Disabled
     fun `Serdes for H002`() {
         val sedJson = sedFraEuxRaw()
-        val sed: SED = mapJsonToAny<SED>(sedJson)
+        val sed: SED = mapJsonToAny<H002>(sedJson)
         assertNotNull(sed)
         assertEquals(SedType.H002, sed.type)
     }
@@ -98,47 +98,49 @@ class SedListenerAdresseIT : IntegrationBase() {
     companion object {
 
         fun sedFraEuxRaw() = """
-            {
-              "nav": {
-                "bruker": {
-                  "person": {
-                    "kjoenn": "M",
-                    "etternavn": "Tilly",
-                    "pin": [
-                      {
-                        "sektor": "pensjoner",
-                        "land": "CH",
-                        "institusjonsid": "CH:4534534",
-                        "institusjonsnavn": "Centrale de Pensjon",
-                        "identifikator": "53453443534534"
-                      }
-                    ],
-                    "fornavn": "Olaf",
-                    "foedselsdato": "1976-10-14",
-                    "statsborgerskap": [
-                      {
-                        "land": "SE"
-                      }
-                    ]
-                  },
-                  "adresse": [
-                    {
-                      "type": "bosted"
-                    }
-                  ]
-                }
+        {
+          "nav": {
+            "bruker": {
+              "person": {
+                "kjoenn": "M",
+                "etternavn": "Tilly",
+                "pin": [
+                  {
+                    "sektor": "pensjoner",
+                    "land": "CH",
+                    "institusjonsid": "CH:4534534",
+                    "institusjonsnavn": "Centrale de Pensjon",
+                    "identifikator": "53453443534534"
+                  }
+                ],
+                "fornavn": "Olaf",
+                "foedselsdato": "1976-10-14",
+                "statsborgerskap": [
+                  {
+                    "land": "SE"
+                  }
+                ]
               },
-              "sedGVer": "4",
-              "sedVer": "3",
-              "sed": "H002",
-              "horisontal": {
-                "bruker": {
-                  "negativesvar": [
-                    {
-                      "informasjon": "Nous ne sommes pas en mesure de vous fournir l'information demandée."
-                    }
-                  ]
+              "adresse": [
+                {
+                  "type": "bosted"
                 }
+              ]
+            }
+          },
+          "sedGVer": "4",
+          "sedVer": "3",
+          "sed": "H002",
+          "horisontal": {
+            "bruker": {
+              "negativesvar": [
+                {
+                  "informasjon": "Nous ne sommes pas en mesure de vous fournir l'information demandée."
+                }
+              ]
+            }
+          }
+        }
         """.trimIndent()
 
         fun enSedFraEux(fnr: String) = SED(
