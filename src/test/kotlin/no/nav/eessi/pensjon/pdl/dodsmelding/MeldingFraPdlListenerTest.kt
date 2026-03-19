@@ -15,8 +15,7 @@ import org.springframework.kafka.support.Acknowledgment
 
 class MeldingFraPdlListenerTest {
 
-
-    private val listener = MeldingFraPdlListener()
+    private val listener = MeldingFraPdlListener(mockk(relaxed = true))
     private val mockAck = mockk<Acknowledgment>()
     private val mapper = configureObjectMapper()
 
