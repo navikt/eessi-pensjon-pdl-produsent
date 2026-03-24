@@ -55,11 +55,14 @@ class MeldingFraPdlListener(
                             messureOpplysningstype.addKjent(personhendelse)
                             personhendelse.personidenter.forEach { identFraPdlHendelse ->
                                 logger.info("Henter informasjon for ident: ${identFraPdlHendelse.take(4)}")
-                                personService.hentPerson(Ident.bestemIdent(identFraPdlHendelse)).also { pdlPerson ->
+                                val person = personService.hentPerson(Ident.bestemIdent(identFraPdlHendelse)).also { pdlPerson ->
                                     logger.debug("Henter person: {}", pdlPerson)
                                 }
-//                                val responseFraSaf = safClient.hentDokumentMetadata(identFraPdlHendelse, BrukerIdType.FNR)
-//                                println(responseFraSaf)
+                                person?.utenlandskIdentifikasjonsnummer?.let {
+                                    logger.info("Har utenlandskIdentifikasjonsnummer, henter dokumentmetadata fra saf")
+                                    val responseFraSaf = safClient.hentDokumentMetadata(identFraPdlHendelse, BrukerIdType.FNR)
+                                    logger.info("Svar fra saf: $responseFraSaf")
+                                }
                             }
                         }
                         "BOSTEDSADRESSE_V1", "KONTAKTADRESSE_V1", "OPPHOLDSADRESSE_V1" -> {
