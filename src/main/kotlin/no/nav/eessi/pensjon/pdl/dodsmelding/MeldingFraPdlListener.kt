@@ -4,6 +4,9 @@ import io.micrometer.core.instrument.Metrics
 import no.nav.eessi.pensjon.klienter.saf.BrukerIdType
 import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.metrics.MetricsHelper
+import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Ident
+import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.person.pdl.leesah.Personhendelse
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.Logger
@@ -16,6 +19,7 @@ import org.springframework.stereotype.Service
 @Service
 class MeldingFraPdlListener(
     private val safClient: SafClient,
+    private val personService: PersonService,
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
 ) {
     private val logger = LoggerFactory.getLogger(MeldingFraPdlListener::class.java)
@@ -50,8 +54,12 @@ class MeldingFraPdlListener(
                             secureLogger.info("DOEDSFALL_V1: ${personhendelse}")
                             messureOpplysningstype.addKjent(personhendelse)
                             personhendelse.personidenter.forEach {
-                                val responseFraSaf = safClient.hentDokumentMetadata(it, BrukerIdType.FNR)
-                                println(responseFraSaf)
+                                logger.info("Henter informasjon for ident: ${it.take(4)}")
+                                personService.hentPerson(Ident.bestemIdent(it)).also {
+                                    logger.debug("Henter person: {}", it)
+                                }
+//                                val responseFraSaf = safClient.hentDokumentMetadata(it, BrukerIdType.FNR)
+//                                println(responseFraSaf)
                             }
                         }
                         "BOSTEDSADRESSE_V1", "KONTAKTADRESSE_V1", "OPPHOLDSADRESSE_V1" -> {
