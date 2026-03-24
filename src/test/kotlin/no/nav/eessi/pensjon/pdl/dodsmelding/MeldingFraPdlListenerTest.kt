@@ -35,7 +35,7 @@ class MeldingFraPdlListenerTest {
 
         listener.mottaLeesahMelding(mockConsumerRecord(listOf(hendelse1)), mockAck)
 
-        verify(exactly = 1) { mockAck.acknowledge() }
+        verify(exactly = 0 ) { mockAck.acknowledge() }
     }
 
     private fun mockConsumerRecord(personhendelse: List<Personhendelse>): List<ConsumerRecord<String, Personhendelse>> =

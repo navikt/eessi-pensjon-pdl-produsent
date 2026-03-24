@@ -53,12 +53,12 @@ class MeldingFraPdlListener(
                             logger.debug("DOEDSFALL_V1: ${personhendelse}")
                             secureLogger.info("DOEDSFALL_V1: ${personhendelse}")
                             messureOpplysningstype.addKjent(personhendelse)
-                            personhendelse.personidenter.forEach {
-                                logger.info("Henter informasjon for ident: ${it.take(4)}")
-                                personService.hentPerson(Ident.bestemIdent(it)).also {
-                                    logger.debug("Henter person: {}", it)
+                            personhendelse.personidenter.forEach { identFraPdlHendelse ->
+                                logger.info("Henter informasjon for ident: ${identFraPdlHendelse.take(4)}")
+                                personService.hentPerson(Ident.bestemIdent(identFraPdlHendelse)).also { pdlPerson ->
+                                    logger.debug("Henter person: {}", pdlPerson)
                                 }
-//                                val responseFraSaf = safClient.hentDokumentMetadata(it, BrukerIdType.FNR)
+//                                val responseFraSaf = safClient.hentDokumentMetadata(identFraPdlHendelse, BrukerIdType.FNR)
 //                                println(responseFraSaf)
                             }
                         }
