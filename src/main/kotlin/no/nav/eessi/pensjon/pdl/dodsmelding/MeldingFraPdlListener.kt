@@ -6,7 +6,6 @@ import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Ident
-import no.nav.eessi.pensjon.personoppslag.pdl.model.NorskIdent
 import no.nav.person.pdl.leesah.Personhendelse
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.Logger
@@ -33,6 +32,7 @@ class MeldingFraPdlListener(
         messureOpplysningstype.clearAll()
     }
 
+
     @KafkaListener(
         autoStartup = "\${pdl.kafka.autoStartup}",
         batch = "true",
@@ -58,10 +58,19 @@ class MeldingFraPdlListener(
                                 val person = personService.hentPerson(Ident.bestemIdent(identFraPdlHendelse)).also { pdlPerson ->
                                     logger.debug("Henter person: {}", pdlPerson)
                                 }
-                                person?.utenlandskIdentifikasjonsnummer?.let {
-                                    logger.info("Har utenlandskIdentifikasjonsnummer, henter dokumentmetadata fra saf")
-                                    val responseFraSaf = safClient.hentDokumentMetadata(identFraPdlHendelse, BrukerIdType.FNR)
-                                    logger.info("Svar fra saf: $responseFraSaf")
+                                val gyldigeUtstederland = listOf("SWE", "FIN", "POL")
+
+                                val landFraIdentUtland = person?.utenlandskIdentifikasjonsnummer?.map { it.utstederland }?.toSet()
+                                landFraIdentUtland?.let {
+
+                                    if (landFraIdentUtland.any {it in gyldigeUtstederland }) {
+                                        logger.info("Har utenlandskIdentifikasjonsnummer, henter dokumentmetadata fra saf")
+                                        val responseFraSaf = safClient.hentDokumentMetadata(identFraPdlHendelse, BrukerIdType.FNR)
+                                        logger.info("Svar fra saf: $responseFraSaf")
+                                    }
+                                    else {
+                                        logger.info("${landFraIdentUtland} er ikke inkludert i listen: $gyldigeUtstederland, henter ikke dokumentmetadata fra saf")
+                                    }
                                 }
                             }
                         }
