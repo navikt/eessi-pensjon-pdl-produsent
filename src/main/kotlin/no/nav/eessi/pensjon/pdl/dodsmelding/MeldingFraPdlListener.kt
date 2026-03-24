@@ -53,23 +53,31 @@ class MeldingFraPdlListener(
                             logger.debug("DOEDSFALL_V1: ${personhendelse}")
                             secureLogger.info("DOEDSFALL_V1: ${personhendelse}")
                             messureOpplysningstype.addKjent(personhendelse)
-                            personhendelse.personidenter.forEach { identFraPdlHendelse ->
-                                logger.info("Henter informasjon for ident: ${identFraPdlHendelse.take(4)}")
-                                val person = personService.hentPerson(Ident.bestemIdent(identFraPdlHendelse)).also { pdlPerson ->
+
+                            val valgtPersonident = hentAlleNorskeIdenter(personhendelse)
+
+                            if (valgtPersonident == null) {
+                                logger.warn("Fant ingen gyldig ident i personidenter: ${personhendelse.personidenter}")
+                            } else {
+                                logger.info("Henter informasjon for ident: ${valgtPersonident.take(4)}")
+                                val identFraPdl = Ident.bestemIdent(valgtPersonident)
+
+                                val person = personService.hentPerson(identFraPdl).also { pdlPerson ->
                                     logger.debug("Henter person: {}", pdlPerson)
                                 }
+
                                 val gyldigeUtstederland = listOf("SWE", "FIN", "POL")
+                                val landFraIdentUtland = person?.utenlandskIdentifikasjonsnummer
+                                    ?.map { it.utstederland }
+                                    ?.toSet()
 
-                                val landFraIdentUtland = person?.utenlandskIdentifikasjonsnummer?.map { it.utstederland }?.toSet()
-                                landFraIdentUtland?.let {
-
-                                    if (landFraIdentUtland.any {it in gyldigeUtstederland }) {
+                                landFraIdentUtland?.let { landSett ->
+                                    if (landSett.any { it in gyldigeUtstederland }) {
                                         logger.info("Har utenlandskIdentifikasjonsnummer, henter dokumentmetadata fra saf")
-                                        val responseFraSaf = safClient.hentDokumentMetadata(identFraPdlHendelse, BrukerIdType.FNR)
+                                        val responseFraSaf = safClient.hentDokumentMetadata(valgtPersonident, BrukerIdType.FNR)
                                         logger.info("Svar fra saf: $responseFraSaf")
-                                    }
-                                    else {
-                                        logger.info("${landFraIdentUtland} er ikke inkludert i listen: $gyldigeUtstederland, henter ikke dokumentmetadata fra saf")
+                                    } else {
+                                        logger.info("$landSett er ikke inkludert i listen: $gyldigeUtstederland, henter ikke dokumentmetadata fra saf")
                                     }
                                 }
                             }
@@ -93,6 +101,20 @@ class MeldingFraPdlListener(
         messureOpplysningstype.createMetrics()
         messureOpplysningstype.clearAll()
         logger.info("Acket personhendelse")
+    }
+
+    private fun hentAlleNorskeIdenter(personhendelse: Personhendelse?): String? {
+        val valgtPersonident = personhendelse?.personidenter
+            ?.firstOrNull { ident ->
+                try {
+                    Ident.bestemIdent(ident)
+                    true
+                } catch (e: Exception) {
+                    logger.debug("Ignorerer ident som ikke kan bestemmes: $ident", e)
+                    false
+                }
+            }
+        return valgtPersonident
     }
 
     class MessureOpplysningstypeHelper() {
