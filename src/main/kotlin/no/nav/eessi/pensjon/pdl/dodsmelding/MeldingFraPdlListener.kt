@@ -71,14 +71,16 @@ class MeldingFraPdlListener(
                                     ?.map { it.utstederland }
                                     ?.toSet()
 
-                                landFraIdentUtland?.let { landSett ->
-                                    if (landSett.any { it in gyldigeUtstederland }) {
+                                if (!landFraIdentUtland.isNullOrEmpty()) {
+                                    if (landFraIdentUtland.any { it in gyldigeUtstederland }) {
                                         logger.info("Har utenlandskIdentifikasjonsnummer, henter dokumentmetadata fra saf")
                                         val responseFraSaf = safClient.hentDokumentMetadata(valgtPersonident, BrukerIdType.FNR)
                                         logger.info("Svar fra saf: $responseFraSaf")
                                     } else {
-                                        logger.info("$landSett er ikke inkludert i listen: $gyldigeUtstederland, henter ikke dokumentmetadata fra saf")
+                                        logger.info("$landFraIdentUtland er ikke inkludert i listen: $gyldigeUtstederland, henter ikke dokumentmetadata fra saf")
                                     }
+                                } else {
+                                    logger.info("Ingen utenlandskIdentifikasjonsnummer funnet, henter ikke dokumentmetadata fra saf")
                                 }
                             }
                         }
