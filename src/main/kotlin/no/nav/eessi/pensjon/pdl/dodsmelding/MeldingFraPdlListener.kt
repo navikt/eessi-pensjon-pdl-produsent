@@ -34,7 +34,7 @@ class MeldingFraPdlListener(
     )
     fun mottaLeesahMelding(consumerRecords: List<ConsumerRecord<String, Personhendelse>>, ack: Acknowledgment) {
         try {
-            logger.info("Behandler ${consumerRecords.size} meldinger, firstOffset=${consumerRecords.first().offset()}, lastOffset=${consumerRecords.last().offset()}")
+//            logger.info("Behandler ${consumerRecords.size} meldinger, firstOffset=${consumerRecords.first().offset()}, lastOffset=${consumerRecords.last().offset()}")
             consumerRecords.forEach { record ->
                 leesahKafkaListenerMetric.measure {
                     val personhendelse = record.value()
@@ -63,7 +63,7 @@ class MeldingFraPdlListener(
 //        ack.acknowledge()
         messureOpplysningstype.createMetrics()
         messureOpplysningstype.clearAll()
-        logger.info("Acket personhendelse")
+//        logger.info("Acket personhendelse")
     }
 
 
@@ -80,11 +80,11 @@ class MeldingFraPdlListener(
         fun createMetrics() {
             try {
                 knownType.map { navn ->
-                    logger.debug("Opplysningstype: $navn")
+//                    logger.debug("Opplysningstype: $navn")
                     Metrics.counter("personhendelse_kjent_opplysningstype", "Navn", navn).increment()
                 }
                 unkownType.map { navn ->
-                    logger.debug("Ukjentopplysningstype: $navn")
+//                    logger.debug("Ukjentopplysningstype: $navn")
                     Metrics.counter("personhendelse_ukjent_opplysningstype", "Navn", navn).increment()
                 }
             } catch (_: Exception) {
