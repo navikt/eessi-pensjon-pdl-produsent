@@ -25,35 +25,20 @@ class SafClient(private val safGraphQlOidcRestTemplate: RestTemplate,
 
     private val logger = LoggerFactory.getLogger(SafClient::class.java)
 
-    private var HentDokumentMetadata: MetricsHelper.Metric
-    private var HentDokumentInnhold: MetricsHelper.Metric
-    private var HentRinaSakIderFraDokumentMetadata: MetricsHelper.Metric
+    private var hentDokumentMetadata: MetricsHelper.Metric
+    private var hentDokumentInnhold: MetricsHelper.Metric
+    private var hentRinaSakIderFraDokumentMetadata: MetricsHelper.Metric
 
     init {
-        HentDokumentMetadata =
-            metricsHelper.init("HentDokumentMetadata", ignoreHttpCodes = listOf(HttpStatus.FORBIDDEN))
-        HentDokumentInnhold = metricsHelper.init(
-            "HentDokumentInnhold",
-            ignoreHttpCodes = listOf(HttpStatus.FORBIDDEN, HttpStatus.UNAUTHORIZED)
-        )
-        HentRinaSakIderFraDokumentMetadata =
-            metricsHelper.init("HentRinaSakIderFraDokumentMetadata", ignoreHttpCodes = listOf(HttpStatus.FORBIDDEN))
+        hentDokumentMetadata = metricsHelper.init("HentDokumentMetadata", ignoreHttpCodes = listOf(HttpStatus.FORBIDDEN))
+        hentDokumentInnhold = metricsHelper.init("HentDokumentInnhold", ignoreHttpCodes = listOf(HttpStatus.FORBIDDEN, HttpStatus.UNAUTHORIZED))
+        hentRinaSakIderFraDokumentMetadata = metricsHelper.init("HentRinaSakIderFraDokumentMetadata", ignoreHttpCodes = listOf(HttpStatus.FORBIDDEN))
     }
 
-    @Retryable(
-        exclude = [HttpClientErrorException.NotFound::class],
-        backoff = Backoff(
-            delayExpression = "@retrySafConfig.initialRetryMillis",
-            delay = 10000L,
-            maxDelay = 100000L,
-            multiplier = 3.0
-        ),
-        listeners = ["retrySafLogger"]
-    )
     fun hentDokumentMetadata(ident: String, identType: BrukerIdType): HentMetadataResponse {
         logger.info("Henter dokument metadata for aktørid: $ident")
 
-        return HentDokumentMetadata.measure {
+        return hentDokumentMetadata.measure {
             try {
                 val headers = HttpHeaders()
                 headers.contentType = MediaType.APPLICATION_JSON

@@ -20,6 +20,7 @@ data class SafRequest(
                     "journalfoerendeEnhet " +
                     "tema " +
                     "behandlingstema " +
+                    "dokumenter " +
                 "}}}",
         val variables: Variables
 ) {

@@ -46,10 +46,11 @@ class DodsmeldingBehandler(
 				responseFraSaf.data.dokumentoversiktBruker.journalposter.forEach { journalpost ->
 					logger.info("JournalpostId: ${journalpost.journalpostId}, datoOpprettet: ${journalpost.datoOpprettet}, tittel: ${journalpost.tittel}, journalfoerendeEnhet: ${journalpost.tilleggsopplysninger}")
 
-					val bucid = hentBucId(journalpost)
+					val dokumentInfoId =  journalpost.dokumenter?.firstNotNullOfOrNull { it.dokumentInfoId }
+//					val bucid = hentBucId(journalpost)
 
-					if (bucid != null) {
-					    val dokumentFraSaf = safClient.hentDokumentInnhold(journalpost.journalpostId, bucid, "ARKIV")
+					if (dokumentInfoId != null) {
+					    val dokumentFraSaf = safClient.hentDokumentInnhold(journalpost.journalpostId, dokumentInfoId, "ARKIV")
 						logger.info("ResponseFraSaf: {}", dokumentFraSaf.toJson())
 					}
 				}
