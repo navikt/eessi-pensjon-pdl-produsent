@@ -70,7 +70,7 @@ class MeldingFraPdlListener(
                                 val gyldigeUtstederland = listOf("SWE", "FIN", "POL")
                                 val landFraIdentUtland = person?.utenlandskIdentifikasjonsnummer
                                     ?.map { it.utstederland }
-                                    ?.toSet()
+                                    ?.toSet().also { logger.debug("Henter land: $it") }
 
                                 if (!landFraIdentUtland.isNullOrEmpty()) {
                                     if (landFraIdentUtland.any { it in gyldigeUtstederland }) {

@@ -5,24 +5,40 @@ import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.verify
+import no.nav.eessi.pensjon.klienter.saf.BrukerIdType
+import no.nav.eessi.pensjon.klienter.saf.SafClient
+import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Ident
 import no.nav.person.pdl.leesah.Personhendelse
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.kafka.support.Acknowledgment
 
 class MeldingFraPdlListenerTest {
 
-    private val listener = MeldingFraPdlListener(mockk(relaxed = true), mockk(relaxed = true))
+    private lateinit var listener : MeldingFraPdlListener
     private val mockAck = mockk<Acknowledgment>()
     private val mapper = configureObjectMapper()
+    private val safClient = mockk<SafClient>(relaxed = true)
+    val personService = mockk<PersonService>()
+    private val ack = mockk<Acknowledgment>()
+
+    @BeforeEach
+    fun setup() {
+        listener = MeldingFraPdlListener(safClient, personService)
+        val ack = mockk<Acknowledgment>()
+        justRun { ack.acknowledge() }
+    }
 
     @Test
     fun `personalhendelse på sivilstand skal gå ok`() {
         val hendelse = hentHendelsefraFil("/leesha/leesha_sivilstandhendelse1.json")
-        justRun { mockAck.acknowledge() }
 
         listener.mottaLeesahMelding(mockConsumerRecord(listOf(hendelse)), mockAck)
     }
@@ -31,11 +47,68 @@ class MeldingFraPdlListenerTest {
     fun `personhendelse på dødsfall records skal gå ok`() {
         val hendelse1 = hentHendelsefraFil("/leesha/leesha_doedsfall_hendelse1.json")
 
-        justRun { mockAck.acknowledge() }
+        val ident = Ident.bestemIdent("1000016953359")
+        every { personService.hentPerson(ident) } returns null
 
         listener.mottaLeesahMelding(mockConsumerRecord(listOf(hendelse1)), mockAck)
 
         verify(exactly = 0 ) { mockAck.acknowledge() }
+    }
+
+    @Test
+    fun `mottaLeesahMelding på dødsfall med gyldig utenlandsk ident henter dokumentmetadata`() {
+        val personhendelse = mockk<Personhendelse> {
+            every { opplysningstype } returns "DOEDSFALL_V1"
+            every { personidenter } returns listOf("12345678901")
+            every { hendelseId } returns "HendelseFraPDL"
+        }
+
+        val ident = Ident.bestemIdent("12345678901")
+        every { personService.hentPerson(ident) } returns mockk {
+            every { utenlandskIdentifikasjonsnummer } returns listOf(
+                mockk { every { utstederland } returns "SWE" }
+            )
+        }
+
+        every {
+            safClient.hentDokumentMetadata("12345678901", BrukerIdType.FNR)
+        } returns mockk {
+            every { data } returns mockk {
+                every { dokumentoversiktBruker } returns mockk {
+                    every { journalposter } returns emptyList()
+                }
+            }
+        }
+
+        listener.mottaLeesahMelding(
+            listOf(ConsumerRecord("topic", 0, 1L, personhendelse.hendelseId, personhendelse)),
+            ack
+        )
+
+        verify(exactly = 1) {
+            safClient.hentDokumentMetadata("12345678901", BrukerIdType.FNR)
+        }
+    }
+
+    @Test
+    fun `mottaLeesahMelding på dødsfall uten gyldig ident logger melding og kaller ikke saf`() {
+        val personhendelse = mockk<Personhendelse> {
+            every { opplysningstype } returns "DOEDSFALL_V1"
+            every { personidenter } returns listOf("12345678901")
+            every { hendelseId } returns "HendelseFraPDL"
+        }
+
+        val ident = Ident.bestemIdent("12345678901")
+        every { personService.hentPerson(ident) } returns mockk { every { utenlandskIdentifikasjonsnummer } returns emptyList() }
+
+        listener.mottaLeesahMelding(listOf(ConsumerRecord("topic", 0, 1L, personhendelse.hendelseId, personhendelse)), ack)
+
+        verify(exactly = 1) {
+            personService.hentPerson(any())
+        }
+        verify(exactly = 0) {
+            safClient.hentDokumentMetadata(any(), any())
+        }
     }
 
     private fun mockConsumerRecord(personhendelse: List<Personhendelse>): List<ConsumerRecord<String, Personhendelse>> =
