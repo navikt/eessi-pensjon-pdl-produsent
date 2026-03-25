@@ -22,18 +22,27 @@ import org.springframework.kafka.support.Acknowledgment
 
 class MeldingFraPdlListenerTest {
 
-    private lateinit var listener : MeldingFraPdlListener
     private val mockAck = mockk<Acknowledgment>()
     private val mapper = configureObjectMapper()
     private val safClient = mockk<SafClient>(relaxed = true)
-    val personService = mockk<PersonService>()
+    private val personService = mockk<PersonService>()
     private val ack = mockk<Acknowledgment>()
 
+    private lateinit var listener : MeldingFraPdlListener
+    private lateinit var dodsmeldingBehandler : DodsmeldingBehandler
+
+    private lateinit var personhendelse: Personhendelse
     @BeforeEach
     fun setup() {
-        listener = MeldingFraPdlListener(safClient, personService)
-        val ack = mockk<Acknowledgment>()
+        dodsmeldingBehandler = DodsmeldingBehandler(safClient, personService)
+        listener = MeldingFraPdlListener(dodsmeldingBehandler)
         justRun { ack.acknowledge() }
+
+        personhendelse = mockk<Personhendelse> {
+            every { opplysningstype } returns "DOEDSFALL_V1"
+            every { personidenter } returns listOf("12345678901")
+            every { hendelseId } returns "HendelseFraPDL"
+        }
     }
 
     @Test
@@ -57,11 +66,6 @@ class MeldingFraPdlListenerTest {
 
     @Test
     fun `mottaLeesahMelding på dødsfall med gyldig utenlandsk ident henter dokumentmetadata`() {
-        val personhendelse = mockk<Personhendelse> {
-            every { opplysningstype } returns "DOEDSFALL_V1"
-            every { personidenter } returns listOf("12345678901")
-            every { hendelseId } returns "HendelseFraPDL"
-        }
 
         val ident = Ident.bestemIdent("12345678901")
         every { personService.hentPerson(ident) } returns mockk {
@@ -70,9 +74,7 @@ class MeldingFraPdlListenerTest {
             )
         }
 
-        every {
-            safClient.hentDokumentMetadata("12345678901", BrukerIdType.FNR)
-        } returns mockk {
+        every { safClient.hentDokumentMetadata("12345678901", BrukerIdType.FNR) } returns mockk {
             every { data } returns mockk {
                 every { dokumentoversiktBruker } returns mockk {
                     every { journalposter } returns emptyList()
@@ -85,30 +87,18 @@ class MeldingFraPdlListenerTest {
             ack
         )
 
-        verify(exactly = 1) {
-            safClient.hentDokumentMetadata("12345678901", BrukerIdType.FNR)
-        }
+        verify(exactly = 1) { safClient.hentDokumentMetadata("12345678901", BrukerIdType.FNR) }
     }
 
     @Test
     fun `mottaLeesahMelding på dødsfall uten gyldig ident logger melding og kaller ikke saf`() {
-        val personhendelse = mockk<Personhendelse> {
-            every { opplysningstype } returns "DOEDSFALL_V1"
-            every { personidenter } returns listOf("12345678901")
-            every { hendelseId } returns "HendelseFraPDL"
-        }
-
         val ident = Ident.bestemIdent("12345678901")
         every { personService.hentPerson(ident) } returns mockk { every { utenlandskIdentifikasjonsnummer } returns emptyList() }
 
         listener.mottaLeesahMelding(listOf(ConsumerRecord("topic", 0, 1L, personhendelse.hendelseId, personhendelse)), ack)
 
-        verify(exactly = 1) {
-            personService.hentPerson(any())
-        }
-        verify(exactly = 0) {
-            safClient.hentDokumentMetadata(any(), any())
-        }
+        verify(exactly = 1) { personService.hentPerson(any()) }
+        verify(exactly = 0) { safClient.hentDokumentMetadata(any(), any()) }
     }
 
     private fun mockConsumerRecord(personhendelse: List<Personhendelse>): List<ConsumerRecord<String, Personhendelse>> =
