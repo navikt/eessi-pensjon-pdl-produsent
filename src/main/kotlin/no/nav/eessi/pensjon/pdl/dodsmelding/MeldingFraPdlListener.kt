@@ -74,7 +74,7 @@ class MeldingFraPdlListener(
 
                                 if (!landFraIdentUtland.isNullOrEmpty()) {
                                     if (landFraIdentUtland.any { it in gyldigeUtstederland }) {
-                                        logger.info("Har utenlandskIdentifikasjonsnummer, henter dokumentmetadata fra saf")
+                                        logger.info("$landFraIdentUtland har utenlandskIdentifikasjonsnummer, henter dokumentmetadata fra saf")
                                         val responseFraSaf = safClient.hentDokumentMetadata(valgtPersonident, BrukerIdType.FNR)
                                         logger.info("Svar fra saf: $responseFraSaf")
                                     } else {
