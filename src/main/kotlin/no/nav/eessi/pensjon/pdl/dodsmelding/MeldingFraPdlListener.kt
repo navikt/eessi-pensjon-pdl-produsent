@@ -1,12 +1,7 @@
 package no.nav.eessi.pensjon.pdl.dodsmelding
 
 import io.micrometer.core.instrument.Metrics
-import no.nav.eessi.pensjon.klienter.saf.BrukerIdType
-import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.metrics.MetricsHelper
-import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
-import no.nav.eessi.pensjon.personoppslag.pdl.model.Ident
-import no.nav.eessi.pensjon.utils.toJson
 import no.nav.person.pdl.leesah.Personhendelse
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.Logger
@@ -18,21 +13,17 @@ import org.springframework.stereotype.Service
 
 @Service
 class MeldingFraPdlListener(
-    private val safClient: SafClient,
-    private val personService: PersonService,
+    private val dodsmeldingBehandler: DodsmeldingBehandler,
     @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
 ) {
     private val logger = LoggerFactory.getLogger(MeldingFraPdlListener::class.java)
     private val secureLogger = LoggerFactory.getLogger("secureLog")
-
     private val messureOpplysningstype = MessureOpplysningstypeHelper()
-
     private var leesahKafkaListenerMetric : MetricsHelper.Metric = metricsHelper.init("leesahPersonoppslag")
 
     init {
         messureOpplysningstype.clearAll()
     }
-
 
     @KafkaListener(
         autoStartup = "\${pdl.kafka.autoStartup}",
@@ -55,35 +46,7 @@ class MeldingFraPdlListener(
                             secureLogger.info("DOEDSFALL_V1: ${personhendelse}")
                             messureOpplysningstype.addKjent(personhendelse)
 
-                            val valgtPersonident = hentAlleNorskeIdenter(personhendelse)
-
-                            if (valgtPersonident == null) {
-                                logger.warn("Fant ingen gyldig ident i personidenter: ${personhendelse.personidenter}")
-                            } else {
-                                logger.info("Henter informasjon for ident: ${valgtPersonident.take(4)}")
-                                val identFraPdl = Ident.bestemIdent(valgtPersonident)
-
-                                val person = personService.hentPerson(identFraPdl).also { pdlPerson ->
-                                    logger.debug("Henter person: {}", pdlPerson)
-                                }
-
-                                val gyldigeUtstederland = listOf("SWE", "FIN", "POL")
-                                val landFraIdentUtland = person?.utenlandskIdentifikasjonsnummer
-                                    ?.map { it.utstederland }
-                                    ?.toSet().also { logger.debug("Henter land: $it") }
-
-                                if (!landFraIdentUtland.isNullOrEmpty()) {
-                                    if (landFraIdentUtland.any { it in gyldigeUtstederland }) {
-                                        logger.info("$landFraIdentUtland har utenlandskIdentifikasjonsnummer, henter dokumentmetadata fra saf")
-                                        val responseFraSaf = safClient.hentDokumentMetadata(valgtPersonident, BrukerIdType.FNR)
-                                        logger.info("Svar fra saf: $responseFraSaf")
-                                    } else {
-                                        logger.info("${landFraIdentUtland.toJson()} er ikke inkludert i listen: $gyldigeUtstederland, henter ikke dokumentmetadata fra saf")
-                                    }
-                                } else {
-                                    logger.info("Ingen utenlandskIdentifikasjonsnummer funnet, henter ikke dokumentmetadata fra saf")
-                                }
-                            }
+                            dodsmeldingBehandler.behandle(personhendelse)
                         }
                         "BOSTEDSADRESSE_V1", "KONTAKTADRESSE_V1", "OPPHOLDSADRESSE_V1" -> {
                             logger.debug("ADRESSE_V1: ${personhendelse}")
@@ -106,19 +69,6 @@ class MeldingFraPdlListener(
         logger.info("Acket personhendelse")
     }
 
-    private fun hentAlleNorskeIdenter(personhendelse: Personhendelse?): String? {
-        val valgtPersonident = personhendelse?.personidenter
-            ?.firstOrNull { ident ->
-                try {
-                    Ident.bestemIdent(ident)
-                    true
-                } catch (e: Exception) {
-                    logger.debug("Ignorerer ident som ikke kan bestemmes: $ident", e)
-                    false
-                }
-            }
-        return valgtPersonident
-    }
 
     class MessureOpplysningstypeHelper() {
 
