@@ -6,6 +6,7 @@ import no.nav.eessi.pensjon.config.RestTemplateConfig
 import no.nav.eessi.pensjon.eux.klient.EuxKlientAsSystemUser
 import no.nav.eessi.pensjon.gcp.GcpStorageService
 import no.nav.eessi.pensjon.klienter.norg2.Norg2Klient
+import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonClient
@@ -46,6 +47,7 @@ import org.springframework.web.client.RestTemplate
     MockkBean(name = "kodeverkRestTemplate", classes = [RestTemplate::class]),
     //service / clients
     MockkBean(name = "personService", classes = [PersonService::class]),
+    MockkBean(name = "safClient", classes = [SafClient::class]),
     MockkBean(name = "euxKlient", classes = [EuxKlientAsSystemUser::class]),
     MockkBean(name = "gcpStorageService", classes = [GcpStorageService::class]),
     MockkBean(name = "norg2Klient", classes = [Norg2Klient::class]),
