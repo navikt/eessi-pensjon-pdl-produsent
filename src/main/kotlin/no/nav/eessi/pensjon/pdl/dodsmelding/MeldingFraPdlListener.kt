@@ -6,6 +6,7 @@ import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Ident
+import no.nav.eessi.pensjon.utils.toJson
 import no.nav.person.pdl.leesah.Personhendelse
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.Logger
@@ -77,7 +78,7 @@ class MeldingFraPdlListener(
                                         val responseFraSaf = safClient.hentDokumentMetadata(valgtPersonident, BrukerIdType.FNR)
                                         logger.info("Svar fra saf: $responseFraSaf")
                                     } else {
-                                        logger.info("$landFraIdentUtland er ikke inkludert i listen: $gyldigeUtstederland, henter ikke dokumentmetadata fra saf")
+                                        logger.info("${landFraIdentUtland.toJson()} er ikke inkludert i listen: $gyldigeUtstederland, henter ikke dokumentmetadata fra saf")
                                     }
                                 } else {
                                     logger.info("Ingen utenlandskIdentifikasjonsnummer funnet, henter ikke dokumentmetadata fra saf")
