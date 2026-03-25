@@ -38,7 +38,6 @@ class MeldingFraPdlListener(
             consumerRecords.forEach { record ->
                 leesahKafkaListenerMetric.measure {
                     val personhendelse = record.value()
-                    logger.info("Undersøker type: ${personhendelse.opplysningstype}")
 
                     when (personhendelse.opplysningstype) {
                         "DOEDSFALL_V1" -> {
@@ -49,11 +48,9 @@ class MeldingFraPdlListener(
                             dodsmeldingBehandler.behandle(personhendelse)
                         }
                         "BOSTEDSADRESSE_V1", "KONTAKTADRESSE_V1", "OPPHOLDSADRESSE_V1" -> {
-                            logger.debug("ADRESSE_V1: ${personhendelse}")
                             messureOpplysningstype.addKjent(personhendelse)
                         }
                         else -> {
-                            logger.debug("Behandler ikke ${personhendelse.opplysningstype}, ignorerer melding")
                             messureOpplysningstype.addUkjent(personhendelse)
                         }
                     }
