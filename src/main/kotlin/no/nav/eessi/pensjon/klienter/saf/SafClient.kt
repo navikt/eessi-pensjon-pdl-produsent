@@ -20,9 +20,11 @@ import org.springframework.web.client.exchange
 import java.util.Base64
 
 @Component
-class SafClient(private val safGraphQlOidcRestTemplate: RestTemplate,
-                private val hentRestUrl: RestTemplate,
-                @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()) {
+class SafClient(
+    private val safGraphQlOidcRestTemplate: RestTemplate,
+    private val hentRestUrlRestTemplate: RestTemplate,
+    @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
+) {
 
     private val logger = LoggerFactory.getLogger(SafClient::class.java)
 
@@ -79,7 +81,7 @@ class SafClient(private val safGraphQlOidcRestTemplate: RestTemplate,
                 this.contentType = MediaType.APPLICATION_PDF
             })
 
-            val response = hentRestUrl.exchange<Resource>(
+            val response = hentRestUrlRestTemplate.exchange<Resource>(
                 path,
                 HttpMethod.GET,
                 entity
