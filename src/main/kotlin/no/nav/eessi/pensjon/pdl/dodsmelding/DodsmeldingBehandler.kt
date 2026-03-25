@@ -1,6 +1,7 @@
 package no.nav.eessi.pensjon.pdl.dodsmelding
 
 import no.nav.eessi.pensjon.klienter.saf.BrukerIdType
+import no.nav.eessi.pensjon.klienter.saf.Journalpost
 import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Ident
@@ -45,8 +46,7 @@ class DodsmeldingBehandler(
 				responseFraSaf.data.dokumentoversiktBruker.journalposter.forEach { journalpost ->
 					logger.info("JournalpostId: ${journalpost.journalpostId}, datoOpprettet: ${journalpost.datoOpprettet}, tittel: ${journalpost.tittel}, journalfoerendeEnhet: ${journalpost.tilleggsopplysninger}")
 
-					val bucid = journalpost.tilleggsopplysninger
-					.firstNotNullOfOrNull { tilleggsopplysning -> tilleggsopplysning["eessi_pensjon_bucid"] }
+					val bucid = hentBucId(journalpost)
 
 					if (bucid != null) {
 					    val dokumentFraSaf = safClient.hentDokumentInnhold(journalpost.journalpostId, bucid, "ARKIV")
@@ -61,6 +61,19 @@ class DodsmeldingBehandler(
 		} else {
 			logger.info("Ingen utenlandskIdentifikasjonsnummer funnet, henter ikke dokumentmetadata fra saf")
 		}
+	}
+
+	private fun hentBucId(journalpost: Journalpost): String? {
+		val bucid = journalpost.tilleggsopplysninger
+			.firstNotNullOfOrNull { tilleggsopplysning ->
+				val nokkel = tilleggsopplysning["nokkel"]
+				if (nokkel == "eessi_pensjon_bucid") {
+					tilleggsopplysning["verdi"]
+				} else {
+					null
+				}
+			}
+		return bucid
 	}
 
 	private fun hentAlleNorskeIdenter(personhendelse: Personhendelse?): String? {

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.HttpServerErrorException
 import org.springframework.web.client.RestTemplate
+import org.springframework.web.client.exchange
 import java.util.Base64
 
 @Component
@@ -68,31 +69,6 @@ class SafClient(private val safGraphQlOidcRestTemplate: RestTemplate,
 
                 mapJsonToAny(response.body!!)
 
-            } catch (ce: HttpClientErrorException) {
-                if (ce.statusCode == HttpStatus.FORBIDDEN) {
-                    logger.error(
-                        "En feil oppstod under henting av dokument metadata fra SAF for aktørID $ident, ikke tilgang",
-                        ce
-                    )
-                    throw HttpClientErrorException(
-                        ce.statusCode,
-                        "Du har ikke tilgang til dette dokument-temaet. Kontakt nærmeste leder for å få tilgang."
-                    )
-                }
-                logger.error("En feil oppstod under henting av dokument metadata fra SAF: ${ce.responseBodyAsString}")
-                throw HttpClientErrorException(
-                    ce.statusCode,
-                    "En feil oppstod under henting av dokument metadata fra SAF: ${ce.responseBodyAsString}"
-                )
-            } catch (se: HttpServerErrorException) {
-                logger.error(
-                    "En feil oppstod under henting av dokument metadata fra SAF: ${se.responseBodyAsString}",
-                    se
-                )
-                throw HttpServerErrorException(
-                    se.statusCode,
-                    "En feil oppstod under henting av dokument metadata fra SAF: ${se.responseBodyAsString}"
-                )
             } catch (ex: Exception) {
                 logger.error("En feil oppstod under henting av dokument metadata fra SAF: $ex")
                 throw HttpServerErrorException(
@@ -110,24 +86,26 @@ class SafClient(private val safGraphQlOidcRestTemplate: RestTemplate,
     ): HentdokumentInnholdResponse {
         return try {
             logger.info("Henter dokumentinnhold for journalpostId: $journalpostId, dokumentInfoId: $dokumentInfoId, variantformat: $variantFormat")
-            val variantFormatEnum = VariantFormat.valueOf(variantFormat)
 
-            val path = "/$journalpostId/$dokumentInfoId/$variantFormatEnum"
-            val headers = HttpHeaders()
-            headers.contentType = MediaType.APPLICATION_PDF
+            val path = "/$journalpostId/$dokumentInfoId/${VariantFormat.valueOf(variantFormat)}"
 
-            val response = safGraphQlOidcRestTemplate.exchange(
+            val entity = HttpEntity("/", HttpHeaders().apply {
+                this.contentType = MediaType.APPLICATION_PDF
+            })
+
+            val response = safGraphQlOidcRestTemplate.exchange<Resource>(
                 path,
                 HttpMethod.GET,
-                HttpEntity("/", headers),
-                Resource::class.java
+                entity
             )
 
-            val filnavn = response.headers.contentDisposition.filename
+            val filename = response.headers.contentDisposition.filename!!
             val contentType = response.headers.contentType!!.toString()
 
-            val dokumentInnholdBase64 = String(Base64.getEncoder().encode(response.body!!.inputStream.readBytes()))
-            HentdokumentInnholdResponse(dokumentInnholdBase64, filnavn!!, contentType)
+            val documentBytes = response.body!!.inputStream.readBytes()
+            val documentBase64 = Base64.getEncoder().encodeToString(documentBytes)
+
+            HentdokumentInnholdResponse(documentBase64, filename, contentType)
 
         } catch (ex: Exception) {
             logger.error("En feil oppstod under henting av dokumentInnhold fra SAF: $ex")
@@ -137,7 +115,6 @@ class SafClient(private val safGraphQlOidcRestTemplate: RestTemplate,
             )
         }
     }
-
 
     @Retryable(
         exclude = [HttpClientErrorException.NotFound::class],
