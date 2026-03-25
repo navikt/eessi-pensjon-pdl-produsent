@@ -27,7 +27,7 @@ class MeldingFraPdlListener(
 
     @KafkaListener(
         autoStartup = "\${pdl.kafka.autoStartup}",
-//        batch = "true",
+        batch = "true",
         topics = ["pdl.leesah-v1"],
         groupId = "eessi-pensjon-pdl-produsent",
         containerFactory = "kafkaAivenHendelseListenerAvroLatestContainerFactory",

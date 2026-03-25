@@ -23,7 +23,11 @@ data class SafRequest(
                     "dokumenter {" +
                         "dokumentInfoId " +
                         "tittel " +
-                    "}" +
+                        "dokumentvarianter {" +
+                            "filnavn " +
+                            "variantformat" +
+                        "} " +
+                    "} " +
                 "}}}",
         val variables: Variables
 ) {
