@@ -49,7 +49,7 @@ class MeldingFraPdlListenerTest {
     fun `personalhendelse på sivilstand skal gå ok`() {
         val hendelse = hentHendelsefraFil("/leesha/leesha_sivilstandhendelse1.json")
 
-        listener.mottaLeesahMelding(mockConsumerRecord(hendelse), mockAck)
+        listener.mottaLeesahMelding(mockConsumerRecord(listOf(hendelse)), mockAck)
     }
 
     @Test
@@ -59,7 +59,7 @@ class MeldingFraPdlListenerTest {
         val ident = Ident.bestemIdent("1000016953359")
         every { personService.hentPerson(ident) } returns null
 
-        listener.mottaLeesahMelding(mockConsumerRecord(hendelse1), mockAck)
+        listener.mottaLeesahMelding(mockConsumerRecord(listOf(hendelse1)), mockAck)
 
         verify(exactly = 0 ) { mockAck.acknowledge() }
     }
@@ -83,7 +83,7 @@ class MeldingFraPdlListenerTest {
         }
 
         listener.mottaLeesahMelding(
-            ConsumerRecord("topic", 0, 1L, personhendelse.hendelseId, personhendelse),
+            listOf(ConsumerRecord("topic", 0, 1L, personhendelse.hendelseId, personhendelse)),
             ack
         )
 
@@ -95,15 +95,16 @@ class MeldingFraPdlListenerTest {
         val ident = Ident.bestemIdent("12345678901")
         every { personService.hentPerson(ident) } returns mockk { every { utenlandskIdentifikasjonsnummer } returns emptyList() }
 
-        listener.mottaLeesahMelding(ConsumerRecord("topic", 0, 1L, personhendelse.hendelseId, personhendelse), ack)
+        listener.mottaLeesahMelding(listOf(ConsumerRecord("topic", 0, 1L, personhendelse.hendelseId, personhendelse)), ack)
 
         verify(exactly = 1) { personService.hentPerson(any()) }
         verify(exactly = 0) { safClient.hentDokumentMetadata(any(), any()) }
     }
 
-    private fun mockConsumerRecord(personhendelse: Personhendelse): ConsumerRecord<String, Personhendelse> =
-            ConsumerRecord("topic", 0, 1L, personhendelse.hendelseId, personhendelse)
-
+    private fun mockConsumerRecord(personhendelse: List<Personhendelse>): List<ConsumerRecord<String, Personhendelse>> =
+        personhendelse.map {
+            ConsumerRecord("topic", 0, 1L, it.hendelseId, it)
+        }
 
     private fun hentHendelsefraFil(hendelseJson: String): Personhendelse =
         mapper.readValue(javaClass.getResource(hendelseJson).readText(), Personhendelse::class.java)
