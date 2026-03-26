@@ -104,25 +104,8 @@ class SafClient(
         }
     }
 
-//    @Retryable(
-//        exclude = [HttpClientErrorException.NotFound::class],
-//        backoff = Backoff(delayExpression = "@retrySafConfig.initialRetryMillis", delay = 10000L, maxDelay = 100000L, multiplier = 3.0),
-//        listeners  = ["retrySafLogger"]
-//    )
     private fun genererQueryByIdent(ident: String, identType: BrukerIdType): String {
         val request = SafRequest(variables = Variables(BrukerId(ident, identType), 10000))
         return request.toJson()
     }
 }
-
-//@Profile("!retryConfigOverride")
-//@Component
-//data class RetrySafConfig(val initialRetryMillis: Long = 20000L)
-
-//@Component
-//class RetrySafLogger : RetryListener {
-//    private val logger = LoggerFactory.getLogger(RetrySafLogger::class.java)
-//    override fun <T : Any?, E : Throwable?> onError(context: RetryContext?, callback: RetryCallback<T, E>?, throwable: Throwable?) {
-//        logger.warn("Feil under henting av data fra SAF - try #${context?.retryCount} - ${throwable?.toString()}", throwable)
-//    }
-//}
