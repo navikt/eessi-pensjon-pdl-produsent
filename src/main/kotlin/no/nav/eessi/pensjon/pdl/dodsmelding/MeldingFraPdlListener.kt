@@ -95,8 +95,6 @@ class MeldingFraPdlListener(
         fun clearAll() {
             knownType.clear()
             unkownType.clear()
-            logger.info("messureOpplysningstype all cleared")
         }
-
     }
 }
