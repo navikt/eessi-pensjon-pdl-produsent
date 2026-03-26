@@ -35,7 +35,7 @@ class MeldingFraPdlListener(
     )
     fun mottaLeesahMelding(consumerRecord: ConsumerRecord<String, Personhendelse>, ack: Acknowledgment) {
         try {
-            logger.info("Behandler ${consumerRecord} meldinger, firstOffset=${consumerRecord.offset()}")
+            logger.info("Behandler ${consumerRecord.value().opplysningstype} meldinger, firstOffset=${consumerRecord.offset()}")
 //            val record = consumerRecords.value()
 //            consumerRecords.forEach { record ->
                 leesahKafkaListenerMetric.measure {
