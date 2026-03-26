@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.Metrics
 import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.person.pdl.leesah.Personhendelse
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -27,17 +28,18 @@ class MeldingFraPdlListener(
 
     @KafkaListener(
         autoStartup = "\${pdl.kafka.autoStartup}",
-        batch = "true",
+//        batch = "true",
         topics = ["pdl.leesah-v1"],
         groupId = "eessi-pensjon-pdl-produsent",
         containerFactory = "kafkaAivenHendelseListenerAvroLatestContainerFactory",
     )
-    fun mottaLeesahMelding(consumerRecords: List<ConsumerRecord<String, Personhendelse>>, ack: Acknowledgment) {
+    fun mottaLeesahMelding(consumerRecord: ConsumerRecord<String, Personhendelse>, ack: Acknowledgment) {
         try {
-            logger.info("Behandler ${consumerRecords.size} meldinger, firstOffset=${consumerRecords.first().offset()}, lastOffset=${consumerRecords.last().offset()}")
-            consumerRecords.forEach { record ->
+            logger.info("Behandler ${consumerRecord} meldinger, firstOffset=${consumerRecord.offset()}")
+//            val record = consumerRecords.value()
+//            consumerRecords.forEach { record ->
                 leesahKafkaListenerMetric.measure {
-                    val personhendelse = record.value()
+                    val personhendelse = consumerRecord.value()
 
                     when (personhendelse.opplysningstype) {
                         "DOEDSFALL_V1" -> {
@@ -54,7 +56,7 @@ class MeldingFraPdlListener(
                             messureOpplysningstype.addUkjent(personhendelse)
                         }
                     }
-                }
+//                }
             }
         } catch (e: Exception) {
             logger.error("Behandling av hendelse feilet", e)
