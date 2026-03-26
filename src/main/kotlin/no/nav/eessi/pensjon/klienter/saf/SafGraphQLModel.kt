@@ -18,8 +18,6 @@ data class SafRequest(
                     "datoOpprettet " +
                     "tittel " +
                     "journalfoerendeEnhet " +
-                    "tema " +
-                    "behandlingstema " +
                     "dokumenter {" +
                         "dokumentInfoId " +
                         "tittel " +
