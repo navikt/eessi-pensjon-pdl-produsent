@@ -74,6 +74,9 @@ class RestTemplateConfig(
     @Bean
     fun safGraphQlOidcRestTemplate() = restTemplate(graphQlUrl, bearerTokenInterceptor(clientProperties("saf-credentials"), oAuth2AccessTokenService!!))
 
+    @Bean
+    fun hentRestUrlRestTemplate() = restTemplate(hentRestUrl, bearerTokenInterceptor(clientProperties("saf-credentials"), oAuth2AccessTokenService!!))
+
 
     private fun restTemplate(url: String, tokenIntercetor: ClientHttpRequestInterceptor) : RestTemplate {
         logger.info("init restTemplate: $url")

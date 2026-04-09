@@ -72,7 +72,7 @@ internal class OppgaveHandlerTest {
 
         val meldingSlot = slot<String>()
         every { kafkaTemplate.sendDefault(any(), capture(meldingSlot)).get() } returns mockk()
-        every { safClient.hentDokumentMetadata(any()) } returns hentMetadataResponse
+        every { safClient.hentDokumentMetadata(ident = any(), identType = BrukerIdType.AKTOERID) } returns hentMetadataResponse
 
         val actual = oppgaveHandler.opprettOppgave(oppgaveData)
 
@@ -104,7 +104,7 @@ internal class OppgaveHandlerTest {
 
         val meldingSlot = slot<String>()
         every { kafkaTemplate.sendDefault(any(), capture(meldingSlot)).get() } returns mockk()
-        every { safClient.hentDokumentMetadata(any()) } returns hentMetadataResponse
+        every { safClient.hentDokumentMetadata(any(), BrukerIdType.AKTOERID) } returns hentMetadataResponse
 
         val actual = oppgaveHandler.opprettOppgave(oppgaveData)
 
@@ -138,7 +138,7 @@ internal class OppgaveHandlerTest {
         every { journalPost.behandlingstema } returns ALDERSPENSJON.name
         every { journalPost.tilleggsopplysninger } returns listOf(mapOf(Pair("eessi_pensjon_bucid", RINA_ID)))
         every { mockEnhet.data.dokumentoversiktBruker.journalposter } returns listOf(journalPost)
-        every { safClient.hentDokumentMetadata(any()) } returns mockEnhet
+        every { safClient.hentDokumentMetadata(any(), BrukerIdType.AKTOERID) } returns mockEnhet
         every { norg2Service.hentArbeidsfordelingEnhet(any()) } returns Enhet.PENSJON_UTLAND
 
         oppgaveHandler.opprettOppgave(oppgave)

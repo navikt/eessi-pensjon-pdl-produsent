@@ -18,8 +18,15 @@ data class SafRequest(
                     "datoOpprettet " +
                     "tittel " +
                     "journalfoerendeEnhet " +
-                    "tema " +
                     "behandlingstema " +
+                    "dokumenter {" +
+                        "dokumentInfoId " +
+                        "tittel " +
+                        "dokumentvarianter {" +
+                            "filnavn " +
+                            "variantformat" +
+                        "} " +
+                    "} " +
                 "}}}",
         val variables: Variables
 ) {
@@ -73,7 +80,7 @@ data class Journalpost(
     val datoOpprettet: String,
     val tittel: String?,
     val journalfoerendeEnhet: String?,
-    val tema: String,
+    val tema: String? = null,
     val dokumenter: List<Dokument>? = null,
     val behandlingstema: String? = null
 )

@@ -1,5 +1,8 @@
 package no.nav.eessi.pensjon.config
 
+import io.confluent.kafka.serializers.KafkaAvroDeserializer
+import no.nav.eessi.pensjon.oppgaverouting.logger
+import no.nav.person.pdl.leesah.Personhendelse
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
@@ -13,12 +16,9 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import org.springframework.kafka.annotation.EnableKafka
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory
-import org.springframework.kafka.core.ConsumerFactory
-import org.springframework.kafka.core.DefaultKafkaConsumerFactory
-import org.springframework.kafka.core.DefaultKafkaProducerFactory
-import org.springframework.kafka.core.KafkaTemplate
-import org.springframework.kafka.core.ProducerFactory
+import org.springframework.kafka.core.*
 import org.springframework.kafka.listener.ContainerProperties
+import org.springframework.kafka.listener.DefaultErrorHandler
 import java.time.Duration
 
 @EnableKafka
@@ -65,6 +65,11 @@ class KafkaConfig(
     }
 
     @Bean
+    fun kafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, String>? {
+        return sedKafkaListenerContainerFactory()
+    }
+
+    @Bean
     fun sedKafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, String>? {
         val factory = ConcurrentKafkaListenerContainerFactory<String, String>()
         factory.setConsumerFactory(kafkaConsumerFactory())
@@ -75,7 +80,49 @@ class KafkaConfig(
         }
         return factory
     }
+    @Bean
+    fun kafkaAivenHendelseListenerAvroLatestContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, Personhendelse> {
+        val factory = ConcurrentKafkaListenerContainerFactory<String, Personhendelse>()
+        factory.containerProperties.ackMode = ContainerProperties.AckMode.MANUAL
+        factory.containerProperties.setAuthExceptionRetryInterval(Duration.ofSeconds(2))
 
+        val configMap: MutableMap<String, Any> = consumerConfigsLatestAvro()
+        populerCommonConfig(configMap)
+
+        factory.setConsumerFactory(
+            DefaultKafkaConsumerFactory(
+                configMap
+            )
+        )
+        factory.setCommonErrorHandler(kafkaRestartingErrorHandler())
+        return factory
+    }
+
+    fun kafkaRestartingErrorHandler(): DefaultErrorHandler {
+        return DefaultErrorHandler({ record, exception ->
+            logger.error("Kafka error, restarting container", exception)
+        }, org.springframework.util.backoff.FixedBackOff(5000, 3))
+    }
+
+    private fun consumerConfigsLatestAvro(): MutableMap<String, Any> {
+        val schemaRegisty = System.getenv("KAFKA_SCHEMA_REGISTRY") ?: throw RuntimeException("KAFKA_BROKERS må være satt i miljøet")
+        val schemaRegistryUser = System.getenv("KAFKA_SCHEMA_REGISTRY_USER") ?: throw RuntimeException("KAFKA_BROKERS må være satt i miljøet")
+        val schemaRegistryPassword = System.getenv("KAFKA_SCHEMA_REGISTRY_PASSWORD") ?: throw RuntimeException("KAFKA_BROKERS må være satt i miljøet")
+        logger.info("Setter opp consumer med følgende konfigurasjon: bootstrapServers=$bootstrapServers, schemaRegistry=$schemaRegisty, securityProtocol=$securityProtocol, schemaRegistryUser=$schemaRegistryUser")
+        val consumerConfigs =
+            mutableMapOf<String, Any>(
+                ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
+                "schema.registry.url" to schemaRegisty,
+                "auth.exception.retry.interval" to "30s",
+                "basic.auth.credentials.source" to "USER_INFO",
+                "basic.auth.user.info" to "$schemaRegistryUser:$schemaRegistryPassword",
+                "specific.avro.reader" to "true",
+                ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java.name,
+                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to KafkaAvroDeserializer::class.java.name,
+                ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to "earliest",
+            )
+        return consumerConfigs.also { logger.debug("Kafka consumer configs: {}", it) }
+    }
     private fun populerCommonConfig(configMap: MutableMap<String, Any>) {
         configMap[SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG] = keystorePath
         configMap[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = credstorePassword

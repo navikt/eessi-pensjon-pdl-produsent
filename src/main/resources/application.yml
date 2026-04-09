@@ -30,7 +30,13 @@ no.nav.security.jwt:
 
 METRICS_REQUESTFILTER_ENABLE: true
 
+pdl:
+  kafka:
+    autoStartup: true
+
 kafka:
+  consumer:
+    group-id: ${KAFKA_GROUP_ID}
   oppgave:
     topic: ${KAFKA_OPPGAVE_TOPIC}
     groupid: eessi-pensjon-pdl-produsent-group
@@ -62,3 +68,16 @@ management:
   endpoint:
     info:
       show-details: "ALWAYS"
+
+spring:
+  kafka:
+    properties:
+      schema:
+        registry:
+          url: ${KAFKA_SCHEMA_REGISTRY}
+      basic:
+        auth:
+          credentials:
+            source: USER_INFO
+          user:
+            info: ${KAFKA_SCHEMA_REGISTRY_USER}:${KAFKA_SCHEMA_REGISTRY_PASSWORD}

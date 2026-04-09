@@ -4,93 +4,110 @@ import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.annotation.Profile
+import org.springframework.core.io.Resource
 import org.springframework.http.*
-import org.springframework.retry.RetryCallback
-import org.springframework.retry.RetryContext
-import org.springframework.retry.RetryListener
-import org.springframework.retry.annotation.Backoff
-import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Component
-import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.HttpServerErrorException
 import org.springframework.web.client.RestTemplate
+import org.springframework.web.client.exchange
+import java.util.*
 
 @Component
-class SafClient(private val safGraphQlOidcRestTemplate: RestTemplate,
-                @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()) {
+class SafClient(
+    private val safGraphQlOidcRestTemplate: RestTemplate,
+    private val hentRestUrlRestTemplate: RestTemplate,
+    @Autowired(required = false) private val metricsHelper: MetricsHelper = MetricsHelper.ForTest()
+) {
 
     private val logger = LoggerFactory.getLogger(SafClient::class.java)
 
-    private var HentDokumentMetadata: MetricsHelper.Metric
-    private var HentDokumentInnhold: MetricsHelper.Metric
-    private var HentRinaSakIderFraDokumentMetadata: MetricsHelper.Metric
+    private var hentDokumentMetadata: MetricsHelper.Metric
+    private var hentDokumentInnhold: MetricsHelper.Metric
+    private var hentRinaSakIderFraDokumentMetadata: MetricsHelper.Metric
 
     init {
-        HentDokumentMetadata = metricsHelper.init("HentDokumentMetadata", ignoreHttpCodes = listOf(HttpStatus.FORBIDDEN))
-        HentDokumentInnhold = metricsHelper.init("HentDokumentInnhold", ignoreHttpCodes = listOf(HttpStatus.FORBIDDEN, HttpStatus.UNAUTHORIZED))
-        HentRinaSakIderFraDokumentMetadata = metricsHelper.init("HentRinaSakIderFraDokumentMetadata", ignoreHttpCodes = listOf(HttpStatus.FORBIDDEN))
+        hentDokumentMetadata = metricsHelper.init("HentDokumentMetadata", ignoreHttpCodes = listOf(HttpStatus.FORBIDDEN))
+        hentDokumentInnhold = metricsHelper.init("HentDokumentInnhold", ignoreHttpCodes = listOf(HttpStatus.FORBIDDEN, HttpStatus.UNAUTHORIZED))
+        hentRinaSakIderFraDokumentMetadata = metricsHelper.init("HentRinaSakIderFraDokumentMetadata", ignoreHttpCodes = listOf(HttpStatus.FORBIDDEN))
     }
 
-    @Retryable(
-        exclude = [HttpClientErrorException.NotFound::class],
-        backoff = Backoff(delayExpression = "@retrySafConfig.initialRetryMillis", delay = 10000L, maxDelay = 100000L, multiplier = 3.0),
-        listeners  = ["retrySafLogger"]
-    )
-    fun hentDokumentMetadata(aktoerId: String) : HentMetadataResponse {
-        logger.info("Henter dokument metadata for aktørid: $aktoerId")
+    fun hentDokumentMetadata(ident: String, identType: BrukerIdType): HentMetadataResponse {
+        logger.info("Henter dokument metadata for aktørid: $ident")
 
-        return HentDokumentMetadata.measure {
+        return hentDokumentMetadata.measure {
             try {
                 val headers = HttpHeaders()
                 headers.contentType = MediaType.APPLICATION_JSON
-                val httpEntity = HttpEntity(genererQuery(aktoerId), headers)
-                val response = safGraphQlOidcRestTemplate.exchange("/",
-                        HttpMethod.POST,
-                        httpEntity,
-                        String::class.java)
+                val httpEntity = HttpEntity(genererQueryByIdent(ident, identType), headers)
+                val response = safGraphQlOidcRestTemplate.exchange(
+                    "/",
+                    HttpMethod.POST,
+                    httpEntity,
+                    String::class.java
+                )
 
                 logger.info("Response fra journalføring: ${response.body}")
 
                 mapJsonToAny(response.body!!)
 
-            } catch (ce: HttpClientErrorException) {
-                if(ce.statusCode == HttpStatus.FORBIDDEN) {
-                    logger.error("En feil oppstod under henting av dokument metadata fra SAF for aktørID $aktoerId, ikke tilgang", ce)
-                    throw HttpClientErrorException(ce.statusCode, "Du har ikke tilgang til dette dokument-temaet. Kontakt nærmeste leder for å få tilgang.")
-                }
-                logger.error("En feil oppstod under henting av dokument metadata fra SAF: ${ce.responseBodyAsString}")
-                throw HttpClientErrorException( ce.statusCode, "En feil oppstod under henting av dokument metadata fra SAF: ${ce.responseBodyAsString}")
-            } catch (se: HttpServerErrorException) {
-                logger.error("En feil oppstod under henting av dokument metadata fra SAF: ${se.responseBodyAsString}", se)
-                throw HttpServerErrorException(se.statusCode, "En feil oppstod under henting av dokument metadata fra SAF: ${se.responseBodyAsString}")
             } catch (ex: Exception) {
                 logger.error("En feil oppstod under henting av dokument metadata fra SAF: $ex")
-                throw HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "En feil oppstod under henting av dokument metadata fra SAF")
+                throw HttpServerErrorException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "En feil oppstod under henting av dokument metadata fra SAF"
+                )
             }
         }
     }
 
-    @Retryable(
-        exclude = [HttpClientErrorException.NotFound::class],
-        backoff = Backoff(delayExpression = "@retrySafConfig.initialRetryMillis", delay = 10000L, maxDelay = 100000L, multiplier = 3.0),
-        listeners  = ["retrySafLogger"]
-    )
+    fun hentDokumentInnhold(
+        journalpostId: String,
+        dokumentInfoId: String,
+        variantFormat: String
+    ): HentdokumentInnholdResponse? {
+        return try {
+            logger.info("Henter dokumentinnhold for journalpostId: $journalpostId, dokumentInfoId: $dokumentInfoId, variantformat: $variantFormat")
 
-    private fun genererQuery(aktoerId: String): String {
-        val request = SafRequest(variables = Variables(BrukerId(aktoerId, BrukerIdType.AKTOERID), 10000))
-        return request.toJson()
+            val path = "/$journalpostId/$dokumentInfoId/${VariantFormat.valueOf(variantFormat)}"
+
+            val entity = HttpEntity("/", HttpHeaders().apply {
+                this.contentType = MediaType.APPLICATION_PDF
+            })
+
+            val response = hentRestUrlRestTemplate.exchange<Resource>(
+                path,
+                HttpMethod.GET,
+                entity
+            )
+
+            if (!response.statusCode.is2xxSuccessful) {
+                logger.warn("Ugyldig respons fra SAF hentDokumentInnhold, status: ${response.statusCode}")
+                return null
+            }
+
+            val contentDisposition = response.headers.contentDisposition
+            val filename = contentDisposition.filename
+            val contentType = response.headers.contentType?.toString()
+            val body = response.body
+
+            if (filename.isNullOrBlank() || contentType.isNullOrBlank() || body == null) {
+                logger.warn("Mangler forventede headere eller body i respons fra SAF hentDokumentInnhold")
+                return null
+            }
+
+            val documentBytes = body.inputStream.readBytes()
+            val documentBase64 = Base64.getEncoder().encodeToString(documentBytes)
+
+            HentdokumentInnholdResponse(documentBase64, filename, contentType)
+
+        } catch (ex: Exception) {
+            logger.error("En feil oppstod under henting av dokumentInnhold fra SAF: $ex")
+            return null
+        }
     }
-}
 
-@Profile("!retryConfigOverride")
-@Component
-data class RetrySafConfig(val initialRetryMillis: Long = 20000L)
-
-@Component
-class RetrySafLogger : RetryListener {
-    private val logger = LoggerFactory.getLogger(RetrySafLogger::class.java)
-    override fun <T : Any?, E : Throwable?> onError(context: RetryContext?, callback: RetryCallback<T, E>?, throwable: Throwable?) {
-        logger.warn("Feil under henting av data fra SAF - try #${context?.retryCount} - ${throwable?.toString()}", throwable)
+    private fun genererQueryByIdent(ident: String, identType: BrukerIdType): String {
+        val request = SafRequest(variables = Variables(BrukerId(ident, identType), 10000))
+        return request.toJson()
     }
 }
