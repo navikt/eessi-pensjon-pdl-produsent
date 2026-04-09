@@ -54,7 +54,7 @@ class DodsmeldingBehandler(
 
 					journalpost.dokumenter?.firstNotNullOfOrNull { it.dokumentInfoId }?.let { dokumentInfoId ->
 						val dokumentFraSaf = safClient.hentDokumentInnhold(journalpost.journalpostId, dokumentInfoId, "ARKIV")
-						logger.info("ResponseFraSaf: {}", dokumentFraSaf.toJson())
+						logger.info("ResponseFraSaf: {}", dokumentFraSaf?.toJson())
 					}
 				}
 				logger.info("Svar fra saf: $responseFraSaf")
@@ -77,6 +77,7 @@ class DodsmeldingBehandler(
 
 	private fun hentAlleNorskeIdenter(personhendelse: Personhendelse?): String? {
 		val valgtPersonident = personhendelse?.personidenter
+			?.filter { it.length > 10 }
 			?.firstOrNull { ident ->
 				try {
 					Ident.bestemIdent(ident)
