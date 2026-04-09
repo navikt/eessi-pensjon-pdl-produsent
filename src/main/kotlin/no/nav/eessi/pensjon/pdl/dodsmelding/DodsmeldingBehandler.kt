@@ -38,29 +38,27 @@ class DodsmeldingBehandler(
 			?.map { it.utstederland }
 			?.toSet().also { logger.debug("Henter land: {}", it) }
 
-		if (!landFraIdentUtland.isNullOrEmpty()) {
-			if (landFraIdentUtland.any { it in gyldigeUtstederland }) {
+		when {
+			landFraIdentUtland.isNullOrEmpty() -> {
+				logger.info("Ingen utenlandskIdentifikasjonsnummer funnet, henter ikke dokumentmetadata fra saf")
+			}
+			landFraIdentUtland.none { it in gyldigeUtstederland } -> {
+				logger.info("${landFraIdentUtland.toJson()} er ikke inkludert i listen: $gyldigeUtstederland, henter ikke dokumentmetadata fra saf")
+			}
+			else -> {
 				logger.info("$landFraIdentUtland har utenlandskIdentifikasjonsnummer, henter dokumentmetadata fra saf")
 				val responseFraSaf = safClient.hentDokumentMetadata(valgtPersonident, BrukerIdType.FNR)
 
 				responseFraSaf.data.dokumentoversiktBruker.journalposter.forEach { journalpost ->
 					logger.info("JournalpostId: ${journalpost.journalpostId}, datoOpprettet: ${journalpost.datoOpprettet}, tittel: ${journalpost.tittel}, journalfoerendeEnhet: ${journalpost.tilleggsopplysninger}")
 
-					val dokumentInfoId =  journalpost.dokumenter?.firstNotNullOfOrNull { it.dokumentInfoId }
-//					val bucid = hentBucId(journalpost)
-
-					if (dokumentInfoId != null) {
-					    val dokumentFraSaf = safClient.hentDokumentInnhold(journalpost.journalpostId, dokumentInfoId, "ARKIV")
+					journalpost.dokumenter?.firstNotNullOfOrNull { it.dokumentInfoId }?.let { dokumentInfoId ->
+						val dokumentFraSaf = safClient.hentDokumentInnhold(journalpost.journalpostId, dokumentInfoId, "ARKIV")
 						logger.info("ResponseFraSaf: {}", dokumentFraSaf.toJson())
 					}
 				}
-
 				logger.info("Svar fra saf: $responseFraSaf")
-			} else {
-				logger.info("${landFraIdentUtland.toJson()} er ikke inkludert i listen: $gyldigeUtstederland, henter ikke dokumentmetadata fra saf")
 			}
-		} else {
-			logger.info("Ingen utenlandskIdentifikasjonsnummer funnet, henter ikke dokumentmetadata fra saf")
 		}
 	}
 
