@@ -4,20 +4,13 @@ import no.nav.eessi.pensjon.metrics.MetricsHelper
 import no.nav.eessi.pensjon.utils.mapJsonToAny
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.annotation.Profile
 import org.springframework.core.io.Resource
 import org.springframework.http.*
-import org.springframework.retry.RetryCallback
-import org.springframework.retry.RetryContext
-import org.springframework.retry.RetryListener
-import org.springframework.retry.annotation.Backoff
-import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Component
-import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.HttpServerErrorException
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.exchange
-import java.util.Base64
+import java.util.*
 
 @Component
 class SafClient(
@@ -71,7 +64,7 @@ class SafClient(
         journalpostId: String,
         dokumentInfoId: String,
         variantFormat: String
-    ): HentdokumentInnholdResponse {
+    ): HentdokumentInnholdResponse? {
         return try {
             logger.info("Henter dokumentinnhold for journalpostId: $journalpostId, dokumentInfoId: $dokumentInfoId, variantformat: $variantFormat")
 
@@ -87,20 +80,29 @@ class SafClient(
                 entity
             )
 
-            val filename = response.headers.contentDisposition.filename!!
-            val contentType = response.headers.contentType!!.toString()
+            if (!response.statusCode.is2xxSuccessful) {
+                logger.warn("Ugyldig respons fra SAF hentDokumentInnhold, status: ${response.statusCode}")
+                return null
+            }
 
-            val documentBytes = response.body!!.inputStream.readBytes()
+            val contentDisposition = response.headers.contentDisposition
+            val filename = contentDisposition.filename
+            val contentType = response.headers.contentType?.toString()
+            val body = response.body
+
+            if (filename.isNullOrBlank() || contentType.isNullOrBlank() || body == null) {
+                logger.warn("Mangler forventede headere eller body i respons fra SAF hentDokumentInnhold")
+                return null
+            }
+
+            val documentBytes = body.inputStream.readBytes()
             val documentBase64 = Base64.getEncoder().encodeToString(documentBytes)
 
             HentdokumentInnholdResponse(documentBase64, filename, contentType)
 
         } catch (ex: Exception) {
             logger.error("En feil oppstod under henting av dokumentInnhold fra SAF: $ex")
-            throw HttpServerErrorException(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "En feil oppstod under henting av dokumentinnhold fra SAF"
-            )
+            return null
         }
     }
 
