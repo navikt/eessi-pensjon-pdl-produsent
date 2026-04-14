@@ -144,7 +144,6 @@ class SedListenerAdresseIT : IntegrationBase() {
         fun enSedFraEux(fnr: String) = SED(
             type = SedType.P2100,
             sedGVer = null,
-            sedVer = null,
             nav = Nav(
                 eessisak = null,
                 bruker = Bruker(

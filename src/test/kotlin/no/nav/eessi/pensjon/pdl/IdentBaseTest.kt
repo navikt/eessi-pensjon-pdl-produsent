@@ -86,7 +86,6 @@ open class IdentBaseTest {
     ) = SED (
         type = sedType,
         sedGVer = null,
-        sedVer = null,
         nav = Nav(
             eessisak = null,
             bruker = Bruker(
