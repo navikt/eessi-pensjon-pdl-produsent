@@ -173,8 +173,6 @@ abstract class IntegrationBase {
         return """
             {
               "sed" : "${sedType.name}",
-              "sedGVer" : "4",
-              "sedVer" : "2",
               "nav" : {
                 "eessisak" : [ {
                   "institusjonsid" : "NO:noinst002",
