@@ -37,6 +37,7 @@
       }
     ]
   },
+  "sedGVer": "4",
   "nav": {
     "bruker": {
       "adresse": {
@@ -61,5 +62,6 @@
       }
     }
   },
+  "sedVer": "2",
   "sed": "P5000"
 }

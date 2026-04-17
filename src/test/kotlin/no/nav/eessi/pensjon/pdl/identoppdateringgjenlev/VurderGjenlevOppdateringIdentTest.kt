@@ -417,6 +417,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
                          }
                       ]
                    },
+                   "sedGVer":"4",
                    "nav":{
                       "bruker":{
                          "person":{
@@ -433,6 +434,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
                          }
                       }
                    },
+                   "sedVer":"2",
                    "sed":"$sedType"
                 }
             """.trimIndent()

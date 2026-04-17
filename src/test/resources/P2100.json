@@ -103,5 +103,7 @@
     "forespurtstartdato" : null,
     "kravDato" : null,
     "landspesifikk" : null
-  }
+  },
+  "sedGVer" : "4",
+  "sedVer" : "2"
 }

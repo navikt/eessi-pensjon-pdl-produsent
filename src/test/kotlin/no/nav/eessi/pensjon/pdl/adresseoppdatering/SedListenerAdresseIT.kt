@@ -128,6 +128,8 @@ class SedListenerAdresseIT : IntegrationBase() {
                   ]
                 }
               },
+              "sedGVer": "4",
+              "sedVer": "3",
               "sed": "H002",
               "horisontal": {
                 "bruker": {
@@ -141,6 +143,7 @@ class SedListenerAdresseIT : IntegrationBase() {
 
         fun enSedFraEux(fnr: String) = SED(
             type = SedType.P2100,
+            sedGVer = null,
             nav = Nav(
                 eessisak = null,
                 bruker = Bruker(
