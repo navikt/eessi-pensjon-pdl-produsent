@@ -5,17 +5,19 @@ import no.nav.eessi.pensjon.klienter.saf.Journalpost
 import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Ident
+import no.nav.eessi.pensjon.OpprettH070.OpprettH070
 import no.nav.eessi.pensjon.utils.toJson
+import no.nav.eessi.pensjon.utils.toJsonSkipEmpty
 import no.nav.person.pdl.leesah.Personhendelse
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import kotlin.text.get
 
 @Component
 class DodsmeldingBehandler(
 	private val safClient: SafClient,
 	private val personService: PersonService,
+	private val opprettH070: OpprettH070
 ) {
 	val gyldigeUtstederland = listOf("SWE", "FIN", "POL")
 
@@ -56,6 +58,9 @@ class DodsmeldingBehandler(
 						val dokumentFraSaf = safClient.hentDokumentInnhold(journalpost.journalpostId, dokumentInfoId, "ARKIV")
 						logger.info("ResponseFraSaf: {}", dokumentFraSaf?.toJson())
 					}
+					logger.info("Preutfyller H070 for bruker fra $landFraIdentUtland.")
+					val h070 =  opprettH070.oppretterH070(personhendelse, person!!)
+					logger.debug("Oppretter H070: ${h070.toJsonSkipEmpty()}")
 				}
 				logger.info("Svar fra saf: $responseFraSaf")
 			}

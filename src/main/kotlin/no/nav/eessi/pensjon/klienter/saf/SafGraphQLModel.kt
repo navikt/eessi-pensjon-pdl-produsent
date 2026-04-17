@@ -77,7 +77,7 @@ data class DokumentoversiktBruker(val journalposter: List<Journalpost>)
 data class Journalpost(
     val tilleggsopplysninger: List<Map<String, String>>,
     val journalpostId: String,
-    val datoOpprettet: String,
+    val datoOpprettet: String? = null,
     val tittel: String?,
     val journalfoerendeEnhet: String?,
     val tema: String? = null,

@@ -85,8 +85,6 @@ open class IdentBaseTest {
         sedType: SedType = SedType.P2100
     ) = SED (
         type = sedType,
-        sedGVer = null,
-        sedVer = null,
         nav = Nav(
             eessisak = null,
             bruker = Bruker(

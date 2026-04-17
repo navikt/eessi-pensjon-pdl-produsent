@@ -9,6 +9,7 @@ import no.nav.eessi.pensjon.klienter.saf.HentdokumentInnholdResponse
 import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Ident
+import no.nav.eessi.pensjon.OpprettH070.OpprettH070
 import no.nav.person.pdl.leesah.Personhendelse
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -27,12 +28,13 @@ class DodsmeldingBehandlerTest {
     private val hentRestUrlRestTemplate: RestTemplate = mockk(relaxed = true)
     private val safClient: SafClient = spyk(SafClient(safGraphQlOidcRestTemplate, hentRestUrlRestTemplate))
     private val personService = mockk<PersonService>()
+    private val opprettH070 = mockk<OpprettH070>()
 
     private lateinit var dodsmeldingBehandler: DodsmeldingBehandler
 
     @BeforeEach
     fun setup() {
-        dodsmeldingBehandler = DodsmeldingBehandler(safClient, personService)
+        dodsmeldingBehandler = DodsmeldingBehandler(safClient, personService, opprettH070)
     }
 
     @Test
@@ -182,6 +184,8 @@ class DodsmeldingBehandlerTest {
             )
         } returns ResponseEntity(dummyResource, org.springframework.http.HttpStatus.OK)
 
+        every { opprettH070.oppretterH070(any(), any()) } returns mockk(relaxed = true)
+
         dodsmeldingBehandler.behandle(personhendelse)
 
         verify(exactly = 1) { safClient.hentDokumentMetadata("12345678901", BrukerIdType.FNR) }
@@ -247,6 +251,8 @@ class DodsmeldingBehandlerTest {
             contentType = "application/pdf"
         )
 
+        every { opprettH070.oppretterH070(any(), any()) } returns mockk(relaxed = true)
+
         dodsmeldingBehandler.behandle(personhendelse)
 
         verify(exactly = 1) { safClient.hentDokumentInnhold("123456", "dok123", "ARKIV") }
@@ -279,6 +285,8 @@ class DodsmeldingBehandlerTest {
             }
         }
 
+        every { opprettH070.oppretterH070(any(), any()) } returns mockk(relaxed = true)
+
         dodsmeldingBehandler.behandle(personhendelse)
 
         verify(exactly = 0) { safClient.hentDokumentInnhold(any(), any(), any()) }
@@ -310,6 +318,8 @@ class DodsmeldingBehandlerTest {
                 }
             }
         }
+
+        every { opprettH070.oppretterH070(any(), any()) } returns mockk(relaxed = true)
 
         dodsmeldingBehandler.behandle(personhendelse)
 
