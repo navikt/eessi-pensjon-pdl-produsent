@@ -2,6 +2,7 @@ package no.nav.eessi.pensjon.pdl.dodsmelding
 
 import io.micrometer.core.instrument.Metrics
 import no.nav.eessi.pensjon.metrics.MetricsHelper
+import no.nav.person.pdl.leesah.Endringstype
 import no.nav.person.pdl.leesah.Personhendelse
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.Logger
@@ -44,8 +45,12 @@ class MeldingFraPdlListener(
                             logger.debug("DOEDSFALL_V1: ${personhendelse}")
                             secureLogger.info("DOEDSFALL_V1: ${personhendelse}")
                             messureOpplysningstype.addKjent(personhendelse)
-
-                            dodsmeldingBehandler.behandle(personhendelse)
+                            when(personhendelse.endringstype) {
+                                Endringstype.OPPRETTET -> dodsmeldingBehandler.behandle(personhendelse).also { logger.info("DOEDSFALL_V1 ${personhendelse.endringstype}, behandler denne") }
+                                else -> {
+                                    logger.info("DOEDSFALL_V1 ${personhendelse.endringstype}, ignorerer denne")
+                                }
+                            }
                         }
                         "BOSTEDSADRESSE_V1", "KONTAKTADRESSE_V1", "OPPHOLDSADRESSE_V1" -> {
                             messureOpplysningstype.addKjent(personhendelse)
