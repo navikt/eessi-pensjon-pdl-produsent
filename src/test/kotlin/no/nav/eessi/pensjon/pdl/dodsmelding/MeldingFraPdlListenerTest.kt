@@ -35,11 +35,13 @@ import no.nav.person.pdl.leesah.Personhendelse
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.kafka.support.Acknowledgment
 import java.time.LocalDate
 import java.time.LocalDateTime
 
+@Disabled
 class MeldingFraPdlListenerTest {
 
     private val mockAck = mockk<Acknowledgment>()

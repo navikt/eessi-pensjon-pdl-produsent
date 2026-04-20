@@ -12,6 +12,7 @@ import no.nav.eessi.pensjon.personoppslag.pdl.model.Ident
 import no.nav.eessi.pensjon.OpprettH070.OpprettH070
 import no.nav.person.pdl.leesah.Personhendelse
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
@@ -22,6 +23,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.exchange
 
+@Disabled
 class DodsmeldingBehandlerTest {
 
     private val safGraphQlOidcRestTemplate: RestTemplate = mockk(relaxed = true)

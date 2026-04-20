@@ -49,20 +49,22 @@ class DodsmeldingBehandler(
 			}
 			else -> {
 				logger.info("$landFraIdentUtland har utenlandskIdentifikasjonsnummer, henter dokumentmetadata fra saf")
-				val responseFraSaf = safClient.hentDokumentMetadata(valgtPersonident, BrukerIdType.FNR)
 
-				responseFraSaf.data.dokumentoversiktBruker.journalposter.forEach { journalpost ->
-					logger.info("JournalpostId: ${journalpost.journalpostId}, datoOpprettet: ${journalpost.datoOpprettet}, tittel: ${journalpost.tittel}, journalfoerendeEnhet: ${journalpost.tilleggsopplysninger}")
+//				val responseFraSaf = safClient.hentDokumentMetadata(valgtPersonident, BrukerIdType.FNR)
+//
+//				responseFraSaf.data.dokumentoversiktBruker.journalposter.forEach { journalpost ->
+//					logger.info("JournalpostId: ${journalpost.journalpostId}, datoOpprettet: ${journalpost.datoOpprettet}, tittel: ${journalpost.tittel}, journalfoerendeEnhet: ${journalpost.tilleggsopplysninger}")
+//
+//					journalpost.dokumenter?.firstNotNullOfOrNull { it.dokumentInfoId }?.let { dokumentInfoId ->
+//						val dokumentFraSaf = safClient.hentDokumentInnhold(journalpost.journalpostId, dokumentInfoId, "ARKIV")
+//						logger.info("ResponseFraSaf: {}", dokumentFraSaf?.toJson())
+//					}
+//				}
+//				logger.info("Svar fra saf: $responseFraSaf")
 
-					journalpost.dokumenter?.firstNotNullOfOrNull { it.dokumentInfoId }?.let { dokumentInfoId ->
-						val dokumentFraSaf = safClient.hentDokumentInnhold(journalpost.journalpostId, dokumentInfoId, "ARKIV")
-						logger.info("ResponseFraSaf: {}", dokumentFraSaf?.toJson())
-					}
-					logger.info("Preutfyller H070 for bruker fra $landFraIdentUtland.")
-					val h070 =  opprettH070.oppretterH070(personhendelse, person!!)
-					logger.debug("Oppretter H070: ${h070.toJsonSkipEmpty()}")
-				}
-				logger.info("Svar fra saf: $responseFraSaf")
+				logger.info("Preutfyller H070 for bruker fra $landFraIdentUtland.")
+				val h070 =  opprettH070.oppretterH070(personhendelse, person!!)
+				logger.debug("Oppretter H070: ${h070.toJsonSkipEmpty()}")
 			}
 		}
 	}
