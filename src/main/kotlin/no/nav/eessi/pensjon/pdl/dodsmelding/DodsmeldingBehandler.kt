@@ -6,18 +6,24 @@ import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Ident
 import no.nav.eessi.pensjon.OpprettH070.OpprettH070
+import no.nav.eessi.pensjon.eux.EuxService
+import no.nav.eessi.pensjon.eux.klient.BucSedResponse
 import no.nav.eessi.pensjon.utils.toJson
 import no.nav.eessi.pensjon.utils.toJsonSkipEmpty
 import no.nav.person.pdl.leesah.Personhendelse
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 
 @Component
 class DodsmeldingBehandler(
 	private val safClient: SafClient,
 	private val personService: PersonService,
-	private val opprettH070: OpprettH070
+	private val opprettH070: OpprettH070,
+	private val euxService: EuxService,
 ) {
 	val gyldigeUtstederland = listOf("SWE", "FIN", "POL")
 
@@ -64,6 +70,16 @@ class DodsmeldingBehandler(
 
 				logger.info("Preutfyller H070 for bruker fra $landFraIdentUtland.")
 				val h070 =  opprettH070.oppretterH070(personhendelse, person!!)
+				//Sjekk hvilken institusjon som skal legges til ut i fra hvilket land det er som skal motta H070 fra oss.
+				try {
+					val response = euxService.opprettH070("NO:NAVAT05", h070)
+					euxService.sendSed(response.rinaSakId, response.dokumentId)
+
+				} catch (e: Exception) {
+					logger.error("Feil ved opprettelse av H070", e)
+					return
+				}
+
 				logger.debug("Oppretter H070: ${h070.toJsonSkipEmpty()}")
 			}
 		}

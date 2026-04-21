@@ -62,6 +62,7 @@ class RestTemplateConfig(
     @Bean
     fun euxOAuthRestTemplate(): RestTemplate = restTemplate(euxUrl, bearerTokenInterceptor(clientProperties("eux-credentials"), oAuth2AccessTokenService!!))
 
+
     @Bean
     fun norg2RestTemplate(): RestTemplate = buildRestTemplate(norg2Url)
 

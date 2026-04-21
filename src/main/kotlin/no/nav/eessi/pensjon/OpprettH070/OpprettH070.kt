@@ -45,7 +45,7 @@ class OpprettH070  {
                     //1.1.3 Fødselsdato
                     foedselsdato = pdlPerson.foedselsdato?.foedselsdato,
                     //1.1.4 Kjønn
-                    kjoenn = pdlPerson.kjoenn?.kjoenn?.name,
+                    kjoenn = pdlPerson.kjoenn?.kjoenn?.name?.substring(0,1),
                     //2.1 Dødsdato
                     doedsdato = personhendelse.doedsfall.doedsdato.toString(),
                     )
