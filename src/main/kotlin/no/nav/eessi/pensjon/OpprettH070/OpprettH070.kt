@@ -35,7 +35,7 @@ class OpprettH070  {
                         ), PinItem(
                             identifikator = pdlPerson.utenlandskIdentifikasjonsnummer.firstOrNull()?.identifikasjonsnummer,
                             // 1.1.7.2 Land
-                            land = pdlPerson.utenlandskIdentifikasjonsnummer.firstOrNull()?.utstederland
+                            land = pdlPerson.utenlandskIdentifikasjonsnummer.firstOrNull()?.utstederland?.substring(0,2)
                         )
                     ),
                     //1.1.1 Etternavn
