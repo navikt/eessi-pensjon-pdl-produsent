@@ -15,6 +15,8 @@ import no.nav.person.pdl.leesah.Personhendelse
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Component
 class OpprettH070  {
@@ -47,7 +49,7 @@ class OpprettH070  {
                     //1.1.4 Kjønn
                     kjoenn = pdlPerson.kjoenn?.kjoenn?.name?.substring(0,1),
                     //2.1 Dødsdato
-                    doedsdato = personhendelse.doedsfall.doedsdato.toString(),
+                    doedsdato = personhendelse.doedsfall.doedsdato.simpleFormat(),
                     )
                 )
             )
@@ -57,5 +59,7 @@ class OpprettH070  {
             nav = navSed
         )
     }
+    fun LocalDate.simpleFormat(): String = DateTimeFormatter.ofPattern("dd/MM/yyyy").format(this)
+
 
 }
