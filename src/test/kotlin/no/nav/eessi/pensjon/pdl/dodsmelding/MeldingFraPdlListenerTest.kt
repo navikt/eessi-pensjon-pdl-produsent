@@ -16,6 +16,7 @@ import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Ident
 import no.nav.eessi.pensjon.OpprettH070.OpprettH070
+import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Doedsfall
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endring
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Endringstype
@@ -50,6 +51,7 @@ class MeldingFraPdlListenerTest {
     private val personService = mockk<PersonService>()
     private val ack = mockk<Acknowledgment>()
     private val opprettH070 = OpprettH070()
+    private val euxService = mockk<EuxService>()
 
     private lateinit var listener : MeldingFraPdlListener
     private lateinit var dodsmeldingBehandler : DodsmeldingBehandler
@@ -57,7 +59,7 @@ class MeldingFraPdlListenerTest {
     private lateinit var personhendelse: Personhendelse
     @BeforeEach
     fun setup() {
-        dodsmeldingBehandler = DodsmeldingBehandler(safClient, personService, opprettH070)
+        dodsmeldingBehandler = DodsmeldingBehandler(safClient, personService, opprettH070, euxService)
         listener = MeldingFraPdlListener(dodsmeldingBehandler)
         justRun { ack.acknowledge() }
 

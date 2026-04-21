@@ -10,6 +10,7 @@ import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Ident
 import no.nav.eessi.pensjon.OpprettH070.OpprettH070
+import no.nav.eessi.pensjon.eux.EuxService
 import no.nav.person.pdl.leesah.Personhendelse
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
@@ -31,12 +32,13 @@ class DodsmeldingBehandlerTest {
     private val safClient: SafClient = spyk(SafClient(safGraphQlOidcRestTemplate, hentRestUrlRestTemplate))
     private val personService = mockk<PersonService>()
     private val opprettH070 = mockk<OpprettH070>()
+    private val euxService = mockk<EuxService>()
 
     private lateinit var dodsmeldingBehandler: DodsmeldingBehandler
 
     @BeforeEach
     fun setup() {
-        dodsmeldingBehandler = DodsmeldingBehandler(safClient, personService, opprettH070)
+        dodsmeldingBehandler = DodsmeldingBehandler(safClient, personService, opprettH070, euxService)
     }
 
     @Test
