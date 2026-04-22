@@ -55,7 +55,7 @@ dependencies {
 	implementation("io.micrometer:micrometer-registry-prometheus:1.16.2")
 
 	// Eessi pensjon biblioteker
-	implementation("no.nav.eessi.pensjon:ep-eux:3.0.55")
+	implementation("no.nav.eessi.pensjon:ep-eux:3.0.56")
 	implementation("no.nav.eessi.pensjon:ep-metrics:3.0.6")
 	implementation("no.nav.eessi.pensjon:ep-logging:3.0.7")
 
