@@ -30,7 +30,7 @@ class OpprettH070  {
         val navSed = HNav(
             bruker = HBruker(
                 //2.1 Dødsdato
-                doedsfall = Doedsfall(personhendelse.doedsfall.doedsdato),
+                doedsfall = Doedsfall(personhendelse.doedsfall.doedsdato.simpleFormat()),
                 person = Person(
                     //1.1 Personnummer
                     // 1.1.7.1 Personnummer
@@ -43,10 +43,7 @@ class OpprettH070  {
                         ), PinItem(
                             identifikator = pdlPerson.utenlandskIdentifikasjonsnummer.firstOrNull()?.identifikasjonsnummer,
                             // 1.1.7.2 Land
-                            land = pdlPerson.utenlandskIdentifikasjonsnummer.firstOrNull()?.utstederland?.substring(
-                                0,
-                                2
-                            )
+                            land = pdlPerson.utenlandskIdentifikasjonsnummer.firstOrNull()?.utstederland?.substring(0, 2)
                         )
                     ),
                     //1.1.1 Etternavn
