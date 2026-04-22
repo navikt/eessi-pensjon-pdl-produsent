@@ -2,6 +2,7 @@ package no.nav.eessi.pensjon.OpprettH070
 
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.sed.Bruker
+import no.nav.eessi.pensjon.eux.model.sed.Doedsfall
 import no.nav.eessi.pensjon.eux.model.sed.H02x
 import no.nav.eessi.pensjon.eux.model.sed.H070
 import no.nav.eessi.pensjon.eux.model.sed.HBruker
@@ -28,6 +29,8 @@ class OpprettH070  {
 
         val navSed = HNav(
             bruker = HBruker(
+                //2.1 Dødsdato
+                doedsfall = Doedsfall(personhendelse.doedsfall.doedsdato),
                 person = Person(
                     //1.1 Personnummer
                     // 1.1.7.1 Personnummer
@@ -54,8 +57,6 @@ class OpprettH070  {
                     foedselsdato = pdlPerson.foedselsdato?.foedselsdato,
                     //1.1.4 Kjønn
                     kjoenn = pdlPerson.kjoenn?.kjoenn?.name?.substring(0, 1),
-                    //2.1 Dødsdato
-                    doedsdato = personhendelse.doedsfall.doedsdato.toString(),
                 )
             )
         )
