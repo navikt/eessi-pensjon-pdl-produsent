@@ -4,6 +4,8 @@ import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.sed.Bruker
 import no.nav.eessi.pensjon.eux.model.sed.H02x
 import no.nav.eessi.pensjon.eux.model.sed.H070
+import no.nav.eessi.pensjon.eux.model.sed.HBruker
+import no.nav.eessi.pensjon.eux.model.sed.HNav
 import no.nav.eessi.pensjon.eux.model.sed.Nav
 import no.nav.eessi.pensjon.eux.model.sed.Person
 import no.nav.eessi.pensjon.eux.model.sed.PinItem
@@ -24,20 +26,24 @@ class OpprettH070  {
 
     fun oppretterH070(personhendelse: Personhendelse, pdlPerson: PdlPerson): H070 {
 
-        val navSed = Nav(
-            bruker = Bruker(
+        val navSed = HNav(
+            bruker = HBruker(
                 person = Person(
                     //1.1 Personnummer
                     // 1.1.7.1 Personnummer
                     //Under skal fyles ut en bolk for hver pin (norsk og utenlandsk)
-                    pin = listOf(PinItem(
+                    pin = listOf(
+                        PinItem(
                             identifikator = pdlPerson.identer.firstOrNull { it.gruppe == IdentGruppe.FOLKEREGISTERIDENT }?.ident,
                             // 1.1.7.2 Land
                             land = "NO",
                         ), PinItem(
                             identifikator = pdlPerson.utenlandskIdentifikasjonsnummer.firstOrNull()?.identifikasjonsnummer,
                             // 1.1.7.2 Land
-                            land = pdlPerson.utenlandskIdentifikasjonsnummer.firstOrNull()?.utstederland?.substring(0,2)
+                            land = pdlPerson.utenlandskIdentifikasjonsnummer.firstOrNull()?.utstederland?.substring(
+                                0,
+                                2
+                            )
                         )
                     ),
                     //1.1.1 Etternavn
@@ -47,16 +53,16 @@ class OpprettH070  {
                     //1.1.3 Fødselsdato
                     foedselsdato = pdlPerson.foedselsdato?.foedselsdato,
                     //1.1.4 Kjønn
-                    kjoenn = pdlPerson.kjoenn?.kjoenn?.name?.substring(0,1),
+                    kjoenn = pdlPerson.kjoenn?.kjoenn?.name?.substring(0, 1),
                     //2.1 Dødsdato
                     doedsdato = personhendelse.doedsfall.doedsdato.simpleFormat(),
-                    )
                 )
             )
+        )
 
         return H070(
             type = SedType.H070,
-            nav = navSed
+            hnav = navSed
         )
     }
     fun LocalDate.simpleFormat(): String = DateTimeFormatter.ofPattern("dd/MM/yyyy").format(this)
