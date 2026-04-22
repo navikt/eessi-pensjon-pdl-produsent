@@ -48,7 +48,7 @@ class MeldingFraPdlListener(
                             messureOpplysningstype.addKjent(personhendelse)
                             when(personhendelse.endringstype) {
                                 Endringstype.OPPRETTET -> {
-                                    if(!ferdigkjort && personhendelse.personidenter.contains("2895938256002")) {
+                                    if(!ferdigkjort && personhendelse.personidenter.contains("2647062218487") ) {
                                         dodsmeldingBehandler.behandle(personhendelse).also { logger.info("DOEDSFALL_V1 ${personhendelse.endringstype}, behandler denne") }
                                         ferdigkjort = true
                                         Thread.sleep(3000)
