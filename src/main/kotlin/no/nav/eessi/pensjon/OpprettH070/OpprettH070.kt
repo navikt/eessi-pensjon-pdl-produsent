@@ -63,7 +63,7 @@ class OpprettH070  {
             hnav = navSed
         )
     }
-    fun LocalDate.simpleFormat(): String = DateTimeFormatter.ofPattern("dd/MM/yyyy").format(this)
+    fun LocalDate.simpleFormat(): String = DateTimeFormatter.ofPattern("yyyy-MM-dd").format(this)
 
 
 }
