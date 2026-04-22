@@ -71,8 +71,8 @@ class EuxService(
     }
 
     data class SaksDetaljer(
-        val rinaSakId: String,
-        val dokumentId: String
+        val caseId: String,
+        val documentId: String
     )
 
 }

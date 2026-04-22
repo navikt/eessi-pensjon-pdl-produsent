@@ -73,7 +73,7 @@ class DodsmeldingBehandler(
 				//Sjekk hvilken institusjon som skal legges til ut i fra hvilket land det er som skal motta H070 fra oss.
 				try {
 					val response = euxService.opprettH070("NO:NAVAT05", h070)
-					euxService.sendSed(response.rinaSakId, response.dokumentId)
+					euxService.sendSed(response.caseId, response.documentId)
 
 				} catch (e: Exception) {
 					logger.error("Feil ved opprettelse av H070", e)
