@@ -36,7 +36,6 @@ class MeldingFraPdlListener(
     fun mottaLeesahMelding(consumerRecords: List<ConsumerRecord<String, Personhendelse>>, ack: Acknowledgment) {
         try {
             logger.info("Behandler ${consumerRecords.size} meldinger, firstOffset=${consumerRecords.first().offset()}, lastOffset=${consumerRecords.last().offset()}")
-            var ferdigkjort = false
             consumerRecords.forEach { record ->
                 leesahKafkaListenerMetric.measure {
                     val personhendelse = record.value()
@@ -47,12 +46,7 @@ class MeldingFraPdlListener(
                             secureLogger.info("DOEDSFALL_V1: ${personhendelse}")
                             messureOpplysningstype.addKjent(personhendelse)
                             when(personhendelse.endringstype) {
-                                Endringstype.OPPRETTET -> {
-                                    if(!ferdigkjort) {
-                                        dodsmeldingBehandler.behandle(personhendelse).also { logger.info("DOEDSFALL_V1 ${personhendelse.endringstype}, behandler denne") }
-                                        ferdigkjort = true
-                                    }
-                                }
+                                Endringstype.OPPRETTET -> dodsmeldingBehandler.behandle(personhendelse).also { logger.info("DOEDSFALL_V1 ${personhendelse.endringstype}, behandler denne") }
                                 else -> {
                                     logger.info("DOEDSFALL_V1 ${personhendelse.endringstype}, ignorerer denne")
                                 }
@@ -60,9 +54,11 @@ class MeldingFraPdlListener(
 
                         }
                         "BOSTEDSADRESSE_V1", "KONTAKTADRESSE_V1", "OPPHOLDSADRESSE_V1" -> {
+                            ack.acknowledge()
                             messureOpplysningstype.addKjent(personhendelse)
                         }
                         else -> {
+                            ack.acknowledge()
                             messureOpplysningstype.addUkjent(personhendelse)
                         }
                     }
@@ -72,10 +68,8 @@ class MeldingFraPdlListener(
             logger.error("Behandling av hendelse feilet", e)
             throw e
         }
-        ack.acknowledge()
         messureOpplysningstype.createMetrics()
         messureOpplysningstype.clearAll()
-        logger.info("Acket personhendelse")
     }
 
 
