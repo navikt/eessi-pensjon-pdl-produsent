@@ -72,10 +72,10 @@ class MeldingFraPdlListener(
             logger.error("Behandling av hendelse feilet", e)
             throw e
         }
-//        ack.acknowledge()
+        ack.acknowledge()
         messureOpplysningstype.createMetrics()
         messureOpplysningstype.clearAll()
-//        logger.info("Acket personhendelse")
+        logger.info("Acket personhendelse")
     }
 
 
