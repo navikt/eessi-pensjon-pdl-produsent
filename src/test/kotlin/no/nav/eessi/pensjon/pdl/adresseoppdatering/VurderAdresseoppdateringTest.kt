@@ -670,7 +670,7 @@ internal class VurderAdresseoppdateringTest {
             bruker = Bruker(
                 mor = null,
                 far = null,
-                person = no.nav.eessi.pensjon.eux.model.sed.Person(
+                person = Person(
                     pin = listOf(
                         pinItem ?: PinItem(
                             identifikator = id,
@@ -722,7 +722,6 @@ internal class VurderAdresseoppdateringTest {
     ): PdlPerson {
         val personfnr = Fodselsnummer.fra(id)
         val fdatoaar =   LocalDate.of(1921, 7, 12)
-        val doeadfall =  Doedsfall(LocalDate.of(2020, 10, 1), null, mockk())
 
         return PdlPerson(
             identer = if (Fodselsnummer.fra(id)?.erNpid == true) listOf(
