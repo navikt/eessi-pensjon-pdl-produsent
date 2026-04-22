@@ -36,6 +36,7 @@ class MeldingFraPdlListener(
     fun mottaLeesahMelding(consumerRecords: List<ConsumerRecord<String, Personhendelse>>, ack: Acknowledgment) {
         try {
             logger.info("Behandler ${consumerRecords.size} meldinger, firstOffset=${consumerRecords.first().offset()}, lastOffset=${consumerRecords.last().offset()}")
+            var ferdigkjort = false
             consumerRecords.forEach { record ->
                 leesahKafkaListenerMetric.measure {
                     val personhendelse = record.value()
@@ -46,11 +47,17 @@ class MeldingFraPdlListener(
                             secureLogger.info("DOEDSFALL_V1: ${personhendelse}")
                             messureOpplysningstype.addKjent(personhendelse)
                             when(personhendelse.endringstype) {
-                                Endringstype.OPPRETTET -> dodsmeldingBehandler.behandle(personhendelse).also { logger.info("DOEDSFALL_V1 ${personhendelse.endringstype}, behandler denne") }
+                                Endringstype.OPPRETTET -> {
+                                    if(!ferdigkjort) {
+                                        dodsmeldingBehandler.behandle(personhendelse).also { logger.info("DOEDSFALL_V1 ${personhendelse.endringstype}, behandler denne") }
+                                        ferdigkjort = true
+                                    }
+                                }
                                 else -> {
                                     logger.info("DOEDSFALL_V1 ${personhendelse.endringstype}, ignorerer denne")
                                 }
                             }
+
                         }
                         "BOSTEDSADRESSE_V1", "KONTAKTADRESSE_V1", "OPPHOLDSADRESSE_V1" -> {
                             messureOpplysningstype.addKjent(personhendelse)
