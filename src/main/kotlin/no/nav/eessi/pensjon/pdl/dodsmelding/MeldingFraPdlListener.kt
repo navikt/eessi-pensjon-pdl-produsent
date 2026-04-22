@@ -51,7 +51,6 @@ class MeldingFraPdlListener(
                                     if(!ferdigkjort && personhendelse.personidenter.contains("2895938256002")) {
                                         dodsmeldingBehandler.behandle(personhendelse).also { logger.info("DOEDSFALL_V1 ${personhendelse.endringstype}, behandler denne") }
                                         ferdigkjort = true
-                                        Thread.sleep(3000)
                                     }
                                 }
                                 else -> {
