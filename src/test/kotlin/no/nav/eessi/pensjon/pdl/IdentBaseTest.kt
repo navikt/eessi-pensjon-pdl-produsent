@@ -6,6 +6,7 @@ import no.nav.eessi.pensjon.eux.model.SedHendelse
 import no.nav.eessi.pensjon.eux.model.SedType
 import no.nav.eessi.pensjon.eux.model.sed.*
 import no.nav.eessi.pensjon.personoppslag.pdl.model.*
+import no.nav.eessi.pensjon.personoppslag.pdl.model.Doedsfall
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Foedested
 import no.nav.eessi.pensjon.shared.person.Fodselsnummer
 import no.nav.eessi.pensjon.utils.mapJsonToAny
@@ -90,7 +91,7 @@ open class IdentBaseTest {
             bruker = Bruker(
                 mor = null,
                 far = null,
-                person = no.nav.eessi.pensjon.eux.model.sed.Person(
+                person = Person(
                     pin = pinItem,
                     pinland = null,
                     statsborgerskap = null,
@@ -124,7 +125,7 @@ open class IdentBaseTest {
             gjenlevende = Bruker(
                 mor = null,
                 far = null,
-                person = no.nav.eessi.pensjon.eux.model.sed.Person(
+                person = Person(
                     pin = pinItem,
                     pinland = null,
                     statsborgerskap = null,
@@ -160,7 +161,6 @@ open class IdentBaseTest {
     ): PdlPerson {
         val personfnr = Fodselsnummer.fra(id)
         val fdatoaar =   LocalDate.of(1921, 7, 12)
-        val doeadfall =  Doedsfall(LocalDate.of(2020, 10, 1), null, mockk())
 
         return PdlPerson(
             identer = listOf(IdentInformasjon(id, IdentGruppe.FOLKEREGISTERIDENT)),
