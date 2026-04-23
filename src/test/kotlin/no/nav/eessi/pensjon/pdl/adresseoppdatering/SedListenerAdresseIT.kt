@@ -19,6 +19,7 @@ import no.nav.eessi.pensjon.eux.model.sed.SED
 import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
+import no.nav.eessi.pensjon.pdl.dodsmelding.FagmodulKlient
 import no.nav.eessi.pensjon.pdl.integrationtest.IntegrationBase
 import no.nav.eessi.pensjon.pdl.integrationtest.KafkaTestConfig
 import no.nav.eessi.pensjon.personoppslag.pdl.model.*
@@ -56,6 +57,9 @@ class SedListenerAdresseIT : IntegrationBase() {
     @MockkBean(name = "safGraphQlOidcRestTemplate")
     private lateinit var safGraphQlOidcRestTemplate: RestTemplate
 
+    @MockkBean(name = "fagmodulOidcRestTemplate")
+    private lateinit var fagmodulOidcRestTemplate: RestTemplate
+
     @Autowired
     lateinit var adresseListener: SedListenerAdresse
 
@@ -70,6 +74,9 @@ class SedListenerAdresseIT : IntegrationBase() {
 
     @MockkBean
     lateinit var safClient: SafClient
+
+    @MockkBean
+    lateinit var fagmodulKlient: FagmodulKlient
 
     @Test
     fun `Gitt en sed hendelse som kommer på riktig topic og group_id så skal den konsumeres av adresseListener`() {

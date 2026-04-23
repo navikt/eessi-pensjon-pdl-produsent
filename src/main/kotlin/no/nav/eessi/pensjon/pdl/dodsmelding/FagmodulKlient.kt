@@ -1,0 +1,64 @@
+package no.nav.eessi.pensjon.pdl.dodsmelding
+
+import no.nav.eessi.pensjon.eux.model.buc.SakStatus
+import no.nav.eessi.pensjon.eux.model.buc.SakType
+import no.nav.eessi.pensjon.oppgaverouting.SakInformasjon
+import no.nav.eessi.pensjon.utils.mapJsonToAny
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpMethod
+import org.springframework.stereotype.Component
+import org.springframework.web.client.RestTemplate
+import kotlin.collections.map
+
+@Component
+class FagmodulKlient(private val fagmodulOidcRestTemplate: RestTemplate) {
+
+    private val logger: Logger by lazy { LoggerFactory.getLogger(FagmodulKlient::class.java) }
+
+    fun hentPensjonSaklist(fnr: String): List<SakInformasjon> {
+        val path = "/pensjon/saklisteFraPesys"
+
+        val headers = HttpHeaders().apply {
+            set("fnr", fnr)
+        }
+        val entity = HttpEntity<String>(headers)
+
+        val responseJson = try {
+            val responsebody = fagmodulOidcRestTemplate.exchange(
+                path,
+                HttpMethod.GET,
+                entity,
+                String::class.java).body
+            responsebody.orEmpty().also { logger.debug("Response body fra fagmodul: $it") }
+        } catch(ex: Exception) {
+            logger.error("En feil oppstod under henting av pensjonsakliste ex: $ex", ex)
+            return emptyList()
+        }
+
+        // egen try catch for mapping av json der vi ønsker en exception og synlig feil i logging
+        responseJson.let {
+            return try {
+                val pensjonsMap = mapJsonToAny<List<PensjonSakDto>>(responseJson)
+                pensjonsMap.map {
+                    SakInformasjon(
+                        sakId = it.sakId,
+                        sakType = SakType.valueOf(it.sakType.name),
+                        sakStatus = SakStatus.from(it.sakStatus.name)
+                    )
+                }
+            }
+            catch(ex: Exception) {
+                throw RuntimeException("En feil oppstod under mapping av json for pensjonsakliste: $ex")
+            }
+        }
+    }
+
+    data class PensjonSakDto(val sakId: String, val sakType: EessiSakType, val sakStatus: EessiSakStatus)
+
+    enum class EessiSakType { AFP, AFP_PRIVAT, ALDER, BARNEP, FAM_PL, GAM_YRK, GENRL, GJENLEV, GRBL, KRIGSP, OMSORG, UFOREP }
+    enum class EessiSakStatus { AVSLUTTET, TIL_BEHANDLING, INGEN_STATUS, OPPRETTET, UKJENT, TRUKKET, AVBRUTT, AVSL, INNV, OPPHOR, VELG, VETIKKE, ANNET, EESSI_INGEN_STATUS, EESSI_UKJENT, EESSI_AVBRUTT, LOPENDE }
+
+}

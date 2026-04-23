@@ -1,8 +1,6 @@
 package no.nav.eessi.pensjon.config
 
 import io.micrometer.core.instrument.MeterRegistry
-import no.nav.common.token_client.builder.AzureAdTokenClientBuilder
-import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient
 import no.nav.eessi.pensjon.eux.klient.EuxKlientLib
 import no.nav.eessi.pensjon.logging.RequestIdHeaderInterceptor
 import no.nav.eessi.pensjon.logging.RequestResponseLoggerInterceptor
@@ -19,15 +17,11 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpRequest
-import org.springframework.http.client.BufferingClientHttpRequestFactory
 import org.springframework.http.client.ClientHttpRequestExecution
 import org.springframework.http.client.ClientHttpRequestInterceptor
 import org.springframework.http.client.JdkClientHttpRequestFactory
-import org.springframework.http.client.SimpleClientHttpRequestFactory
 import org.springframework.web.client.DefaultResponseErrorHandler
 import org.springframework.web.client.RestTemplate
-import java.net.URLDecoder
-import java.nio.charset.StandardCharsets
 
 
 @Configuration
@@ -57,6 +51,9 @@ class RestTemplateConfig(
     @Value("\${SAF_HENTDOKUMENT_URL}")
     lateinit var hentRestUrl: String
 
+    @Value("\${EESSI_PENSJON_FAGMODUL_URL}")
+    lateinit var fagmodulUrl: String
+
     private val logger = LoggerFactory.getLogger(RestTemplateConfig::class.java)
 
     @Bean
@@ -78,8 +75,10 @@ class RestTemplateConfig(
     @Bean
     fun hentRestUrlRestTemplate() = restTemplate(hentRestUrl, bearerTokenInterceptor(clientProperties("saf-credentials"), oAuth2AccessTokenService!!))
 
+    @Bean
+    fun fagmodulOidcRestTemplate(): RestTemplate = opprettRestTemplate(fagmodulUrl, "fagmodul-credentials")
 
-    private fun restTemplate(url: String, tokenIntercetor: ClientHttpRequestInterceptor) : RestTemplate {
+    private fun restTemplate(url: String, tokenInterceptor: ClientHttpRequestInterceptor) : RestTemplate {
         logger.info("init restTemplate: $url")
         return RestTemplateBuilder()
             .rootUri(url)
@@ -89,7 +88,22 @@ class RestTemplateConfig(
                 IOExceptionRetryInterceptor(),
                 RequestCountInterceptor(meterRegistry),
                 RequestResponseLoggerInterceptor(),
-                tokenIntercetor
+                tokenInterceptor
+            )
+            .build().apply {
+                requestFactory = JdkClientHttpRequestFactory()
+            }
+    }
+
+    private fun opprettRestTemplate(url: String, oAuthKey: String) : RestTemplate {
+        return RestTemplateBuilder()
+            .rootUri(url)
+            .errorHandler(DefaultResponseErrorHandler())
+            .additionalInterceptors(
+                RequestIdHeaderInterceptor(),
+                IOExceptionRetryInterceptor(),
+                RequestCountInterceptor(meterRegistry),
+                bearerTokenInterceptor(clientProperties(oAuthKey), oAuth2AccessTokenService!!)
             )
             .build().apply {
                 requestFactory = JdkClientHttpRequestFactory()

@@ -32,13 +32,14 @@ class DodsmeldingBehandlerTest {
     private val safClient: SafClient = spyk(SafClient(safGraphQlOidcRestTemplate, hentRestUrlRestTemplate))
     private val personService = mockk<PersonService>()
     private val opprettH070 = mockk<OpprettH070>()
+    private val fagmodulKlient = mockk<FagmodulKlient>()
     private val euxService = mockk<EuxService>()
 
     private lateinit var dodsmeldingBehandler: DodsmeldingBehandler
 
     @BeforeEach
     fun setup() {
-        dodsmeldingBehandler = DodsmeldingBehandler(safClient, personService, opprettH070, euxService)
+        dodsmeldingBehandler = DodsmeldingBehandler(fagmodulKlient, safClient, personService, opprettH070, euxService, mockk())
     }
 
     @Test

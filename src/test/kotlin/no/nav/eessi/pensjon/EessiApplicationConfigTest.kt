@@ -9,6 +9,7 @@ import no.nav.eessi.pensjon.klienter.norg2.Norg2Klient
 import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
+import no.nav.eessi.pensjon.pdl.dodsmelding.FagmodulKlient
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonClient
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
@@ -54,6 +55,7 @@ import org.springframework.web.client.RestTemplate
     MockkBean(name = "personMottakKlient", classes = [PersonMottakKlient::class]),
     MockkBean(name = "kodeverkClient", classes = [KodeverkClient::class]),
     MockkBean(name = "personClient", classes = [PersonClient::class]),
+    MockkBean(name = "fagmodulKlient", classes = [FagmodulKlient::class]),
     //kafka
     MockkBean(name = "sedKafkaListenerContainerFactory", classes = [ConcurrentKafkaListenerContainerFactory::class], relaxed = true),
 

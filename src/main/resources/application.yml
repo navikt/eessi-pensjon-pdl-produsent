@@ -27,6 +27,9 @@ no.nav.security.jwt:
       saf-credentials:
         <<: *auth
         scope: api://${AZURE_APP_SAF_CLIENT_ID}/.default
+      fagmodul-credentials:
+        <<: *auth
+        scope: api://${AZURE_APP_FAGMODUL_CLIENT_ID}/.default
 
 METRICS_REQUESTFILTER_ENABLE: true
 

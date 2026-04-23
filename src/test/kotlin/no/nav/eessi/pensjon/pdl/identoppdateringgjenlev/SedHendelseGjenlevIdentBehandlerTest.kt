@@ -35,6 +35,7 @@ import org.springframework.web.client.RestTemplate
     MockkBean(name = "personService", classes = [PersonService::class]),
     MockkBean(name = "pdlRestTemplate", classes = [RestTemplate::class]),
     MockkBean(name = "safGraphQlOidcRestTemplate", classes = [RestTemplate::class]),
+    MockkBean(name = "fagmodulOidcRestTemplate", classes = [RestTemplate::class]),
 )
 class SedHendelseGjenlevIdentBehandlerTest : IntegrationBase(){
 

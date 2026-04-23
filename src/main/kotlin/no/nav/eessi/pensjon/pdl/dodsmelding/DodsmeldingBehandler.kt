@@ -1,31 +1,36 @@
 package no.nav.eessi.pensjon.pdl.dodsmelding
 
-import no.nav.eessi.pensjon.klienter.saf.BrukerIdType
 import no.nav.eessi.pensjon.klienter.saf.Journalpost
 import no.nav.eessi.pensjon.klienter.saf.SafClient
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
 import no.nav.eessi.pensjon.personoppslag.pdl.model.Ident
 import no.nav.eessi.pensjon.OpprettH070.OpprettH070
 import no.nav.eessi.pensjon.eux.EuxService
-import no.nav.eessi.pensjon.eux.klient.BucSedResponse
+import no.nav.eessi.pensjon.eux.model.buc.SakType.ALDER
+import no.nav.eessi.pensjon.eux.model.buc.SakType.BARNEP
+import no.nav.eessi.pensjon.eux.model.buc.SakType.GJENLEV
+import no.nav.eessi.pensjon.eux.model.buc.SakType.OMSORG
+import no.nav.eessi.pensjon.eux.model.buc.SakType.UFOREP
+import no.nav.eessi.pensjon.oppgaverouting.SakInformasjon
+import no.nav.eessi.pensjon.personoppslag.pdl.model.IdentGruppe
 import no.nav.eessi.pensjon.utils.toJson
 import no.nav.eessi.pensjon.utils.toJsonSkipEmpty
 import no.nav.person.pdl.leesah.Personhendelse
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 
 @Component
 class DodsmeldingBehandler(
+	private val fagmodulKlient: FagmodulKlient,
 	private val safClient: SafClient,
 	private val personService: PersonService,
 	private val opprettH070: OpprettH070,
 	private val euxService: EuxService,
-) {
-	val gyldigeUtstederland = listOf("SWE", "FIN", "POL")
+	@Value("\${ENV}") private val env: String,
+	) {
+	val gyldigeUtstederland = listOf("SW", "FI", "PO")
 
 	private val logger: Logger = LoggerFactory.getLogger(DodsmeldingBehandler::class.java)
 
@@ -68,13 +73,26 @@ class DodsmeldingBehandler(
 //				}
 //				logger.info("Svar fra saf: $responseFraSaf")
 
+				//TODO: Sjekk hvilken ytelse bruker har før vi går videre med å preutfylle en H070
+
+				val fnr = person?.identer?.firstOrNull { it.gruppe == IdentGruppe.FOLKEREGISTERIDENT }?.ident
+				val institusjonViSkalSendeTil = institusjon(fnr, landFraIdentUtland)
+
+				//Preutfyller en H070
 				logger.info("Preutfyller H070 for bruker fra $landFraIdentUtland.")
 				val h070 =  opprettH070.oppretterH070(personhendelse, person!!)
-				//Sjekk hvilken institusjon som skal legges til ut i fra hvilket land det er som skal motta H070 fra oss.
-				try {
-					val response = euxService.opprettH070("NO:NAVAT05", h070)
-					euxService.sendSed(response.caseId, response.documentId)
 
+				//TODO: Sjekk hvilken institusjon som skal legges til ut i fra hvilket land det er som skal motta H070 fra oss.
+
+				// Oppretter en H_BUC_07 med et utkast på H070
+				try {
+					if (env == "q2") {
+						euxService.opprettH070("NO:NAVAT05", h070)
+					} else {
+						val response = euxService.opprettH070(institusjonViSkalSendeTil, h070)
+						//Sender H070 til utlandet
+						euxService.sendSed(response.caseId, response.documentId)
+					}
 				} catch (e: Exception) {
 					logger.error("Feil ved opprettelse av H070", e)
 					return
@@ -83,6 +101,24 @@ class DodsmeldingBehandler(
 				logger.debug("Oppretter H070: ${h070.toJsonSkipEmpty()}")
 			}
 		}
+	}
+
+	fun institusjon(fnr: String?, landFraIdentUtland: Set<String>): String {
+		val ytelsesInfo = fagmodulKlient.hentPensjonSaklist(fnr!!)
+		val penytelse = ytelsesInfo.firstOrNull { it.sakType in listOf(UFOREP, GJENLEV, BARNEP, ALDER, OMSORG) }
+		val land = if(landFraIdentUtland.contains("FI" )) "FI" else if (landFraIdentUtland.contains("SE")) "SE" else if (landFraIdentUtland.contains("PL")) "PL" else null
+		val institusjonViSkalSendeTil = mottakendeInstitusjon(penytelse, land)
+		return institusjonViSkalSendeTil
+	}
+
+	private fun mottakendeInstitusjon(penytelse: SakInformasjon?, land: String?) : String {
+		//TODO: Avklaring om vi trenger å sende H070 til en annen institusjon i landet dersom ytelsen er forskjellig
+		return when (land) {
+            "SE" -> "SE:2001"
+            "FI" -> "FI:0200000010"
+            "PL" -> "PL:PL390050ER"
+            else -> throw IllegalArgumentException("Ugyldig land. $land er ikke en av de gyldige landene for opprettelse av H070")
+        }
 	}
 
 	private fun hentBucId(journalpost: Journalpost): String? {
