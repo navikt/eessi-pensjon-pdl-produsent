@@ -30,6 +30,9 @@ spec:
         - host: pdl-api.dev-fss-pub.nais.io
         - host: pdl-mottak.dev-fss-pub.nais.io
         - host: eux-rina-api-q2.intern.dev.nav.no
+        - host: pensjon-pen-q2.dev-fss-pub.nais.io
+        - host: eessi-pensjon-fagmodul-q2.intern.dev.nav.no
+
   webproxy: true
   kafka:
     pool: nav-dev
@@ -53,6 +56,8 @@ spec:
       value: https://saf-q2.dev-fss-pub.nais.io/graphql
     - name: SAF_HENTDOKUMENT_URL
       value: https://saf-q2.dev-fss-pub.nais.io/rest/hentdokument
+    - name: EESSI_PENSJON_FAGMODUL_URL
+      value: https://eessi-pensjon-fagmodul-q2.intern.dev.nav.no
 
     - name: KAFKA_SEDMOTTATT_TOPIC
       value: eessibasis.sedmottatt-v1-q2
@@ -63,6 +68,8 @@ spec:
     - name: KAFKA_GROUP_ID
       value: eessipensjon-pdl-produsent-q2
 
+    - name: AZURE_APP_FAGMODUL_CLIENT_ID
+      value: dev-gcp.eessipensjon.eessi-pensjon-fagmodul-q2
     - name: AZURE_APP_KODEVERK_CLIENT_ID
       value: dev-gcp.team-rocket.kodeverk-api
     - name: AZURE_APP_EUX_CLIENT_ID
@@ -110,7 +117,7 @@ spec:
     cpuThresholdPercentage: 50
   resources:
     limits:
-      memory: 2Gi
+      memory: 512Mi
     requests:
-      cpu: 200m
+      cpu: 75m
       memory: 512Mi
