@@ -38,6 +38,8 @@ spec:
       value: prod
     - name: NAMESPACE
       value: p
+    - name: ENV
+      value: p
     - name: JDK_JAVA_OPTIONS
       value: -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp
 
