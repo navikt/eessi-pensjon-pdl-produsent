@@ -30,7 +30,7 @@ class DodsmeldingBehandler(
 	private val euxService: EuxService,
 	@Value("\${ENV}") private val env: String
 	) {
-	val gyldigeUtstederland = listOf("SW", "FI", "PO")
+	val gyldigeUtstederland = listOf("SW", "SWE", "FI", "FIN",  "PO", "POL")
 
 	private val logger: Logger = LoggerFactory.getLogger(DodsmeldingBehandler::class.java)
 
@@ -106,7 +106,7 @@ class DodsmeldingBehandler(
 	fun institusjon(fnr: String?, landFraIdentUtland: Set<String>): String {
 		val ytelsesInfo = fagmodulKlient.hentPensjonSaklist(fnr!!).also { logger.debug("Henter pensjonsakliste: {}", it.toJson()) }
 		val penytelse = ytelsesInfo.firstOrNull { it.sakType in listOf(UFOREP, GJENLEV, BARNEP, ALDER, OMSORG) }
-		val land = if(landFraIdentUtland.contains("FI" )) "FI" else if (landFraIdentUtland.contains("SE")) "SE" else if (landFraIdentUtland.contains("PL")) "PL" else null
+		val land = if(landFraIdentUtland.contains("FIN" )) "FIN" else if (landFraIdentUtland.contains("SWE")) "SWE" else if (landFraIdentUtland.contains("POL")) "POL" else null
 		val institusjonViSkalSendeTil = mottakendeInstitusjon(penytelse, land)
 		return institusjonViSkalSendeTil
 	}
@@ -114,9 +114,9 @@ class DodsmeldingBehandler(
 	private fun mottakendeInstitusjon(penytelse: SakInformasjon?, land: String?) : String {
 		//TODO: Avklaring om vi trenger å sende H070 til en annen institusjon i landet dersom ytelsen er forskjellig
 		return when (land) {
-            "SE" -> "SE:2001"
-            "FI" -> "FI:0200000010"
-            "PL" -> "PL:PL390050ER"
+            "SE", "SWE" -> "SE:2001"
+            "FI", "FIN" -> "FI:0200000010"
+            "PL", "POL" -> "PL:PL390050ER"
             else -> throw IllegalArgumentException("Ugyldig land. $land er ikke en av de gyldige landene for opprettelse av H070")
         }
 	}
