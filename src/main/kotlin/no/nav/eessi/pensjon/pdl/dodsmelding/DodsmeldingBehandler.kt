@@ -104,7 +104,7 @@ class DodsmeldingBehandler(
 	}
 
 	fun institusjon(fnr: String?, landFraIdentUtland: Set<String>): String {
-		val ytelsesInfo = fagmodulKlient.hentPensjonSaklist(fnr!!)
+		val ytelsesInfo = fagmodulKlient.hentPensjonSaklist(fnr!!).also { logger.debug("Henter pensjonsakliste: {}", it.toJson()) }
 		val penytelse = ytelsesInfo.firstOrNull { it.sakType in listOf(UFOREP, GJENLEV, BARNEP, ALDER, OMSORG) }
 		val land = if(landFraIdentUtland.contains("FI" )) "FI" else if (landFraIdentUtland.contains("SE")) "SE" else if (landFraIdentUtland.contains("PL")) "PL" else null
 		val institusjonViSkalSendeTil = mottakendeInstitusjon(penytelse, land)
