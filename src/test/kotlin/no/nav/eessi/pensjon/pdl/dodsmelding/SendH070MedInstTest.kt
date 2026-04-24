@@ -83,7 +83,7 @@ class SendH070MedInstTest {
         every { euxKlient.createHBuc07(any(), any()) } returns "{\"caseId\":\"$SAKSID\",\"documentId\":\"edb72a2474ac4d6f901c74e614da9b5b\"}"
         every { fagmodulKlient.hentPensjonSaklist(any()) } returns listOf(SakInformasjon(SAKSID, SakType.ALDER, SakStatus.LOPENDE))
 
-        val response = dodsmeldingBehandler.institusjon(FNR, setOf("FI"))
+        val response = dodsmeldingBehandler.institusjon(FNR, setOf("FIN"))
         val response2 = euxService.opprettH070(FNR, h070)
 
         assertEquals("FI:0200000010", response)
