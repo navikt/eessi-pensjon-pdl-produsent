@@ -28,7 +28,7 @@ class DodsmeldingBehandler(
 	private val personService: PersonService,
 	private val opprettH070: OpprettH070,
 	private val euxService: EuxService,
-	@Value("\${ENV}") private val env: String,
+	@Value("\${ENV}") private val env: String
 	) {
 	val gyldigeUtstederland = listOf("SW", "FI", "PO")
 

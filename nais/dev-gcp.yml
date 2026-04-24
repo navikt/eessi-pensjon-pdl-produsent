@@ -41,6 +41,8 @@ spec:
       value: test
     - name: NAMESPACE
       value: q2
+    - name: ENV
+      value: q2
 
     - name: EUX_RINA_API_V1_URL
       value: https://eux-rina-api-q2.intern.dev.nav.no/cpi

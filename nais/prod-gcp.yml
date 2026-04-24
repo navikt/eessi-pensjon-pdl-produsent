@@ -40,6 +40,8 @@ spec:
       value: p
     - name: JDK_JAVA_OPTIONS
       value: -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp
+    - name: ENV
+      value: p
 
     - name: EUX_RINA_API_V1_URL
       value: https://eux-rina-api.intern.nav.no/cpi
