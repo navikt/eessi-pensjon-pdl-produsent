@@ -78,8 +78,8 @@ class SendH070MedInstTest {
               "pensjon" : null
             }
         """.trimIndent()
-
         )
+
         every { euxKlient.createHBuc07(any(), any()) } returns "{\"caseId\":\"$SAKSID\",\"documentId\":\"edb72a2474ac4d6f901c74e614da9b5b\"}"
         every { fagmodulKlient.hentPensjonSaklist(any()) } returns listOf(SakInformasjon(SAKSID, SakType.ALDER, SakStatus.LOPENDE))
 
