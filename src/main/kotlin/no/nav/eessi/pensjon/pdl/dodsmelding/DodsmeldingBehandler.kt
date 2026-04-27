@@ -87,7 +87,9 @@ class DodsmeldingBehandler(
 				// Oppretter en H_BUC_07 med et utkast på H070
 				try {
 					if (env == "q2") {
-						euxService.opprettH070("NO:NAVAT05", h070)
+						val response = euxService.opprettH070("NO:NAVAT05", h070)
+						Thread.sleep(5000) // Legger inn en liten delay for å unngå at sendSed blir kalt før opprettH070 er ferdig.
+						euxService.sendSed(response.caseId, response.documentId)
 					} else {
 						val response = euxService.opprettH070(institusjonViSkalSendeTil, h070)
 						//Sender H070 til utlandet
