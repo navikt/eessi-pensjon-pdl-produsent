@@ -35,13 +35,14 @@ class MeldingFraPdlListener(
     )
     fun mottaLeesahMelding(consumerRecords: List<ConsumerRecord<String, Personhendelse>>, ack: Acknowledgment) {
         try {
-            logger.info("Behandler ${consumerRecords.size} meldinger, firstOffset=${consumerRecords.first().offset()}, lastOffset=${consumerRecords.last().offset()}")
+//            logger.info("Behandler ${consumerRecords.size} meldinger, firstOffset=${consumerRecords.first().offset()}, lastOffset=${consumerRecords.last().offset()}")
             consumerRecords.forEach { record ->
                 leesahKafkaListenerMetric.measure {
                     val personhendelse = record.value()
 
                     when (personhendelse.opplysningstype) {
                         "DOEDSFALL_V1" -> {
+                            logger.info("Behandler ${consumerRecords.size} meldinger, firstOffset=${consumerRecords.first().offset()}, lastOffset=${consumerRecords.last().offset()}")
                             logger.debug("DOEDSFALL_V1: ${personhendelse}")
                             secureLogger.info("DOEDSFALL_V1: ${personhendelse}")
                             messureOpplysningstype.addKjent(personhendelse)
@@ -54,11 +55,9 @@ class MeldingFraPdlListener(
 
                         }
                         "BOSTEDSADRESSE_V1", "KONTAKTADRESSE_V1", "OPPHOLDSADRESSE_V1" -> {
-                            ack.acknowledge()
                             messureOpplysningstype.addKjent(personhendelse)
                         }
                         else -> {
-                            ack.acknowledge()
                             messureOpplysningstype.addUkjent(personhendelse)
                         }
                     }
@@ -70,6 +69,7 @@ class MeldingFraPdlListener(
         }
         messureOpplysningstype.createMetrics()
         messureOpplysningstype.clearAll()
+//        ack.acknowledge()
     }
 
 
