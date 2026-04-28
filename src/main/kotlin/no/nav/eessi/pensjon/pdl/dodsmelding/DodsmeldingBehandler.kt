@@ -116,7 +116,8 @@ class DodsmeldingBehandler(
 	private fun mottakendeInstitusjon(penytelse: SakInformasjon?, land: String?) : String {
 		//TODO: Avklaring om vi trenger å sende H070 til en annen institusjon i landet dersom ytelsen er forskjellig
 		return when (land) {
-            "SE", "SWE" -> "SE:2001"
+			// Dersom bruker har en en uføre ytelse, sendes H070 til institusjon nummer 2 for Sverige
+            "SE", "SWE" -> if (penytelse?.sakType == UFOREP) "SE:2001" else "SE:3002"
             "FI", "FIN" -> "FI:0200000010"
             "PL", "POL" -> "PL:PL390050ER"
             else -> throw IllegalArgumentException("Ugyldig land. $land er ikke en av de gyldige landene for opprettelse av H070")
