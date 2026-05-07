@@ -92,7 +92,7 @@ open class IdentBaseTest {
             bruker = Bruker(
                 mor = null,
                 far = null,
-                person = no.nav.eessi.pensjon.eux.model.sed.Person(
+                person = Person(
                     pin = pinItem,
                     pinland = null,
                     statsborgerskap = null,
@@ -126,7 +126,7 @@ open class IdentBaseTest {
             gjenlevende = Bruker(
                 mor = null,
                 far = null,
-                person = no.nav.eessi.pensjon.eux.model.sed.Person(
+                person = Person(
                     pin = pinItem,
                     pinland = null,
                     statsborgerskap = null,
@@ -162,7 +162,7 @@ open class IdentBaseTest {
     ): PdlPerson {
         val personfnr = Fodselsnummer.fra(id)
         val fdatoaar =   LocalDate.of(1921, 7, 12)
-        val doeadfall =  Doedsfall(LocalDate.of(2020, 10, 1), null, mockk())
+        val doeadfall =  no.nav.eessi.pensjon.personoppslag.pdl.model.Doedsfall(LocalDate.of(2020, 10, 1), null, mockk())
 
         return PdlPerson(
             identer = listOf(IdentInformasjon(id, IdentGruppe.FOLKEREGISTERIDENT)),
@@ -175,7 +175,7 @@ open class IdentBaseTest {
             foedselsdato = Foedselsdato(fdatoaar?.year, personfnr?.getBirthDateAsIso(), null, mockk()),
             geografiskTilknytning = null,
             kjoenn = null,
-            doedsfall = Doedsfall(
+            doedsfall = no.nav.eessi.pensjon.personoppslag.pdl.model.Doedsfall(
                 doedsdato = doedsdato,
                 folkeregistermetadata = null,
                 metadata = metadata()
