@@ -88,7 +88,7 @@ dependencies {
 	implementation ("no.nav.common:token-client:4.2026.04.24_05.25-cab3c16705f7")
 
 	//GCP
-	implementation("com.google.cloud:google-cloud-storage:2.67.0")
+	implementation("com.google.cloud:google-cloud-storage:2.68.0")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test") {
 		exclude module: 'junit'
