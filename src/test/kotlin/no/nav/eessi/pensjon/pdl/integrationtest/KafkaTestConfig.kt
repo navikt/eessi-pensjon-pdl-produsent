@@ -101,7 +101,7 @@ class KafkaTestConfig(
     private fun mockedRestTemplate(): RestTemplate {
         val port = System.getProperty("mockserverport")
         return RestTemplateBuilder()
-            .rootUri("http://localhost:${port}")
+            .baseUri("http://localhost:${port}")
             .build()
     }
 

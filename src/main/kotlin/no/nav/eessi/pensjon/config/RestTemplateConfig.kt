@@ -78,7 +78,7 @@ class RestTemplateConfig(
     private fun restTemplate(url: String, tokenIntercetor: ClientHttpRequestInterceptor) : RestTemplate {
         logger.info("init restTemplate: $url")
         return RestTemplateBuilder()
-            .rootUri(url)
+            .baseUri(url)
             .errorHandler(DefaultResponseErrorHandler())
             .additionalInterceptors(
                 RequestIdHeaderInterceptor(),
@@ -94,7 +94,7 @@ class RestTemplateConfig(
 
     private fun buildRestTemplate(url: String): RestTemplate {
         return RestTemplateBuilder()
-            .rootUri(url)
+            .baseUri(url)
             .errorHandler(DefaultResponseErrorHandler())
             .additionalInterceptors(
                 RequestIdHeaderInterceptor(),

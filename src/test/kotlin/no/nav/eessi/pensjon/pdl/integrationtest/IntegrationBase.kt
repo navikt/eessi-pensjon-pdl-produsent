@@ -247,7 +247,7 @@ abstract class IntegrationBase {
             customRequestFactory.httpClient = httpClient
 
             return RestTemplateBuilder()
-                .rootUri("https://localhost:${System.getProperty("mockserverport")}")
+                .baseUri("https://localhost:${System.getProperty("mockserverport")}")
                 .build().apply {
                     requestFactory = customRequestFactory
                 }
