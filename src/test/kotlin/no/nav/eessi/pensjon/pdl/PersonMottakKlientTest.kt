@@ -80,7 +80,7 @@ internal class PersonMottakKlientTest {
 
     @Test
     fun `Gitt at vi mottar en opprettPersonopplysning og adressen inneholder et ugyldig symbol eller tegn så kastes Exception og det returneres true`() {
-        restTemplateCall() throws HttpClientErrorException(HttpStatus.UNPROCESSABLE_ENTITY, "Feltet inneholder et symbol som ikke er gyldig for endringer i PDL")
+        restTemplateCall() throws HttpClientErrorException(HttpStatus.UNPROCESSABLE_CONTENT, "Feltet inneholder et symbol som ikke er gyldig for endringer i PDL")
 
         val response = personMottakKlient.opprettPersonopplysning(PdlEndringOpplysning(listOf(dummyPersonOpplysninger(Opplysningstype.KONTAKTADRESSE))))
 
