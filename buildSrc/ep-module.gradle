@@ -45,7 +45,6 @@ kotlin {
 
     compilerOptions {
         allWarningsAsErrors.set(true)
-
     }
 }
 
