@@ -27,6 +27,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.mockserver.client.MockServerClient
 import org.mockserver.integration.ClientAndServer
+import org.mockserver.model.HttpRequest.request
 import org.mockserver.socket.PortFactory
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -98,7 +99,11 @@ abstract class IntegrationBase {
         println("****************************** after ********************************")
         listAppender.stop()
         mottattContainer.stop()
-        MockServerClient("localhost", System.getProperty("mockserverport").toInt()).reset()
+        // MockServerClient.reset() triggers a MockServer 7.x SocketConnectionException ("Channel handler
+        // removed before valid response has been received") when its internal control-plane client races
+        // with in-flight data-plane traffic on the shared event loop. clear(request()) achieves the same
+        // "remove all expectations/logs" effect without going through that code path.
+        MockServerClient("localhost", System.getProperty("mockserverport").toInt()).clear(request())
     }
 
     open fun sendMeldingString(message: String) {
