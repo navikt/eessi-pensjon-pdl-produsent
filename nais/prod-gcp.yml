@@ -90,7 +90,6 @@ spec:
           createdBefore: 2020-01-01
           numNewerVersions: 2
           withState: ANY
-        uniformBucketLevelAccess: true
   image: {{ image }}
   ingresses:
     - https://eessi-pensjon-pdl-produsent.intern.nav.no
