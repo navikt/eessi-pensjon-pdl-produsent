@@ -23,6 +23,8 @@ class SedListenerGjenlevIdent(
     private val latch = CountDownLatch(1)
     private var consumeIncomingSed: MetricsHelper.Metric
     private val secureLogger = LoggerFactory.getLogger("secureLog")
+    private val offsetToSkip = setOf<Long>(1072448,1786617, 1860315, 2987316)
+
 
     fun getLatch() = latch
 
@@ -40,7 +42,7 @@ class SedListenerGjenlevIdent(
             consumeIncomingSed.measure {
                 logger.info("SedGjenlevMottatt i partisjon: ${cr.partition()}, med offset: ${cr.offset()}")
                 try {
-                    if (cr.offset() in listOf(1072448L,1786617L, 1860315L)) {
+                    if (cr.offset() in offsetToSkip) {
                         logger.warn("Hopper over offset: ${cr.offset()} grunnet feil ved henting av vedlegg...")
                     } else {
                         runCatching {
