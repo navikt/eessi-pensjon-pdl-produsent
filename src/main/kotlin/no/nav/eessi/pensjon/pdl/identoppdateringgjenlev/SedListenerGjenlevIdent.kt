@@ -23,7 +23,7 @@ class SedListenerGjenlevIdent(
     private val latch = CountDownLatch(1)
     private var consumeIncomingSed: MetricsHelper.Metric
     private val secureLogger = LoggerFactory.getLogger("secureLog")
-    private val offsetToSkip = setOf<Long>(1072448,1786617, 1860315, 2987316)
+    private val offsetToSkip = setOf<Long>(1072448,1786617, 1860315, 2987316, 2985422)
 
 
     fun getLatch() = latch
