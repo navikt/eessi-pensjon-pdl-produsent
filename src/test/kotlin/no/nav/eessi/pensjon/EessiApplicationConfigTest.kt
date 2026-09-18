@@ -1,7 +1,6 @@
 package no.nav.eessi.pensjon
 
 import com.ninjasquad.springmockk.MockkBean
-import com.ninjasquad.springmockk.MockkBeans
 import no.nav.eessi.pensjon.config.RestTemplateConfig
 import no.nav.eessi.pensjon.eux.klient.EuxKlientAsSystemUser
 import no.nav.eessi.pensjon.gcp.GcpStorageService
@@ -10,6 +9,8 @@ import no.nav.eessi.pensjon.kodeverk.KodeverkClient
 import no.nav.eessi.pensjon.pdl.PersonMottakKlient
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonClient
 import no.nav.eessi.pensjon.personoppslag.pdl.PersonService
+import no.nav.security.token.support.client.core.oauth2.OAuth2AccessTokenService
+import no.nav.security.token.support.client.spring.ClientConfigurationProperties
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringSerializer
@@ -18,7 +19,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory
 import org.springframework.kafka.core.DefaultKafkaProducerFactory
 import org.springframework.kafka.core.KafkaTemplate
@@ -34,28 +34,24 @@ import org.springframework.web.client.RestTemplate
 @EmbeddedKafka
 @EnableMockOAuth2Server
 @AutoConfigureMockMvc
-@MockkBeans(
-    //rest
-    MockkBean(name = "prefillOAuthTemplate", classes = [RestTemplate::class]),
-    MockkBean(name = "euxSystemRestTemplate", classes = [RestTemplate::class]),
-    MockkBean(name = "safRestOidcRestTemplate", classes = [RestTemplate::class]),
-    MockkBean(name = "pdlRestTemplate", classes = [RestTemplate::class]),
-    MockkBean(name = "euxNavIdentRestTemplate", classes = [RestTemplate::class]),
-    MockkBean(name = "restEuxTemplate", classes = [RestTemplate::class]),
-    MockkBean(name = "safGraphQlOidcRestTemplate", classes = [RestTemplate::class]),
-    MockkBean(name = "kodeverkRestTemplate", classes = [RestTemplate::class]),
-    //service / clients
-    MockkBean(name = "personService", classes = [PersonService::class]),
-    MockkBean(name = "euxKlient", classes = [EuxKlientAsSystemUser::class]),
-    MockkBean(name = "gcpStorageService", classes = [GcpStorageService::class]),
-    MockkBean(name = "norg2Klient", classes = [Norg2Klient::class]),
-    MockkBean(name = "personMottakKlient", classes = [PersonMottakKlient::class]),
-    MockkBean(name = "kodeverkClient", classes = [KodeverkClient::class]),
-    MockkBean(name = "personClient", classes = [PersonClient::class]),
-    //kafka
-    MockkBean(name = "sedKafkaListenerContainerFactory", classes = [ConcurrentKafkaListenerContainerFactory::class], relaxed = true),
-
-)
+@MockkBean(name = "prefillOAuthTemplate", types = [RestTemplate::class])
+@MockkBean(name = "euxSystemRestTemplate", types = [RestTemplate::class])
+@MockkBean(name = "safRestOidcRestTemplate", types = [RestTemplate::class])
+@MockkBean(name = "pdlRestTemplate", types = [RestTemplate::class])
+@MockkBean(name = "euxNavIdentRestTemplate", types = [RestTemplate::class])
+@MockkBean(name = "restEuxTemplate", types = [RestTemplate::class])
+@MockkBean(name = "safGraphQlOidcRestTemplate", types = [RestTemplate::class])
+@MockkBean(name = "kodeverkRestTemplate", types = [RestTemplate::class])
+@MockkBean(name = "personService", types = [PersonService::class])
+@MockkBean(name = "euxKlient", types = [EuxKlientAsSystemUser::class])
+@MockkBean(name = "gcpStorageService", types = [GcpStorageService::class])
+@MockkBean(name = "norg2Klient", types = [Norg2Klient::class])
+@MockkBean(name = "personMottakKlient", types = [PersonMottakKlient::class])
+@MockkBean(name = "kodeverkClient", types = [KodeverkClient::class])
+@MockkBean(name = "personClient", types = [PersonClient::class])
+@MockkBean(name = "sedKafkaListenerContainerFactory", types = [ConcurrentKafkaListenerContainerFactory::class], relaxed = true)
+@MockkBean(name = "clientConfigurationProperties", types = [ClientConfigurationProperties::class])
+@MockkBean(name = "oAuth2AccessTokenService", types = [OAuth2AccessTokenService::class])
 class EessiApplicationConfigTest {
 
     @Test
