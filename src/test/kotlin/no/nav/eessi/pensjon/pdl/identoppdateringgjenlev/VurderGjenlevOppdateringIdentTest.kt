@@ -80,7 +80,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
             ),
             fodselsdato = "1971-06-11",
         )
-        val p2100 = P2100(SedType.P2100, nav = sed.nav, pensjon = sed.pensjon)
+        val p2100 = P2100(SedType.P2100, nav = sed.nav, pensjon = sed.pensjon as P2100Pensjon)
         every { euxService.hentSed(any(), any()) } returns p2100
 
         assertEquals(
@@ -104,7 +104,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
             ),
             fodselsdato = "1971-06-11",
         )
-        val p2100 = P2100(SedType.P2100, nav = sed.nav, pensjon = sed.pensjon)
+        val p2100 = P2100(SedType.P2100, nav = sed.nav, pensjon = sed.pensjon as P2100Pensjon)
         every { euxService.hentSed(any(), any()) } returns p2100
 
         assertEquals(
@@ -138,7 +138,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
             ),
             fodselsdato = "1971-06-11",
         )
-        val p2100 = P2100(SedType.P2100, nav = sed.nav, pensjon = sed.pensjon)
+        val p2100 = P2100(SedType.P2100, nav = sed.nav, pensjon = sed.pensjon as P2100Pensjon)
         every { euxService.hentSed(any(), any()) } returns p2100
 
         assertEquals(
@@ -162,7 +162,7 @@ class VurderGjenlevOppdateringIdentTest : IdentBaseTest() {
             ),
             fodselsdato = null,
         )
-        val p2100 = P2100(SedType.P2100, nav = sed.nav, pensjon = sed.pensjon)
+        val p2100 = P2100(SedType.P2100, nav = sed.nav, pensjon = sed.pensjon as P2100Pensjon)
         every { euxService.hentSed(any(), any()) } returns p2100
 
         assertEquals(

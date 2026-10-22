@@ -122,7 +122,7 @@ open class IdentBaseTest {
         pinItem: List<PinItem>?,
         fodselsdato: String?
     ) = sed(
-        brukersAdresse, pinItem, Pensjon(
+        brukersAdresse, pinItem, P2100Pensjon(
             gjenlevende = Bruker(
                 mor = null,
                 far = null,
